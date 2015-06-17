@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module rename-to='RiscossWebApp'>
+	<!-- Inherit the core Web Toolkit stuff. -->
+	<inherits name='com.google.gwt.user.User' />
+
+	<inherits name='com.google.gwt.junit.JUnit' />
+
+	<inherits name='com.google.gwt.user.theme.standard.Standard' />
+
+	<!-- inherits name="com.google.gwt.logging.Logging" /-->
+
+	<!-- Other module inherits -->
+	<inherits name="org.fusesource.restygwt.RestyGWT" />
+
+
+	<!-- Specify the app entry point class. -->
+	<entry-point class='eu.riscoss.client.RiscossWebApp' />
+	
+	<add-linker name="xsiframe" />
+	
+	<set-configuration-property name="devModeRedirectEnabled" value="true"/>
+	<set-property name="compiler.useSourceMaps" value="true" />
+	
+	<!-- Specify the paths for translatable code -->
+	<source path='client' />
+	<source path='shared' />
+
+</module>

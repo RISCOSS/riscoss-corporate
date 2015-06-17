@@ -1,0 +1,313 @@
+package eu.riscoss.client.entities;
+
+import java.util.List;
+
+import org.fusesource.restygwt.client.JsonCallback;
+import org.fusesource.restygwt.client.Method;
+
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONString;
+import com.google.gwt.json.client.JSONValue;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Anchor;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.TabPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
+
+import eu.riscoss.client.report.RiskAnalysisReport;
+import eu.riscoss.client.ui.CustomizableForm;
+import eu.riscoss.client.ui.CustomizableForm.CustomField;
+import eu.riscoss.client.ui.EntityBox;
+import eu.riscoss.client.JsonEntitySummary;
+import eu.riscoss.client.JsonRiskDataList;
+import eu.riscoss.client.RiscossJsonClient;
+
+public class EntityPropertyPage implements IsWidget {
+	
+	class RDCConfDialog {
+		
+		DialogBox dialog = new DialogBox( false, true );
+		DockPanel dock = new DockPanel();
+		RDCConfigurationPage ppg = new RDCConfigurationPage();
+		
+		RDCConfDialog() {
+			dock.add( new Button( "Done", new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					JSONObject json = ppg.getJson();
+					String str = "";
+					String sep = "";
+					for( String key : json.keySet() ) {
+						if( json.get( key ).isObject().get( "enabled" ).isBoolean().booleanValue() == true ) {
+							str += sep + key;
+							sep = ", ";
+						}
+					}
+					rdcAnchor.setText( str + " ... " );
+					
+					RiscossJsonClient.saveRDCs( json, entity, new JsonCallback() {
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							dialog.hide();
+						}
+						@Override
+						public void onFailure(Method method, Throwable exception) {
+							Window.alert( exception.getMessage() );
+						}} );
+				}} ), DockPanel.NORTH );
+			dock.add( ppg.asWidget(), DockPanel.CENTER );
+			dialog.setWidget( dock );
+		}
+		
+		public void show(String entity) {
+			ppg.setSelectedEntity( entity );
+			dialog.show();
+		}
+		
+	}
+	
+	TabPanel			tab				= new TabPanel();
+	SimplePanel			summaryPanel	= new SimplePanel();
+	SimplePanel			ciPanel			= new SimplePanel();
+	SimplePanel			rasPanel		= new SimplePanel();
+	CustomizableForm	userForm;
+	
+	Anchor				rdcAnchor;
+	
+	private String		entity;
+	
+	RDCConfDialog		confDialog;
+	
+	boolean				rasLoaded		= false;
+	
+	public EntityPropertyPage() {
+		tab.add( summaryPanel, "Properties" );
+		tab.add( ciPanel, "Contextual Information" );
+		tab.add( rasPanel, "RAS" );
+		tab.selectTab( 0 );
+		tab.setSize( "100%", "100%" );
+		tab.addSelectionHandler( new SelectionHandler<Integer>() {
+			@Override
+			public void onSelection( SelectionEvent<Integer> event ) {
+				if( rasLoaded == true ) return;
+				RiscossJsonClient.getRASResults( entity, new JsonCallback() {
+					@Override
+					public void onFailure( Method method, Throwable exception ) {
+						Window.alert( exception.getMessage() );
+					}
+					@Override
+					public void onSuccess( Method method, JSONValue response ) {
+						loadRAS( response );
+					}} );
+			}
+		});
+	}
+	
+	@Override
+	public Widget asWidget() {
+		return this.tab;
+	}
+	
+	public void setSelectedEntity( String entity ) {
+		
+		if( summaryPanel.getWidget() != null ) {
+			summaryPanel.getWidget().removeFromParent();
+		}
+		if( ciPanel.getWidget() != null ) {
+			ciPanel.getWidget().removeFromParent();
+		}
+		
+		this.entity = entity;
+		
+		if( this.entity == null ) return;
+		
+		RiscossJsonClient.getEntityData( entity, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert( exception.getMessage() );
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				loadProperties( response );
+			}} );
+	}
+
+	protected void loadProperties( JSONValue response ) {
+		rasLoaded = false;
+		JsonEntitySummary info = new JsonEntitySummary( response );
+		VerticalPanel v = new VerticalPanel();
+		{
+			Grid grid = new Grid( 5, 2 );
+			grid.setWidget( 0, 0, new Label( "Name:" ) );
+			grid.setWidget( 0, 1, new Label( info.getEntityName() ) );
+			grid.setWidget( 1, 0, new Label( "Layer:" ) );
+			grid.setWidget( 1, 1, new Label( info.getLayer() ) );
+			Label lbl = new Label( "Data collectors:" );
+			grid.setWidget( 2, 0, lbl );
+			VerticalPanel vp = new VerticalPanel();
+			String str = info.getRDCString() + " ... ";
+			rdcAnchor = new Anchor( str );
+			rdcAnchor.addClickHandler( new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					if( confDialog == null ) {
+						confDialog = new RDCConfDialog();
+					}
+					confDialog.show( EntityPropertyPage.this.entity );
+				}
+			});
+			vp.add( rdcAnchor );
+			Anchor a = new Anchor( "Run now" );
+			a.addClickHandler( new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					RiscossJsonClient.runRDCs( EntityPropertyPage.this.entity, new JsonCallback() {
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							Window.alert( "Data successfully stored in the data repository" );
+						}
+						@Override
+						public void onFailure(Method method, Throwable exception) {
+							Window.alert( exception.getMessage() );
+						}
+					});
+				}
+			});
+			vp.add( a );
+			grid.setWidget( 2, 1, vp );
+			
+			grid.setWidget( 3, 0, new Label( "Owned by:" ) );
+			{
+				EntityBox ebox = new EntityBox();
+				JSONArray parents = info.getParentList();
+				for( int i = 0; i < parents.size(); i++ ) {
+					String p = parents.get( i ).isString().stringValue();
+					ebox.add( p );
+				}
+				ebox.addListener( new EntityBox.Listener() {
+					@Override
+					public void entitySelected( List<String> entities ) {
+						onParentEntitySelected( entities );
+					}
+				});;
+				grid.setWidget( 3, 1, ebox );
+			}
+			{
+				grid.setWidget( 4, 0, new Label( "Owns:" ) );
+				EntityBox cbox = new EntityBox();
+				JSONArray children = info.getChildrenList();
+				for( int i = 0; i < children.size(); i++ ) {
+					String p = children.get( i ).isString().stringValue();
+					cbox.add( p );
+				}
+				cbox.addListener( new EntityBox.Listener() {
+					@Override
+					public void entitySelected( List<String> entities ) {
+						onChildEntitySelected( entities );
+					}
+				});
+				grid.setWidget( 4, 1, cbox );
+			}
+			v.add( grid );
+			grid.setWidth( "100%" );
+			v.setWidth( "100%" );
+			grid.getColumnFormatter().setWidth( 0, "20%" );
+			grid.getColumnFormatter().setWidth( 1, "80%" );
+		}
+		userForm = new CustomizableForm();
+		for( int i = 0; i < info.getUserData().size(); i++ ) {
+			JsonRiskDataList.RiskDataItem item = info.getUserData().get( i );
+			userForm.addField( item.getId(), item.getValue() );
+		}
+		userForm.enableFastInsert();
+//		v.add( userForm );
+		userForm.addFieldListener( new CustomizableForm.FieldListener() {
+			@Override
+			public void valueChanged( CustomizableForm.CustomField field ) {
+				JSONObject o = new JSONObject();
+				o.put( "id", new JSONString( field.getName() ) );
+				o.put( "target", new JSONString( EntityPropertyPage.this.entity ) );
+				o.put( "value", new JSONString( field.getValue() ) );
+				o.put( "type", new JSONString( "NUMBER" ) );
+				o.put( "origin", new JSONString( "user" ) );
+				JSONArray array = new JSONArray();
+				array.set( 0, o );
+				RiscossJsonClient.postRiskData( array, new JsonCallback() {
+					@Override
+					public void onFailure( Method method, Throwable exception ) {
+						Window.alert( exception.getMessage() );
+					}
+					@Override
+					public void onSuccess( Method method, JSONValue response ) {
+						//								Window.alert( "Ok" );
+					}} );
+			}
+			
+			@Override
+			public void labelChanged( CustomField field ) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		summaryPanel.setWidget( v );
+		ciPanel.setWidget( userForm );
+	}
+
+	protected void loadRAS( JSONValue response ) {
+		if( rasPanel.getWidget() != null ) {
+			rasPanel.getWidget().removeFromParent();
+		}
+		if( response == null ) {
+			rasLoaded = true;
+			return;
+		}
+		try {
+			RiskAnalysisReport report = new RiskAnalysisReport();
+			report.showResults( response.isObject().get( "results" ).isArray() );
+			rasPanel.setWidget( report.asWidget() );
+			rasLoaded = true;
+		}
+		catch( Exception ex ) {
+			Window.alert( ex.getMessage() );
+		}
+	}
+
+	protected void onChildEntitySelected( List<String> entities ) {
+		RiscossJsonClient.setChildren( entity, entities, new JsonCallback() {
+			@Override
+			public void onFailure( Method method, Throwable exception ) {
+				Window.alert( exception.getMessage() );
+			}
+
+			@Override
+			public void onSuccess( Method method, JSONValue response ) {
+			}} );
+	}
+
+	protected void onParentEntitySelected( List<String> entities ) {
+		RiscossJsonClient.setParent( entity, entities, new JsonCallback() {
+			@Override
+			public void onFailure( Method method, Throwable exception ) {
+				Window.alert( exception.getMessage() );
+			}
+
+			@Override
+			public void onSuccess( Method method, JSONValue response ) {
+				// TODO Auto-generated method stub
+				
+			}} );
+	}
+	
+}

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module rename-to='models'>
+	<!-- Inherit the core Web Toolkit stuff. -->
+	<inherits name='com.google.gwt.user.User' />
+
+	<inherits name='com.google.gwt.junit.JUnit' />
+
+	<inherits name='com.google.gwt.user.theme.standard.Standard' />
+
+	<!-- Other module inherits -->
+	<inherits name="org.fusesource.restygwt.RestyGWT" />
+
+	<inherits name="gwtupload.GWTUpload" />
+	<stylesheet src="Upload.css" />
+
+
+	<add-linker name="xsiframe" />
+	
+	<!-- Specify the app entry point class. -->
+	<entry-point class='eu.riscoss.client.models.ModelsModule' />
+
+	<!-- Specify the paths for translatable code -->
+	<source path='client' />
+	<source path='shared' />
+
+</module>

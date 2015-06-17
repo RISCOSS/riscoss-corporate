@@ -1,0 +1,6 @@
+.settings
+.classpath
+*.class
+maven-status
+gwt-unitCache
+*/target/*

@@ -1,0 +1,78 @@
+package eu.riscoss.client.riskconfs;
+
+import java.util.List;
+
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Anchor;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.Widget;
+
+import eu.riscoss.client.CallbackWrapper;
+import eu.riscoss.client.ui.ClickWrapper;
+import eu.riscoss.client.ui.TreeWidget;
+
+public class ModelList implements IsWidget {
+	
+	public interface Listener {
+		void onModelsSelected( String layer, List<String> models );
+	}
+	
+	TreeWidget root = new TreeWidget();
+	Listener listener;
+	
+	public ModelList( Listener l ) {
+		this.listener = l;
+	}
+	
+	public void init( List<String> layers ) {
+		
+		root.clear();
+		
+		for( int i = 0; i < layers.size(); i++ ) {
+			//		RCModelPack.AnalysisPhase packLayer = pack.getLayer( i );
+			HorizontalPanel hp = new HorizontalPanel();
+			Anchor anchor = new Anchor( layers.get( i ) );
+			hp.add( anchor );
+			anchor.addClickHandler( new ClickWrapper<String>( layers.get( i ) ) {
+				@Override
+				public void onClick( ClickEvent event ) {
+					ModelSelectionDialog dialog = new ModelSelectionDialog();
+					dialog.show( new CallbackWrapper<List<String>,String>( getValue() ) {
+						@Override
+						public void onDone( List<String> pack ) {
+							setModels( getValue(), pack );
+							if( listener != null ) {
+								listener.onModelsSelected( getValue(), pack );
+							}
+						}
+						@Override
+						public void onError( Throwable t ) {
+							Window.alert( t.getMessage() );
+						}} );
+				}
+			});
+			TreeWidget w = new TreeWidget( hp );
+			root.addChild( layers.get( i ), w );
+		}
+	}
+	
+	public void setModels( String layer, List<String> models ) {
+		if( models == null ) return;
+		TreeWidget w = root.getChild( layer );
+		if( w == null ) return;
+		w.clear();
+		for( int m = 0; m < models.size(); m++ ) {
+			w.addChild( models.get( m ), 
+					new TreeWidget( new Label( models.get( m ) ) ) );
+		}
+	}
+
+	@Override
+	public Widget asWidget() {
+		return root.asWidget();
+	}
+	
+}

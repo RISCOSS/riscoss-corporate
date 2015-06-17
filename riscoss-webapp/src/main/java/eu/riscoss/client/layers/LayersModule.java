@@ -1,0 +1,238 @@
+package eu.riscoss.client.layers;
+
+import org.fusesource.restygwt.client.JsonCallback;
+import org.fusesource.restygwt.client.Method;
+import org.fusesource.restygwt.client.Resource;
+
+import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONValue;
+import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Anchor;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.VerticalPanel;
+
+import eu.riscoss.client.RiscossJsonClient;
+import eu.riscoss.client.ui.ClickWrapper;
+import eu.riscoss.client.ui.FramePanel;
+import eu.riscoss.client.ui.LabeledWidget;
+import eu.riscoss.client.ui.TreeWidget;
+
+public class LayersModule implements EntryPoint {
+	
+	static class LayerInfo {
+		public LayerInfo( String id, String name ) {
+			this.id = id;
+			this.name = name;
+		}
+		String id;
+		String name;
+	}
+	
+	DockPanel dock = new DockPanel();
+	
+	TreeWidget tree = new TreeWidget();
+	FramePanel bottom = new FramePanel( "" );
+	
+	public void onModuleLoad() {
+		
+		dock.setSize( "100%", "100%" );
+		bottom.getWidget().setSize( "100%", "100%" );
+		
+		Resource resource = new Resource( GWT.getHostPageBaseURL() + "api/layers/list");
+		
+		resource.get().send( new JsonCallback() {
+			
+			public void onSuccess(Method method, JSONValue response) {
+				if( response.isArray() != null ) {
+					TreeWidget parent = tree;
+					tree.asWidget().setWidth( "100%" );
+					for( int i = 0; i < response.isArray().size(); i++ ) {
+						JSONObject o = (JSONObject)response.isArray().get( i );
+						
+						HorizontalPanel p = new HorizontalPanel();
+						
+						Anchor anchor = new Anchor(
+								o.get( "name" ).isString().stringValue() );
+						anchor.addClickHandler( new ClickWrapper<String>( o.get( "name" ).isString().stringValue() ) {
+							
+							@Override
+							public void onClick(ClickEvent event) {
+								bottom.setUrl( "entities.html?layer=" + getValue() );
+							}
+						});
+						
+						p.add( anchor );
+						
+//						Button b = new Button( "Remove" );
+//						p.add( b );;
+//						p.setCellWidth( b,  "1px" );
+//						p.setCellHorizontalAlignment( b,  HorizontalPanel.ALIGN_RIGHT );
+//						b = new Button( "Add&nbsp;below" );
+//						p.add( b );
+//						p.setCellWidth( b,  "1%" );
+//						p.setCellHorizontalAlignment( b,  HorizontalPanel.ALIGN_RIGHT );
+						p.setWidth( "100%" );
+						
+						TreeWidget lw = new TreeWidget( p );
+						parent.addChild( lw );
+						parent = lw;
+					}
+					Anchor anchor = new Anchor( "[none]" );
+					anchor.addClickHandler( new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							bottom.setUrl( "entities.html?layer=-" );
+						}
+					});
+					TreeWidget lw = new TreeWidget( anchor );
+					parent.addChild( lw );
+				}
+			}
+			
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert( exception.getMessage() );
+			}
+		});
+		
+		MenuBar menu = new MenuBar(true);
+	    menu.addItem( "New Layer", new Command() {
+			@Override
+			public void execute() {
+				onNewLayer();
+			}});
+	    menu.addItem( "Rename Layer", new Command() {
+			@Override
+			public void execute() {
+				// TODO Auto-generated method stub
+				
+			}});
+	    menu.addItem( "Delete Layer", new Command() {
+			@Override
+			public void execute() {
+				new DeleteLayerPanel().show();
+			}});
+//	    fooMenu.addItem("foo", cmd);
+//	    fooMenu.addItem("menu", cmd);
+	    
+	    MenuBar menuBar = new MenuBar();
+	    menuBar.addItem( "Edit structure", menu );
+	    
+	    dock.add( menuBar, DockPanel.NORTH );
+	    dock.add( bottom.getWidget(), DockPanel.SOUTH );
+		dock.add( tree, DockPanel.CENTER );
+		
+		dock.setCellWidth( tree, "100%" );
+		
+		RootPanel.get().add( dock );
+		
+	}
+	
+	class DeleteLayerPanel {
+		ListBox combo = new ListBox();
+		void show() {
+			RiscossJsonClient.listLayers( new JsonCallback() {
+				@Override
+				public void onSuccess(Method method, JSONValue response) {
+					VerticalPanel panel = new VerticalPanel();
+					for( int i = 0; i < response.isArray().size(); i++ ) {
+						JSONObject o = (JSONObject)response.isArray().get( i );
+						combo.addItem( o.get( "name" ).isString().stringValue() );
+					}
+					panel.add( new LabeledWidget( "Parent layer:", combo ) );
+					panel.add( new Button( "Ok", new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							RiscossJsonClient.deleteLayer( combo.getItemText( combo.getSelectedIndex() ), new JsonCallback() {
+								@Override
+								public void onFailure(Method method,Throwable exception) {
+									Window.alert( exception.getMessage() );
+								}
+								@Override
+								public void onSuccess(Method method,JSONValue response) {
+									Window.Location.reload();
+								}} );
+						}
+					} ) );
+					PopupPanel popup = new PopupPanel( true, true );
+					popup.setWidget( panel );
+					popup.setSize( "400px", "300px" );
+					popup.show();
+				}
+				@Override
+				public void onFailure(Method method, Throwable exception) {
+					Window.alert( exception.getMessage() );
+				}
+			});
+		}
+	}
+	
+	class NewLayerPanel {
+		TextBox txt = new TextBox();
+		ListBox combo = new ListBox();
+		void show() {
+			RiscossJsonClient.listLayers( new JsonCallback() {
+				@Override
+				public void onSuccess(Method method, JSONValue response) {
+					VerticalPanel panel = new VerticalPanel();
+					combo.addItem( "[top]" );
+					for( int i = 0; i < response.isArray().size(); i++ ) {
+						JSONObject o = (JSONObject)response.isArray().get( i );
+						combo.addItem( o.get( "name" ).isString().stringValue() );
+					}
+					combo.setSelectedIndex( combo.getItemCount() -1 );
+					panel.add( new LabeledWidget( "Parent layer:", combo ) );
+					txt.getElement().setId( "layers:new:name:textbox" );
+					panel.add( new LabeledWidget( "Name:", txt ) );
+					panel.add( new Button( "Ok", new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							String parent = combo.getItemText( combo.getSelectedIndex() );
+//							Window.alert( "'" + parent + "': " + "[top]".equals( parent ) );
+							if( "[top]".equals( parent ) ) {
+								parent = "$root";
+							}
+							RiscossJsonClient.createLayer( txt.getText(), parent, 
+									new JsonCallback() {
+								@Override
+								public void onFailure(Method method, Throwable exception) {
+									Window.alert( exception.getMessage() );
+								}
+
+								@Override
+								public void onSuccess(Method method, JSONValue response) {
+									Window.Location.reload();
+								}} );
+						}
+					} ) );
+					PopupPanel popup = new PopupPanel( true, true );
+					popup.setWidget( panel );
+					popup.setSize( "400px", "300px" );
+					popup.show();
+				}
+				
+				@Override
+				public void onFailure(Method method, Throwable exception) {
+					Window.alert( exception.getMessage() );
+				}
+			});
+		}
+	}
+	
+	protected void onNewLayer() {
+		new NewLayerPanel().show();
+	}
+	
+
+}
