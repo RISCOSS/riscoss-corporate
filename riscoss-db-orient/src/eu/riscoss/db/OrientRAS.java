@@ -161,7 +161,7 @@ public class OrientRAS implements RiskAnalysisSession {
 	
 	@Override
 	public List<String> getModels( String layer ) {
-		NodeID id = dom.get( path() + "/layers/" + layer + "/models/" );
+		NodeID id = dom.create( path() + "/layers/" + layer + "/models/" );
 		return dom.listOutEdgeNames( id, GDomDB.CHILDOF_CLASS, null, null );
 	}
 	
@@ -182,19 +182,19 @@ public class OrientRAS implements RiskAnalysisSession {
 	
 	@Override
 	public int getEntityCount( String layer ) {
-		NodeID id = dom.get( path() + "/layers/" + layer + "/entities" );
+		NodeID id = dom.create( path() + "/layers/" + layer + "/entities" );
 		return dom.listOutEdgeNames( id, GDomDB.LINK_CLASS, "layer-entity", null, null ).size();
 	}
 	
 	@Override
 	public String getEntity( String layer, int index ) {
-		NodeID id = dom.get( path() + "/layers/" + layer + "/entities" );
+		NodeID id = dom.create( path() + "/layers/" + layer + "/entities" );
 		return dom.listOutEdgeNames( id, GDomDB.LINK_CLASS, "layer-entity", null, null ).get( index );
 	}
 	
 	@Override
 	public Collection<String> getResults( String layer, String entity ) {
-		NodeID id = dom.get( path() + "/entities/" + entity + "/outputs" );
+		NodeID id = dom.create( path() + "/entities/" + entity + "/outputs" );
 		if( id == null ) return new ArrayList<String>();
 		return dom.listOutEdgeNames( id, GDomDB.CHILDOF_CLASS, null, null, null );
 	}
@@ -242,8 +242,8 @@ public class OrientRAS implements RiskAnalysisSession {
 	
 	@Override
 	public String getLayer( String entity ) {
-		TimeDiff.get().log( "getLayer( " + entity + " )" );
-		NodeID id = dom.get( path() + "/entities/" + entity );
+//		TimeDiff.get().log( "getLayer( " + entity + " )" );
+		NodeID id = dom.create( path() + "/entities/" + entity );
 		if( id == null ) return null;
 		
 		List<NodeID> list = dom.listInEdges( id, GDomDB.LINK_CLASS, "layer-entity" );
@@ -251,7 +251,7 @@ public class OrientRAS implements RiskAnalysisSession {
 		if( list.size() < 1 ) return null;
 		NodeID entityWrapper = list.get( 0 );
 		String ret = dom.getParentName( entityWrapper );
-		TimeDiff.get().log( "getLayer::return" );
+//		TimeDiff.get().log( "getLayer::return" );
 		return ret;
 	}
 	
@@ -262,9 +262,9 @@ public class OrientRAS implements RiskAnalysisSession {
 
 	@Override
 	public Collection<String> getChildren( String entity ) {
-		TimeDiff.get().log( "getChildren( " + entity + " )" );
-		Collection<String> ret = dom.listOutEdgeNames( dom.get( path() + "/entities/" + entity ), GDomDB.LINK_CLASS, "entity:parent-child", null, null );
-		TimeDiff.get().log( "getChildren:: return" );
+//		TimeDiff.get().log( "getChildren( " + entity + " )" );
+		Collection<String> ret = dom.listOutEdgeNames( dom.create( path() + "/entities/" + entity ), GDomDB.LINK_CLASS, "entity:parent-child", null, null );
+//		TimeDiff.get().log( "getChildren:: return" );
 		return ret;
 	}
 
@@ -280,7 +280,7 @@ public class OrientRAS implements RiskAnalysisSession {
 
 	@Override
 	public List<String> getEntities( String layer ) {
-		NodeID id = dom.get( path() + "/layers/" + layer + "/entities" );
+		NodeID id = dom.create( path() + "/layers/" + layer + "/entities" );
 		return dom.listOutEdgeNames( id, GDomDB.LINK_CLASS, "layer-entity", null, null );
 	}
 

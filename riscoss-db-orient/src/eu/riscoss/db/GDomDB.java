@@ -131,7 +131,7 @@ public class GDomDB {
 	
 	public void deleteChildren( String path ) {
 		NodeID id = get( path );
-		if( path == null ) return;
+		if( id == null ) return;
 		while( children( id ).size() > 0 ) {
 			deleteVertex( children( id ).get( 0 ) );
 		}
@@ -181,16 +181,43 @@ public class GDomDB {
 	}
 	
 	public <T> List<T> listOutEdgeNames( NodeID idFrom, String edgeClass, String label, String targetTag, String query, AttributeProvider<T> provider ) {
-		String q = "select from ( select expand( out('" + edgeClass + "') ";
-		q = "select expand( inV() ) from (";
-		q += "select from " + edgeClass + " where " + idFrom + "=out";
+		String q; // = "select from ( select expand( out('" + edgeClass + "') ";
+		
+		// Original code
+//		q = "select expand( inV() ) from (";
+//		q += "select from " + edgeClass + " where " + idFrom + "=out";
+//		if( label != null ) 
+//			q += " and name='" + label + "'";
+//		if( targetTag != null ) 
+//			q += " and in.tag='" + targetTag + "'";
+//		if( query != null )
+//			q += " and " + query;
+//		q += ")";
+		
+		q = "select expand( inV() ) from ";
+		q += "(select expand( outE('" + edgeClass + "')";
 		if( label != null ) 
-			q += " and name='" + label + "'";
-		if( targetTag != null ) 
-			q += " and in.tag='" + targetTag + "'";
-		if( query != null )
-			q += " and " + query;
-		q += ")";
+			q += "[name='" + label + "']";
+		q += " ) from " + idFrom + ")";
+		if( targetTag != null | query != null ) {
+			q += " where ";
+			if( targetTag != null )
+				q += "in.tag='" + targetTag + "'";
+			if( query != null )
+				if( targetTag != null )
+					q += " and " + query;
+				else
+					q += query;
+		}
+		
+		// select expand( inV() ) from 
+		// (select expand( outE()[name="pippo"] ) 
+		//from #11:12) where in.tag="entities"
+		
+//		q = "select expand( out('" + edgeClass + "')";
+		// select expand( out('Link')[tag="entities"] ) from #11:12 
+		
+//		System.out.println( q );
 		List<ODocument> list = querySynch( q );
 		if( list == null )
 			list = new ArrayList<ODocument>();
@@ -199,11 +226,19 @@ public class GDomDB {
 	
 	public List<NodeID> listInEdges( NodeID idFrom, String edgeClass, String label ) {
 		String q; // = "select from ( select expand( in('" + edgeClass + "') ";
-		q = "select expand( outV() ) from (";
-		q += "select from " + edgeClass + " where " + idFrom + "=in";
+		
+//		q = "select expand( outV() ) from (";
+//		q += "select from " + edgeClass + " where " + idFrom + "=in";
+//		if( label != null ) 
+//			q += " and name='" + label + "'";
+//		q += ")";
+		
+		q = "select expand( outV() ) from ";
+		q += "(select expand( inE('" + edgeClass + "')";
 		if( label != null ) 
-			q += " and name='" + label + "'";
-		q += ")";
+			q += "[name='" + label + "']";
+		q += " ) from " + idFrom + ")";
+		
 		List<ODocument> list = querySynch( q );
 		if( list == null )
 			list = new ArrayList<ODocument>();
@@ -211,12 +246,20 @@ public class GDomDB {
 	}
 	
 	public <T> List<T> listInEdges( NodeID idFrom, String edgeClass, String label, AttributeProvider<T> provider ) {
-		String q = "select from ( select expand( in('" + edgeClass + "') ";
-		q = "select expand( outV() ) from (";
-		q += "select from " + edgeClass + " where " + idFrom + "=in";
+		String q; // = "select from ( select expand( in('" + edgeClass + "') ";
+		
+//		q = "select expand( outV() ) from (";
+//		q += "select from " + edgeClass + " where " + idFrom + "=in";
+//		if( label != null ) 
+//			q += " and name='" + label + "'";
+//		q += ")";
+		
+		q = "select expand( outV() ) from ";
+		q += "(select expand( inE('" + edgeClass + "')";
 		if( label != null ) 
-			q += " and name='" + label + "'";
-		q += ")";
+			q += "[name='" + label + "']";
+		q += " ) from " + idFrom + ")";
+		
 		List<ODocument> list = querySynch( q );
 		if( list == null )
 			list = new ArrayList<ODocument>();
@@ -388,11 +431,11 @@ public class GDomDB {
 	}
 	
 	public String getAttribute( NodeID id, String key, String def ) {
-		TimeDiff.get().log( "getAttribute( " + key + " )" );
+//		TimeDiff.get().log( "getAttribute( " + key + " )" );
 		Vertex v = graph.getVertex( id.toString() );
 		if( v == null ) return def;
 		String ret = v.getProperty( key );
-		TimeDiff.get().log( "getAttribute::return" );
+//		TimeDiff.get().log( "getAttribute::return" );
 		return ret;
 	}
 	

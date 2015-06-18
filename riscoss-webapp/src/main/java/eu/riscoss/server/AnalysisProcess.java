@@ -3,7 +3,6 @@ package eu.riscoss.server;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -88,7 +87,7 @@ public class AnalysisProcess {
 		
 		for( Chunk c : rae.queryModel( ModelSlice.INPUT_DATA ) ) {
 			
-			TimeDiff.get().log( "Setting indicator " + c.getId() );
+//			TimeDiff.get().log( "Setting indicator " + c.getId() );
 			
 			Field f = rae.getField( c, FieldType.INPUT_VALUE );
 			
@@ -108,12 +107,9 @@ public class AnalysisProcess {
 					}
 				}
 				else {
-//					session.saveInput( target, c.getId(), "rdr", str );
 					childValues.add( str );
 				}
 				if( str == null ) {
-					// Mark session as "missing data" for entity x?
-					//				session.setStatus( target, AnalysisResult.DataMissing.name() );
 					// Return?
 					MissingDataItem item = new MissingDataItem();
 					item.id = c.getId();
@@ -188,7 +184,7 @@ public class AnalysisProcess {
 			}
 		}
 		
-		TimeDiff.get().log( "Inputs set" );
+//		TimeDiff.get().log( "Inputs set" );
 		
 		if( missingFields.size() > 0 ) {
 			if( AnalysisOption.valueOf( session.getOption( "AnalysisOption", AnalysisOption.RunThrough.name() ) ) == AnalysisOption.RequestMissingData ) {

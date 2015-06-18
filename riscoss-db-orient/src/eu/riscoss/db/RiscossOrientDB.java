@@ -198,13 +198,21 @@ public class RiscossOrientDB implements RiscossDB {
 	@Override
 	public void storeRiskData( String rd ) throws Exception {
 		JsonObject o = (JsonObject)new JsonParser().parse( rd );
-		NodeID id = dom.create( "/entities/" + o.get( "target" ).getAsString() + "/data/" + o.get( "id" ).getAsString() );
-		dom.setAttribute( id, "target", o.get( "target" ).getAsString() );
-		dom.setAttribute( id, "type", o.get( "type" ).getAsString() );
-		dom.setAttribute( id, "value", o.get( "value" ).getAsString() );
-		dom.setAttribute( id, "date", "" + o.get( "date" ) );
-		if( o.get( "origin" ) != null ) {
-			dom.setAttribute( id, "origin", o.get( "origin" ).getAsString() );
+		if( o.get( "value" ) != null ) {
+			NodeID id = dom.create( "/entities/" + o.get( "target" ).getAsString() + "/data/" + o.get( "id" ).getAsString() );
+			dom.setAttribute( id, "target", o.get( "target" ).getAsString() );
+			dom.setAttribute( id, "type", o.get( "type" ).getAsString() );
+			dom.setAttribute( id, "value", o.get( "value" ).getAsString() );
+			dom.setAttribute( id, "date", "" + o.get( "date" ) );
+			if( o.get( "origin" ) != null ) {
+				dom.setAttribute( id, "origin", o.get( "origin" ).getAsString() );
+			}
+		}
+		else {
+			NodeID id = dom.get( "/entities/" + o.get( "target" ).getAsString() + "/data/" + o.get( "id" ).getAsString() );
+			if( id != null ) {
+				dom.deleteVertex( id );
+			}
 		}
 	}
 	
@@ -378,7 +386,6 @@ public class RiscossOrientDB implements RiscossDB {
 	public Collection<String> entities() {
 		NodeID id = dom.get( "/entities" );
 		return dom.listOutEdgeNames( id, GDomDB.CHILDOF_CLASS, null, null );
-		//		return dom.children( "/entities" );
 	}
 	
 	@Override
@@ -386,7 +393,6 @@ public class RiscossOrientDB implements RiscossDB {
 		NodeID lid = dom.get( "/layers/" + layer );
 		if( lid == null ) return new ArrayList<String>();
 		return dom.listOutEdgeNames( lid, GDomDB.LINK_CLASS, "contains", null );
-		//		return dom.links( lid, "contains" );
 	}
 	
 	@Override

@@ -168,6 +168,11 @@
 			<artifactId>riscoss-rdc-maven</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>eu.riscoss.rdc</groupId>
+			<artifactId>riscoss-rdc-olex</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 
 	</dependencies>
 

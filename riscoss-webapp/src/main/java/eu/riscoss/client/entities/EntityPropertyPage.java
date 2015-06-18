@@ -30,6 +30,7 @@ import eu.riscoss.client.report.RiskAnalysisReport;
 import eu.riscoss.client.ui.CustomizableForm;
 import eu.riscoss.client.ui.CustomizableForm.CustomField;
 import eu.riscoss.client.ui.EntityBox;
+import eu.riscoss.client.JsonCallbackWrapper;
 import eu.riscoss.client.JsonEntitySummary;
 import eu.riscoss.client.JsonRiskDataList;
 import eu.riscoss.client.RiscossJsonClient;
@@ -259,6 +260,25 @@ public class EntityPropertyPage implements IsWidget {
 			public void labelChanged( CustomField field ) {
 				// TODO Auto-generated method stub
 				
+			}
+
+			@Override
+			public void fieldDeleted( CustomField field ) {
+				JSONObject o = new JSONObject();
+				o.put( "id", new JSONString( field.getName() ) );
+				o.put( "target", new JSONString( EntityPropertyPage.this.entity ) );
+				JSONArray array = new JSONArray();
+				array.set( 0, o );
+				RiscossJsonClient.postRiskData( array,  new JsonCallbackWrapper<String>( field.getName() ) {
+					@Override
+					public void onSuccess( Method method, JSONValue response ) {
+						userForm.removeField( getValue() );
+					}
+					@Override
+					public void onFailure( Method method, Throwable exception ) {
+						Window.alert( exception.getMessage() );
+					}
+				});
 			}
 		});
 		summaryPanel.setWidget( v );

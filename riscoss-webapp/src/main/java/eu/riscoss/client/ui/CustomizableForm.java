@@ -2,14 +2,19 @@ package eu.riscoss.client.ui;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.DeckPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.IsWidget;
@@ -68,8 +73,8 @@ public class CustomizableForm implements IsWidget {
 	
 	public interface FieldListener {
 		void labelChanged( CustomField field );
-		
-		void valueChanged( CustomField customField );
+		void valueChanged( CustomField field );
+		void fieldDeleted( CustomField field );
 	}
 	
 	public class CustomField implements IsWidget {
@@ -177,6 +182,15 @@ public class CustomizableForm implements IsWidget {
 				panel.add( labeler );
 				labeler.asWidget().getElement().getStyle().setMarginRight( 6, Unit.PX );
 				panel.add( editor );
+				Anchor a = new Anchor( "-" );
+				a.addClickHandler( new ClickHandler() {
+					@Override
+					public void onClick( ClickEvent event ) {
+						if( listener != null )
+							listener.fieldDeleted( CustomField.this );
+					}
+				});
+				panel.add( a );
 			}
 			return panel;
 		}
@@ -193,7 +207,8 @@ public class CustomizableForm implements IsWidget {
 	
 	VerticalPanel panel = new VerticalPanel();
 	
-	List<CustomField> fields = new ArrayList<CustomField>();
+	Map<String,CustomField> fields = new HashMap<String,CustomField>();
+	//	List<CustomField> fields = new ArrayList<CustomField>();
 	
 	List<FieldListener> listeners = new ArrayList<FieldListener>();
 	
@@ -201,20 +216,26 @@ public class CustomizableForm implements IsWidget {
 		@Override
 		public void labelChanged( CustomField field ) {
 			// TODO restore this?
-//			Anchor a = new Anchor( "-" );
-//			a.setTitle( "Remove" );
-//			a.addClickHandler( new ClickWrapper<CustomField>( field ) {
-//				@Override
-//				public void onClick( ClickEvent event ) {
-//					fields.remove( getValue() );
-//					getValue().getEditor().asWidget().getParent().removeFromParent();
-//				}} );
-//			field.asWidget().add( a );
+			//			Anchor a = new Anchor( "-" );
+			//			a.setTitle( "Remove" );
+			//			a.addClickHandler( new ClickWrapper<CustomField>( field ) {
+			//				@Override
+			//				public void onClick( ClickEvent event ) {
+			//					fields.remove( getValue() );
+			//					getValue().getEditor().asWidget().getParent().removeFromParent();
+			//				}} );
+			//			field.asWidget().add( a );
 		}
 		@Override
 		public void valueChanged( CustomField field ) {
 			for( FieldListener l : listeners ) {
 				l.valueChanged( field );
+			}
+		}
+		@Override
+		public void fieldDeleted( CustomField field ) {
+			for( FieldListener l : listeners ) {
+				l.fieldDeleted( field );
 			}
 		}
 	};
@@ -243,12 +264,24 @@ public class CustomizableForm implements IsWidget {
 		return field;
 	}
 	
-	public Collection<CustomField> fields() {
-		return this.fields;
+	public Collection<String> fields() {
+		return this.fields.keySet();
+	}
+	
+	public CustomField getField( String key ) {
+		return fields.get( key );
 	}
 	
 	public void enableFastInsert() {
 		addField( "", "" );
+	}
+	
+	public void removeField( String key ) {
+		CustomField field = getField( key );
+		if( field != null ) {
+			field.asWidget().removeFromParent();
+			fields.remove( key );
+		}
 	}
 	
 }
