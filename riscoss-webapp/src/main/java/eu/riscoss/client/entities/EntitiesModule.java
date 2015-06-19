@@ -1,3 +1,24 @@
+/*
+   (C) Copyright 2013-2016 The RISCOSS Project Consortium
+   
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+*/
+
+/**
+ * @author 	Alberto Siena
+**/
+
 package eu.riscoss.client.entities;
 
 import org.fusesource.restygwt.client.JsonCallback;
@@ -31,8 +52,10 @@ import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.EntityInfo;
 import eu.riscoss.client.JsonCallbackWrapper;
+import eu.riscoss.client.JsonUtil;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.layers.LayersComboBox;
+import eu.riscoss.client.ui.ClickWrapper;
 import eu.riscoss.client.ui.EntityBox;
 import eu.riscoss.client.ui.LinkHtml;
 
@@ -72,6 +95,11 @@ public class EntitiesModule implements EntryPoint {
 			public SafeHtml getValue(EntityInfo object) {
 				return new LinkHtml( object.getName(), "javascript:selectEntity(\"" + object.getName() + "\")" ); };
 		}, "Entity");
+		table.addColumn( new Column<EntityInfo,SafeHtml>(new SafeHtmlCell() ) {
+			@Override
+			public SafeHtml getValue(EntityInfo object) {
+				return new LinkHtml( object.getLayer(), "" ); };
+		}, "Layer");
 		Column<EntityInfo,String> c = new Column<EntityInfo,String>(new ButtonCell() ) {
 			@Override
 			public String getValue(EntityInfo object) {
@@ -91,24 +119,14 @@ public class EntitiesModule implements EntryPoint {
 		
 		HorizontalPanel hpanel = new HorizontalPanel();
 		Anchor a = new Anchor( "Create new entity..." );
-		a.addClickHandler( new ClickHandler() {
+		a.addClickHandler( new ClickWrapper<String>( layer ) {
 			@Override
 			public void onClick(ClickEvent event) {
-				onCreateNewEntityClicked();
+				onCreateNewEntityClicked( getValue() );
 			}
 		});
 		hpanel.add( a );
-//		aDelete = new Anchor( "Delete this entity..." );
-//		aDelete.addClickHandler( new ClickHandler() {
-//			@Override
-//			public void onClick(ClickEvent event) {
-//				deleteSelectedEntity();
-//			}
-//		});
-//		aDelete.setEnabled( false );
-//		hpanel.add( aDelete );
 		hpanel.setWidth( "100%" );
-//		hpanel.setCellHorizontalAlignment( aDelete, HorizontalPanel.ALIGN_RIGHT );
 		
 		dock.add( hpanel, DockPanel.NORTH );
 		dock.add( table, DockPanel.CENTER );
@@ -117,9 +135,12 @@ public class EntitiesModule implements EntryPoint {
 		
 		table.setWidth( "100%" );
 		dock.setSize( "100%", "100%" );
+		dock.setCellHeight( hpanel, "1%" );
 		dock.setCellWidth( table, "40%" );
 		dock.setCellWidth( rightPanel, "100%" );
-//		ppg.asWidget().setVisible( false );
+		
+		dock.setCellVerticalAlignment( table, DockPanel.ALIGN_TOP );
+		dock.setVerticalAlignment( DockPanel.ALIGN_TOP );
 		
 		RootPanel.get().add( dock );
 		
@@ -136,8 +157,9 @@ public class EntitiesModule implements EntryPoint {
 				if( response.isArray() != null ) {
 					for( int i = 0; i < response.isArray().size(); i++ ) {
 						JSONObject o = (JSONObject)response.isArray().get( i );
-						insertEntityIntoTable(
-								o.get( "name" ).isString().stringValue() );
+						EntityInfo info = new EntityInfo( o.get( "name" ).isString().stringValue() );
+						info.setLayer( JsonUtil.getValue( o, "layer", "" ) );
+						insertEntityIntoTable( info );
 					}
 				}
 			}
@@ -162,11 +184,18 @@ public class EntitiesModule implements EntryPoint {
 	
 	class CreateEntityDialog {
 		
+		String layer;
+
+		CreateEntityDialog( String layer ) {
+			this.layer = layer;
+		}
+		
 		String getChosenName() {
 			return txt.getText().trim();
 		}
 		
 		String getChosenLayer() {
+			if( layer != null ) return layer;
 			return layersBox.getSelectedLayer();
 		}
 		
@@ -182,7 +211,9 @@ public class EntitiesModule implements EntryPoint {
 		
 		public void show() {
 			
-			layersBox = new LayersComboBox().preloaded();
+			if( layer == null )
+				layersBox = new LayersComboBox().preloaded();
+//			layersBox.setSelectedLayer( layer );
 			entityBox = new EntityBox();
 			
 			Grid grid = new Grid( 4, 2 );
@@ -192,7 +223,10 @@ public class EntitiesModule implements EntryPoint {
 			grid.setWidget( 0, 1, txt );
 			
 			grid.setWidget( 1, 0, new Label( "Layer:" ) );
-			grid.setWidget( 1, 1, layersBox );
+			if( layer == null )
+				grid.setWidget( 1, 1, layersBox );
+			else
+				grid.setWidget( 1, 1, new Label( layer ) );
 			grid.setWidget( 2, 0, new Label( "Parent entity:" ) );
 			
 			grid.setWidget( 3, 1, new Button( "Ok", new ClickHandler() {
@@ -206,7 +240,9 @@ public class EntitiesModule implements EntryPoint {
 						@Override
 						public void onSuccess(Method method, JSONValue response) {
 							String entity = response.isObject().get( "name" ).isString().stringValue();
-							insertEntityIntoTable( entity );
+							EntityInfo info = new EntityInfo( entity );
+							info.setLayer( JsonUtil.getValue( response, "layer", "" ) );
+							insertEntityIntoTable( info );
 							dialog.hide();
 						}} );
 				}
@@ -217,12 +253,12 @@ public class EntitiesModule implements EntryPoint {
 		}
 	}
 	
-	protected void onCreateNewEntityClicked() {
-		new CreateEntityDialog().show();
+	protected void onCreateNewEntityClicked( String layer ) {
+		new CreateEntityDialog( layer ).show();
 	}
 	
-	protected void insertEntityIntoTable( String name ) {
-		dataProvider.getList().add( new EntityInfo( name ) );
+	protected void insertEntityIntoTable( EntityInfo info ) {
+		dataProvider.getList().add( info );
 	}
 	
 	protected void deleteEntity( EntityInfo info ) {

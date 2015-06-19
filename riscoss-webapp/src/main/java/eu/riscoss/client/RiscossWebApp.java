@@ -1,3 +1,24 @@
+/*
+   (C) Copyright 2013-2016 The RISCOSS Project Consortium
+   
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+*/
+
+/**
+ * @author 	Alberto Siena
+**/
+
 package eu.riscoss.client;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -31,12 +52,12 @@ public class RiscossWebApp implements EntryPoint {
 		
 		item = root.addChild( new TreeWidget( new Label( "Run" ) ) );
 		item.addChild( new TreeWidget( new OutlineLabel( "One-layer Analysis", "analysis.html" ) ) );
-		item.addChild( new TreeWidget( new OutlineLabel( "Risk Analysis Session", "riskanalysis.html" ) ) );
+		item.addChild( new TreeWidget( new OutlineLabel( "Multi-layer Session", "riskanalysis.html" ) ) );
 		item.addChild( new TreeWidget( new OutlineLabel( "What-If Analysis", "whatifanalysis.html" ) ) );
 		
 		item = root.addChild( new TreeWidget( new Label( "Browse" ) ) );
 		item.addChild( new TreeWidget( new OutlineLabel( "Risk Data Repository", "rdr.html" ) ) );
-		item.addChild( new TreeWidget( new OutlineLabel( "Data Collectors", "rdcs.html" ) ) );
+		item.addChild( new TreeWidget( new OutlineLabel( "Risk Analysis Sessions", "ras.html" ) ) );
 		
 		VerticalPanel left = new VerticalPanel();
 		left.add( new Image( "logo3.png" ) );

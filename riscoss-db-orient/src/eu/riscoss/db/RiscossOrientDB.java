@@ -384,7 +384,7 @@ public class RiscossOrientDB implements RiscossDB {
 	
 	@Override
 	public Collection<String> entities() {
-		NodeID id = dom.get( "/entities" );
+		NodeID id = dom.create( "/entities" );
 		return dom.listOutEdgeNames( id, GDomDB.CHILDOF_CLASS, null, null );
 	}
 	
@@ -399,7 +399,10 @@ public class RiscossOrientDB implements RiscossDB {
 	public void addEntity( String name, String layer  ) {
 		dom.create( "/entities/" + name );
 		if( layer != null ) {
-			dom.link( "/layers/" + layer, "/entities/" + name, "contains" );
+			NodeID id = dom.get( "/layers/" + layer );
+			if( id != null ) {
+				dom.link( "/layers/" + layer, "/entities/" + name, "contains" );
+			}
 		}
 	}
 	
@@ -480,7 +483,6 @@ public class RiscossOrientDB implements RiscossDB {
 		dom.create( "/risk-configurations/" + rc + "/layers" );
 		int l = 0;
 		for( String layer : layerNames() ) {
-//		for( String layer : map.keySet() ) {
 			ArrayList<String> models = map.get( layer );
 			if( models == null ) continue;
 			if( models.size() < 1 ) continue;
@@ -565,9 +567,16 @@ public class RiscossOrientDB implements RiscossDB {
 		
 		NodeID id = dom.create( "/ras" );
 		
-		String query = "in.rc='" + rc + "' and in.target='" + entity + "'";
-		
-		return dom.listOutEdgeNames( id, GDomDB.CHILDOF_CLASS, null, null, query );
+		if( entity == null & rc == null ) {
+			return dom.listOutEdgeNames( id, GDomDB.CHILDOF_CLASS, null, null, null );
+		}
+		if( entity == null ) {
+			return dom.listOutEdgeNames( id, GDomDB.CHILDOF_CLASS, null, null, "in.rc='" + rc + "'" );
+		}
+		if( rc == null ) {
+			return dom.listOutEdgeNames( id, GDomDB.CHILDOF_CLASS, null, null, "in.target='" + entity + "'" );
+		}
+		return dom.listOutEdgeNames( id, GDomDB.CHILDOF_CLASS, null, null, "in.rc='" + rc + "' and in.target='" + entity + "'" );
 	}
 	
 	@Override
@@ -584,7 +593,8 @@ public class RiscossOrientDB implements RiscossDB {
 	@Override
 	public void destroyRAS( String ras ) {
 		NodeID id = dom.get( "/ras/" + ras );
-		dom.deleteVertex( id );
+		if( id != null )
+			dom.deleteVertex( id );
 	}
 	
 }

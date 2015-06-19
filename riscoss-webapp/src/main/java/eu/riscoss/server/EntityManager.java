@@ -1,3 +1,24 @@
+/*
+   (C) Copyright 2013-2016 The RISCOSS Project Consortium
+   
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+*/
+
+/**
+ * @author 	Alberto Siena
+**/
+
 package eu.riscoss.server;
 
 import java.util.Map;
@@ -38,6 +59,7 @@ public class EntityManager {
 			for( String name : db.entities() ) {
 				JsonObject o = new JsonObject();
 				o.addProperty( "name", name );
+				o.addProperty( "layer", db.layerOf( name ) );
 				a.add( o );
 			}
 		}
@@ -46,7 +68,7 @@ public class EntityManager {
 		}
 		
 		return a.toString();
- 
+		
 	}
 	
 	@GET
@@ -60,6 +82,7 @@ public class EntityManager {
 			for( String name : db.entities( layer ) ) {
 				JsonObject o = new JsonObject();
 				o.addProperty( "name", name );
+				o.addProperty( "layer", layer );
 				a.add( o );
 			}
 		}
@@ -68,7 +91,7 @@ public class EntityManager {
 		}
 		
 		return a.toString();
- 
+		
 	}
 	
 	@GET
@@ -113,7 +136,7 @@ public class EntityManager {
 				String rdcName = entry.getKey();
 				JsonObject o = entry.getValue().getAsJsonObject();
 				
-//				Do we need to add this check?
+				//				Do we need to add this check?
 				if( RDCFactory.get().getRDC( rdcName ) == null ) continue;
 				
 				boolean enabled = false;
@@ -157,7 +180,7 @@ public class EntityManager {
 				}
 			}
 			ret.addProperty( "name", name );
-			ret.addProperty( "layer", "layer" );
+			ret.addProperty( "layer", layer );
 			ret.addProperty( "parent", parent );
 			System.out.println( ret.toString() );
 			return ret.toString(); //Response.ok(ret, MediaType.APPLICATION_JSON).build();
@@ -209,6 +232,7 @@ public class EntityManager {
 		RiscossDB db = DBConnector.openDB();
 		try {
 			JsonObject json = new JsonObject();
+			String msg = "Data successfully stored in the data repository";
 			for( RDC rdc : RDCFactory.get().listRDCs() ) {
 				String rdcName = rdc.getName();
 				boolean enabled = db.isRDCEnabled( entityName, rdcName );
@@ -218,23 +242,32 @@ public class EntityManager {
 						rdc.setParameter( par.getName(), 
 								db.getRDCParmeter( entityName, rdcName, par.getName(), "" ) );
 					}
-					Map<String,RiskData> values = rdc.getIndicators( entityName );
-					for( String key : values.keySet() ) {
-						RiskData rd = values.get( key );
-						try {
-							db.storeRiskData( rd.toJSON() );
-						} catch (Exception e) {
-							e.printStackTrace();
+					try {
+						Map<String,RiskData> values = rdc.getIndicators( entityName );
+						if( values == null ) {
+							throw new Exception( "The RDC '" + rdcName + "' returned an empty map for the entity '" + entityName + "'" );
 						}
-						JsonObject jrd = new JsonObject();
-						jrd.addProperty( "type", rd.getType().name() );
-						jrd.addProperty( "date", rd.getDate().toString() );
-						jrd.addProperty( "value", rd.getValue().toString() );
-						o.add( key, jrd );
+						for( String key : values.keySet() ) {
+							RiskData rd = values.get( key );
+							try {
+								db.storeRiskData( rd.toJSON() );
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+						o.addProperty( "result", "ok" );
+						json.add( rdcName, o );
 					}
-					json.add( rdcName, o );
+					catch( Exception ex ) {
+						ex.printStackTrace();
+						msg = "Some data were not gathered and/or stored in the RDR";
+						o.addProperty( "result", "error" );
+						o.addProperty( "error-message", ex.getMessage() );
+						json.add( rdcName, o );
+					}
 				}
 			}
+			json.addProperty( "msg", msg );
 			System.out.println( "Returning: " + json.toString() );
 			return json.toString();
 		}
@@ -286,7 +319,7 @@ public class EntityManager {
 				array.add(  o );
 			}
 			json.add( "list", array );
-//			return json.toString();
+			//			return json.toString();
 		}
 		finally {
 			DBConnector.closeDB( db );

@@ -1,3 +1,24 @@
+/*
+   (C) Copyright 2013-2016 The RISCOSS Project Consortium
+   
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+*/
+
+/**
+ * @author 	Alberto Siena
+**/
+
 package eu.riscoss.client.entities;
 
 import org.fusesource.restygwt.client.JsonCallback;
@@ -44,33 +65,6 @@ public class RDCConfigurationPage implements IsWidget {
 		RootPanel.get().add( dock );
 		
 		HorizontalPanel hpanel = new HorizontalPanel();
-		
-//		hpanel.add( new Button( "Save entity", new ClickHandler() {
-//			@Override
-//			public void onClick(ClickEvent event) {
-//				saveRDCs();
-//			}} ) );
-		
-//		hpanel.add( new Button( "Delete entity", new ClickHandler() {
-//			@Override
-//			public void onClick(ClickEvent event) {
-//				RiscossJsonClient.deleteEntity( entity, new JsonCallback() {
-//					@Override
-//					public void onSuccess(Method method, JSONValue response) {
-//						dock.setVisible( false );
-//					}
-//					@Override
-//					public void onFailure(Method method, Throwable exception) {
-//						Window.alert( exception.getMessage() );
-//					}
-//				} );
-//			}} ) );
-		
-//		hpanel.add( new Button( "Run Data Collectors now", new ClickHandler() {
-//			@Override
-//			public void onClick(ClickEvent event) {
-//				runRDCs();
-//			}} ) );
 		
 		dock.add( hpanel, DockPanel.NORTH );
 	}

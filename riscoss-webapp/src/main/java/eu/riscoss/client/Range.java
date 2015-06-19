@@ -1,3 +1,24 @@
+/*
+   (C) Copyright 2013-2016 The RISCOSS Project Consortium
+   
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+*/
+
+/**
+ * @author 	Alberto Siena
+**/
+
 package eu.riscoss.client;
 
 
@@ -5,7 +26,6 @@ public class Range {
 	private double min = 0;
 	private double max = 1;
 	private double intervals = 100;
-//	private double step = 0.01;
 	
 	public Range() {}
 	
@@ -13,69 +33,18 @@ public class Range {
 		this.min = min;
 		this.max = max;
 		this.intervals = intervals;
-//		this.step = (max - min) / (double)intervals;
 	}
 	
 	public String toString() {
 		return min + ";" + max + ";" + intervals;
 	}
-//	public static Range mk( String str ) {
-//		String parts[] = str.split( "[;]" );
-//		Range r = new Range();
-//		try {
-//			r.min = Double.parseDouble( parts[0] );
-//			r.max = Double.parseDouble( parts[1] );
-//			r.step = Double.parseDouble( parts[2] );
-//		}
-//		catch( Exception ex ) {
-//			ex.printStackTrace();
-//		}
-//		return r;
-//	}
-//	public double getDouble( int src ) {
-//		return (src * step);
-//	}
-//	public double getDouble( double d ) {
-//		return getDouble( (int)d );
-//	}
-//	public int getInt( int src ) {
-//		return (int)(src * step);
-//	}
-//	public int getInt( double d ) {
-//		return getInt( (int)d );
-//	}
 	public double getSliderMin() {
 		return 0;
-//		return (int)(min / step);
 	}
 	public double getSliderMax() {
 		return intervals;
-//		return (int)(max / step);
 	}
-//	public int getSliderStep() {
-//		return (int)step;
-//	}
-//	public void setMin( String val ) {
-//		try {
-//			min = Double.parseDouble( val );
-//		}
-//		catch( Exception ex ) {}
-//	}
-//	public void setMax( String val ) {
-//		try {
-//			max = Double.parseDouble( val );
-//		}
-//		catch( Exception ex ) {}
-//	}
-//	public void setStep( String val ) {
-//		try {
-//			step = Double.parseDouble( val );
-//		}
-//		catch( Exception ex ) {}
-//	}
-
 	public double getValue( int value ) {
-//		Window.alert( min + " + (((" + max + " - " + min + ") / " + intervals + ") * " + value + ") = " + (min + (((max - min) / intervals) * value)) );
 		return min + (((max - min) / intervals) * value);
 	}
 }
