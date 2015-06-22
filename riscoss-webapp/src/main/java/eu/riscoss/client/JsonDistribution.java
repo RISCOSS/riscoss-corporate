@@ -74,4 +74,8 @@ public class JsonDistribution {
 			diff = diff();
 		}
 	}
+
+	public void setValues( List<Double> v ) {
+		this.values = v;
+	}
 }

@@ -218,6 +218,9 @@ public class WhatIfAnalysisModule implements EntryPoint {
 						rw.setValue( v );
 //						rw.setValue( v.get( "p" ).isString().stringValue(), v.get( "m" ).isString().stringValue() );
 					}
+					else if( "distribution".equals( v.get( "datatype" ).isString().stringValue() ) ) {
+						rw.setValue( v );
+					}
 				}
 			}} );
 	}

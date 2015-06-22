@@ -44,6 +44,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.JsonCallbackWrapper;
+import eu.riscoss.client.RASInfo;
 import eu.riscoss.client.ui.LinkHtml;
 
 public class RASSelectionPanel implements IsWidget {
@@ -52,8 +53,8 @@ public class RASSelectionPanel implements IsWidget {
 
 	DockPanel panel = new DockPanel();
 	
-	CellTable<String>		table;
-	ListDataProvider<String>	dataProvider;
+	CellTable<RASInfo>		table;
+	ListDataProvider<RASInfo>	dataProvider;
 
 	private String selectedEntity;
 
@@ -63,27 +64,27 @@ public class RASSelectionPanel implements IsWidget {
 		
 		exportJS();
 		
-		table = new CellTable<String>();
+		table = new CellTable<RASInfo>();
 		
-		table.addColumn( new Column<String,SafeHtml>(new SafeHtmlCell() ) {
+		table.addColumn( new Column<RASInfo,SafeHtml>(new SafeHtmlCell() ) {
 			@Override
-			public SafeHtml getValue(String object) {
-				return new LinkHtml( object, "javascript:setSelectedRAS(\"" + object + "\")" ); };
+			public SafeHtml getValue(RASInfo object) {
+				return new LinkHtml( object.getName(), "javascript:setSelectedRAS(\"" + object.getId() + "\")" ); };
 		}, "Available Risk Analysis Sessions");
-		Column<String,String> c = new Column<String,String>(new ButtonCell() ) {
+		Column<RASInfo,String> c = new Column<RASInfo,String>(new ButtonCell() ) {
 			@Override
-			public String getValue(String object) {
+			public String getValue(RASInfo object) {
 				return "Delete";
 			}};
-			c.setFieldUpdater(new FieldUpdater<String, String>() {
+			c.setFieldUpdater(new FieldUpdater<RASInfo, String>() {
 				@Override
-				public void update(int index, String object, String value) {
+				public void update(int index, RASInfo object, String value) {
 					deleteRAS( object );
 				}
 			});
 			table.addColumn( c, "");
 		
-		dataProvider = new ListDataProvider<String>();
+		dataProvider = new ListDataProvider<RASInfo>();
 		dataProvider.addDataDisplay( table );
 		
 		Button button = new Button( "Create New" );
@@ -99,8 +100,8 @@ public class RASSelectionPanel implements IsWidget {
 		
 	}
 	
-	protected void deleteRAS( String ras ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/analysis/session/" + ras + "/delete" ).delete().send( new JsonCallbackWrapper<String>( ras ) {
+	protected void deleteRAS( RASInfo info ) {
+		new Resource( GWT.getHostPageBaseURL() + "api/analysis/session/" + info.getId() + "/delete" ).delete().send( new JsonCallbackWrapper<RASInfo>( info ) {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				
@@ -131,9 +132,14 @@ public class RASSelectionPanel implements IsWidget {
 	}
 	
 	protected void onNewSessionRequested() {
+		String name = Window.prompt( "Session name (leave empty for auto-generated name)", selectedRC + " - " + selectedEntity );
+		if( name == null ) return;
+		name = name.trim();
+		if( "".equals( name ) ) return;
 		new Resource( GWT.getHostPageBaseURL() + "api/analysis/session/new" )
 			.addQueryParam( "target", selectedEntity )
 			.addQueryParam( "rc", selectedRC )
+			.addQueryParam( "name", name )
 			.post().send( new JsonCallback() {
 				@Override
 				public void onFailure( Method method, Throwable exception ) {
@@ -141,7 +147,9 @@ public class RASSelectionPanel implements IsWidget {
 				}
 				@Override
 				public void onSuccess( Method method, JSONValue response ) {
-					dataProvider.getList().add( response.isObject().get( "id" ).isString().stringValue() );
+					dataProvider.getList().add( 
+							new RASInfo( response ) );
+//							response.isObject().get( "id" ).isString().stringValue() );
 				}} );
 	}
 
@@ -168,8 +176,11 @@ public class RASSelectionPanel implements IsWidget {
 				if( response.isArray() != null ) {
 					for( int i = 0; i < response.isArray().size(); i++ ) {
 						JSONObject o = (JSONObject)response.isArray().get( i );
-						dataProvider.getList().add( new String( 
-								o.get( "id" ).isString().stringValue() ) );
+						dataProvider.getList().add( 
+								new RASInfo( o ) );
+//								new String( 
+//								o.get( "name" ).isString().stringValue() ) );
+//								o.get( "id" ).isString().stringValue() ) );
 					}
 				}
 			}

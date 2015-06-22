@@ -46,6 +46,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
+import eu.riscoss.db.RecordAbstraction;
 import eu.riscoss.db.RiscossDB;
 import eu.riscoss.db.RiskAnalysisSession;
 import eu.riscoss.db.TimeDiff;
@@ -91,9 +92,10 @@ public class AnalysisManager {
 		try {
 			JsonObject json = new JsonObject();
 			JsonArray array = new JsonArray();
-			for( String ras : db.listRAS( entity,  rc ) ) {
+			for( RecordAbstraction record : db.listRAS( entity,  rc ) ) {
 				JsonObject o = new JsonObject();
-				o.addProperty( "id", ras );
+				o.addProperty( "id", record.getName() );
+				o.addProperty( "name", record.getProperty( "name", record.getName() ) );
 				array.add( o );
 			}
 			json.add( "list", array );
@@ -108,7 +110,8 @@ public class AnalysisManager {
 	@Path("/session/new")
 	public String createSession(
 			@QueryParam("rc") String rc,
-			@QueryParam("target") String target
+			@QueryParam("target") String target,
+			@QueryParam("name") String name
 			) {
 		RiscossDB db = DBConnector.openDB();
 		try {
@@ -128,6 +131,9 @@ public class AnalysisManager {
 			// setup risk configuration
 			ras.setRCName( rc );
 			ras.setRCModels( db.getRCModels( rc ) );
+			if( name != null )
+				ras.setName( name );
+			else ras.setName( ras.getId() );
 			
 			cacheRDRData( ras, db );
 			
@@ -135,6 +141,7 @@ public class AnalysisManager {
 			
 			JsonObject ret = new JsonObject();
 			ret.addProperty( "id", ras.getId() );
+			ret.addProperty( "name", ras.getName() );
 			
 			return ret.toString();
 			
@@ -647,9 +654,15 @@ public class AnalysisManager {
 				String value = o.get( "value" ).getAsString();
 				Field f = rae.getField( c, FieldType.INPUT_VALUE );
 				switch( f.getDataType() ) {
-				case DISTRIBUTION:
+				case DISTRIBUTION: {
+					Distribution d = Distribution.unpack( value );
+					f.setValue( d );
+				}
 					break;
-				case EVIDENCE:
+				case EVIDENCE: {
+					Evidence e = Evidence.unpack( value );
+					f.setValue( e );
+				}
 					break;
 				case INTEGER:
 					f.setValue( (int)Double.parseDouble( value ) );
@@ -676,62 +689,11 @@ public class AnalysisManager {
 		
 		JsonArray ret = encodeResults( rae );
 		
-//		{
-//			ret = new JsonArray();
-//			
-//			for( Chunk c : rae.queryModel( ModelSlice.OUTPUT_DATA ) ) {
-//				Field f = rae.getField( c, FieldType.OUTPUT_VALUE );
-//				JsonObject o = new JsonObject();
-//				o.addProperty( "id", c.getId() );
-//				o.addProperty( "datatype", f.getDataType().name().toLowerCase() );
-//				switch( f.getDataType() ) {
-//				case EVIDENCE: {
-//					Evidence e = f.getValue();
-//					o.addProperty( "p", "" + e.getPositive() );
-//					o.addProperty( "m", "" + e.getNegative() );
-////					if( "full".equals( options.getProperty( "verbosity", "" ) ) ) {
-//						JsonObject je = new JsonObject();
-//						je.addProperty( "p", e.getPositive() );
-//						je.addProperty( "m", e.getNegative() );
-//						je.addProperty( "e", e.getDirection() );
-////						je.addProperty( "c", e.getConflict() );
-////						je.addProperty( "s", e.getStrength() );
-//						o.add( "e", je );
-////						o.addProperty( "description", "" + rae.getField( c, FieldType.DESCRIPTION ).getValue() );
-////						o.addProperty( "label", "" + rae.getField( c, FieldType.LABEL ).getValue() );
-////					}
-//				}
-//				break;
-//				case DISTRIBUTION: {
-//					Distribution d = f.getValue();
-//					JsonArray values = new JsonArray();
-//					for( int i = 0; i <  d.getValues().size(); i++ ) {
-//						values.add( new JsonPrimitive( "" + d.getValues().get( i ) ) );
-//					}
-//					o.add( "value", values );
-//				}
-//				break;
-//				case INTEGER:
-//					o.addProperty( "value", f.getValue().toString() );
-//					break;
-//				case NaN:
-//					break;
-//				case REAL:
-//					o.addProperty( "value", f.getValue().toString() );
-//					break;
-//				case STRING:
-//					o.addProperty( "value", f.getValue().toString() );
-//					break;
-//				default:
-//					break;
-//				}
-//				ret.add( o );
-//			}
-//		}
-		
 		JsonObject o = new JsonObject();
 		
 		o.add( "results", ret );
+		
+		System.out.println( o.toString() );
 		
 		return o.toString();
 		

@@ -74,7 +74,8 @@ public interface RiscossDB {
 	public abstract RiskAnalysisSession createRAS();
 	public abstract void saveRAS( RiskAnalysisSession ras );
 	public abstract RiskAnalysisSession openRAS( String sid );
-	public abstract List<String> listRAS( String entity, String rc );
+//	public abstract List<String> listRAS( String entity, String rc );
+	public abstract List<RecordAbstraction> listRAS( String entity, String rc );
 	public abstract void destroyRAS( String ras );
 	
 	public abstract void close();

@@ -69,6 +69,16 @@ public class OrientRAS implements RiskAnalysisSession {
 	}
 	
 	@Override
+	public void setName( String name ) {
+		setAttribute( path(), "name", name );
+	}
+	
+	@Override
+	public String getName() {
+		return getAttribute( path(), "name", id );
+	}
+	
+	@Override
 	public void setLayers( Collection<String> layers ) {
 		dom.deleteChildren( path() + "/layers" );
 		for( String layer : layers ) {

@@ -67,4 +67,7 @@ public interface RiskAnalysisSession {
 	
 	Map<String, Object> getResult( String layer, String entity, String indicator );
 	
+	void setName( String name );
+	String getName();
+	
 }

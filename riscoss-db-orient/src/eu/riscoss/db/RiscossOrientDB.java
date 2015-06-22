@@ -12,6 +12,7 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.sql.OSQLEngine;
 import com.orientechnologies.orient.core.sql.functions.OSQLFunction;
 import com.orientechnologies.orient.graph.sql.functions.OGraphFunctionFactory;
@@ -562,8 +563,8 @@ public class RiscossOrientDB implements RiscossDB {
 		return new OrientRAS( dom );
 	}
 	
-	@Override
-	public List<String> listRAS( String entity, String rc ) {
+//	@Override
+	public List<String> listRAS_old( String entity, String rc ) {
 		
 		NodeID id = dom.create( "/ras" );
 		
@@ -577,6 +578,56 @@ public class RiscossOrientDB implements RiscossDB {
 			return dom.listOutEdgeNames( id, GDomDB.CHILDOF_CLASS, null, null, "in.target='" + entity + "'" );
 		}
 		return dom.listOutEdgeNames( id, GDomDB.CHILDOF_CLASS, null, null, "in.rc='" + rc + "' and in.target='" + entity + "'" );
+	}
+	
+	static class OrientRecordAbstraction implements RecordAbstraction {
+
+		private ODocument doc;
+
+		@Override
+		public String getName() {
+			return doc.field( "tag" );
+		}
+
+		@Override
+		public String getProperty( String key, String def ) {
+			String ret = doc.field( key );
+			if( ret == null ) ret = def;
+			return ret;
+		}
+
+		public void load( ODocument doc ) {
+			this.doc = doc;
+		}
+		
+	}
+	
+	@Override
+	public List<RecordAbstraction> listRAS( String entity, String rc ) {
+		
+		NodeID id = dom.create( "/ras" );
+		
+		final AttributeProvider<RecordAbstraction> ap = new AttributeProvider<RecordAbstraction>() {
+			
+			OrientRecordAbstraction staticRecordAbstraction = new OrientRecordAbstraction();
+			
+			@Override
+			public RecordAbstraction getValue( ODocument doc ) {
+				staticRecordAbstraction.load( doc );
+				return staticRecordAbstraction;
+			}
+		};
+		
+		if( entity == null & rc == null ) {
+			return dom.listOutEdgeNames( id, GDomDB.CHILDOF_CLASS, null, null, null, ap );
+		}
+		if( entity == null ) {
+			return dom.listOutEdgeNames( id, GDomDB.CHILDOF_CLASS, null, null, "in.rc='" + rc + "'", ap );
+		}
+		if( rc == null ) {
+			return dom.listOutEdgeNames( id, GDomDB.CHILDOF_CLASS, null, null, "in.target='" + entity + "'", ap );
+		}
+		return dom.listOutEdgeNames( id, GDomDB.CHILDOF_CLASS, null, null, "in.rc='" + rc + "' and in.target='" + entity + "'", ap );
 	}
 	
 	@Override

@@ -37,6 +37,7 @@ import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.IsWidget;
@@ -49,6 +50,7 @@ import com.kiouri.sliderbar.client.solution.adv.AdvancedSliderBar;
 import com.kiouri.sliderbar.client.view.SliderBar;
 
 import eu.riscoss.client.JsonDistribution;
+import eu.riscoss.client.Log;
 import eu.riscoss.client.Range;
 
 public class IndicatorWidget implements IsWidget {
@@ -219,6 +221,8 @@ public class IndicatorWidget implements IsWidget {
 			List<Double> v = distribution.getValues();
 			v.set( bar, val );
 			distribution.flatten( bar );
+			distribution.setValues( v ); // not needed because distribution.getValues() returns a reference
+			this.bars = mkBars( distribution, mleft, mtop, canvas.getCoordinateSpaceWidth() -(mleft + mright), canvas.getCoordinateSpaceHeight() -(mtop + mbottom) );
 			Context2d g = canvas.getContext2d();
 			g.clearRect( 0, 0, canvas.getCoordinateSpaceWidth(), canvas.getCoordinateSpaceHeight() );
 			paint( distribution, g, mleft, mtop, canvas.getCoordinateSpaceWidth() -(mleft + mright), canvas.getCoordinateSpaceHeight() -(mtop + mbottom) );
@@ -298,6 +302,8 @@ public class IndicatorWidget implements IsWidget {
 
 		@Override
 		String getValue() {
+			if( bars.length == 5 )
+				Log.println( distribution.toString() );
 			return distribution.toString();
 		}
 		
@@ -356,12 +362,10 @@ public class IndicatorWidget implements IsWidget {
 	
 	List<Listener>		listeners = new ArrayList<Listener>();
 	
-//	private JSONObject	json;
 	
 	
 	public IndicatorWidget( JSONObject o ) {
 		
-//		this.json = o;
 		String datatype = o.get( "datatype" ).isString().stringValue();
 		
 		if( "REAL".equals( datatype ) )
@@ -381,8 +385,6 @@ public class IndicatorWidget implements IsWidget {
 		
 		panel.add( h );
 		
-//		Window.alert( "" + o );
-		
 	}
 	
 	public Widget asWidget() {
@@ -400,12 +402,12 @@ public class IndicatorWidget implements IsWidget {
 	}
 
 	public void setValue( JSONObject v ) {
-//		Window.alert( "" + v );
 		try {
+//			Log.println( "Setting value " + v );
 			this.field.setValue( v );
 		}
 		catch( Exception ex ) {
-//			Window.alert( ex.getMessage() );
+			Window.alert( ex.getMessage() );
 		}
 	}
 }

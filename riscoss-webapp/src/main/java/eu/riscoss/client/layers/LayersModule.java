@@ -59,10 +59,11 @@ public class LayersModule implements EntryPoint {
 		String name;
 	}
 	
-	DockPanel dock = new DockPanel();
-	
-	TreeWidget tree = new TreeWidget();
-	FramePanel bottom = new FramePanel( "" );
+	DockPanel			dock = new DockPanel();
+	HorizontalPanel		hpanel = new HorizontalPanel();
+	TreeWidget			tree = new TreeWidget();
+	FramePanel			bottom = new FramePanel( "" );
+	LayerPropertyPage	ppg = new LayerPropertyPage();
 	
 	public void onModuleLoad() {
 		
@@ -139,7 +140,13 @@ public class LayersModule implements EntryPoint {
 	    
 	    dock.add( menuBar, DockPanel.NORTH );
 	    dock.add( bottom.getWidget(), DockPanel.SOUTH );
+//	    SimplePanel sp = new SimplePanel();
+//	    sp.setWidget( tree );
+//	    hpanel.add( tree );
+//	    hpanel.add( ppg );
 		dock.add( tree, DockPanel.CENTER );
+//		dock.add( ppg, DockPanel.EAST );
+//		dock.setCellWidth( ppg, "50%" );
 		
 		dock.setCellWidth( tree, "100%" );
 		dock.setCellHeight( tree, "50%" );
