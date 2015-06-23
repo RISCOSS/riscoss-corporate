@@ -61,13 +61,14 @@ public class RiscossWebApp implements EntryPoint {
 		
 		VerticalPanel left = new VerticalPanel();
 		left.add( new Image( "logo3.png" ) );
+		left.setHeight("20%"); // any value here seems to resolve the firefox problem of showing only a small frame on the right side
 		left.add( root );
 		
 		dock = new DockPanel();
 		dock.setWidth( "100%" );
 		dock.add( left, DockPanel.WEST );
 		dock.setCellWidth( left, "222px" );
-		dock.setHeight( "90%" ); // <- not 100% to allow the "recompile" icon of iframes to appear
+		dock.setHeight( "95%" ); // <- not 100% to allow the "recompile" icon of iframes to appear
 		
 		RootPanel.get().add( dock );
 		
@@ -96,8 +97,8 @@ public class RiscossWebApp implements EntryPoint {
 		currentPanel = new FramePanel( url );
 		
 		if( currentPanel != null ) {
+			//currentPanel.getWidget().setSize("100%","100%"); 
 			dock.add( currentPanel.getWidget(), DockPanel.CENTER );
-//			currentPanel.getWidget().getParent().setHeight( "100%" );
 			currentPanel.activate();
 		}
 	}

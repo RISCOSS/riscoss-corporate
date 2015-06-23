@@ -112,7 +112,7 @@
 		<dependency>
 			<groupId>eu.riscoss</groupId>
 			<artifactId>riscoss-dispatcher</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.24-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.riscoss</groupId>

@@ -7,7 +7,7 @@
 	<groupId>riscoss-webapp</groupId>
 	<artifactId>riscoss-webapp</artifactId>
 	<packaging>war</packaging>
-	<version>0.0.2-SNAPSHOT</version>
+	<version>0.0.4-SNAPSHOT</version>
 	<name>RISCOSS Web App</name>
 
 	<properties>
@@ -107,22 +107,22 @@
 		<dependency>
 			<groupId>eu.riscoss</groupId>
 			<artifactId>riscoss-api</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.24-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.riscoss</groupId>
 			<artifactId>riscoss-dispatcher</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.24-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.riscoss</groupId>
 			<artifactId>riscoss-fbk</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.24-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.riscoss</groupId>
 			<artifactId>riscoss-kpa</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.24-SNAPSHOT</version>
 		</dependency>
 		<!-- Smile.jar -->
 		<dependency>
@@ -166,6 +166,11 @@
 		<dependency>
 			<groupId>eu.riscoss.rdc</groupId>
 			<artifactId>riscoss-rdc-maven</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.riscoss.rdc</groupId>
+			<artifactId>riscoss-rdc-olex</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 

@@ -1,7 +1,10 @@
-.settings
+.settings/
 .classpath
 .project
-*.class
+**.launch
+.class
+classes/
+bin/
 maven-status
 gwt-unitCache
 */target/*
