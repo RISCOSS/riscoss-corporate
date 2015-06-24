@@ -7,5 +7,5 @@ classes/
 bin/
 maven-status
 gwt-unitCache
+riscoss-webapp/src/main/webapp/WEB-INF/lib/riscoss-*
 */target/*
-
