@@ -54,6 +54,7 @@ import eu.riscoss.client.ui.EntityBox;
 import eu.riscoss.client.JsonCallbackWrapper;
 import eu.riscoss.client.JsonEntitySummary;
 import eu.riscoss.client.JsonRiskDataList;
+import eu.riscoss.client.Log;
 import eu.riscoss.client.RiscossJsonClient;
 
 public class EntityPropertyPage implements IsWidget {
@@ -198,16 +199,26 @@ public class EntityPropertyPage implements IsWidget {
 					RiscossJsonClient.runRDCs( EntityPropertyPage.this.entity, new JsonCallback() {
 						@Override
 						public void onSuccess(Method method, JSONValue response) {
+							try {
+							Log.println( "RDC Collector returned " + response );
 							JSONObject json = response.isObject();
 							String msg = json.get( "msg" ).isString().stringValue();
+							Log.println( "Iterating..." );
 							for( String rdc : json.keySet() ) {
+								Log.println( rdc );
 								JSONObject o = json.get( rdc ).isObject();
 								if( o == null ) continue;
 								if( "error".equals( o.get( "result" ).isString().stringValue() ) ) {
 									msg += " " + rdc + ": " + o.get( "error-message" ).isString().stringValue();
 								}
+								Log.println( "Ok" );
 							}
+							Log.println( "MSG: " + msg );
 							Window.alert( msg );
+							}
+							catch( Exception ex ) {
+								Window.alert( ex.getMessage() );
+							}
 						}
 						@Override
 						public void onFailure(Method method, Throwable exception) {

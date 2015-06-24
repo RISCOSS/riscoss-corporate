@@ -4,7 +4,13 @@
     "http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
-
+	
+	<!-- Uncomment this to enable the support for multiple domains -->
+<!-- 	<context-param> -->
+<!-- 		<param-name>eu.riscoss.param.domains.list</param-name> -->
+<!-- 		<param-value>Playground,FBK,Cenatic,OW2.TEI,UPC</param-value> -->
+<!-- 	</context-param> -->
+	
 	<!-- Servlets -->
 	<servlet>
 		<servlet-name>RiscossWebApp</servlet-name>
@@ -26,9 +32,9 @@
 		<servlet-name>uploadServlet</servlet-name>
 		<servlet-class>eu.riscoss.server.UploadServiceImpl</servlet-class>
 	</servlet>
-	
+
 	<!-- Servlet mappings -->
-	
+
 	<servlet-mapping>
 		<servlet-name>RiscossWebApp</servlet-name>
 		<url-pattern>/api/*</url-pattern>

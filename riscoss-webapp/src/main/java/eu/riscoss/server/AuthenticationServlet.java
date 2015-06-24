@@ -49,7 +49,7 @@ public class AuthenticationServlet extends HttpServlet {
 	 */
 	protected void doGet( HttpServletRequest req, HttpServletResponse resp ) {
 		
-		Params params = new Params( req.getQueryString() );
+//		Params params = new Params( req.getQueryString() );
 		
 	}
 	

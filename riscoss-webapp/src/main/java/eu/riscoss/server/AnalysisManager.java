@@ -693,7 +693,7 @@ public class AnalysisManager {
 		
 		o.add( "results", ret );
 		
-		System.out.println( o.toString() );
+//		System.out.println( o.toString() );
 		
 		return o.toString();
 		
