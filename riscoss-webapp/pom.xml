@@ -78,7 +78,7 @@
 		<dependency>
 			<groupId>com.googlecode.gwtupload</groupId>
 			<artifactId>gwtupload</artifactId>
-			<version>1.0.3</version>
+			<version>1.0.1</version><!--downgraded from 1.0.3 to aviod firefox reloading problem-->
 		</dependency>
 		<dependency>
 			<groupId>commons-fileupload</groupId>
