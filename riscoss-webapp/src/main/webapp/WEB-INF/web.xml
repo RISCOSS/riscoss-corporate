@@ -11,6 +11,11 @@
 <!-- 		<param-value>Playground,FBK,Cenatic,OW2,TEI,UPC</param-value> -->
 <!-- 	</context-param> -->
 	
+	<context-param>
+		<param-name>eu.riscoss.db.address</param-name>
+		<param-value>plocal:/Users/albertosiena/temp/riscoss-db</param-value>
+	</context-param>
+	
 	<!-- Servlets -->
 	<servlet>
 		<servlet-name>RiscossWebApp</servlet-name>

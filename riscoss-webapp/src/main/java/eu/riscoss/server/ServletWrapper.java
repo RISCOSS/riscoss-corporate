@@ -21,9 +21,13 @@
 
 package eu.riscoss.server;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Set;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -39,30 +43,58 @@ import eu.riscoss.rdc.RDCRunner;
 
 public class ServletWrapper extends ServletContainer {
 	
-//	private static Logger logger;
+	private static final long serialVersionUID = 2410335502314521014L;
 	
-	static {
-		DBConnector.closeDB( DBConnector.openDB() );
+	@SuppressWarnings("unused")
+	public void init() throws ServletException {
 		
-		Reflections reflections = new Reflections( RDCRunner.class.getPackage().getName() );
-		
-		Set<Class<? extends RDC>> subTypes = reflections.getSubTypesOf(RDC.class);
-		
-		for( Class<? extends RDC> cls : subTypes ) {
-			try {
-				RDC rdc = (RDC)cls.newInstance();
-				RDCFactory.get().registerRDC( rdc );
+		{
+			ServletContext sc = getServletContext();
+			
+			String dbaddr = getInitParameter( "eu.riscoss.db.address" );
+			
+			if( dbaddr == null ) {
+				File location = new File( "/Users/albertosiena" );
+				
+				if( new File( location, "temp" ).exists() ) {
+					dbaddr = "plocal:" + location.getAbsolutePath() + "/temp/riscoss-db";
+				}
+				else {
+					try {
+						location = DBConnector.findLocation( DBConnector.class );
+						String directory = URLDecoder.decode( location.getAbsolutePath(), "UTF-8" );
+						dbaddr = "plocal:" + directory + "/riscoss-db";
+					} catch (UnsupportedEncodingException e) {
+						e.printStackTrace();
+						dbaddr = "plocal:riscoss-db";
+					}
+				}
+				
+				if( dbaddr == null )
+					dbaddr = "plocal:riscoss-db";
+				
+				System.out.println( "Using database " + dbaddr );
 			}
-			catch( Exception ex ) {}
+			
+			DBConnector.db_addr = dbaddr;
+			
+			DBConnector.closeDB( DBConnector.openDB() );
+			
+			Reflections reflections = new Reflections( RDCRunner.class.getPackage().getName() );
+			
+			Set<Class<? extends RDC>> subTypes = reflections.getSubTypesOf(RDC.class);
+			
+			for( Class<? extends RDC> cls : subTypes ) {
+				try {
+					RDC rdc = (RDC)cls.newInstance();
+					RDCFactory.get().registerRDC( rdc );
+				}
+				catch( Exception ex ) {}
+			}
 		}
 		
-//		String nameOfLogger = ServletWrapper.class.getName();
-
-//		logger = Logger.getLogger(nameOfLogger);
-
+		super.init();
 	}
-	
-	private static final long serialVersionUID = 2410335502314521014L;
 	
 	public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
 		

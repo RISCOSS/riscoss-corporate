@@ -129,9 +129,6 @@ public class AnalysisManager {
 			gatherEntityTree( target, db, ras );
 			
 			{
-				for( RecordAbstraction record : db.listRAS( null, null ) ) {
-					System.out.println( record.getName() );
-				}
 				String uniqueName = name;
 				int i = 0;
 				while( db.existsRAS( uniqueName ) == true ) {
