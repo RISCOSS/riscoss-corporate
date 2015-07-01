@@ -14,9 +14,11 @@ import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.JsonCallbackWrapper;
@@ -64,7 +66,14 @@ public class RASModule implements EntryPoint {
 		dataProvider = new ListDataProvider<RASInfo>();
 		dataProvider.addDataDisplay( table );
 		
-		panel.add( table, DockPanel.CENTER );
+		SimplePager pager = new SimplePager();
+	    pager.setDisplay( table );
+	    
+		VerticalPanel tablePanel = new VerticalPanel();
+		tablePanel.add( table );
+		tablePanel.add( pager );
+		
+		panel.add( tablePanel, DockPanel.CENTER );
 		
 		RootPanel.get().add( panel );
 		

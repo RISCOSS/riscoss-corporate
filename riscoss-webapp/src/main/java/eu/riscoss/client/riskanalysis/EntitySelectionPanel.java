@@ -34,12 +34,16 @@ import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.EntityInfo;
+import eu.riscoss.client.JsonUtil;
+import eu.riscoss.client.ui.HtmlString;
 import eu.riscoss.client.ui.LinkHtml;
 
 class EntitySelectionPanel implements IsWidget {
@@ -50,26 +54,40 @@ class EntitySelectionPanel implements IsWidget {
 		
 	}
 	
-	CellTable<EntityInfo>			entityTable;
+	CellTable<EntityInfo>			table;
 	ListDataProvider<EntityInfo>	entityDataProvider;
 	ArrayList<Listener>				listeners = new ArrayList<Listener>();
 	
 	String							selectedEntity = "";
 	
+	VerticalPanel					tablePanel = new VerticalPanel();
+	
 	public EntitySelectionPanel() {
 		
 		exportJS();
 		
-		entityTable = new CellTable<EntityInfo>();
+		table = new CellTable<EntityInfo>();
 		
-		entityTable.addColumn( new Column<EntityInfo,SafeHtml>(new SafeHtmlCell() ) {
+		table.addColumn( new Column<EntityInfo,SafeHtml>(new SafeHtmlCell() ) {
 			@Override
 			public SafeHtml getValue(EntityInfo object) {
 				return new LinkHtml( object.getName(), "javascript:setSelectedEntity(\"" + object.getName() + "\")" ); };
 		}, "Entities");
+		table.addColumn( new Column<EntityInfo,SafeHtml>(new SafeHtmlCell() ) {
+			@Override
+			public SafeHtml getValue(EntityInfo object) {
+				return new HtmlString( "" + object.getLayer() ); };
+		}, "Layer");
 		
 		entityDataProvider = new ListDataProvider<EntityInfo>();
-		entityDataProvider.addDataDisplay(entityTable);
+		entityDataProvider.addDataDisplay(table);
+		
+		SimplePager pager = new SimplePager();
+	    pager.setDisplay( table );
+	    
+		tablePanel.add( table );
+		tablePanel.add( pager );
+		
 	}
 	
 	public void setSelectedEntity( String entity ) {
@@ -96,8 +114,9 @@ class EntitySelectionPanel implements IsWidget {
 				if( response.isArray() != null ) {
 					for( int i = 0; i < response.isArray().size(); i++ ) {
 						JSONObject o = (JSONObject)response.isArray().get( i );
-						entityDataProvider.getList().add( new EntityInfo( 
-								o.get( "name" ).isString().stringValue() ) );
+						EntityInfo info = new EntityInfo( o.get( "name" ).isString().stringValue() );
+						info.setLayer( JsonUtil.getValue( o, "layer", "" ) );
+						entityDataProvider.getList().add( info );
 					}
 				}
 				
@@ -113,7 +132,7 @@ class EntitySelectionPanel implements IsWidget {
 	
 	@Override
 	public Widget asWidget() {
-		return entityTable;
+		return tablePanel;
 	}
 	
 	public void addSelectionListener( Listener listener ) {

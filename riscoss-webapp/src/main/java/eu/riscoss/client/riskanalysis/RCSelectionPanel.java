@@ -32,8 +32,10 @@ import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
 
@@ -42,24 +44,32 @@ import eu.riscoss.client.ui.LinkHtml;
 
 class RCSelectionPanel implements IsWidget {
 	
-	CellTable<ModelInfo>		modelTable;
+	CellTable<ModelInfo>		table;
 	ListDataProvider<ModelInfo>	modelDataProvider;
 	String						selectedRC;
+	
+	VerticalPanel tablePanel = new VerticalPanel();
 	
 	public RCSelectionPanel() {
 		
 		exportJS();
 		
-		modelTable = new CellTable<ModelInfo>();
+		table = new CellTable<ModelInfo>();
 		
-		modelTable.addColumn( new Column<ModelInfo,SafeHtml>(new SafeHtmlCell() ) {
+		table.addColumn( new Column<ModelInfo,SafeHtml>(new SafeHtmlCell() ) {
 			@Override
 			public SafeHtml getValue(ModelInfo object) {
 				return new LinkHtml( object.getName(), "javascript:setSelectedRC(\"" + object.getName() + "\")" ); };
 		}, "Available Risk Configurations");
 		
 		modelDataProvider = new ListDataProvider<ModelInfo>();
-		modelDataProvider.addDataDisplay(modelTable);
+		modelDataProvider.addDataDisplay(table);
+		
+		SimplePager pager = new SimplePager();
+	    pager.setDisplay( table );
+	    
+		tablePanel.add( table );
+		tablePanel.add( pager );
 		
 	}
 	
@@ -100,7 +110,7 @@ class RCSelectionPanel implements IsWidget {
 
 	@Override
 	public Widget asWidget() {
-		return modelTable;
+		return tablePanel;
 	}
 
 	public String getSelectedRC() {
