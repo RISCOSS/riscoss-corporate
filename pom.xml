@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>riscoss-webapp</groupId>
+	<artifactId>riscoss-webapp-container</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<name>RISCOSS Web App - Parent POM</name>
+
+	<modules>
+		<module>../riscoss-analyser/riscoss-platform-risk-analyser</module>
+		<module>riscoss-db</module>
+		<module>riscoss-db-orient</module>
+		<module>../riscoss-data-collector</module>
+		<module>riscoss-webapp</module>
+	</modules>
+
+</project>
