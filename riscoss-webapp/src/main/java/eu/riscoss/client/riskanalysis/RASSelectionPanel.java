@@ -36,10 +36,12 @@ import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
 
@@ -95,8 +97,15 @@ public class RASSelectionPanel implements IsWidget {
 			}
 		});
 		
+		SimplePager pager = new SimplePager();
+	    pager.setDisplay( table );
+	    
+		VerticalPanel tablePanel = new VerticalPanel();
+		tablePanel.add( table );
+		tablePanel.add( pager );
+		
 		panel.add( button, DockPanel.NORTH );
-		panel.add( table, DockPanel.CENTER );
+		panel.add( tablePanel, DockPanel.CENTER );
 		
 	}
 	

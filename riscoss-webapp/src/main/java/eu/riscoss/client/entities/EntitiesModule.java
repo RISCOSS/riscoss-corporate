@@ -37,6 +37,7 @@ import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
@@ -48,6 +49,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.EntityInfo;
@@ -128,18 +130,24 @@ public class EntitiesModule implements EntryPoint {
 		hpanel.add( a );
 		hpanel.setWidth( "100%" );
 		
-		dock.add( hpanel, DockPanel.NORTH );
-		dock.add( table, DockPanel.CENTER );
-		dock.add( rightPanel, DockPanel.EAST );
+		SimplePager pager = new SimplePager();
+	    pager.setDisplay( table );
+	    
+		VerticalPanel tablePanel = new VerticalPanel();
+		tablePanel.add( table );
+		tablePanel.add( pager );
 		
+		dock.add( hpanel, DockPanel.NORTH );
+		dock.add( tablePanel, DockPanel.CENTER );
+		dock.add( rightPanel, DockPanel.EAST );
 		
 		table.setWidth( "100%" );
 		dock.setSize( "100%", "100%" );
 		dock.setCellHeight( hpanel, "1%" );
-		dock.setCellWidth( table, "40%" );
+		dock.setCellWidth( tablePanel, "40%" );
 		dock.setCellWidth( rightPanel, "100%" );
 		
-		dock.setCellVerticalAlignment( table, DockPanel.ALIGN_TOP );
+		dock.setCellVerticalAlignment( tablePanel, DockPanel.ALIGN_TOP );
 		dock.setVerticalAlignment( DockPanel.ALIGN_TOP );
 		
 		RootPanel.get().add( dock );

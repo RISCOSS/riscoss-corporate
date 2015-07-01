@@ -43,6 +43,7 @@ import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
@@ -171,11 +172,18 @@ public class ModelsModule implements EntryPoint {
 				}
 			});
 			
-			dock.add( table, DockPanel.CENTER );
+			SimplePager pager = new SimplePager();
+		    pager.setDisplay( table );
+		    
+			VerticalPanel tablePanel = new VerticalPanel();
+			tablePanel.add( table );
+			tablePanel.add( pager );
+			
+			dock.add( tablePanel, DockPanel.CENTER );
 			dock.add( uploader, DockPanel.NORTH );
 			dock.add( rightPanel, DockPanel.EAST );
 			
-			dock.setCellWidth( table, "40%" );
+			dock.setCellWidth( tablePanel, "40%" );
 			dock.setCellHeight( rightPanel, "100%" );
 			table.setWidth( "100%" );
 			
