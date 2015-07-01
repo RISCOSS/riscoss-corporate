@@ -30,10 +30,10 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.json.client.JSONValue;
+import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -43,10 +43,10 @@ import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
-import eu.riscoss.client.riskanalysis.KeyValueGrid;
 import eu.riscoss.client.ui.ClickWrapper;
 import eu.riscoss.client.ui.FramePanel;
 import eu.riscoss.client.ui.TreeWidget;
+import eu.riscoss.shared.CookieNames;
 
 public class RiscossWebApp implements EntryPoint {
 	
@@ -55,28 +55,41 @@ public class RiscossWebApp implements EntryPoint {
 	FramePanel currentPanel = null;
 	
 	public void onModuleLoad() {
-//		new Resource( GWT.getHostPageBaseURL() + "api/domains/selected" ).get().send( new JsonCallback() {
-//			@Override
-//			public void onSuccess( Method method, JSONValue response ) {
-//				if( response == null ) showDomainSelectionDialog();
-//				else if( response.isString() == null ) showDomainSelectionDialog();
-//				else showUI();
-//			}
-//			@Override
-//			public void onFailure( Method method, Throwable exception ) {
-//				Window.alert( exception.getMessage() );
-//			}
-//		});
-//	}
-//	
-//	void showUI() {
+		String domain = Cookies.getCookie( CookieNames.DOMAIN_KEY );
+		Log.println( "Current domain: " + domain );
+		new Resource( GWT.getHostPageBaseURL() + "api/domains/selected" )
+		.addQueryParam( "domain", domain )
+		.post().send( new JsonCallback() {
+			@Override
+			public void onSuccess( Method method, JSONValue response ) {
+				Log.println( "Domain check response: " + response );
+				if( response == null ) showDomainSelectionDialog();
+				else if( response.isString() == null ) showDomainSelectionDialog();
+//				else if( !"Ok".equals( response.isString().stringValue() ) )
+//					showDomainSelectionDialog();
+				else showUI( response.isString().stringValue() );
+			}
+			@Override
+			public void onFailure( Method method, Throwable exception ) {
+				Window.alert( exception.getMessage() );
+			}
+		});
+	}
+	
+	void showUI() {
+		showUI( "" );
+	}
+	
+	void showUI( String domain ) {
+		
+		Log.println( "Loading UI for domain " + domain );
 		
 		TreeWidget root = new TreeWidget();
 		
 		TreeWidget item;
 		
 //		item = root.addChild( new TreeWidget( new Label( "Select" ) ) );
-//		item.addChild( new TreeWidget( new OutlineLabel( "Domain", new ClickHandler() {
+//		item.addChild( new TreeWidget( new OutlineLabel( "Domain (" + domain + ")", new ClickHandler() {
 //			@Override
 //			public void onClick( ClickEvent event ) {
 //				showDomainSelectionDialog();
@@ -117,12 +130,6 @@ public class RiscossWebApp implements EntryPoint {
 		VerticalPanel panel = new VerticalPanel();
 		
 		DomainSelectionDialog() {
-//			addDomainOption( "Playground" );
-//			addDomainOption( "FBK" );
-//			addDomainOption( "Cenatic" );
-//			addDomainOption( "OW2" );
-//			addDomainOption( "TEI" );
-//			addDomainOption( "UPC" );
 		}
 		
 		private void addDomainOption( String name ) {
@@ -142,6 +149,11 @@ public class RiscossWebApp implements EntryPoint {
 					.post().send( new JsonCallback() {
 				@Override
 				public void onSuccess( Method method, JSONValue response ) {
+					if( response == null ) return;
+					if( response.isString() == null ) return;
+//					if( !"Ok".equals( response.isString().stringValue() ) ) return;
+					Log.println( "Domain set to " + response.isString().stringValue() );
+					Cookies.setCookie( CookieNames.DOMAIN_KEY, response.isString().stringValue() );
 					Window.Location.reload();
 				}
 				@Override

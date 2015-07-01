@@ -31,9 +31,7 @@ import com.google.gson.JsonParser;
 
 import eu.riscoss.dataproviders.RiskData;
 import eu.riscoss.dataproviders.RiskDataType;
-import eu.riscoss.db.RiscossDB;
 import eu.riscoss.db.RiskAnalysisSession;
-import eu.riscoss.db.TimeDiff;
 import eu.riscoss.reasoner.Chunk;
 import eu.riscoss.reasoner.DataType;
 import eu.riscoss.reasoner.Distribution;
@@ -50,12 +48,12 @@ import eu.riscoss.shared.AnalysisResult;
 public class AnalysisProcess {
 	
 	// TODO: remove any reference to the DB; the session must be self-contained
-	RiscossDB db;
+//	RiscossDB db;
 	
 	Date date = new Date();
 	
-	public AnalysisProcess( RiscossDB db ) {
-		this.db = db;
+	public AnalysisProcess() {
+//		this.db = db;
 	}
 	
 	public void start( RiskAnalysisSession session ) {
@@ -68,7 +66,7 @@ public class AnalysisProcess {
 	
 	private void analyseEntity( String target, RiskAnalysisSession session ) {
 		
-		// TODO restore
+		// TODO restore?
 		//		// First, analyse all sub-configurations
 		//		// The result is stored in context.results
 		//		for( Configuration rc : session.getRiskConfiguration().subConfigurations() ) {
@@ -92,19 +90,20 @@ public class AnalysisProcess {
 	
 	private void analyseEntity( String target, String rc, String layer, RiskAnalysisSession session ) {
 		
-		TimeDiff.get().log( "Analysing entity " + target );
+//		TimeDiff.get().log( "Analysing entity " + target );
 		
 		RiskAnalysisEngine rae = ReasoningLibrary.get().createRiskAnalysisEngine();
 		
 		// Load all models at given layer and run risk analysis
 		for( String rc_name : session.getModels( layer ) ) {
-			String blob = db.getModelBlob( rc_name );
+//			String blob = db.getModelBlob( rc_name );
+			String blob = session.getStoredModelBlob( rc_name );
 			rae.loadModel( blob );
 		}
 		
 		List<MissingDataItem> missingFields = new ArrayList<>();
 		
-		TimeDiff.get().log( "Models loaded" );
+//		TimeDiff.get().log( "Models loaded" );
 		
 		for( Chunk c : rae.queryModel( ModelSlice.INPUT_DATA ) ) {
 			
@@ -241,7 +240,7 @@ public class AnalysisProcess {
 			ex.printStackTrace();
 		}
 		
-		TimeDiff.get().log( "Analysis executed" );
+//		TimeDiff.get().log( "Analysis executed" );
 		
 		for( Chunk c : rae.queryModel( ModelSlice.OUTPUT_DATA ) ) {
 			Field f = rae.getField( c, FieldType.OUTPUT_VALUE );
@@ -281,7 +280,7 @@ public class AnalysisProcess {
 			}
 		}
 		
-		TimeDiff.get().log( "Output saved" );
+//		TimeDiff.get().log( "Output saved" );
 		
 		session.setStatus( target, AnalysisResult.Done.name() );
 	}

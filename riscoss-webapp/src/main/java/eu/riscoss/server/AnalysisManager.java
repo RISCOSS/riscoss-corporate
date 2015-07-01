@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.ws.rs.Consumes;
@@ -49,7 +50,6 @@ import com.google.gson.JsonPrimitive;
 import eu.riscoss.db.RecordAbstraction;
 import eu.riscoss.db.RiscossDB;
 import eu.riscoss.db.RiskAnalysisSession;
-import eu.riscoss.db.TimeDiff;
 import eu.riscoss.reasoner.Chunk;
 import eu.riscoss.reasoner.DataType;
 import eu.riscoss.reasoner.Distribution;
@@ -128,12 +128,35 @@ public class AnalysisManager {
 			// setup entities
 			gatherEntityTree( target, db, ras );
 			
+			{
+				for( RecordAbstraction record : db.listRAS( null, null ) ) {
+					System.out.println( record.getName() );
+				}
+				String uniqueName = name;
+				int i = 0;
+				while( db.existsRAS( uniqueName ) == true ) {
+					i++;
+					uniqueName = name + " (" + i + ")";
+				}
+				name = uniqueName;
+			}
+			
 			// setup risk configuration
 			ras.setRCName( rc );
 			ras.setRCModels( db.getRCModels( rc ) );
 			if( name != null )
 				ras.setName( name );
 			else ras.setName( ras.getId() );
+			
+			// store models content
+			Map<String,ArrayList<String>> map = db.getRCModels( rc );
+			for( String layer : db.layerNames() ) {
+				ArrayList<String> models = map.get( layer );
+				if( models == null ) models = new ArrayList<String>();
+				for( String model : models ) {
+					ras.storeModelBlob( model, layer, db.getModelBlob( model ) );
+				}
+			}
 			
 			cacheRDRData( ras, db );
 			
@@ -302,14 +325,14 @@ public class AnalysisManager {
 		
 		try {
 			
-			TimeDiff.get().init();
-			TimeDiff.get().log( "Initializing analysis" );
+//			TimeDiff.get().init();
+//			TimeDiff.get().log( "Initializing analysis" );
 			
 			// Create a new risk analysis session
 			RiskAnalysisSession ras = db.openRAS( sid );
 			
-			TimeDiff.get().log( "Starting analysis process" );
-			AnalysisProcess proc = new AnalysisProcess( db );
+//			TimeDiff.get().log( "Starting analysis process" );
+			AnalysisProcess proc = new AnalysisProcess();
 			
 			// Apply analysis algorithm
 			proc.start( ras );
@@ -317,17 +340,17 @@ public class AnalysisManager {
 			// Save session (in case of in-memory sessions)
 			db.saveRAS( ras );
 			
-			TimeDiff.get().log( "Encoding analysis results" );
+//			TimeDiff.get().log( "Encoding analysis results" );
 			JsonObject res = getAnalysisResults( ras );
 			
 			String ret = res.toString();
 			
-			TimeDiff.get().log( "Caching analysis results" );
+//			TimeDiff.get().log( "Caching analysis results" );
 			ras.saveResults( ret );
 			
 			ras.setTimestamp( new Date().getTime() );
 			
-			TimeDiff.get().log( "Analysis done" );
+//			TimeDiff.get().log( "Analysis done" );
 			
 			return ret;
 			

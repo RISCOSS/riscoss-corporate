@@ -27,6 +27,8 @@ import java.util.Set;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.reflections.Reflections;
@@ -63,7 +65,16 @@ public class ServletWrapper extends ServletContainer {
 	private static final long serialVersionUID = 2410335502314521014L;
 	
 	public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
-//		logger.info( this.getClass().getSimpleName() + ".service()" );
+		
+		try {
+			HttpServletRequest httpReq = (HttpServletRequest) req;
+			for( Cookie cookie : httpReq.getCookies() ) {
+				DBConnector.setThreadLocalValue( cookie.getName(), cookie.getValue() );
+			}
+		}
+		catch( Exception ex ) {}
+		
 		super.service( req, res );
+		
 	}
 }

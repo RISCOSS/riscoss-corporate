@@ -51,6 +51,7 @@ public interface RiscossDB {
 	 * Risk Configurations
 	 */
 	public abstract Collection<String>				getRiskConfigurations();
+	public abstract boolean							existsRAS( String rc );
 	public abstract void							createRiskConfiguration(String name);
 	public abstract void							removeRiskConfiguration(String name);
 	public abstract List<String>					getModelsFromRiskCfg( String rc_name , String entity  );

@@ -24,9 +24,11 @@ package eu.riscoss.server;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.HashMap;
 
 import eu.riscoss.db.RiscossDB;
 import eu.riscoss.db.RiscossOrientDB;
+import eu.riscoss.shared.CookieNames;
 
 public class DBConnector {
 	
@@ -37,10 +39,7 @@ public class DBConnector {
 		File location = new File( "/Users/albertosiena" );
 		
 		if( new File( location, "temp" ).exists() ) {
-//			location = new File( location, "temp" );
-//			if( location.exists() ) {
-				db_addr = "plocal:" + location.getAbsolutePath() + "/temp/riscoss-db";
-//			}
+			db_addr = "plocal:" + location.getAbsolutePath() + "/temp/riscoss-db";
 		}
 		else {
 			try {
@@ -50,7 +49,6 @@ public class DBConnector {
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 				db_addr = "plocal:riscoss-db";
-//				db_addr = "plocal:" + location.getAbsolutePath() + "/riscoss-db";
 			}
 		}
 		
@@ -77,10 +75,27 @@ public class DBConnector {
 		return new File( new File( s ).getParent() );
 	}
 	
+	static ThreadLocal<HashMap<String,String>> threadMap = new ThreadLocal<>();
 	
+	public static synchronized void setThreadLocalValue( String key, String value ) {
+		HashMap<String,String> map = threadMap.get();
+		if( map == null ) {
+			map = new HashMap<String,String>();
+			threadMap.set( map );
+		}
+		map.put( key, value );
+	}
+	
+	public static synchronized String getThreadLocalValue( String key, String def ) {
+		HashMap<String,String> map = threadMap.get();
+		if( map == null )return def;
+		String ret = map.get( key );
+		if( ret == null ) return def;
+		return ret;
+	}
 	
 	static RiscossDB openDB() {
-		return new RiscossOrientDB( db_addr, "Public Domain" );
+		return new RiscossOrientDB( db_addr, getThreadLocalValue( CookieNames.DOMAIN_KEY, "Public Domain" ) );
 	}
 	
 	static void closeDB( RiscossDB db ) {

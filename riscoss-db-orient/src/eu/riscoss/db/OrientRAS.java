@@ -305,4 +305,16 @@ public class OrientRAS implements RiskAnalysisSession {
 		return null;
 	}
 	
+	@Override
+	public void storeModelBlob( String name, String layer, String blob ) {
+		dom.create( path() + "/models/" + name );
+		setAttribute( path() + "/models/" + name, "layer", layer );
+		setAttribute( path() + "/models/" + name, "blob", blob );
+	}
+	
+	@Override
+	public String getStoredModelBlob( String modelName ) {
+		return getAttribute( path() + "/models/" + modelName, "blob", null );
+	}
+	
 }

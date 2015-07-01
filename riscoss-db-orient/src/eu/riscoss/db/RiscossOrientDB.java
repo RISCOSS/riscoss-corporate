@@ -647,5 +647,12 @@ public class RiscossOrientDB implements RiscossDB {
 		if( id != null )
 			dom.deleteVertex( id );
 	}
+
+	@Override
+	public boolean existsRAS( String ras ) {
+		NodeID root = dom.get( "/ras" );
+		if( root == null ) return false;
+		return dom.listOutEdgeNames( root, GDomDB.CHILDOF_CLASS, null, null, "in.name='" + ras + "'" ).size() > 0;
+	}
 	
 }

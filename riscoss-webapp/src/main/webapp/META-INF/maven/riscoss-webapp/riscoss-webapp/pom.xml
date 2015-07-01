@@ -7,7 +7,7 @@
 	<groupId>riscoss-webapp</groupId>
 	<artifactId>riscoss-webapp</artifactId>
 	<packaging>war</packaging>
-	<version>0.0.4-SNAPSHOT</version>
+	<version>0.0.5-SNAPSHOT</version>
 	<name>RISCOSS Web App</name>
 
 	<properties>
@@ -171,6 +171,11 @@
 		<dependency>
 			<groupId>eu.riscoss.rdc</groupId>
 			<artifactId>riscoss-rdc-olex</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.riscoss.rdc</groupId>
+			<artifactId>riscoss-rdc-omm</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 

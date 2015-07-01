@@ -69,5 +69,8 @@ public interface RiskAnalysisSession {
 	
 	void setName( String name );
 	String getName();
+
+	void storeModelBlob( String name, String layer, String blob);
+	String getStoredModelBlob( String model );
 	
 }
