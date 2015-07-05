@@ -57,5 +57,9 @@ public class JsonRiskAnalysis {
 	public String getDate() {
 		return getAttribute( json, "timestamp", "" );
 	}
+
+	public String getName() {
+		return getAttribute( json, "name", getID() );
+	}
 	
 }

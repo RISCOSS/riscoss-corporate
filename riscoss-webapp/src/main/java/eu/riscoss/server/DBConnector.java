@@ -32,32 +32,6 @@ public class DBConnector {
 	
 	static String db_addr = null;
 	
-//	static {
-//		
-//		File location = new File( "/Users/albertosiena" );
-//		
-//		if( new File( location, "temp" ).exists() ) {
-//			db_addr = "plocal:" + location.getAbsolutePath() + "/temp/riscoss-db";
-//		}
-//		else {
-//			try {
-//				location = findLocation( DBConnector.class );
-//				String directory = URLDecoder.decode( location.getAbsolutePath(), "UTF-8" );
-//				db_addr = "plocal:" + directory + "/riscoss-db";
-//			} catch (UnsupportedEncodingException e) {
-//				e.printStackTrace();
-//				db_addr = "plocal:riscoss-db";
-//			}
-//		}
-//		
-//		
-//		if( db_addr == null )
-//			db_addr = "plocal:riscoss-db";
-//		
-//		System.out.println( db_addr );
-//		
-//	}
-	
 	public static File findLocation( Class<?> cls ) {
 		String t = cls.getPackage().getName() + ".";
 		String clsname = cls.getName().substring( t.length() );

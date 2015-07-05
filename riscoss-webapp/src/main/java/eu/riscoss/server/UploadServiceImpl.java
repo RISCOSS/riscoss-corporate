@@ -38,28 +38,26 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload.FileItem;
 
 public class UploadServiceImpl extends UploadAction {
-
+	
 	interface Action {
 		public String executeAction(HttpServletRequest request, List<FileItem> sessionFiles) throws UploadActionException;
 	}
-
+	
 	private static final long serialVersionUID = 1L;
-
+	
 	Map<String,Action> actions = new HashMap<String,Action>();
-
+	
 	class ModelUploader implements Action {
 
 		@Override
 		public String executeAction(HttpServletRequest request,
 				List<FileItem> sessionFiles) throws UploadActionException {
 			String response = "";
-//			int cont = 0;
 
 			RiscossDB db = DBConnector.openDB();
 
 			for (FileItem item : sessionFiles) {
 				if (false == item.isFormField()) {
-//					cont ++;
 					try {
 						String name = request.getParameter( "name" );
 						
@@ -67,9 +65,6 @@ public class UploadServiceImpl extends UploadAction {
 							name = item.getName();
 						}
 						
-						/// Create a temporary file placed in the default system temp folder
-//						File file = File.createTempFile("upload-", ".bin");
-
 						db.storeModel( item.getString(), name );
 
 						response = name; //file.getName();
@@ -89,11 +84,11 @@ public class UploadServiceImpl extends UploadAction {
 		}
 
 	}
-
+	
 	public UploadServiceImpl() {
 		actions.put( "modelblob", new ModelUploader() );
 	}
-
+	
 	/**
 	 * Override executeAction to save the received files in a custom place
 	 * and delete this items from session.  
@@ -110,7 +105,7 @@ public class UploadServiceImpl extends UploadAction {
 
 		return "";
 	}
-
+	
 	/**
 	 * Get the content of an uploaded file.
 	 */
@@ -128,7 +123,7 @@ public class UploadServiceImpl extends UploadAction {
 			DBConnector.closeDB( db );
 		}
 	}
-
+	
 	@Override
 	public void removeItem( HttpServletRequest request, String fieldName )  throws UploadActionException {
 		RiscossDB db = DBConnector.openDB();

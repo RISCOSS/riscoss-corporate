@@ -19,6 +19,12 @@
 	
 	<!-- Servlets -->
 	<servlet>
+		<servlet-name>SecurityServlet</servlet-name>
+		<servlet-class>eu.riscoss.server.SecurityServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	
+	<servlet>
 		<servlet-name>RiscossWebApp</servlet-name>
 		<!--servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class -->
 		<servlet-class>eu.riscoss.server.ServletWrapper</servlet-class>
@@ -40,6 +46,11 @@
 	</servlet>
 
 	<!-- Servlet mappings -->
+
+	<servlet-mapping>
+		<servlet-name>SecurityServlet</servlet-name>
+		<url-pattern>*.html</url-pattern>
+	</servlet-mapping>
 
 	<servlet-mapping>
 		<servlet-name>RiscossWebApp</servlet-name>

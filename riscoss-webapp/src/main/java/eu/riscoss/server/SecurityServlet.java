@@ -21,11 +21,19 @@
 
 package eu.riscoss.server;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class AuthenticationServlet extends HttpServlet {
+import org.apache.commons.io.IOUtils;
+
+public class SecurityServlet extends HttpServlet {
 	
 	private static final long serialVersionUID = 2410335502314521014L;
 	
@@ -47,9 +55,49 @@ public class AuthenticationServlet extends HttpServlet {
 	i think ur answer is partially correct(suaitable when the url-pattern defines a exact path match) but Connie has correctly mentioned both the scenario when the url pattern defines a)directory matching(eg. /sample/*) b)exact path matching(eg /sample/test)
 	So the answer of the question really depends on how the url-pattern is configured in web.xml
 	 */
+	protected void service( HttpServletRequest req, HttpServletResponse resp ) throws ServletException, IOException {
+		
+		User user = SecurityManager.get().getUser( req );
+		
+		if( SecurityManager.get().canAccess( user, req.getRequestURI() ) ) {
+			
+			System.out.println( "User '" + user.username + "' can access resource '" + req.getRequestURI() + "'" );
+			
+			super.service( req, resp );
+			
+		}
+		else {
+			if( !user.isLoggedIn() ) {
+//			TODO send login page
+			}
+			else {
+//			TODO Send unauthorized access page
+			}
+		}
+	}
+	
 	protected void doGet( HttpServletRequest req, HttpServletResponse resp ) {
 		
-//		Params params = new Params( req.getQueryString() );
+		File file = new File( req.getSession().getServletContext().getRealPath("/") + req.getRequestURI() );
+		
+		if( !file.exists() ) {
+			String filename = file.getName().toLowerCase();
+			if( filename.endsWith( ".html" ) ) {
+				
+			}
+		}
+		
+		if( file.exists() ) try {
+			InputStream is = new FileInputStream( file );
+			IOUtils.copy( is, resp.getOutputStream() );
+		}
+		catch( IOException e ) {
+			e.printStackTrace();
+		}
+		else {
+			// Redirect somewhere?
+			System.out.println( "File " + file.getAbsolutePath() + " not found" );
+		}
 		
 	}
 	

@@ -7,15 +7,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.codehaus.jettison.json.JSONObject;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.orientechnologies.orient.core.record.impl.ODocument;
+import com.orientechnologies.orient.core.sql.OCommandSQL;
 import com.orientechnologies.orient.core.sql.OSQLEngine;
 import com.orientechnologies.orient.core.sql.functions.OSQLFunction;
 import com.orientechnologies.orient.graph.sql.functions.OGraphFunctionFactory;
+import com.tinkerpop.blueprints.Vertex;
 
 public class RiscossOrientDB implements RiscossDB {
 	
@@ -653,6 +656,72 @@ public class RiscossOrientDB implements RiscossDB {
 		NodeID root = dom.get( "/ras" );
 		if( root == null ) return false;
 		return dom.listOutEdgeNames( root, GDomDB.CHILDOF_CLASS, null, null, "in.name='" + ras + "'" ).size() > 0;
+	}
+
+	public void execute( String cmd ) {
+		dom.graph.getRawGraph().command(new OCommandSQL(cmd)).execute();
+	}
+	
+	@Override
+	public void createRole( String name ) {
+		execute( "INSERT INTO orole SET name = '" + name + "', mode = 0" );
+	}
+
+	@Override
+	public List<String> listRoles() {
+		List<ODocument> list = dom.querySynch( "SELECT FROM orole" );
+		return new GenericNodeCollection<String>( list, new AttributeProvider<String>() {
+			@Override
+			public String getValue( ODocument doc ) {
+				return doc.field( "name" );
+			}} );
+	}
+
+	@Override
+	public List<String> listUsers() {
+		List<ODocument> list = dom.querySynch( "SELECT FROM ouser" );
+		return new GenericNodeCollection<String>( list, new AttributeProvider<String>() {
+			@Override
+			public String getValue( ODocument doc ) {
+				return doc.field( "name" );
+			}} );
+	}
+	
+	public void createUser( String username, String password ) throws Exception {
+		if( password.length() < 5 )
+			throw new Exception( "Password must be at least 5 characters." );
+		
+		if( existsUser( username ) )
+			throw new Exception( "User '" + username + "' already exists" );
+		
+		UUID uuid = UUID.randomUUID();
+		
+		execute( "INSERT INTO ouser " + 
+				"SET name = '" + username + "', " + 
+				"password = '" + password + "', " +
+				"status = 'ACTIVE', " + 
+				"roles = (SELECT FROM ORole WHERE name = 'admin'), " + 
+				"domain = '" + uuid.toString() + "'" );
+		
+		Vertex root = dom.graph.addVertex( GDomDB.ROOT_CLASS, (String)null );
+		root.setProperty( "tag", uuid.toString() );
+		dom.graph.commit();
+	}
+	
+	public void chpwd( String user, String new_pwd ) {
+		execute( 
+				"UPDATE ouser SET password = '" + new_pwd + "' WHERE name = '" + user + "'" );
+	}
+	
+	public void changeRole( String role ) {
+		execute( "UPDATE orole SET inheritedRole = (SELECT FROM orole WHERE name = 'writer') WHERE name = 'appuser'" );
+	}
+
+	public boolean existsUser( String username ) {
+		List<ODocument> list = dom.querySynch( "SELECT FROM ouser WHERE username='" + username + "'" );
+		if( list == null ) return false;
+		if( list.size() < 1 ) return false;
+		return true;
 	}
 	
 }

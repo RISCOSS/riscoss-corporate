@@ -76,6 +76,7 @@ public class RASPanel implements IsWidget {
 		
 		KeyValueGrid grid = new KeyValueGrid();
 		
+		grid.add( "Name:", new Label( ras.getName() ) );
 		grid.add( "ID:", new Label( ras.getID() ) );
 		grid.add( "Risk configuration:", new Label( ras.getRC() ) );
 		grid.add( "Target entity:", new Label( ras.getTarget() ) );

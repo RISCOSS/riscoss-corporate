@@ -9,7 +9,6 @@ import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.CellTable;
@@ -22,8 +21,9 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.JsonCallbackWrapper;
-import eu.riscoss.client.RASInfo;
+import eu.riscoss.client.codec.RASInfoCodec;
 import eu.riscoss.client.ui.LinkHtml;
+import eu.riscoss.shared.RASInfo;
 
 public class RASModule implements EntryPoint {
 
@@ -91,12 +91,10 @@ public class RASModule implements EntryPoint {
 				if( response.isObject() == null ) return;
 				response = response.isObject().get( "list" );
 				if( response.isArray() != null ) {
+					RASInfoCodec codec = GWT.create( RASInfoCodec.class );
 					for( int i = 0; i < response.isArray().size(); i++ ) {
-						JSONObject o = (JSONObject)response.isArray().get( i );
-						dataProvider.getList().add( 
-								new RASInfo( o ) );
-//								new String( 
-//								o.get( "id" ).isString().stringValue() ) );
+						RASInfo info = codec.decode( response.isArray().get( i ) );
+						dataProvider.getList().add( info );
 					}
 				}
 			}

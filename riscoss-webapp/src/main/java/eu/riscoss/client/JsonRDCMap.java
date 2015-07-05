@@ -63,7 +63,6 @@ public class JsonRDCMap {
 	
 	public JSONArray parameters( String key ) {
 		JSONObject o = requestRDCObject( key );
-//		Window.alert( "" + o );
 		if( o.get( "params" ).isArray() == null ) return new JSONArray();
 		return o.get( "params" ).isArray();
 	}

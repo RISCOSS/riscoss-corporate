@@ -75,10 +75,17 @@ public interface RiscossDB {
 	public abstract RiskAnalysisSession createRAS();
 	public abstract void saveRAS( RiskAnalysisSession ras );
 	public abstract RiskAnalysisSession openRAS( String sid );
-//	public abstract List<String> listRAS( String entity, String rc );
 	public abstract List<RecordAbstraction> listRAS( String entity, String rc );
 	public abstract void destroyRAS( String ras );
 	
 	public abstract void close();
+	
+	/*
+	 * User management
+	 */
+	public abstract void createRole( String name );
+	public abstract List<String> listRoles();
+	public abstract void createUser( String username, String password ) throws Exception;
+	public abstract List<String> listUsers();
 
 }

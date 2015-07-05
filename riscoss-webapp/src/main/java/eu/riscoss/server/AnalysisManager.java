@@ -41,6 +41,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -61,9 +62,12 @@ import eu.riscoss.reasoner.ReasoningLibrary;
 import eu.riscoss.reasoner.RiskAnalysisEngine;
 import eu.riscoss.shared.AnalysisOption;
 import eu.riscoss.shared.AnalysisResult;
+import eu.riscoss.shared.RASInfo;
 
 @Path("analysis")
 public class AnalysisManager {
+	
+	Gson gson = new Gson();
 	
 	static class MissingDataItem {
 		String id;
@@ -93,10 +97,8 @@ public class AnalysisManager {
 			JsonObject json = new JsonObject();
 			JsonArray array = new JsonArray();
 			for( RecordAbstraction record : db.listRAS( entity,  rc ) ) {
-				JsonObject o = new JsonObject();
-				o.addProperty( "id", record.getName() );
-				o.addProperty( "name", record.getProperty( "name", record.getName() ) );
-				array.add( o );
+				array.add( gson.toJsonTree( 
+						new RASInfo( record.getName(), record.getProperty( "name", record.getName() ) ) ) );
 			}
 			json.add( "list", array );
 			return json.toString();
@@ -159,11 +161,8 @@ public class AnalysisManager {
 			
 			db.saveRAS( ras );
 			
-			JsonObject ret = new JsonObject();
-			ret.addProperty( "id", ras.getId() );
-			ret.addProperty( "name", ras.getName() );
-			
-			return ret.toString();
+			return gson.toJson( 
+					new RASInfo( ras.getId(), ras.getName() ) );
 			
 		}
 		finally {
@@ -273,6 +272,7 @@ public class AnalysisManager {
 			json.addProperty( "id", ras.getId() );
 			json.addProperty( "target", ras.getTarget() );
 			json.addProperty( "rc", ras.getRCName() );
+			json.addProperty( "name", ras.getName() );
 			try {
 				Date date = new Date( ras.getTimestamp() );
 				SimpleDateFormat sdf = new SimpleDateFormat( "dd-MM-yyyy HH.mm.ss" );

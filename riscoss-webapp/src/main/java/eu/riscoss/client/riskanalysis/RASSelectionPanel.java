@@ -31,7 +31,6 @@ import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.CellTable;
@@ -46,8 +45,9 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.JsonCallbackWrapper;
-import eu.riscoss.client.RASInfo;
+import eu.riscoss.client.codec.RASInfoCodec;
 import eu.riscoss.client.ui.LinkHtml;
+import eu.riscoss.shared.RASInfo;
 
 public class RASSelectionPanel implements IsWidget {
 	
@@ -61,6 +61,9 @@ public class RASSelectionPanel implements IsWidget {
 	private String selectedEntity;
 
 	private String selectedRC;
+	
+	RASInfoCodec codec = GWT.create( RASInfoCodec.class );
+	
 	
 	public RASSelectionPanel() {
 		
@@ -156,9 +159,10 @@ public class RASSelectionPanel implements IsWidget {
 				}
 				@Override
 				public void onSuccess( Method method, JSONValue response ) {
-					dataProvider.getList().add( 
-							new RASInfo( response ) );
-//							response.isObject().get( "id" ).isString().stringValue() );
+					RASInfo info = codec.decode( response );
+					dataProvider.getList().add( info );
+//					dataProvider.getList().add( 
+//							new RASInfo( response ) );
 				}} );
 	}
 
@@ -184,12 +188,12 @@ public class RASSelectionPanel implements IsWidget {
 				response = response.isObject().get( "list" );
 				if( response.isArray() != null ) {
 					for( int i = 0; i < response.isArray().size(); i++ ) {
-						JSONObject o = (JSONObject)response.isArray().get( i );
-						dataProvider.getList().add( 
-								new RASInfo( o ) );
-//								new String( 
-//								o.get( "name" ).isString().stringValue() ) );
-//								o.get( "id" ).isString().stringValue() ) );
+						RASInfo info = codec.decode( response.isArray().get( i ) );
+						dataProvider.getList().add( info );
+						
+//						JSONObject o = (JSONObject)response.isArray().get( i );
+//						dataProvider.getList().add( 
+//								new RASInfo( o ) );
 					}
 				}
 			}

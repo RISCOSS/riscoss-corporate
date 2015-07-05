@@ -20,8 +20,8 @@ public class GDomDB {
 	public static final String CHILDOF_CLASS = "ChildOf";
 	public static final String LINK_CLASS = "Link";
 	
-	private static final String ROOT_CLASS = "Space";
-	private static final String NODE_CLASS = "Node";
+	public static final String ROOT_CLASS = "Space";
+	public static final String NODE_CLASS = "Node";
 	
 	static Map<String,OrientGraphFactory> factories = new HashMap<String,OrientGraphFactory>();
 	

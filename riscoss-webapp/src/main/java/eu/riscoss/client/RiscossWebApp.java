@@ -110,6 +110,9 @@ public class RiscossWebApp implements EntryPoint {
 		item.addChild( new TreeWidget( new OutlineLabel( "Risk Data Repository", "rdr.html" ) ) );
 		item.addChild( new TreeWidget( new OutlineLabel( "Risk Analysis Sessions", "ras.html" ) ) );
 		
+		item = root.addChild( new TreeWidget( new Label( "Admin" ) ) );
+		item.addChild( new TreeWidget( new OutlineLabel( "Users and Roles", "admin.html" ) ) );
+		
 		VerticalPanel left = new VerticalPanel();
 		left.add( new Image( "logo3.png" ) );
 		left.setHeight("20%"); // any value here seems to resolve the firefox problem of showing only a small frame on the right side
