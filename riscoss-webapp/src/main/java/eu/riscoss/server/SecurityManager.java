@@ -15,8 +15,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 
 import eu.riscoss.db.RiscossDB;
-import eu.riscoss.shared.RoleInfo;
-import eu.riscoss.shared.UserInfo;
+import eu.riscoss.shared.JRoleInfo;
+import eu.riscoss.shared.JUserInfo;
 
 @Path("admin")
 public class SecurityManager {
@@ -54,7 +54,7 @@ public class SecurityManager {
 			
 			db.createRole( name );
 			
-			RoleInfo info = new RoleInfo( name );
+			JRoleInfo info = new JRoleInfo( name );
 			
 			return gson.toJson( info );
 			
@@ -76,7 +76,7 @@ public class SecurityManager {
 			
 			List<String> roles = db.listRoles();
 			for( String role : roles ) {
-				RoleInfo info = new RoleInfo( role );
+				JRoleInfo info = new JRoleInfo( role );
 				array.add( gson.toJsonTree( info ) );
 			}
 			
@@ -102,7 +102,7 @@ public class SecurityManager {
 			
 			List<String> users = db.listUsers();
 			for( String user : users ) {
-				UserInfo info = new UserInfo( user );
+				JUserInfo info = new JUserInfo( user );
 				array.add( gson.toJsonTree( info ) );
 			}
 			

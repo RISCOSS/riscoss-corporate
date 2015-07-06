@@ -1,14 +1,14 @@
 package eu.riscoss.shared;
 
-public class RoleInfo {
+public class JRoleInfo {
 	
 	String name;
 	
-	public RoleInfo() {
+	public JRoleInfo() {
 		this( "" );
 	}
 	
-	public RoleInfo( String name ) {
+	public JRoleInfo( String name ) {
 		this.name = name;
 	}
 	

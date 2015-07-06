@@ -21,7 +21,7 @@
 
 package eu.riscoss.shared;
 
-public enum AnalysisOption {
+public enum EAnalysisOption {
 		
 	RunThrough, RequestMissingData
 	

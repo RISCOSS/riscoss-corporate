@@ -1,10 +1,10 @@
 package eu.riscoss.shared;
 
-public class UserInfo {
+public class JUserInfo {
 	
 	String username = "";
 	
-	public UserInfo(String user) {
+	public JUserInfo(String user) {
 		this.username = user;
 	}
 	

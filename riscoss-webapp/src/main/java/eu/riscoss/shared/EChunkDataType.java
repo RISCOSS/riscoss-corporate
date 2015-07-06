@@ -21,8 +21,6 @@
 
 package eu.riscoss.shared;
 
-public enum AnalysisResult {
-	
-	Done, DataMissing, Failure
-	
+public enum EChunkDataType {
+	REAL, INTEGER, STRING, EVIDENCE, DISTRIBUTION, NaN
 }

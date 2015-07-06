@@ -19,7 +19,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 import eu.riscoss.client.Log;
 import eu.riscoss.client.codec.RoleInfoCodec;
-import eu.riscoss.shared.RoleInfo;
+import eu.riscoss.shared.JRoleInfo;
 
 public class AdminModule implements EntryPoint {
 
@@ -92,7 +92,7 @@ public class AdminModule implements EntryPoint {
 					JSONArray array = response.isArray();
 					RoleInfoCodec codec = GWT.create( RoleInfoCodec.class );
 					for( int i = 0; i < array.size(); i++ ) {
-						RoleInfo info = codec.decode( array.get( i ) );
+						JRoleInfo info = codec.decode( array.get( i ) );
 						roleList.append( info );
 					}
 				}
@@ -113,7 +113,7 @@ public class AdminModule implements EntryPoint {
 				@Override
 				public void onSuccess( Method method, JSONValue response ) {
 					RoleInfoCodec codec = GWT.create( RoleInfoCodec.class );
-					RoleInfo info = codec.decode( response );
+					JRoleInfo info = codec.decode( response );
 					roleList.append( info );
 				}
 				
@@ -134,7 +134,7 @@ public class AdminModule implements EntryPoint {
 				@Override
 				public void onSuccess( Method method, JSONValue response ) {
 					RoleInfoCodec codec = GWT.create( RoleInfoCodec.class );
-					RoleInfo info = codec.decode( response );
+					JRoleInfo info = codec.decode( response );
 					roleList.append( info );
 				}
 				

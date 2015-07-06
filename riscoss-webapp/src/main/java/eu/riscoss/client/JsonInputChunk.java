@@ -24,7 +24,7 @@ package eu.riscoss.client;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
 
-import eu.riscoss.shared.ChunkDataType;
+import eu.riscoss.shared.EChunkDataType;
 
 public class JsonInputChunk {
 	
@@ -36,16 +36,16 @@ public class JsonInputChunk {
 			this.json = new JSONObject();
 	}
 
-	public ChunkDataType getType() {
+	public EChunkDataType getType() {
 		
 		JSONValue val = json.get( "type" );
-		if( val == null ) return ChunkDataType.NaN;
-		if( val.isString() == null ) return ChunkDataType.NaN;
+		if( val == null ) return EChunkDataType.NaN;
+		if( val.isString() == null ) return EChunkDataType.NaN;
 		
 		String string = val.isString().stringValue();
 		
-		ChunkDataType type = ChunkDataType.valueOf( string );
-		if( type == null ) type = ChunkDataType.NaN;
+		EChunkDataType type = EChunkDataType.valueOf( string );
+		if( type == null ) type = EChunkDataType.NaN;
 		
 		return type;
 	}

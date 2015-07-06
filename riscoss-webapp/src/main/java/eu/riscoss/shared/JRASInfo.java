@@ -1,13 +1,13 @@
 package eu.riscoss.shared;
 
-public class RASInfo {
+public class JRASInfo {
 	
 	String id = "";
 	String name = "";
 	
-	public RASInfo() {}
+	public JRASInfo() {}
 	
-	public RASInfo( String id, String name ) {
+	public JRASInfo( String id, String name ) {
 		this.id = id;
 		this.name = name;
 	}

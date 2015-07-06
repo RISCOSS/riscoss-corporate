@@ -60,9 +60,9 @@ import eu.riscoss.reasoner.FieldType;
 import eu.riscoss.reasoner.ModelSlice;
 import eu.riscoss.reasoner.ReasoningLibrary;
 import eu.riscoss.reasoner.RiskAnalysisEngine;
-import eu.riscoss.shared.AnalysisOption;
-import eu.riscoss.shared.AnalysisResult;
-import eu.riscoss.shared.RASInfo;
+import eu.riscoss.shared.EAnalysisOption;
+import eu.riscoss.shared.EAnalysisResult;
+import eu.riscoss.shared.JRASInfo;
 
 @Path("analysis")
 public class AnalysisManager {
@@ -98,7 +98,7 @@ public class AnalysisManager {
 			JsonArray array = new JsonArray();
 			for( RecordAbstraction record : db.listRAS( entity,  rc ) ) {
 				array.add( gson.toJsonTree( 
-						new RASInfo( record.getName(), record.getProperty( "name", record.getName() ) ) ) );
+						new JRASInfo( record.getName(), record.getProperty( "name", record.getName() ) ) ) );
 			}
 			json.add( "list", array );
 			return json.toString();
@@ -162,7 +162,7 @@ public class AnalysisManager {
 			db.saveRAS( ras );
 			
 			return gson.toJson( 
-					new RASInfo( ras.getId(), ras.getName() ) );
+					new JRASInfo( ras.getId(), ras.getName() ) );
 			
 		}
 		finally {
@@ -430,7 +430,7 @@ public class AnalysisManager {
 		}
 		
 		
-		json.addProperty( "result", AnalysisResult.Done.name() );
+		json.addProperty( "result", EAnalysisResult.Done.name() );
 //		json.addProperty( "result", getResults().getValue( "", "", "", "analysis-result", AnalysisResult.Failure.name() ) );
 		
 			JsonObject info = new JsonObject();
@@ -466,8 +466,8 @@ public class AnalysisManager {
 			@DefaultValue("RunThrough") @QueryParam("opt") String strOpt /* See AnalysisOption.RunThrough */,
 			@DefaultValue("") @HeaderParam("customData") String customData ) throws Exception {
 		
-		AnalysisOption opt = AnalysisOption.valueOf( strOpt );
-		if( opt == null ) opt = AnalysisOption.RunThrough;
+		EAnalysisOption opt = EAnalysisOption.valueOf( strOpt );
+		if( opt == null ) opt = EAnalysisOption.RunThrough;
 		
 		JsonObject custom = (JsonObject)new JsonParser().parse( customData );
 		if( custom == null ) custom = new JsonObject();
@@ -578,9 +578,9 @@ public class AnalysisManager {
 			}
 			
 			if( missingFields.size() > 0 ) {
-				if( opt == AnalysisOption.RequestMissingData ) {
+				if( opt == EAnalysisOption.RequestMissingData ) {
 					JsonObject ret = new JsonObject();
-					ret.addProperty( "result", AnalysisResult.DataMissing.name() );
+					ret.addProperty( "result", EAnalysisResult.DataMissing.name() );
 					JsonObject md = new JsonObject();
 					ret.add( "missingData", md );
 					JsonArray array = new JsonArray();
@@ -622,7 +622,7 @@ public class AnalysisManager {
 				o.add( "inputs", jinputs );
 			}
 			
-			o.addProperty( "result", AnalysisResult.Done.name() );
+			o.addProperty( "result", EAnalysisResult.Done.name() );
 			
 			String jsonString = o.toString();
 			

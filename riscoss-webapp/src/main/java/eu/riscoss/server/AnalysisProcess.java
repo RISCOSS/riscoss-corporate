@@ -42,8 +42,8 @@ import eu.riscoss.reasoner.ModelSlice;
 import eu.riscoss.reasoner.ReasoningLibrary;
 import eu.riscoss.reasoner.RiskAnalysisEngine;
 import eu.riscoss.server.AnalysisManager.MissingDataItem;
-import eu.riscoss.shared.AnalysisOption;
-import eu.riscoss.shared.AnalysisResult;
+import eu.riscoss.shared.EAnalysisOption;
+import eu.riscoss.shared.EAnalysisResult;
 
 public class AnalysisProcess {
 	
@@ -207,9 +207,9 @@ public class AnalysisProcess {
 //		TimeDiff.get().log( "Inputs set" );
 		
 		if( missingFields.size() > 0 ) {
-			if( AnalysisOption.valueOf( session.getOption( "AnalysisOption", AnalysisOption.RunThrough.name() ) ) == AnalysisOption.RequestMissingData ) {
+			if( EAnalysisOption.valueOf( session.getOption( "AnalysisOption", EAnalysisOption.RunThrough.name() ) ) == EAnalysisOption.RequestMissingData ) {
 				JsonObject ret = new JsonObject();
-				ret.addProperty( "result", AnalysisResult.DataMissing.name() );
+				ret.addProperty( "result", EAnalysisResult.DataMissing.name() );
 				JsonObject md = new JsonObject();
 				ret.add( "missingData", md );
 				JsonArray array = new JsonArray();
@@ -227,7 +227,7 @@ public class AnalysisProcess {
 					array.add( item );
 				}
 				md.add( "list", array );
-				session.setOption( "status", AnalysisResult.DataMissing.name() );
+				session.setOption( "status", EAnalysisResult.DataMissing.name() );
 				session.setOption( "missing-data", ret.toString() );
 				return;
 			}
@@ -282,7 +282,7 @@ public class AnalysisProcess {
 		
 //		TimeDiff.get().log( "Output saved" );
 		
-		session.setStatus( target, AnalysisResult.Done.name() );
+		session.setStatus( target, EAnalysisResult.Done.name() );
 	}
 	
 	RiskData field2RiskData( String id, String target, Field f ) {

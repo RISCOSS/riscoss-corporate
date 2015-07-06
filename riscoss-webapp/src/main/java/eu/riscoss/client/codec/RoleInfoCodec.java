@@ -2,8 +2,8 @@ package eu.riscoss.client.codec;
 
 import org.fusesource.restygwt.client.JsonEncoderDecoder;
 
-import eu.riscoss.shared.RoleInfo;
+import eu.riscoss.shared.JRoleInfo;
 
-public interface RoleInfoCodec extends JsonEncoderDecoder<RoleInfo>{
+public interface RoleInfoCodec extends JsonEncoderDecoder<JRoleInfo>{
 	
 }

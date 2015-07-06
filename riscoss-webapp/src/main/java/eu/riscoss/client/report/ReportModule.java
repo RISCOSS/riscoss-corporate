@@ -44,8 +44,8 @@ import eu.riscoss.client.Callback;
 import eu.riscoss.client.JsonUtil;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.ui.MissingDataInputForm;
-import eu.riscoss.shared.AnalysisOption;
-import eu.riscoss.shared.AnalysisResult;
+import eu.riscoss.shared.EAnalysisOption;
+import eu.riscoss.shared.EAnalysisResult;
 
 public class ReportModule implements EntryPoint {
 	
@@ -66,15 +66,15 @@ public class ReportModule implements EntryPoint {
 
 	public void onModuleLoad() {
 		
-		startAnalysisWorkflow( AnalysisOption.RequestMissingData );
+		startAnalysisWorkflow( EAnalysisOption.RequestMissingData );
 		
 	}
 	
-	protected void startAnalysisWorkflow( AnalysisOption opt ) {
+	protected void startAnalysisWorkflow( EAnalysisOption opt ) {
 		startAnalysisWorkflow( opt, null );
 	}
 	
-	protected void startAnalysisWorkflow( AnalysisOption opt, JSONObject values ) {
+	protected void startAnalysisWorkflow( EAnalysisOption opt, JSONObject values ) {
 		
 		if( values == null ) values = new JSONObject();
 		
@@ -92,10 +92,10 @@ public class ReportModule implements EntryPoint {
 						if( response.isObject() == null ) return;
 						
 						try {
-						String strResult = JsonUtil.getValue( response, "result", AnalysisResult.Failure.name() );
+						String strResult = JsonUtil.getValue( response, "result", EAnalysisResult.Failure.name() );
 						
-						AnalysisResult result = AnalysisResult.valueOf( strResult );
-						if( result == null ) result = AnalysisResult.Failure;
+						EAnalysisResult result = EAnalysisResult.valueOf( strResult );
+						if( result == null ) result = EAnalysisResult.Failure;
 						
 						
 						switch( result ) {
@@ -142,7 +142,7 @@ public class ReportModule implements EntryPoint {
 			
 			@Override
 			public void onDone( JSONObject o ) {
-				startAnalysisWorkflow( AnalysisOption.RunThrough, o );
+				startAnalysisWorkflow( EAnalysisOption.RunThrough, o );
 			}
 		});
 		
@@ -193,7 +193,7 @@ public class ReportModule implements EntryPoint {
 						
 						@Override
 						public void onDone( JSONObject o ) {
-							startAnalysisWorkflow( AnalysisOption.RunThrough, o );
+							startAnalysisWorkflow( EAnalysisOption.RunThrough, o );
 						}
 					} );
 			}

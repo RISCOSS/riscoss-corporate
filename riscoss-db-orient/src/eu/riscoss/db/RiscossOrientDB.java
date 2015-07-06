@@ -664,7 +664,8 @@ public class RiscossOrientDB implements RiscossDB {
 	
 	@Override
 	public void createRole( String name ) {
-		execute( "INSERT INTO orole SET name = '" + name + "', mode = 0" );
+		UUID uuid = UUID.randomUUID();
+		execute( "INSERT INTO orole SET name = '" + uuid.toString() + "', mode = 0, localName='" + name + "'" );
 	}
 
 	@Override

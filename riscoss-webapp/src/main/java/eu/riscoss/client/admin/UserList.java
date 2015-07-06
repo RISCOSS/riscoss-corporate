@@ -11,12 +11,12 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.ui.LinkHtml;
-import eu.riscoss.shared.RoleInfo;
+import eu.riscoss.shared.JRoleInfo;
 
 public class UserList implements IsWidget {
 	
-	CellTable<RoleInfo>			table;
-	ListDataProvider<RoleInfo>	dataProvider;
+	CellTable<JRoleInfo>			table;
+	ListDataProvider<JRoleInfo>	dataProvider;
 	
 	VerticalPanel				tablePanel = new VerticalPanel();
 	
@@ -24,9 +24,9 @@ public class UserList implements IsWidget {
 		
 		table = new CellTable<>();
 		
-		table.addColumn( new Column<RoleInfo,SafeHtml>(new SafeHtmlCell() ) {
+		table.addColumn( new Column<JRoleInfo,SafeHtml>(new SafeHtmlCell() ) {
 			@Override
-			public SafeHtml getValue(RoleInfo roleInfo) {
+			public SafeHtml getValue(JRoleInfo roleInfo) {
 				return new LinkHtml( roleInfo.getName(), "javascript:selectUser(\"" + roleInfo.getName() + "\")" ); };
 		}, "User");
 //		Column<RoleInfo,String> c = new Column<RoleInfo,String>(new ButtonCell() ) {
@@ -42,7 +42,7 @@ public class UserList implements IsWidget {
 //			});
 //		table.addColumn( c, "");
 		
-		dataProvider = new ListDataProvider<RoleInfo>();
+		dataProvider = new ListDataProvider<JRoleInfo>();
 		dataProvider.addDataDisplay( table );
 		
 		SimplePager pager = new SimplePager();

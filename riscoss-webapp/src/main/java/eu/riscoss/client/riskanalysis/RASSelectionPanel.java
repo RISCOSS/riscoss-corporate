@@ -47,7 +47,7 @@ import com.google.gwt.view.client.ListDataProvider;
 import eu.riscoss.client.JsonCallbackWrapper;
 import eu.riscoss.client.codec.RASInfoCodec;
 import eu.riscoss.client.ui.LinkHtml;
-import eu.riscoss.shared.RASInfo;
+import eu.riscoss.shared.JRASInfo;
 
 public class RASSelectionPanel implements IsWidget {
 	
@@ -55,8 +55,8 @@ public class RASSelectionPanel implements IsWidget {
 
 	DockPanel panel = new DockPanel();
 	
-	CellTable<RASInfo>		table;
-	ListDataProvider<RASInfo>	dataProvider;
+	CellTable<JRASInfo>		table;
+	ListDataProvider<JRASInfo>	dataProvider;
 
 	private String selectedEntity;
 
@@ -69,27 +69,27 @@ public class RASSelectionPanel implements IsWidget {
 		
 		exportJS();
 		
-		table = new CellTable<RASInfo>();
+		table = new CellTable<JRASInfo>();
 		
-		table.addColumn( new Column<RASInfo,SafeHtml>(new SafeHtmlCell() ) {
+		table.addColumn( new Column<JRASInfo,SafeHtml>(new SafeHtmlCell() ) {
 			@Override
-			public SafeHtml getValue(RASInfo object) {
+			public SafeHtml getValue(JRASInfo object) {
 				return new LinkHtml( object.getName(), "javascript:setSelectedRAS(\"" + object.getId() + "\")" ); };
 		}, "Available Risk Analysis Sessions");
-		Column<RASInfo,String> c = new Column<RASInfo,String>(new ButtonCell() ) {
+		Column<JRASInfo,String> c = new Column<JRASInfo,String>(new ButtonCell() ) {
 			@Override
-			public String getValue(RASInfo object) {
+			public String getValue(JRASInfo object) {
 				return "Delete";
 			}};
-			c.setFieldUpdater(new FieldUpdater<RASInfo, String>() {
+			c.setFieldUpdater(new FieldUpdater<JRASInfo, String>() {
 				@Override
-				public void update(int index, RASInfo object, String value) {
+				public void update(int index, JRASInfo object, String value) {
 					deleteRAS( object );
 				}
 			});
 			table.addColumn( c, "");
 		
-		dataProvider = new ListDataProvider<RASInfo>();
+		dataProvider = new ListDataProvider<JRASInfo>();
 		dataProvider.addDataDisplay( table );
 		
 		Button button = new Button( "Create New" );
@@ -112,8 +112,8 @@ public class RASSelectionPanel implements IsWidget {
 		
 	}
 	
-	protected void deleteRAS( RASInfo info ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/analysis/session/" + info.getId() + "/delete" ).delete().send( new JsonCallbackWrapper<RASInfo>( info ) {
+	protected void deleteRAS( JRASInfo info ) {
+		new Resource( GWT.getHostPageBaseURL() + "api/analysis/session/" + info.getId() + "/delete" ).delete().send( new JsonCallbackWrapper<JRASInfo>( info ) {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				
@@ -159,7 +159,7 @@ public class RASSelectionPanel implements IsWidget {
 				}
 				@Override
 				public void onSuccess( Method method, JSONValue response ) {
-					RASInfo info = codec.decode( response );
+					JRASInfo info = codec.decode( response );
 					dataProvider.getList().add( info );
 //					dataProvider.getList().add( 
 //							new RASInfo( response ) );
@@ -188,7 +188,7 @@ public class RASSelectionPanel implements IsWidget {
 				response = response.isObject().get( "list" );
 				if( response.isArray() != null ) {
 					for( int i = 0; i < response.isArray().size(); i++ ) {
-						RASInfo info = codec.decode( response.isArray().get( i ) );
+						JRASInfo info = codec.decode( response.isArray().get( i ) );
 						dataProvider.getList().add( info );
 						
 //						JSONObject o = (JSONObject)response.isArray().get( i );

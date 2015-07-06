@@ -28,7 +28,7 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
 import eu.riscoss.client.JsonInputChunk;
-import eu.riscoss.shared.ChunkDataType;
+import eu.riscoss.shared.EChunkDataType;
 
 public class ManualInputField implements IsWidget {
 	
@@ -160,7 +160,7 @@ public class ManualInputField implements IsWidget {
 		return panel;
 	}
 	
-	public ChunkDataType getType() {
+	public EChunkDataType getType() {
 		return chunk.getType();
 	}
 

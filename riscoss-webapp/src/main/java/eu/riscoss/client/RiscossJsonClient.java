@@ -35,7 +35,7 @@ import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Window;
 
 import eu.riscoss.client.ui.WaitWidget;
-import eu.riscoss.shared.AnalysisOption;
+import eu.riscoss.shared.EAnalysisOption;
 
 public class RiscossJsonClient {
 	
@@ -191,7 +191,7 @@ public class RiscossJsonClient {
 			.delete().send( cb );
 	}
 	
-	public static void runAnalysis( String target, String rc, String verbosity, AnalysisOption opt, JSONObject values, JsonCallback cb ) {
+	public static void runAnalysis( String target, String rc, String verbosity, EAnalysisOption opt, JSONObject values, JsonCallback cb ) {
 		
 		new Resource( GWT.getHostPageBaseURL() + "api/analysis/new" )
 			.addQueryParam( "target", target )

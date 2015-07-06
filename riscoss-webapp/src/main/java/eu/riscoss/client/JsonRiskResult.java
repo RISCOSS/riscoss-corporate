@@ -24,7 +24,7 @@ package eu.riscoss.client;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 
-import eu.riscoss.shared.ChunkDataType;
+import eu.riscoss.shared.EChunkDataType;
 
 public class JsonRiskResult {
 	
@@ -43,8 +43,8 @@ public class JsonRiskResult {
 		return json.get( "datatype" ).isString().stringValue();
 	}
 	
-	public ChunkDataType getDataType() {
-		return ChunkDataType.valueOf( json.get( "datatype" ).isString().stringValue().toUpperCase() );
+	public EChunkDataType getDataType() {
+		return EChunkDataType.valueOf( json.get( "datatype" ).isString().stringValue().toUpperCase() );
 	}
 
 	public String getDescription() {
