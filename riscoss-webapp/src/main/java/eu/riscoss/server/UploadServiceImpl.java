@@ -64,10 +64,26 @@ public class UploadServiceImpl extends UploadAction {
 						if( name == null ) {
 							name = item.getName();
 						}
-						
-						db.storeModel( item.getString(), name );
+						/// Create a temporary file placed in the default system temp folder
+//						File file = File.createTempFile("upload-", ".bin");
+						//System.out.println("Storing the Model "+name);
+					
+						boolean duplicate = false;
+						for (String storedmodel : db.getModelList()) {
+							System.out.println(storedmodel);
+							if (storedmodel.equals(name)){
+								duplicate = true;
+								//response = "<response>\n" + "Duplicate model name. Please delete the stored model first."+ "</response>\n";
+								response = "A model with this name was already uploaded. Please delete the stored model first.";
+								break;
+								//throw new UploadActionException("Duplicate model name. Please delete the stored model first.");
+							}
+						}
+						if (duplicate == false){
+							db.storeModel( item.getString(), name );
+							response = "Success";
+						}
 
-						response = name; //file.getName();
 					} catch (Exception e) {
 						throw new UploadActionException(e);
 					}
@@ -80,7 +96,7 @@ public class UploadServiceImpl extends UploadAction {
 			removeSessionFileItems(request);
 
 			/// Send information of the received files to the client.
-			return response; //"<response>\n" + response + "</response>\n";
+			return response;
 		}
 
 	}

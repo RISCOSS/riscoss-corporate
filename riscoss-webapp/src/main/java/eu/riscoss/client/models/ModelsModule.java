@@ -13,11 +13,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-*/
+ */
 
 /**
  * @author 	Alberto Siena
-**/
+ **/
 
 package eu.riscoss.client.models;
 
@@ -45,8 +45,10 @@ import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.DecoratorPanel;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
@@ -61,6 +63,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.JsonCallbackWrapper;
+import eu.riscoss.client.Log;
 import eu.riscoss.client.ModelInfo;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.riskanalysis.KeyValueGrid;
@@ -72,310 +75,334 @@ import gwtupload.client.IUploader.UploadedInfo;
 import gwtupload.client.SingleUploader;
 
 public class ModelsModule implements EntryPoint {
-	
+
 	public class MyFancyLookingButton extends Composite implements HasClickHandlers {
 		SimplePanel widget = new SimplePanel();
-		
+
 		public MyFancyLookingButton() {
-			//			DecoratorPanel widget = new DecoratorPanel();
-			//			initWidget( new Anchor( "Choose..." ) );
+			DecoratorPanel widget = new DecoratorPanel();
+			//initWidget( new Anchor( "Choose..." ) );
 			initWidget(widget);
 			widget.setWidget(new HTML("New..."));
 		}
-		
+
 		public HandlerRegistration addClickHandler(ClickHandler handler) {
 			return addDomHandler(handler, ClickEvent.getType());
 		}
 	}
-	
-	DockPanel					dock = new DockPanel();
-	
-	CellTable<ModelInfo>		table;
-	ListDataProvider<ModelInfo>	dataProvider;
-//	private FlowPanel			panelImages = new FlowPanel();
-	SimplePanel					rightPanel = new SimplePanel();
-	
+
+	DockPanel dock = new DockPanel();
+
+	CellTable<ModelInfo> table;
+	ListDataProvider<ModelInfo> dataProvider;
+	// private FlowPanel panelImages = new FlowPanel();
+	SimplePanel rightPanel = new SimplePanel();
+
 	public ModelsModule() {
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see eu.riscoss.client.ActivablePanel#getWidget()
 	 */
 	public Widget getWidget() {
 		return dock;
 	}
-	
+
 	public void onModuleLoad() {
-		
+
 		exportJS();
-		
+
 		table = new CellTable<ModelInfo>();
-		
-		table.addColumn( new Column<ModelInfo,SafeHtml>(new SafeHtmlCell() ) {
+
+		table.addColumn(new Column<ModelInfo, SafeHtml>(new SafeHtmlCell()) {
 			@Override
 			public SafeHtml getValue(ModelInfo object) {
-				return new LinkHtml( object.getName(), "javascript:editModel(\"" + object.getName() + "\")" ); };
+				return new LinkHtml(object.getName(), "javascript:editModel(\"" + object.getName() + "\")");
+			};
 		}, "Model");
-		Column<ModelInfo,String> c = new Column<ModelInfo,String>(new ButtonCell() ) {
+
+		Column<ModelInfo, String> c = new Column<ModelInfo, String>(new ButtonCell()) {
 			@Override
 			public String getValue(ModelInfo object) {
 				return "Delete";
-			}};
-			c.setFieldUpdater(new FieldUpdater<ModelInfo, String>() {
-				@Override
-				public void update(int index, ModelInfo object, String value) {
-					deleteModel( object );
-				}
-			});
-			table.addColumn( c, "");
-			
-			
-			//	    
-			dataProvider = new ListDataProvider<ModelInfo>();
-			dataProvider.addDataDisplay(table);
-			
-			Resource resource = new Resource( GWT.getHostPageBaseURL() + "api/models/list");
-			
-			resource.get().send( new JsonCallback() {
-				
-				public void onSuccess(Method method, JSONValue response) {
-					GWT.log( response.toString() );
-					if( response.isArray() != null ) {
-						for( int i = 0; i < response.isArray().size(); i++ ) {
-							JSONObject o = (JSONObject)response.isArray().get( i );
-							dataProvider.getList().add( 
-									new ModelInfo( 
-											o.get( "name" ).isString().stringValue() ) );
-						}
+			}
+		};
+		c.setFieldUpdater(new FieldUpdater<ModelInfo, String>() {
+			@Override
+			public void update(int index, ModelInfo object, String value) {
+				deleteModel(object);
+			}
+		});
+		table.addColumn(c, "");
+
+		dataProvider = new ListDataProvider<ModelInfo>();
+		dataProvider.addDataDisplay(table);
+
+		Resource resource = new Resource(GWT.getHostPageBaseURL() + "api/models/list");
+
+		resource.get().send(new JsonCallback() {
+
+			public void onSuccess(Method method, JSONValue response) {
+				GWT.log(response.toString());
+				if (response.isArray() != null) {
+					for (int i = 0; i < response.isArray().size(); i++) {
+						JSONObject o = (JSONObject) response.isArray().get(i);
+						dataProvider.getList().add(new ModelInfo(o.get("name").isString().stringValue()));
 					}
 				}
+			}
+
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+		});
+
+		// Attach the image viewer to the document
+		// RootPanel.get().add(panelImages);
+
+		MyFancyLookingButton button = new MyFancyLookingButton();
+		//SingleUploader uploader = new SingleUploader();//FileInputType.CUSTOM.with(button));// "New..."
+		SingleUploader uploader = new SingleUploader(FileInputType.BUTTON);// "New..."
+		
+		//with a specific caption:
+		//SingleUploader uploader = new SingleUploader(FileInputType.CUSTOM.with(new Button("New...")));// "New..."
+
+		uploader.setTitle("New...");
+		uploader.setAutoSubmit(true);
+		uploader.setServletPath(uploader.getServletPath() + "?t=modelblob");
+		uploader.addOnFinishUploadHandler(new OnFinishUploaderHandler() {
+			@Override
+			public void onFinish(IUploader uploader) {
+				UploadedInfo info = uploader.getServerInfo();
+				String name = info.name;
+				//Log.println("SERVERMESS2 " + uploader.getServerMessage().getMessage());
 				
-				public void onFailure(Method method, Throwable exception) {
-					Window.alert( exception.getMessage() );
-				}
-			});
-			
-			
-			// Attach the image viewer to the document
-//			RootPanel.get().add(panelImages);
-			
-			MyFancyLookingButton button = new MyFancyLookingButton();
-			SingleUploader uploader = new SingleUploader(FileInputType.CUSTOM.with(button));
-			uploader.setAutoSubmit( true );
-			uploader.setServletPath( uploader.getServletPath() + "?t=modelblob" );
-			uploader.addOnFinishUploadHandler( new OnFinishUploaderHandler() {
-				@Override
-				public void onFinish(IUploader uploader) {
-					UploadedInfo info = uploader.getServerInfo();
-					String name = info.name;
-					dataProvider.getList().add( new ModelInfo( name ) );
-				}
-			});
-			
-			SimplePager pager = new SimplePager();
-		    pager.setDisplay( table );
-		    
-			VerticalPanel tablePanel = new VerticalPanel();
-			tablePanel.add( table );
-			tablePanel.add( pager );
-			
-			dock.add( tablePanel, DockPanel.CENTER );
-			dock.add( uploader, DockPanel.NORTH );
-			dock.add( rightPanel, DockPanel.EAST );
-			
-			dock.setCellWidth( tablePanel, "40%" );
-			dock.setCellHeight( rightPanel, "100%" );
-			table.setWidth( "100%" );
-			
-			dock.setSize( "100%", "100%" );
-			
-			RootPanel.get().add( dock );
+				String response = uploader.getServerMessage().getMessage();
+				if (response.trim().equalsIgnoreCase("Success"))
+					dataProvider.getList().add(new ModelInfo(name));
+				else
+					Window.alert("Error: " + response );
+			}
+		});
+
+		SimplePager pager = new SimplePager();
+		pager.setDisplay(table);
+
+		VerticalPanel tablePanel = new VerticalPanel();
+		tablePanel.add(table);
+		tablePanel.add(pager);
+
+		dock.add(tablePanel, DockPanel.CENTER);
+		dock.add(uploader, DockPanel.NORTH);
+		dock.add(rightPanel, DockPanel.EAST);
+
+		dock.setCellWidth(tablePanel, "40%");
+		dock.setCellHeight(rightPanel, "100%");
+		table.setWidth("100%");
+
+		dock.setSize("100%", "100%");
+
+		RootPanel.get().add(dock);
 	}
-	
-	protected void deleteModel( ModelInfo info ) {
-		RiscossJsonClient.deleteModel( info.getName(), new JsonCallbackWrapper<ModelInfo>( info ) {
+
+	protected void deleteModel(ModelInfo info) {
+		RiscossJsonClient.deleteModel(info.getName(), new JsonCallbackWrapper<ModelInfo>(info) {
 			@Override
 			public void onFailure(Method method, Throwable exception) {
-				Window.alert( exception.getMessage() );
+				Window.alert(exception.getMessage());
 			}
+
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
-				dataProvider.getList().remove( getValue() );
-			}} );
+				dataProvider.getList().remove(getValue());
+			}
+		});
 	}
-	
+
 	public native void exportJS() /*-{
-	var that = this;
-	$wnd.editModel = $entry(function(amt) {
-  	that.@eu.riscoss.client.models.ModelsModule::setSelectedModel(Ljava/lang/String;)(amt);
-	});
+		var that = this;
+		$wnd.editModel = $entry(function(amt) {
+			that.@eu.riscoss.client.models.ModelsModule::setSelectedModel(Ljava/lang/String;)(amt);
+		});
 	}-*/;
-	
+
 	static class EditModelDialog implements IsWidget {
-		
-//		// Load the image in the document and in the case of success attach it to the viewer
-//		private IUploader.OnFinishUploaderHandler onFinishUploaderHandler = new IUploader.OnFinishUploaderHandler() {
-//			public void onFinish(IUploader uploader) {
-//				popup.hide();
-//				if (uploader.getStatus() == Status.SUCCESS) {
-//					text = null;
-//					new PreloadedImage(uploader.fileUrl(), showImage);
-//				}
-//			}
-//		};
-		
-//		// Attach an image to the pictures viewer
-//		private OnLoadPreloadedImageHandler showImage = new OnLoadPreloadedImageHandler() {
-//			public void onLoad(PreloadedImage image) {
-//				image.setWidth("75px");
-//				panelImages.add(image);
-//			}
-//		};
-		
-		DockPanel		panel = new DockPanel();
-		String			text = null;
-		String			name;
-		TextArea		area;
-		KeyValueGrid	chunksGrid;
-		IndexedTab		tab;
-		
-//		PopupPanel popup = new PopupPanel( false, true );
-//		SingleUploader u = new SingleUploader();
-//		String servletPath = u.getServletPath();
-		
+
+		// // Load the image in the document and in the case of success attach
+		// it to the viewer
+		// private IUploader.OnFinishUploaderHandler onFinishUploaderHandler =
+		// new IUploader.OnFinishUploaderHandler() {
+		// public void onFinish(IUploader uploader) {
+		// popup.hide();
+		// if (uploader.getStatus() == Status.SUCCESS) {
+		// text = null;
+		// new PreloadedImage(uploader.fileUrl(), showImage);
+		// }
+		// }
+		// };
+
+		// // Attach an image to the pictures viewer
+		// private OnLoadPreloadedImageHandler showImage = new
+		// OnLoadPreloadedImageHandler() {
+		// public void onLoad(PreloadedImage image) {
+		// image.setWidth("75px");
+		// panelImages.add(image);
+		// }
+		// };
+
+		DockPanel panel = new DockPanel();
+		String text = null;
+		String name;
+		TextArea area;
+		KeyValueGrid chunksGrid;
+		IndexedTab tab;
+
+		// PopupPanel popup = new PopupPanel( false, true );
+		// SingleUploader u = new SingleUploader();
+		// String servletPath = u.getServletPath();
+
 		public EditModelDialog() {
-//			u.addOnFinishUploadHandler(onFinishUploaderHandler);
-//			u.setAutoSubmit( true );
-//			popup.add( u );
-//			popup.setSize( "300px", "32px" );
+			// u.addOnFinishUploadHandler(onFinishUploaderHandler);
+			// u.setAutoSubmit( true );
+			// popup.add( u );
+			// popup.setSize( "300px", "32px" );
 		}
-		
-		public void editModel( String name ) {
+
+		public void editModel(String name) {
 			this.name = name;
-			RiscossJsonClient.getModelinfo( name, new JsonCallback() {
+			RiscossJsonClient.getModelinfo(name, new JsonCallback() {
 				@Override
 				public void onSuccess(Method method, JSONValue response) {
-					showEditDialog( response.isObject() );
+					showEditDialog(response.isObject());
 				}
+
 				@Override
 				public void onFailure(Method method, Throwable exception) {
-					Window.alert( exception.getMessage() );
+					Window.alert(exception.getMessage());
 				}
 			});
 		}
-		
-		void showEditDialog( JSONObject json ) {
-			Grid grid = new Grid(3,2);
-			grid.setWidget( 0, 0, new Label( "Name:") );
+
+		void showEditDialog(JSONObject json) {
+			Grid grid = new Grid(3, 2);
+			grid.setWidget(0, 0, new Label("Name:"));
 			TextBox txt = new TextBox();
-			txt.setText( json.get( "name" ).isString().stringValue() );
-			grid.setWidget( 0, 1, txt );
-			
-			grid.setWidget( 1, 0, new Label( "Description:") );
+			txt.setText(json.get("name").isString().stringValue());
+			grid.setWidget(0, 1, txt);
+
+			grid.setWidget(1, 0, new Label("Description:"));
 			txt = new TextBox();
-			grid.setWidget( 1, 1, txt );
-			
+			grid.setWidget(1, 1, txt);
+
 			// TODO: implement model picture
-//			grid.setWidget( 2, 0, new Label( "Picture:" ) );
-//			grid.setWidget( 2, 1, new Button( "Change...", new ClickHandler() {
-//				@Override
-//				public void onClick(ClickEvent event) {
-//					u.setServletPath( servletPath + "?t=modelimg&name=" + name );
-//					popup.show();
-//				}
-//			} ) );
-			
+			// grid.setWidget( 2, 0, new Label( "Picture:" ) );
+			// grid.setWidget( 2, 1, new Button( "Change...", new ClickHandler()
+			// {
+			// @Override
+			// public void onClick(ClickEvent event) {
+			// u.setServletPath( servletPath + "?t=modelimg&name=" + name );
+			// popup.show();
+			// }
+			// } ) );
+
 			area = new TextArea();
 			chunksGrid = new KeyValueGrid();
-			
+
 			tab = new IndexedTab();
-			tab.addTab( "Properties", grid );
-			tab.addTab( "Model info", chunksGrid );
-			tab.addTab( "Raw Model content", area );
-			tab.getTabPanel().selectTab( 0 );
-			tab.getTabPanel().setSize( "100%", "100%" );
-			tab.addTabHandler( "Model info", new IndexedTab.TabHandler() {
+			tab.addTab("Properties", grid);
+			tab.addTab("Model info", chunksGrid);
+			tab.addTab("Raw Model content", area);
+			tab.getTabPanel().selectTab(0);
+			tab.getTabPanel().setSize("100%", "100%");
+			tab.addTabHandler("Model info", new IndexedTab.TabHandler() {
 				@Override
 				public void onTabActivated() {
 					List<String> list = new ArrayList<String>();
-					list.add( name );
-					RiscossJsonClient.listChunks( list, new JsonCallback() {
+					list.add(name);
+					RiscossJsonClient.listChunks(list, new JsonCallback() {
 						@Override
-						public void onFailure( Method method, Throwable exception ) {
-							Window.alert( exception.getMessage() );
+						public void onFailure(Method method, Throwable exception) {
+							Window.alert(exception.getMessage());
 						}
+
 						@Override
-						public void onSuccess( Method method, JSONValue response ) {
+						public void onSuccess(Method method, JSONValue response) {
 							JSONObject jo = response.isObject();
-							if( jo.get( "inputs" ) != null ) {
-								JSONArray inputs = jo.get( "inputs" ).isArray();
+							if (jo.get("inputs") != null) {
+								JSONArray inputs = jo.get("inputs").isArray();
 								VerticalPanel p = new VerticalPanel();
-								for( int i = 0; i < inputs.size(); i++ ) {
-									JSONObject jinput = inputs.get( i ).isObject();
-									p.add( new Label( jinput.get( "id" ).isString().stringValue() ));
+								for (int i = 0; i < inputs.size(); i++) {
+									JSONObject jinput = inputs.get(i).isObject();
+									p.add(new Label(jinput.get("id").isString().stringValue()));
 								}
-								chunksGrid.add( "Requested Indicators:", p );
+								chunksGrid.add("Requested Indicators:", p);
 							}
-							
-							if( jo.get( "outputs" ) != null ) {
-								JSONArray inputs = jo.get( "outputs" ).isArray();
+
+							if (jo.get("outputs") != null) {
+								JSONArray inputs = jo.get("outputs").isArray();
 								VerticalPanel p = new VerticalPanel();
-								for( int i = 0; i < inputs.size(); i++ ) {
-									JSONObject jinput = inputs.get( i ).isObject();
-									p.add( new Label( jinput.get( "id" ).isString().stringValue() ));
+								for (int i = 0; i < inputs.size(); i++) {
+									JSONObject jinput = inputs.get(i).isObject();
+									p.add(new Label(jinput.get("id").isString().stringValue()));
 								}
-								chunksGrid.add( "Provided Output:", p );
+								chunksGrid.add("Provided Output:", p);
 							}
-							
-							EditModelDialog.this.tab.removeListeners( "Model info" );
-						}} );
+
+							EditModelDialog.this.tab.removeListeners("Model info");
+						}
+					});
 				}
 			});
-			tab.addTabHandler( "Raw Model content", new IndexedTab.TabHandler() {
+			tab.addTabHandler("Raw Model content", new IndexedTab.TabHandler() {
 				@Override
 				public void onTabActivated() {
-					if( text == null ) {
-						RiscossJsonClient.getModelBlob( name, new JsonCallback() {
+					if (text == null) {
+						RiscossJsonClient.getModelBlob(name, new JsonCallback() {
 							@Override
 							public void onFailure(Method method, Throwable exception) {
-								Window.alert( exception.getMessage() );
+								Window.alert(exception.getMessage());
 							}
-							
+
 							@Override
 							public void onSuccess(Method method, JSONValue response) {
-								area.setText( response.isObject().get( "blob" ).isString().stringValue() );
-							}} );
+								area.setText(response.isObject().get("blob").isString().stringValue());
+							}
+						});
 					}
 				}
 			});
-			
-			panel.add( tab, DockPanel.CENTER );
-			panel.add( new Button( "Save", new ClickHandler() {
+
+			panel.add(tab, DockPanel.CENTER);
+			panel.add(new Button("Save", new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
 					onDoneClicked();
-				}} ), DockPanel.SOUTH );
-			panel.setSize( "100%", "100%" );
+				}
+			}), DockPanel.SOUTH);
+			panel.setSize("100%", "100%");
 		}
-		
-//		protected void onTabActivated( TabPanel tab, Integer selectedItem ) {
-//			if( selectedItem != 1 ) return;
-//			if( text == null ) {
-//				RiscossJsonClient.getModelBlob( name, new JsonCallback() {
-//					@Override
-//					public void onFailure(Method method, Throwable exception) {
-//						Window.alert( exception.getMessage() );
-//					}
-//					
-//					@Override
-//					public void onSuccess(Method method, JSONValue response) {
-//						area.setText( response.isObject().get( "blob" ).isString().stringValue() );
-//					}} );
-//			}
-//		}
-		
+
+		// protected void onTabActivated( TabPanel tab, Integer selectedItem ) {
+		// if( selectedItem != 1 ) return;
+		// if( text == null ) {
+		// RiscossJsonClient.getModelBlob( name, new JsonCallback() {
+		// @Override
+		// public void onFailure(Method method, Throwable exception) {
+		// Window.alert( exception.getMessage() );
+		// }
+		//
+		// @Override
+		// public void onSuccess(Method method, JSONValue response) {
+		// area.setText( response.isObject().get( "blob"
+		// ).isString().stringValue() );
+		// }} );
+		// }
+		// }
+
 		protected void onDoneClicked() {
-//			dialog.hide();
+			// dialog.hide();
 		}
 
 		@Override
@@ -383,13 +410,13 @@ public class ModelsModule implements EntryPoint {
 			return panel;
 		}
 	}
-	
-	public void setSelectedModel( String name ) {
-		if( rightPanel.getWidget() != null ) {
+
+	public void setSelectedModel(String name) {
+		if (rightPanel.getWidget() != null) {
 			rightPanel.getWidget().removeFromParent();
 		}
 		EditModelDialog panel = new EditModelDialog();
-		rightPanel.setWidget( panel );
-		panel.editModel( name );
+		rightPanel.setWidget(panel);
+		panel.editModel(name);
 	}
 }
