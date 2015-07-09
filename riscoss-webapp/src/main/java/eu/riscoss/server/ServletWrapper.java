@@ -48,32 +48,42 @@ public class ServletWrapper extends ServletContainer {
 	@SuppressWarnings("unused")
 	public void init() throws ServletException {
 		
+		super.init();
+		
 		{
 			ServletContext sc = getServletContext();
 			
-			String dbaddr = getInitParameter( "eu.riscoss.db.address" );
+			String dbaddr = sc.getInitParameter( "eu.riscoss.db.address" );
+			String dbname = sc.getInitParameter( "eu.riscoss.db.name" );
+			
+			if( dbname == null ) {
+				dbname = "riscoss-db";
+			}
 			
 			if( dbaddr == null ) {
 				File location = new File( "/Users/albertosiena" );
 				
 				if( new File( location, "temp" ).exists() ) {
-					dbaddr = "plocal:" + location.getAbsolutePath() + "/temp/riscoss-db";
+					dbaddr = "plocal:" + location.getAbsolutePath() + "/temp/" + dbname;
 				}
 				else {
 					try {
 						location = DBConnector.findLocation( DBConnector.class );
 						String directory = URLDecoder.decode( location.getAbsolutePath(), "UTF-8" );
-						dbaddr = "plocal:" + directory + "/riscoss-db";
+						dbaddr = "plocal:" + directory + "/" + dbname;
 					} catch (UnsupportedEncodingException e) {
 						e.printStackTrace();
-						dbaddr = "plocal:riscoss-db";
+						dbaddr = "plocal:" + dbname;
 					}
 				}
 				
 				if( dbaddr == null )
-					dbaddr = "plocal:riscoss-db";
+					dbaddr = "plocal:" + dbname;
 				
 				System.out.println( "Using database " + dbaddr );
+			}
+			else {
+				dbaddr = dbaddr + "/" + dbname;
 			}
 			
 			DBConnector.db_addr = dbaddr;
@@ -93,7 +103,6 @@ public class ServletWrapper extends ServletContainer {
 			}
 		}
 		
-		super.init();
 	}
 	
 	public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {

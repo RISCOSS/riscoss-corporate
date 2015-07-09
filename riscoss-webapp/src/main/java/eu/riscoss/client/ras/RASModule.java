@@ -21,7 +21,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.JsonCallbackWrapper;
-import eu.riscoss.client.codec.RASInfoCodec;
+import eu.riscoss.client.codec.CodecRASInfo;
 import eu.riscoss.client.ui.LinkHtml;
 import eu.riscoss.shared.JRASInfo;
 
@@ -91,7 +91,7 @@ public class RASModule implements EntryPoint {
 				if( response.isObject() == null ) return;
 				response = response.isObject().get( "list" );
 				if( response.isArray() != null ) {
-					RASInfoCodec codec = GWT.create( RASInfoCodec.class );
+					CodecRASInfo codec = GWT.create( CodecRASInfo.class );
 					for( int i = 0; i < response.isArray().size(); i++ ) {
 						JRASInfo info = codec.decode( response.isArray().get( i ) );
 						dataProvider.getList().add( info );

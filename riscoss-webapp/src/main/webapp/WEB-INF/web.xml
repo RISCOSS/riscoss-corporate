@@ -6,15 +6,29 @@
 <web-app>
 	
 	<!-- Uncomment this to enable the support for multiple domains -->
-<!-- 	<context-param> -->
-<!-- 		<param-name>eu.riscoss.param.domains.list</param-name> -->
-<!-- 		<param-value>Playground,FBK,Cenatic,OW2,TEI,UPC</param-value> -->
-<!-- 	</context-param> -->
+	<context-param>
+		<param-name>eu.riscoss.param.domains.list</param-name>
+		<param-value>Playground,Public Domain,FBK,Cenatic,OW2,TEI,UPC</param-value>
+	</context-param>
 	
 	<!-- Uncomment this to customize the DB location -->
 <!-- 	<context-param> -->
 <!-- 		<param-name>eu.riscoss.db.address</param-name> -->
-<!-- 		<param-value>plocal:/Users/albertosiena/temp/riscoss-db</param-value> -->
+<!-- 		<param-value>plocal:/Users/albertosiena/temp</param-value> -->
+<!-- 	</context-param> -->
+<!-- 	<context-param> -->
+<!-- 		<param-name>eu.riscoss.db.name</param-name> -->
+<!-- 		<param-value>riscoss-db</param-value> -->
+<!-- 	</context-param> -->
+	
+	<!-- Not necesseary, for now -->
+<!-- 	<context-param> -->
+<!-- 		<param-name>eu.riscoss.db.admin.name</param-name> -->
+<!-- 		<param-value>admin</param-value> -->
+<!-- 	</context-param> -->
+<!-- 	<context-param> -->
+<!-- 		<param-name>eu.riscoss.db.admin.password</param-name> -->
+<!-- 		<param-value>admin</param-value> -->
 <!-- 	</context-param> -->
 	
 	<!-- Servlets -->

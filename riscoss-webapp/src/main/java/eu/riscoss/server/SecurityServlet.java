@@ -61,7 +61,7 @@ public class SecurityServlet extends HttpServlet {
 		
 		if( SecurityManager.get().canAccess( user, req.getRequestURI() ) ) {
 			
-			System.out.println( "User '" + user.username + "' can access resource '" + req.getRequestURI() + "'" );
+			System.out.println( "User '" + user.getUsername() + "' can access resource '" + req.getRequestURI() + "'" );
 			
 			super.service( req, resp );
 			

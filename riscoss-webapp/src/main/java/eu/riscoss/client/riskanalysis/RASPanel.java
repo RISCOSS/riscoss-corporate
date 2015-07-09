@@ -31,13 +31,16 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import eu.riscoss.client.RiscossJsonClient;
+import eu.riscoss.client.codec.CodecMissingData;
 import eu.riscoss.client.report.RiskAnalysisReport;
+import eu.riscoss.shared.JMissingData;
 
 public class RASPanel implements IsWidget {
 	
@@ -53,7 +56,7 @@ public class RASPanel implements IsWidget {
 	public Widget asWidget() {
 		return panel;
 	}
-
+	
 	public void loadRAS( String selectedRAS ) {
 		this.selectedRAS = selectedRAS;
 		new Resource( GWT.getHostPageBaseURL() + "api/analysis/session/" + selectedRAS + "/summary" ).get().send( new JsonCallback() {
@@ -80,20 +83,38 @@ public class RASPanel implements IsWidget {
 		grid.add( "ID:", new Label( ras.getID() ) );
 		grid.add( "Risk configuration:", new Label( ras.getRC() ) );
 		grid.add( "Target entity:", new Label( ras.getTarget() ) );
-		grid.add( "Last execution:", new Label( ras.getDate() ) );
+//		grid.add( "Last execution:", new Label( ras.getDate() ) );
 //		grid.add( "Action:", new RadioButton( "action", "Run" ) );
-		grid.add( "", new Button( "Update Indicators", new ClickHandler() {
-			@Override
-			public void onClick( ClickEvent event ) {
-				onUpdatedIndicatorsClicked();
-			}
-		} ) );
-		grid.add( "", new Button( "Run Analysis", new ClickHandler() {
-			@Override
-			public void onClick( ClickEvent event ) {
-				onRunAnalysisClicked();
-			}
-		} ) );
+		{
+			HorizontalPanel hp = new HorizontalPanel();
+			hp.add( new Label( "Last update: -" ) );
+			hp.add( new Button( "Update now", new ClickHandler() {
+				@Override
+				public void onClick( ClickEvent event ) {
+					onUpdatedIndicatorsClicked();
+				}
+			} ) );
+			hp.add( new Button( "Edit missing values", new ClickHandler() {
+				@Override
+				public void onClick( ClickEvent event ) {
+					onEditMissingValues();
+				}
+			} ) );
+			hp.setWidth( "100%" );
+			grid.add( "Indicators:", hp );
+		}
+		{
+			HorizontalPanel hp = new HorizontalPanel();
+			hp.add( new Label( "Last execution: " + ras.getDate() ) );
+			hp.add( new Button( "Run now", new ClickHandler() {
+				@Override
+				public void onClick( ClickEvent event ) {
+					onRunAnalysisClicked();
+				}
+			} ) );
+			hp.setWidth( "100%" );
+			grid.add( "Analysis:", hp );
+		}
 		
 		grid.add( "Last report", report.asWidget() );
 		
@@ -116,6 +137,22 @@ public class RASPanel implements IsWidget {
 			
 		} );
 		
+	}
+	
+	protected void onEditMissingValues() {
+		new Resource( GWT.getHostPageBaseURL() + "api/analysis/session/" + selectedRAS + "/missing-data" )
+			.get().send( new JsonCallback() {
+				@Override
+				public void onSuccess( Method method, JSONValue response ) {
+					CodecMissingData codec = GWT.create( CodecMissingData.class );
+					JMissingData md = codec.decode( response );
+					new MissingDataDialog( md, selectedRAS ).show();
+				}
+				@Override
+				public void onFailure( Method method, Throwable exception ) {
+					Window.alert( exception.getMessage() );
+				}
+			} );
 	}
 
 	protected void onUpdatedIndicatorsClicked() {

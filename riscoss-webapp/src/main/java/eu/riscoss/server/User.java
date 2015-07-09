@@ -19,5 +19,9 @@ public class User {
 	public boolean isLoggedIn() {
 		return true;
 	}
+
+	public String getUsername() {
+		return this.username;
+	}
 	
 }

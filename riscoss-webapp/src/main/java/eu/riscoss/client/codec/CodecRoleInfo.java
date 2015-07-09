@@ -4,6 +4,6 @@ import org.fusesource.restygwt.client.JsonEncoderDecoder;
 
 import eu.riscoss.shared.JRoleInfo;
 
-public interface RoleInfoCodec extends JsonEncoderDecoder<JRoleInfo>{
+public interface CodecRoleInfo extends JsonEncoderDecoder<JRoleInfo> {
 	
 }

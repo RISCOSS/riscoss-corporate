@@ -48,6 +48,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
+import eu.riscoss.dataproviders.RiskData;
+import eu.riscoss.dataproviders.RiskDataType;
 import eu.riscoss.db.RecordAbstraction;
 import eu.riscoss.db.RiscossDB;
 import eu.riscoss.db.RiskAnalysisSession;
@@ -62,7 +64,10 @@ import eu.riscoss.reasoner.ReasoningLibrary;
 import eu.riscoss.reasoner.RiskAnalysisEngine;
 import eu.riscoss.shared.EAnalysisOption;
 import eu.riscoss.shared.EAnalysisResult;
+import eu.riscoss.shared.JMissingData;
 import eu.riscoss.shared.JRASInfo;
+import eu.riscoss.shared.JRiskData;
+import eu.riscoss.shared.JValueMap;
 
 @Path("analysis")
 public class AnalysisManager {
@@ -218,8 +223,7 @@ public class AnalysisManager {
 		
 	}
 	
-	@GET
-	@Path("/session/{sid}/missing-data")
+	@GET @Path("/session/{sid}/missing-data")
 	public String getSessionMissingData(
 			@PathParam("sid") String sid
 			) {
@@ -227,12 +231,18 @@ public class AnalysisManager {
 		
 		try {
 			// Sia i dati che mancano, sia quelli marcati come "user"
+			RiskAnalysisSession ras = db.openRAS( sid );
+			
+			String target = ras.getTarget();
+			
+			RiskAnalysisProcess rap = new RiskAnalysisProcess( ras );
+			JMissingData md = rap.gatherMissingData( target );
+			
+			return gson.toJson( md );
 		}
 		finally {
 			DBConnector.closeDB( db );
 		}
-		
-		return "";
 	}
 	
 	@PUT @Path("/session/{sid}/missing-data")
@@ -243,16 +253,13 @@ public class AnalysisManager {
 		JsonObject json = (JsonObject)new JsonParser().parse( values );
 		RiscossDB db = DBConnector.openDB();
 		try {
+			JValueMap valueMap = gson.fromJson(json, JValueMap.class );
 			RiskAnalysisSession ras = db.openRAS( sid );
-			JsonArray jentities = json.get( "entities" ).getAsJsonArray();
-			for( int i = 0; i < jentities.size(); i++ ) {
-				JsonObject je = jentities.get( i ).getAsJsonObject();
-				String entity = je.get( "name" ).getAsString();
-				JsonArray jvalues = je.get( "values" ).getAsJsonArray();
-				for( int v = 0; v < jvalues.size(); v++ ) {
-					String id = jvalues.get( v ).getAsJsonObject().get( "id" ).getAsString();
-					String value = jvalues.get( v ).getAsJsonObject().get( "value" ).getAsString();
-					ras.saveInput( entity, id, "user", value );
+			for( String entity : valueMap.map.keySet() ) {
+				for( JRiskData jrd : valueMap.map.get( entity ) ) {
+					RiskData rd = new RiskData( 
+							jrd.id, entity, new Date(), RiskDataType.NUMBER, jrd.value );
+					ras.saveInput( entity, rd.getId(), "user", gson.toJson( rd ) );
 				}
 			}
 		}
@@ -329,7 +336,7 @@ public class AnalysisManager {
 			RiskAnalysisSession ras = db.openRAS( sid );
 			
 //			TimeDiff.get().log( "Starting analysis process" );
-			AnalysisProcess proc = new AnalysisProcess();
+			RiskAnalysisProcess proc = new RiskAnalysisProcess();
 			
 			// Apply analysis algorithm
 			proc.start( ras );

@@ -42,7 +42,21 @@ public class SecurityManager {
 	}
 	
 	public boolean canAccess( User user, String requestURI ) {
+		
+		RiscossDB db = DBConnector.openDB();
+		try {
+//			return db.canAccess( user, requestURI );
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
+		
 		return true;
+	}
+	
+	@POST @Path("domains/create")
+	public String createDomain( @QueryParam("name") String name ) {
+		return "";
 	}
 	
 	@POST @Path("roles/create")

@@ -45,7 +45,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.JsonCallbackWrapper;
-import eu.riscoss.client.codec.RASInfoCodec;
+import eu.riscoss.client.codec.CodecRASInfo;
 import eu.riscoss.client.ui.LinkHtml;
 import eu.riscoss.shared.JRASInfo;
 
@@ -62,7 +62,7 @@ public class RASSelectionPanel implements IsWidget {
 
 	private String selectedRC;
 	
-	RASInfoCodec codec = GWT.create( RASInfoCodec.class );
+	CodecRASInfo codec = GWT.create( CodecRASInfo.class );
 	
 	
 	public RASSelectionPanel() {

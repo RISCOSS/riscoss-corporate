@@ -65,8 +65,6 @@ public class RiscossWebApp implements EntryPoint {
 				Log.println( "Domain check response: " + response );
 				if( response == null ) showDomainSelectionDialog();
 				else if( response.isString() == null ) showDomainSelectionDialog();
-//				else if( !"Ok".equals( response.isString().stringValue() ) )
-//					showDomainSelectionDialog();
 				else showUI( response.isString().stringValue() );
 			}
 			@Override
@@ -88,12 +86,12 @@ public class RiscossWebApp implements EntryPoint {
 		
 		TreeWidget item;
 		
-//		item = root.addChild( new TreeWidget( new Label( "Select" ) ) );
-//		item.addChild( new TreeWidget( new OutlineLabel( "Domain (" + domain + ")", new ClickHandler() {
-//			@Override
-//			public void onClick( ClickEvent event ) {
-//				showDomainSelectionDialog();
-//			}} ) ) );
+		item = root.addChild( new TreeWidget( new Label( "Select" ) ) );
+		item.addChild( new TreeWidget( new OutlineLabel( "Domain (" + domain + ")", new ClickHandler() {
+			@Override
+			public void onClick( ClickEvent event ) {
+				showDomainSelectionDialog();
+			}} ) ) );
 		
 		item = root.addChild( new TreeWidget( new Label( "Configure" ) ) );
 		item.addChild( new TreeWidget( new OutlineLabel( "Layers", "layers.html" ) ) );
@@ -110,8 +108,8 @@ public class RiscossWebApp implements EntryPoint {
 		item.addChild( new TreeWidget( new OutlineLabel( "Risk Data Repository", "rdr.html" ) ) );
 		item.addChild( new TreeWidget( new OutlineLabel( "Risk Analysis Sessions", "ras.html" ) ) );
 		
-		item = root.addChild( new TreeWidget( new Label( "Admin" ) ) );
-		item.addChild( new TreeWidget( new OutlineLabel( "Users and Roles", "admin.html" ) ) );
+//		item = root.addChild( new TreeWidget( new Label( "Admin" ) ) );
+//		item.addChild( new TreeWidget( new OutlineLabel( "Users and Roles", "admin.html" ) ) );
 		
 		VerticalPanel left = new VerticalPanel();
 		left.add( new Image( "logo3.png" ) );
@@ -168,7 +166,11 @@ public class RiscossWebApp implements EntryPoint {
 
 		public void show() {
 			HorizontalPanel h = new HorizontalPanel();
-			h.add( new Button( "Cancel" ) );
+			h.add( new Button( "Cancel", new ClickHandler() {
+				@Override
+				public void onClick( ClickEvent event ) {
+					dialog.hide();
+				}} ) );
 			panel.add( h );
 			dialog.setWidget( panel );
 			dialog.setText( "Select Domain" );

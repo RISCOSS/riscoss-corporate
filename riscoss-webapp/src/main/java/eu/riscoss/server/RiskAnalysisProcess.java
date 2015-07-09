@@ -44,37 +44,47 @@ import eu.riscoss.reasoner.RiskAnalysisEngine;
 import eu.riscoss.server.AnalysisManager.MissingDataItem;
 import eu.riscoss.shared.EAnalysisOption;
 import eu.riscoss.shared.EAnalysisResult;
+import eu.riscoss.shared.EChunkDataType;
+import eu.riscoss.shared.EDataOrigin;
+import eu.riscoss.shared.JDataItem;
+import eu.riscoss.shared.JMissingData;
 
-public class AnalysisProcess {
-	
-	// TODO: remove any reference to the DB; the session must be self-contained
-//	RiscossDB db;
+public class RiskAnalysisProcess {
 	
 	Date date = new Date();
+	private RiskAnalysisSession ras;
 	
-	public AnalysisProcess() {
-//		this.db = db;
+	public RiskAnalysisProcess() {
+	}
+	
+	public RiskAnalysisProcess( RiskAnalysisSession ras ) {
+		this.ras = ras;
 	}
 	
 	public void start( RiskAnalysisSession session ) {
 		
 		date = new Date();
+		this.ras = session;
 		
-		analyseEntity( session.getTarget(), session );
+		analyseEntity( session.getTarget() );
 		
 	}
 	
-	private void analyseEntity( String target, RiskAnalysisSession session ) {
+	public void runAnalysis() {
 		
-		// TODO restore?
-		//		// First, analyse all sub-configurations
-		//		// The result is stored in context.results
-		//		for( Configuration rc : session.getRiskConfiguration().subConfigurations() ) {
-		//			analyseEntity( target, rc, session );
-		//		}
+		if( this.ras == null ) {
+			throw new RuntimeException( "RiskAnalysisSession not initialized" );
+		}
 		
-		// Then, analyse top-level configuration
-		analyseEntity( target, session.getRCName(), session );
+		date = new Date();
+		
+		analyseEntity( ras.getTarget() );
+		
+	}
+	
+	private void analyseEntity( String target ) {
+		
+		analyseEntity( target, ras.getRCName(), ras );
 		
 	}
 	
@@ -96,7 +106,6 @@ public class AnalysisProcess {
 		
 		// Load all models at given layer and run risk analysis
 		for( String rc_name : session.getModels( layer ) ) {
-//			String blob = db.getModelBlob( rc_name );
 			String blob = session.getStoredModelBlob( rc_name );
 			rae.loadModel( blob );
 		}
@@ -111,7 +120,6 @@ public class AnalysisProcess {
 			
 			Field f = rae.getField( c, FieldType.INPUT_VALUE );
 			
-//			Map<String,Object> map = session.getResult( layer, target, c.getId() );
 			List<String> childValues = new ArrayList<String>();
 			{
 				String str = session.getInput( target, c.getId() );
@@ -339,4 +347,73 @@ public class AnalysisProcess {
 		o.addProperty( "value", value );
 		return o.toString();
 	}
+	
+	public JMissingData gatherMissingData( String entity ) {
+		JMissingData md = fillMissingDataStructure( entity );
+		if( md == null ) {
+			md = new JMissingData( entity, "" );
+		}
+		return md;
+	}
+	
+	private JMissingData fillMissingDataStructure( String entity ) {
+		
+		JMissingData md = new JMissingData( entity, ras.getLayer( entity ) );
+		
+		for( String child : ras.getChildren( entity ) ) {
+			JMissingData childMD = fillMissingDataStructure( child );
+			if( childMD != null ) {
+				md.add( childMD );
+			}
+		}
+		
+		String layer = ras.getLayer( entity );
+		RiskAnalysisEngine rae = ReasoningLibrary.get().createRiskAnalysisEngine();
+		for( String model : ras.getModels( layer ) ) {
+			String blob = ras.getStoredModelBlob( model );
+			if( blob != null ) {
+				rae.loadModel( blob );
+			}
+		}
+		
+		for( Chunk c : rae.queryModel( ModelSlice.INPUT_DATA ) ) {
+			
+			if( rae.getDefaultValue( c ) != null )
+				continue;
+			
+			Field f = rae.getField( c, FieldType.INPUT_VALUE );
+			
+			String raw = ras.getInput( entity, c.getId() );
+			if( raw == null ) {
+				JDataItem item = new JDataItem();
+				item.setDescription( (String)rae.getField( c, FieldType.DESCRIPTION ).getValue() );
+				item.setLabel( (String)rae.getField( c, FieldType.LABEL ).getValue() );
+				item.setId( c.getId() );
+				item.setOrigin( EDataOrigin.RDR );
+				item.setValue( "" );
+				item.setType( EChunkDataType.valueOf( f.getDataType().name() ) );
+				md.add( item );
+			}
+			else {
+				JsonObject json = (JsonObject)new JsonParser().parse( raw );
+				if( json.get( "origin" ) == null ) continue;
+				String origin = json.get( "origin" ).getAsString();
+				if( "user".equals( origin ) ) {
+					JDataItem item = new JDataItem();
+					item.setDescription( (String)rae.getField( c, FieldType.DESCRIPTION ).getValue() );
+					item.setLabel( (String)rae.getField( c, FieldType.LABEL ).getValue() );
+					item.setId( c.getId() );
+					item.setOrigin( EDataOrigin.User );
+					item.setValue( json.get("value").getAsString() );
+					item.setType( EChunkDataType.valueOf( f.getDataType().name() ) );
+					md.add( item );
+				}
+			}
+			
+		}
+		
+		return md;
+		
+	}
+
 }
