@@ -77,8 +77,16 @@ public class SecurityServlet extends HttpServlet {
 	}
 	
 	protected void doGet( HttpServletRequest req, HttpServletResponse resp ) {
+		//FIXME Problem 1: getRequestUri has part of the path.
+		//FIXME Problem 2: avoiding absolute paths
+		//FIXME Problem 3: the first request commonly does not have the uri of the file...?
 		
 		File file = new File( req.getSession().getServletContext().getRealPath("/") + req.getRequestURI() );
+		
+		//THIS WORKS BETTER BUT SEEMS ALSO TO HAVE SOME PROBLEM....
+		//File file = new File(req.getRequestURI().substring(1));
+		
+		System.out.println("FILE PATH"+file.getAbsolutePath());
 		
 		if( !file.exists() ) {
 			String filename = file.getName().toLowerCase();
