@@ -46,6 +46,13 @@ public interface RiscossDB {
 	public abstract void storeModel(String modelBlob, String modelName);
 	public abstract String getModelBlob(String modelName);
 	public abstract void removeModelBlob(String modelName);
+	/*
+	 * Model description
+	 */
+	public abstract void storeModelDesc(String modelName, String blobFilename, byte[] modelDescBlob);
+	public abstract byte[] getModelDescBlob(String modelName);
+	public abstract void removeModelDescBlob(String modelName);
+	public abstract String getModelDescFielname(String modelName);
 	
 	/*
 	 * Risk Configurations
@@ -87,5 +94,6 @@ public interface RiscossDB {
 	public abstract List<String> listRoles();
 	public abstract void createUser( String username, String password ) throws Exception;
 	public abstract List<String> listUsers();
+	
 
 }
