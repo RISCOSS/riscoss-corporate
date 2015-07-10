@@ -16,7 +16,7 @@
  */
 
 /**
- * @author 	Alberto Siena
+ * @author 	Alberto Siena, Mirko Morandini
  **/
 
 package eu.riscoss.client.models;
@@ -35,8 +35,6 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.HasClickHandlers;
-import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
@@ -45,13 +43,10 @@ import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.DecoratorPanel;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -63,7 +58,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.JsonCallbackWrapper;
-import eu.riscoss.client.Log;
 import eu.riscoss.client.ModelInfo;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.riskanalysis.KeyValueGrid;
@@ -76,21 +70,19 @@ import gwtupload.client.SingleUploader;
 
 public class ModelsModule implements EntryPoint {
 
-	public class MyFancyLookingButton extends Composite implements HasClickHandlers {
-		SimplePanel widget = new SimplePanel();
-
-		public MyFancyLookingButton() {
-			DecoratorPanel widget = new DecoratorPanel();
-			//initWidget( new Anchor( "Choose..." ) );
-			initWidget(widget);
-			widget.setWidget(new HTML("New..."));
-		}
-
-		public HandlerRegistration addClickHandler(ClickHandler handler) {
-			return addDomHandler(handler, ClickEvent.getType());
-		}
-	}
-
+//	public class MyFancyLookingButton extends Composite implements HasClickHandlers {
+//		SimplePanel widget = new SimplePanel();
+//		public MyFancyLookingButton() {
+//			DecoratorPanel widget = new DecoratorPanel();
+//			//initWidget( new Anchor( "Choose..." ) );
+//			initWidget(widget);
+//			widget.setWidget(new HTML("New..."));
+//		}
+//		public HandlerRegistration addClickHandler(ClickHandler handler) {
+//			return addDomHandler(handler, ClickEvent.getType());
+//		}
+//	}
+	
 	DockPanel dock = new DockPanel();
 
 	CellTable<ModelInfo> table;
@@ -162,14 +154,12 @@ public class ModelsModule implements EntryPoint {
 		// Attach the image viewer to the document
 		// RootPanel.get().add(panelImages);
 
-		MyFancyLookingButton button = new MyFancyLookingButton();
+		//MyFancyLookingButton button = new MyFancyLookingButton();
 		//SingleUploader uploader = new SingleUploader();//FileInputType.CUSTOM.with(button));// "New..."
 		SingleUploader uploader = new SingleUploader(FileInputType.BUTTON);// "New..."
-		
 		//with a specific caption:
 		//SingleUploader uploader = new SingleUploader(FileInputType.CUSTOM.with(new Button("New...")));// "New..."
-
-		uploader.setTitle("New...");
+		uploader.setTitle("Upload new model");
 		uploader.setAutoSubmit(true);
 		uploader.setServletPath(uploader.getServletPath() + "?t=modelblob");
 		uploader.addOnFinishUploadHandler(new OnFinishUploaderHandler() {
@@ -193,7 +183,8 @@ public class ModelsModule implements EntryPoint {
 		VerticalPanel tablePanel = new VerticalPanel();
 		tablePanel.add(table);
 		tablePanel.add(pager);
-
+		
+		
 		dock.add(tablePanel, DockPanel.CENTER);
 		dock.add(uploader, DockPanel.NORTH);
 		dock.add(rightPanel, DockPanel.EAST);
@@ -251,6 +242,14 @@ public class ModelsModule implements EntryPoint {
 		// panelImages.add(image);
 		// }
 		// };
+		
+		public class MyNameButton extends Button{
+			public String name;
+			public MyNameButton(String name, String html, ClickHandler handler){
+				super(html, handler);
+				this.name = name;
+			}
+		}
 
 		DockPanel panel = new DockPanel();
 		String text = null;
@@ -286,27 +285,56 @@ public class ModelsModule implements EntryPoint {
 		}
 
 		void showEditDialog(JSONObject json) {
-			Grid grid = new Grid(3, 2);
+			
+			Grid grid = new Grid(2, 2);
 			grid.setWidget(0, 0, new Label("Name:"));
+			//Label txt = new Label();
 			TextBox txt = new TextBox();
-			txt.setText(json.get("name").isString().stringValue());
+			txt.setReadOnly(true);
+			String jsname = json.get("name").isString().stringValue();
+			txt.setText(jsname);
 			grid.setWidget(0, 1, txt);
 
-			grid.setWidget(1, 0, new Label("Description:"));
-			txt = new TextBox();
-			grid.setWidget(1, 1, txt);
-
-			// TODO: implement model picture
-			// grid.setWidget( 2, 0, new Label( "Picture:" ) );
-			// grid.setWidget( 2, 1, new Button( "Change...", new ClickHandler()
-			// {
-			// @Override
-			// public void onClick(ClickEvent event) {
-			// u.setServletPath( servletPath + "?t=modelimg&name=" + name );
-			// popup.show();
-			// }
-			// } ) );
-
+//			grid.setWidget(1, 0, new Label("Description:"));
+//			txt = new TextBox();
+//			txt.setReadOnly(true);
+//			grid.setWidget(1, 1, txt);
+			
+			//Uploader///////////
+			SingleUploader docuUploader = new SingleUploader(); //FileInputType.CUSTOM.with(new Button("Upload model documentation")));// "New..."
+			docuUploader.setTitle("Upload model documentation");
+			docuUploader.setAutoSubmit(true);
+			
+			docuUploader.setServletPath(docuUploader.getServletPath() + "?t=modeldescblob");
+					
+			docuUploader.add(new Hidden("Modelname", jsname));
+				
+			docuUploader.addOnFinishUploadHandler(new OnFinishUploaderHandler() {
+				@Override
+				public void onFinish(IUploader uploader) {
+					UploadedInfo info = uploader.getServerInfo();
+					String name = info.name;
+					//Log.println("SERVERMESS2 " + uploader.getServerMessage().getMessage());
+					
+					String response = uploader.getServerMessage().getMessage();
+					if (!response.trim().startsWith("Error"))
+						Window.confirm(response); //TODO change!
+					else
+						Window.alert("Error: " + response );
+				}
+			});
+			
+			grid.setWidget( 1, 0, docuUploader);
+			
+			//Downloader/////////
+			Button docuDownloader = new MyNameButton(jsname, "Download documentation", new ClickHandler() {
+				public void onClick(ClickEvent event) {
+					Window.open(GWT.getHostPageBaseURL() +  "models/descBlob?name="+ name, "_self", "enabled");					
+				}
+			});
+			
+			grid.setWidget( 1, 1, docuDownloader);
+			
 			area = new TextArea();
 			chunksGrid = new KeyValueGrid();
 

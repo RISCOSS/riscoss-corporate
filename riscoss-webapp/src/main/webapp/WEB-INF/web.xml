@@ -44,7 +44,12 @@
 		<servlet-name>uploadServlet</servlet-name>
 		<servlet-class>eu.riscoss.server.UploadServiceImpl</servlet-class>
 	</servlet>
-
+	
+	<servlet>
+		<servlet-name>downloadServlet</servlet-name>
+		<servlet-class>eu.riscoss.server.DownloadServlet</servlet-class>
+	</servlet>
+	
 	<!-- Servlet mappings -->
 
 	<servlet-mapping>
@@ -67,9 +72,15 @@
 		<url-pattern>*.gupld</url-pattern>
 	</servlet-mapping>
 
+    <servlet-mapping>
+        <servlet-name>downloadServlet</servlet-name>
+        <url-pattern>/models/descBlob</url-pattern>
+    </servlet-mapping>
+
 	<!-- Default page to serve -->
 	<welcome-file-list>
 		<welcome-file>RiscossWebApp.html</welcome-file>
 	</welcome-file-list>
+	
 
 </web-app>
