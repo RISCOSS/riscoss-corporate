@@ -159,6 +159,12 @@ public class RiscossJsonClient {
 		.addQueryParam( "name", name )
 		.get().send( cb );
 	}
+	
+	public static void getModelDescBlob( String name, JsonCallback cb ) {
+		new Resource( GWT.getHostPageBaseURL() + "models/descBlob" )
+		.addQueryParam( "name", name )
+		.get().send( cb );
+	}
 
 	public static void createEntity( String name, String layer, String parent, JsonCallback cb ) {
 		new Resource( GWT.getHostPageBaseURL() + "api/entities/new" )

@@ -1,5 +1,6 @@
 package eu.riscoss.db;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -13,7 +14,6 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
-
 
 public class GDomDB {
 	
@@ -397,11 +397,35 @@ public class GDomDB {
 		return ret;
 	}
 	
+	public byte[] getByteAttribute(NodeID id, String key) {
+		OrientVertex v = graph.getVertex( id.toString() );
+		if( v == null ) 
+			return new byte[0];
+		byte[] ret = v.getRecord().field( key );
+		return ret;  
+	}
+	
 	public void setAttribute( NodeID id, String key, String value ) {
 		Vertex v = graph.getVertex( id.toString() );
 		if( v == null ) return;
 		v.setProperty( key, value );
 		graph.commit();
+	}
+	
+	public void setAttribute( NodeID id, String key, byte[] value ) {
+		OrientVertex v = graph.getVertex( id.toString() );
+		if( v == null ) 
+			return;
+		v.getRecord().field(key, value); 
+		graph.commit();	
+	}
+	
+	public void removeAttribute( NodeID id, String key) {
+		OrientVertex v = graph.getVertex( id.toString() );
+		if( v == null ) 
+			return;
+		v.getRecord().removeField(key); 
+		graph.commit();	
 	}
 	
 	public String getPath( NodeID id ) {
@@ -460,4 +484,5 @@ public class GDomDB {
 			return null;
 		}
 	}
+
 }

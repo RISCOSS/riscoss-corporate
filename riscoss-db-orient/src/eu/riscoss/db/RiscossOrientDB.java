@@ -724,5 +724,32 @@ public class RiscossOrientDB implements RiscossDB {
 		if( list.size() < 1 ) return false;
 		return true;
 	}
+
+	@Override
+	public void storeModelDesc(String modelName, String blobFilename, byte[] modelDescBlob) {
+		NodeID id = dom.getVertex( "/models/" + modelName );
+		dom.setAttribute( id, "descBlob", modelDescBlob );
+		dom.setAttribute( id, "descBlobName", blobFilename );
+	}
+
+	@Override
+	public byte[] getModelDescBlob(String modelName) {
+		NodeID id = dom.getVertex( "/models/" + modelName );
+		if( id == null ) return null;
+		return dom.getByteAttribute( id, "descBlob" );
+	}
+
+	@Override
+	public void removeModelDescBlob(String modelName) {
+		NodeID id = dom.getVertex( "/models/" + modelName );
+		dom.removeAttribute( id, "descBlob");;
+	}
+
+	@Override
+	public String getModelDescFielname(String modelName) {
+		NodeID id = dom.getVertex( "/models/" + modelName );
+		if( id == null ) return null;
+		return dom.getAttribute( id, "descBlobName", "");
+	}
 	
 }
