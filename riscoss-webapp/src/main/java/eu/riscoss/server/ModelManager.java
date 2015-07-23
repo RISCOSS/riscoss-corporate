@@ -27,6 +27,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -43,13 +44,18 @@ import eu.riscoss.reasoner.FieldType;
 import eu.riscoss.reasoner.ModelSlice;
 import eu.riscoss.reasoner.ReasoningLibrary;
 import eu.riscoss.reasoner.RiskAnalysisEngine;
+import eu.riscoss.shared.EChunkType;
+import eu.riscoss.shared.JChunkItem;
+import eu.riscoss.shared.JChunkList;
+import eu.riscoss.shared.JChunkValue;
 
 
 @Path("models")
 public class ModelManager {
 	
-	@GET
-	@Path("list")
+	Gson gson = new Gson();
+	
+	@GET @Path("list")
 	public String getList() {
 		
 		JsonArray a = new JsonArray();
@@ -70,6 +76,191 @@ public class ModelManager {
  
 	}
 	
+	@GET @Path("/model/chunklist")
+	public String getModelChunkList( @HeaderParam("models") String models ) {
+		
+		JsonArray json = (JsonArray)new JsonParser().parse( models );
+		
+		JChunkList list = new JChunkList();
+		
+		RiscossDB db = DBConnector.openDB();
+		try {
+			
+			for( int i = 0; i < json.size(); i++ ) {
+				
+				String modelName = json.get( i ).getAsString();
+				
+				String blob = db.getModelBlob( modelName );
+				
+				if( blob != null ) {
+					
+					RiskAnalysisEngine rae = ReasoningLibrary.get().createRiskAnalysisEngine();
+					rae.loadModel( blob );
+					
+					
+					for( Chunk c : rae.queryModel( ModelSlice.INPUT_DATA ) ) {
+						
+						JChunkItem jchunk = new JChunkItem();
+						
+						jchunk.setId( c.getId() );
+						jchunk.setLabel( getProperty( rae, c, FieldType.LABEL, c.getId() ) );
+						jchunk.setDescription( getProperty( rae, c, FieldType.DESCRIPTION, "" ) );
+						{
+							String type = rae.getField( c, FieldType.TYPE ).getValue();
+							if( "Goal".equals( type ) ) {
+								jchunk.setType( EChunkType.GOAL );
+							}
+							else if( "Risk".equals( type ) ) {
+								jchunk.setType( EChunkType.RISK );
+							}
+							else if( "Indicator".equals( type ) ) {
+								jchunk.setType( EChunkType.INDICATOR );
+							}
+							else {
+								jchunk.setType( EChunkType.OTHER );
+							}
+						}
+						
+						switch( rae.getField( c, FieldType.INPUT_VALUE ).getDataType() ) {
+						case DISTRIBUTION: {
+							
+							JChunkValue.JDistribution jd = new JChunkValue.JDistribution();
+							Distribution d = rae.getField( c, FieldType.INPUT_VALUE ).getValue();
+							jd.values.addAll( d.getValues() );
+							jchunk.setValue( jd );
+							
+						}
+							break;
+						case EVIDENCE: {
+							
+							JChunkValue.JEvidence je = new JChunkValue.JEvidence();
+							Evidence e = rae.getField( c, FieldType.INPUT_VALUE ).getValue();
+							je.p = e.getPositive();
+							je.m = e.getNegative();
+							jchunk.setValue( je );
+							
+						}
+							break;
+						case INTEGER: {
+							
+							JChunkValue.JInteger ji = new JChunkValue.JInteger();
+							
+							if( rae.getField( c, FieldType.MIN ).getDataType() != DataType.NaN )
+								ji.min = rae.getField( c, FieldType.MIN ).getValue();
+							if( rae.getField( c, FieldType.MAX ).getDataType() != DataType.NaN )
+								ji.max = rae.getField( c, FieldType.MAX ).getValue();
+							ji.value = (int)rae.getField( c, FieldType.INPUT_VALUE ).getValue();
+							
+							jchunk.setValue( ji );
+							
+						}
+							break;
+						case NaN:
+							break;
+						case REAL: {
+							JChunkValue.JReal ji = new JChunkValue.JReal();
+							
+							if( rae.getField( c, FieldType.MIN ).getDataType() != DataType.NaN )
+								ji.min = rae.getField( c, FieldType.MIN ).getValue();
+							if( rae.getField( c, FieldType.MAX ).getDataType() != DataType.NaN )
+								ji.max = rae.getField( c, FieldType.MAX ).getValue();
+							ji.value = (double)rae.getField( c, FieldType.INPUT_VALUE ).getValue();
+							
+							jchunk.setValue( ji );
+							
+						}
+							break;
+						case STRING:
+							break;
+						default:
+							break;
+						}
+						list.inputs.add( jchunk );
+					}
+					
+					for( Chunk c : rae.queryModel( ModelSlice.OUTPUT_DATA ) ) {
+						
+						JChunkItem jchunk = new JChunkItem();
+						
+						jchunk.setId( c.getId() );
+						{
+							String type = rae.getField( c, FieldType.TYPE ).getValue();
+							if( "Goal".equals( type ) ) {
+								jchunk.setType( EChunkType.GOAL );
+							}
+							else if( "Risk".equals( type ) ) {
+								jchunk.setType( EChunkType.RISK );
+							}
+							else if( "Indicator".equals( type ) ) {
+								jchunk.setType( EChunkType.INDICATOR );
+							}
+							else {
+								jchunk.setType( EChunkType.OTHER );
+							}
+						}
+						
+						String label = c.getId();
+						Field f = rae.getField( c, FieldType.LABEL );
+						if( f != null ) {
+							label = f.getValue();
+						}
+						jchunk.setLabel( label );
+						f = rae.getField( c, FieldType.DESCRIPTION );
+						if( f != null ) {
+							jchunk.setDescription( (String)f.getValue() );
+						}
+						switch( rae.getField( c, FieldType.OUTPUT_VALUE ).getDataType() ) {
+						case DISTRIBUTION: {
+							Distribution d = rae.getField( c, FieldType.OUTPUT_VALUE ).getValue();
+							JChunkValue.JDistribution jd = new JChunkValue.JDistribution();
+							jd.values.addAll( d.getValues() );
+							jchunk.setValue( jd );
+						}
+							break;
+						case EVIDENCE: {
+							JChunkValue.JEvidence je = new JChunkValue.JEvidence();
+							Evidence e = rae.getField( c, FieldType.OUTPUT_VALUE ).getValue();
+							je.p = e.getPositive();
+							je.m = e.getNegative();
+							jchunk.setValue( je );
+						}
+							break;
+						case INTEGER: {
+							JChunkValue.JInteger ji = new JChunkValue.JInteger();
+							ji.value = (int)rae.getField( c, FieldType.OUTPUT_VALUE ).getValue();
+							jchunk.setValue( ji );
+						}
+							break;
+						case NaN:
+							break;
+						case REAL: {
+							JChunkValue.JReal ji = new JChunkValue.JReal();
+							ji.value = (double)rae.getField( c, FieldType.OUTPUT_VALUE ).getValue();
+							jchunk.setValue( ji );
+						}
+							break;
+						case STRING:
+							break;
+						default:
+							break;
+						}
+						list.outputs.add( jchunk );
+					}
+					
+				}
+			}
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
+		
+		String ret = gson.toJson( list );
+		
+		System.out.println( ret );
+		
+		return ret;
+	}
+
 	@GET
 	@Path("/model/chunks")
 	public String getModelChunks( @HeaderParam("models") String models ) {

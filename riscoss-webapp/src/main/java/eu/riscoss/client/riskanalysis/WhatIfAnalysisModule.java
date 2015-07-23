@@ -53,7 +53,7 @@ public class WhatIfAnalysisModule implements EntryPoint {
 	
 	DockPanel	dock = new DockPanel();
 	ListBox		combo = new ListBox();
-	ListBox		rcCombo = new ListBox();
+//	ListBox		rcCombo = new ListBox();
 	SimplePanel	contentPanel = new SimplePanel();
 	
 	boolean ready = false;
@@ -117,21 +117,21 @@ public class WhatIfAnalysisModule implements EntryPoint {
 					}
 				}
 				
-				RiscossJsonClient.listRCs( new JsonCallback() {
-					@Override
-					public void onSuccess( Method method, JSONValue response ) {
-						if( response.isArray() != null ) {
-							for( int i = 0; i < response.isArray().size(); i++ ) {
-								JSONObject o = (JSONObject)response.isArray().get( i );
-								rcCombo.addItem( o.get( "name" ).isString().stringValue() );
-							}
-						}
-					}
-					@Override
-					public void onFailure( Method method, Throwable exception ) {
-						Window.alert( exception.getMessage() );
-					}
-				});
+//				RiscossJsonClient.listRCs( new JsonCallback() {
+//					@Override
+//					public void onSuccess( Method method, JSONValue response ) {
+//						if( response.isArray() != null ) {
+//							for( int i = 0; i < response.isArray().size(); i++ ) {
+//								JSONObject o = (JSONObject)response.isArray().get( i );
+//								rcCombo.addItem( o.get( "name" ).isString().stringValue() );
+//							}
+//						}
+//					}
+//					@Override
+//					public void onFailure( Method method, Throwable exception ) {
+//						Window.alert( exception.getMessage() );
+//					}
+//				});
 			}
 			
 			@Override

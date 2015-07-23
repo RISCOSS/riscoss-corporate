@@ -21,13 +21,20 @@
 
 package eu.riscoss.server;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -39,7 +46,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+
+import org.python.util.PythonInterpreter;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -64,6 +74,8 @@ import eu.riscoss.reasoner.ReasoningLibrary;
 import eu.riscoss.reasoner.RiskAnalysisEngine;
 import eu.riscoss.shared.EAnalysisOption;
 import eu.riscoss.shared.EAnalysisResult;
+import eu.riscoss.shared.JAHPComparison;
+import eu.riscoss.shared.JAHPInput;
 import eu.riscoss.shared.JMissingData;
 import eu.riscoss.shared.JRASInfo;
 import eu.riscoss.shared.JRiskData;
@@ -782,5 +794,139 @@ public class AnalysisManager {
 			ret.add( o );
 		}
 		return ret;
+	}
+	
+	@POST @Path("/ahp")
+	public String runAHPAnalysis( @Context HttpServletRequest req ) throws IOException {
+		
+		String json = getBody(req );
+		
+		System.out.println( "Received json: " + json );
+		
+		System.out.println( "Decoding AHP input" );
+		JAHPInput ahpInput = gson.fromJson( json, JAHPInput.class );
+		
+		System.out.println( "Running AHP" );
+		
+		try {
+			
+			Map<String,Integer> goal_map = mkIdMap( ahpInput.goals );
+			
+			String strList1 = mkList( ahpInput.goals, goal_map );
+			String[] strList2 = new String[ahpInput.risks.size()];
+			for( int i = 0; i < ahpInput.risks.size(); i++ ) {
+				List<JAHPComparison> list = ahpInput.risks.get( i );
+				Map<String,Integer> risk_map = mkIdMap( list );
+				strList2[i] = mkList( list, risk_map );
+			}
+			
+			String[] input = new String[4 + strList2.length];
+			input[0] = "jython";		// first argument in python is the program name
+			input[1] = "" + ahpInput.getGoalCount();
+			input[2] = "" + ahpInput.getRiskCount();
+			input[3] = strList1;
+			for( int i = 0; i < strList2.length; i++ ) {
+				input[4 + i] = strList2[i];
+			}
+			
+			System.out.println( "Initializing Jython" );
+			PythonInterpreter.initialize( System.getProperties(), new Properties(), input );
+			
+			System.out.println( "Creating Jython object" );
+			PythonInterpreter jython =
+				    new PythonInterpreter();
+			
+			
+			System.out.println( "Seeting output stream" );
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			jython.setOut( out );
+			
+			System.out.println( "Executing" );
+			jython.execfile( AnalysisManager.class.getResource( "res/ahpNoEig_command.py" ).getFile() );
+			
+			String output = out.toString();
+			
+			System.out.println( "Output:" );
+			System.out.println( output );
+			
+			try {
+				output = output.substring( 1, output.length() -2 );
+				String[] parts = output.split( "[,]" );
+				List<String> list = new ArrayList<String>();
+				for( String p : parts ) {
+					list.add( p.trim() );
+				}
+				return gson.toJson( list );
+			}
+			catch( Exception ex ) {
+				ex.printStackTrace();
+			}
+			finally {
+				jython.close();
+			}
+			
+		}
+		catch( Exception ex ) {
+			ex.printStackTrace();
+		}
+		
+		return "";
+	}
+	
+	private Map<String,Integer> mkIdMap( List<JAHPComparison> list ) {
+		Map<String,Integer> goal_map = new HashMap<String,Integer>();
+		for( JAHPComparison c : list ) {
+			if( !goal_map.containsKey( c.getId1() ) ) {
+				goal_map.put( c.getId1(), goal_map.size() );
+			}
+			if( !goal_map.containsKey( c.getId2() ) ) {
+				goal_map.put( c.getId2(), goal_map.size() );
+			}
+		}
+		return goal_map;
+	}
+	
+	private String mkList( List<JAHPComparison> list, Map<String, Integer> id_map  ) {
+		String ret = "";
+		String sep = "";
+		for( JAHPComparison c : list ) {
+			ret += sep + "[" + id_map.get( c.getId1() ) + "," + id_map.get( c.getId2() ) + "," + c.value + "]";
+			sep = ",";
+		}
+		return "[" + ret + "]";
+	}
+	
+	public static String getBody(HttpServletRequest request) throws IOException {
+
+	    String body = null;
+	    StringBuilder stringBuilder = new StringBuilder();
+	    BufferedReader bufferedReader = null;
+
+	    try {
+	        InputStream inputStream = request.getInputStream();
+	        if (inputStream != null) {
+	            bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+	            char[] charBuffer = new char[128];
+	            int bytesRead = -1;
+	            while ((bytesRead = bufferedReader.read(charBuffer)) > 0) {
+	                stringBuilder.append(charBuffer, 0, bytesRead);
+	            }
+	        } else {
+	            stringBuilder.append("");
+	        }
+	    } catch (IOException ex) {
+	        throw ex;
+	    } finally {
+	        if (bufferedReader != null) {
+	            try {
+	                bufferedReader.close();
+	            } catch (IOException ex) {
+	                throw ex;
+	            }
+	        }
+	    }
+
+	    body = stringBuilder.toString();
+	    return body;
 	}
 }

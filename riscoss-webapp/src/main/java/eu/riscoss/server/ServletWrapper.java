@@ -88,6 +88,9 @@ public class ServletWrapper extends ServletContainer {
 			
 			DBConnector.db_addr = dbaddr;
 			
+			System.out.println( "DB address: " + dbaddr );
+			System.out.println( "DB name: " + dbname );
+			
 			DBConnector.closeDB( DBConnector.openDB() );
 			
 			Reflections reflections = new Reflections( RDCRunner.class.getPackage().getName() );

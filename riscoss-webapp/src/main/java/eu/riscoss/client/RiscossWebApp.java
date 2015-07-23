@@ -103,6 +103,7 @@ public class RiscossWebApp implements EntryPoint {
 		item.addChild( new TreeWidget( new OutlineLabel( "One-layer Analysis", "analysis.html" ) ) );
 		item.addChild( new TreeWidget( new OutlineLabel( "Multi-layer Analysis", "riskanalysis.html" ) ) );
 		item.addChild( new TreeWidget( new OutlineLabel( "What-If Analysis", "whatifanalysis.html" ) ) );
+		item.addChild( new TreeWidget( new OutlineLabel( "AHP Session", "rma.html" ) ) );
 		
 		item = root.addChild( new TreeWidget( new Label( "Browse" ) ) );
 		item.addChild( new TreeWidget( new OutlineLabel( "Risk Data Repository", "rdr.html" ) ) );

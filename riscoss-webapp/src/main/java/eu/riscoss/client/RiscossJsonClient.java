@@ -279,7 +279,7 @@ public class RiscossJsonClient {
 			.get().header( "models", mkJsonArray( list ).toString() ).send( cb );
 	}
 	
-	static JSONArray mkJsonArray( List<String> list ) {
+	public static JSONArray mkJsonArray( List<String> list ) {
 		JSONArray array = new JSONArray();
 		for( String e : list ) {
 			array.set( array.size(), new JSONString( e ) );
