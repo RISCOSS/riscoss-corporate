@@ -51,6 +51,7 @@ import eu.riscoss.client.JsonCallbackWrapper;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.SimpleRiskCconf;
 import eu.riscoss.client.ui.LinkHtml;
+import eu.riscoss.shared.RiscossUtil;
 
 public class RiskConfsModule implements EntryPoint {
 	
@@ -195,9 +196,11 @@ public class RiskConfsModule implements EntryPoint {
 	
 	protected void onAddNew() {
 		String name = Window.prompt( "Name:", "" );
-		if( name == null ) return;
-		name = name.trim();
-		if( "".equals( name ) ) return;
+		if( name == null || "".equals( name ) ) 
+			return;
+		
+		name = RiscossUtil.sanitize(name.trim());//attention:name sanitation is not directly notified to the user
+		
 		RiscossJsonClient.createRC( name, new JsonCallback() {
 			@Override
 			public void onFailure(Method method, Throwable exception) {
