@@ -127,10 +127,13 @@ public class UploadServiceImpl extends UploadAction {
 			for (FileItem item : sessionFiles) {
 				if (!item.isFormField()){
 					try {
-						String name = request.getParameter( "name" );
+						String name = request.getParameter( "name" ); //the file name, used only to propose a filename when downloading
 						if( name == null ) {
 							name = item.getName();
 						}
+						//attention:filename sanitation is not directly notified to the user
+						name = RiscossUtil.sanitize(name);
+						
 						//store description for the model. Overwrites an existing description
 						db.storeModelDesc(modelName, name, item.get());
 						

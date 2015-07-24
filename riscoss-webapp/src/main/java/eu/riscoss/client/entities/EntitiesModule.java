@@ -60,6 +60,7 @@ import eu.riscoss.client.layers.LayersComboBox;
 import eu.riscoss.client.ui.ClickWrapper;
 import eu.riscoss.client.ui.EntityBox;
 import eu.riscoss.client.ui.LinkHtml;
+import eu.riscoss.shared.RiscossUtil;
 
 public class EntitiesModule implements EntryPoint {
 	
@@ -120,7 +121,7 @@ public class EntitiesModule implements EntryPoint {
 		ppg = new EntityPropertyPage();
 		
 		HorizontalPanel hpanel = new HorizontalPanel();
-		Anchor a = new Anchor( "Create new entity..." );
+		Button a = new Button( "Create new entity..." );
 		a.addClickHandler( new ClickWrapper<String>( layer ) {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -199,7 +200,9 @@ public class EntitiesModule implements EntryPoint {
 		}
 		
 		String getChosenName() {
-			return txt.getText().trim();
+			String s = RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
+			txt.setText(s);
+			return s;
 		}
 		
 		String getChosenLayer() {

@@ -181,6 +181,8 @@
 
 	</dependencies>
 
+
+
 	<build>
 		<!-- Generate compiled stuff in the folder used for developing mode -->
 		<outputDirectory>${webappDirectory}/WEB-INF/classes</outputDirectory>
@@ -212,6 +214,7 @@
 				<version>2.6.0</version>
 				<executions>
 					<execution>
+						<phase>prepare-package</phase>  <!--added mm to test -->
 						<goals>
 							<!-- <goal>resources</goal> -->
 							<goal>compile</goal>
@@ -224,7 +227,7 @@
 				<!-- Plugin configuration. There are many available options, see gwt-maven-plugin 
 					documentation at codehaus.org -->
 				<configuration>
-
+ 					<productionMode>true</productionMode>  <!--added mm to test -->
 					<extraJvmArgs>-Xss1024k -Xmx1024m -XX:MaxPermSize=256m</extraJvmArgs>
 
 					<webResources>
@@ -279,7 +282,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<webappDirectory>${webappDirectory}</webappDirectory>
+			  		<webappDirectory>${webappDirectory}</webappDirectory>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -294,5 +297,22 @@
 			</plugin>
 		</plugins>
 	</build>
+	
+	<profiles>  <!--added mm optional call with -Pdev -->
+		<profile>
+			<id>dev</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>gwt-maven-plugin</artifactId>
+						<configuration>
+							<draftCompile>true</draftCompile>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 </project>

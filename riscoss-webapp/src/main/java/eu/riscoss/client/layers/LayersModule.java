@@ -47,6 +47,7 @@ import eu.riscoss.client.ui.ClickWrapper;
 import eu.riscoss.client.ui.FramePanel;
 import eu.riscoss.client.ui.LabeledWidget;
 import eu.riscoss.client.ui.TreeWidget;
+import eu.riscoss.shared.RiscossUtil;
 
 public class LayersModule implements EntryPoint {
 	
@@ -125,7 +126,10 @@ public class LayersModule implements EntryPoint {
 	    menu.addItem( "Rename Layer", new Command() {
 			@Override
 			public void execute() {
-				// TODO
+				//call onRenameLayer();
+				//String s = RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
+				//txt.setText(s);
+				//TODO rename
 			}});
 	    menu.addItem( "Delete Layer", new Command() {
 			@Override
@@ -221,7 +225,9 @@ public class LayersModule implements EntryPoint {
 							if( "[top]".equals( parent ) ) {
 								parent = "$root";
 							}
-							RiscossJsonClient.createLayer( txt.getText(), parent, 
+							String s = RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
+							txt.setText(s);
+							RiscossJsonClient.createLayer( s, parent, 
 									new JsonCallback() {
 								@Override
 								public void onFailure(Method method, Throwable exception) {

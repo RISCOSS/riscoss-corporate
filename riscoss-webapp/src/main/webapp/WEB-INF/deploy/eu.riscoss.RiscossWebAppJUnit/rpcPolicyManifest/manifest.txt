@@ -1,2 +1,0 @@
-# Module eu.riscoss.RiscossWebAppJUnit
-# RPC service class, partial path of RPC policy file
