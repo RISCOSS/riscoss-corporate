@@ -30,7 +30,9 @@ import javax.ws.rs.QueryParam;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import eu.riscoss.client.Log;
 import eu.riscoss.db.RiscossDB;
+import eu.riscoss.shared.RiscossUtil;
 
 @Path("layers")
 public class LayersManager {
@@ -65,7 +67,9 @@ public class LayersManager {
 			@QueryParam("name") String name,
 			@QueryParam("parent") String parentName
 			) {
-		name = name.trim();
+		//attention:filename sanitation is not directly notified to the user
+		name = RiscossUtil.sanitize(name.trim());
+		
 		parentName = parentName.trim();
 		
 		RiscossDB db = DBConnector.openDB();
@@ -89,4 +93,19 @@ public class LayersManager {
 			DBConnector.closeDB( db );
 		}
 	}
+	
+	@POST
+	@Path("edit")
+	public void editLayer( 
+			@QueryParam("name") String name, 
+			@QueryParam("newname") String newName ) {
+		RiscossDB db = DBConnector.openDB();
+		try {
+			db.renameLayer( name, newName );
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
+	}
+	
 }

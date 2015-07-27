@@ -158,6 +158,15 @@ public class OLinkedList {
 		}
 	}
 	
+	public void renameLayer(String name, String newName) {
+		NodeID id = dom.getVertex( this.rootPath + "/" + name );
+		
+		if( id == null ) 
+			return;
+		
+		dom.setAttribute(id, "tag", newName);
+	}
+	
 	NodeID getLink( NodeID from, String link ) {
 		List<NodeID> list = dom.listOutEdges( from, GDomDB.LINK_CLASS, link, null );
 		if( list == null ) return null;

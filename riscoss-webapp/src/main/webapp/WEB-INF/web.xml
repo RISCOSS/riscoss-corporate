@@ -66,10 +66,10 @@
 	
 	<!-- Servlet mappings -->
 
-	<servlet-mapping>
+	<!-- <servlet-mapping>
 		<servlet-name>SecurityServlet</servlet-name>
 		<url-pattern>*.html</url-pattern>
-	</servlet-mapping>
+	</servlet-mapping> -->
 
 	<servlet-mapping>
 		<servlet-name>RiscossWebApp</servlet-name>

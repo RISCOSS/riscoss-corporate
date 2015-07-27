@@ -425,20 +425,21 @@ public class ModelManager {
 		return f.getValue().toString();
 	}
 	
-	@POST
-	@Path("/model/new")
-	public String createModelEntry( @QueryParam("name") String name ) {
-		RiscossDB db = DBConnector.openDB();
-		try {
-			db.createModelEntry( name );
-			JsonObject o = new JsonObject();
-			o.addProperty( "name", name );
-			return o.toString();
-		}
-		finally {
-			DBConnector.closeDB( db );
-		}
-	}
+//	commented because done with the UploadService	
+//	@POST
+//	@Path("/model/new")
+//	public String createModelEntry( @QueryParam("name") String name ) {
+//		RiscossDB db = DBConnector.openDB();
+//		try {
+//			db.createModelEntry( name );
+//			JsonObject o = new JsonObject();
+//			o.addProperty( "name", name );
+//			return o.toString();
+//		}
+//		finally {
+//			DBConnector.closeDB( db );
+//		}
+//	}
 	
 	@GET
 	@Path("/model/get")

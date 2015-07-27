@@ -40,6 +40,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
 import eu.riscoss.db.RiscossDB;
+import eu.riscoss.shared.RiscossUtil;
 
 @Path("rcs")
 public class RiskConfManager {
@@ -169,6 +170,8 @@ public class RiskConfManager {
 	@Path("/rc/new")
 	public String createNew( @QueryParam("name") String name ) {
 		RiscossDB db = DBConnector.openDB();
+		//attention:filename sanitation is not directly notified to the user
+		name = RiscossUtil.sanitize(name);
 		try {
 			db.createRiskConfiguration( name );
 			JsonObject o = new JsonObject();

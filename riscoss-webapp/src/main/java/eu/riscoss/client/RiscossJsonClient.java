@@ -67,6 +67,13 @@ public class RiscossJsonClient {
 			.post().send( cb );
 	}
 	
+	public static void editLayer( String oldLayerName, String newLayerName, JsonCallback cb ) {
+		new Resource( GWT.getHostPageBaseURL() + "api/layers/edit" )
+			.addQueryParam( "name", oldLayerName )
+			.addQueryParam( "newname", newLayerName )
+			.post().send( cb );
+	}
+	
 	public static void deleteLayer( String layerName, JsonCallback cb ) {
 		new Resource( GWT.getHostPageBaseURL() + "api/layers/delete" )
 		.addQueryParam( "name", layerName )

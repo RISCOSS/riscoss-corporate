@@ -328,9 +328,13 @@ public class RiscossOrientDB implements RiscossDB {
 	}
 	
 	@Override
-	public void removeLayer(String name) {
-		
+	public void removeLayer(String name) {	
 		new OLinkedList( dom, "/layers" ).removeLayer( name );
+	}
+	
+	@Override
+	public void renameLayer(String name, String newName) {	
+		new OLinkedList( dom, "/layers" ).renameLayer( name, newName );
 	}
 	
 	@Override
@@ -353,12 +357,12 @@ public class RiscossOrientDB implements RiscossDB {
 		}
 	}
 	
-	@Override
-	public void createModelEntry( String modelName ) {
-		if( dom.get( "/models/" + modelName ) == null ) {
-			dom.create( "/models/" + modelName );
-		}
-	}
+//	@Override
+//	public void createModelEntry( String modelName ) {
+//		if( dom.get( "/models/" + modelName ) == null ) {
+//			dom.create( "/models/" + modelName );
+//		}
+//	}
 	
 	@Override
 	public void removeModel(String name) {
