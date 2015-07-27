@@ -44,6 +44,7 @@ import eu.riscoss.db.RiscossDB;
 import eu.riscoss.rdc.RDC;
 import eu.riscoss.rdc.RDCFactory;
 import eu.riscoss.rdc.RDCParameter;
+import eu.riscoss.shared.RiscossUtil;
 
 @Path("entities")
 public class EntityManager {
@@ -168,6 +169,10 @@ public class EntityManager {
 			@QueryParam("name") String name,
 			@QueryParam( "layer") String layer,
 			@QueryParam("parent") String parent ) {
+		
+		//attention:filename sanitation is not directly notified to the user
+		name = RiscossUtil.sanitize(name);
+		
 		RiscossDB db = DBConnector.openDB();
 		try {
 			JsonObject ret = new JsonObject();
@@ -204,6 +209,8 @@ public class EntityManager {
 			JsonObject json = (JsonObject)new JsonParser().parse( str );
 			String name = json.get( "name" ).getAsString();
 			String layer = json.get( "layer" ).getAsString();
+			//attention:filename sanitation is not directly notified to the user
+			name = RiscossUtil.sanitize(name);
 			db.addEntity( name, layer );
 			JsonArray a = json.get("parents" ).getAsJsonArray();
 			for( int i = 0; i < a.size(); i++ ) {

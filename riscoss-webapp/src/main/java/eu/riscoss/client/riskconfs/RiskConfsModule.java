@@ -199,7 +199,11 @@ public class RiskConfsModule implements EntryPoint {
 		if( name == null || "".equals( name ) ) 
 			return;
 		
-		name = RiscossUtil.sanitize(name.trim());//attention:name sanitation is not directly notified to the user
+		while (!RiscossUtil.sanitize(name).equals(name)){
+			name = Window.prompt( "Name contains prohibited characters (##,@,\") \nRe-enter name:", "" );
+			if( name == null || "".equals( name ) ) 
+				return;
+		}
 		
 		RiscossJsonClient.createRC( name, new JsonCallback() {
 			@Override
