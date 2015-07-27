@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.kiouri.sliderbar.client.event.BarValueChangedEvent;
 import com.kiouri.sliderbar.client.event.BarValueChangedHandler;
@@ -50,18 +51,22 @@ public class PreferenceMatrix implements IsWidget {
 		}
 	}
 	
-	Grid grid = new Grid( 0, 3 );
+	SimplePanel container = new SimplePanel();
 	
 	@Override
 	public Widget asWidget() {
-		return grid;
+		return container;
 	}
 	
 	public PreferenceMatrix( ArrayList<JAHPComparison> list ) {
 		loadValues( list );
 	}
 	
-	private void loadValues( ArrayList<JAHPComparison> list ) {
+	public void loadValues( ArrayList<JAHPComparison> list ) {
+		if( container.getWidget() != null ) {
+			container.getWidget().removeFromParent();
+		}
+		Grid grid = new Grid( 0, 3 );
 		int i = 0;
 		for( JAHPComparison c : list ) {
 			if( c.getId1().equals( c.getId2() ) ) continue;
@@ -74,6 +79,7 @@ public class PreferenceMatrix implements IsWidget {
 			
 			i++;
 		}
+		container.setWidget( grid );
 	}
 	
 }

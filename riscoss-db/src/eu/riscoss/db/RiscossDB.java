@@ -13,6 +13,7 @@ public interface RiscossDB {
 	public abstract Collection<String> layerNames();
 	public abstract void addLayer(String name, String after);
 	public abstract void removeLayer(String name);
+	public abstract void renameLayer(String name, String newName);
 		
 	/*
 	 * Entities
@@ -42,7 +43,7 @@ public interface RiscossDB {
 	 */
 	public abstract List<String> getModelList();
 	public abstract void removeModel(String name);
-	public abstract void createModelEntry( String modelName );
+	//public abstract void createModelEntry( String modelName );
 	public abstract void storeModel(String modelBlob, String modelName);
 	public abstract String getModelBlob(String modelName);
 	public abstract void removeModelBlob(String modelName);
@@ -95,5 +96,4 @@ public interface RiscossDB {
 	public abstract void createUser( String username, String password ) throws Exception;
 	public abstract List<String> listUsers();
 	
-
 }

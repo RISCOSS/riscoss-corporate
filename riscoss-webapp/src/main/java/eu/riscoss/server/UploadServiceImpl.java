@@ -74,7 +74,7 @@ public class UploadServiceImpl extends UploadAction {
 						
 						boolean duplicate = false;
 						for (String storedmodel : db.getModelList()) {
-							System.out.println(storedmodel);
+							//System.out.println(storedmodel);
 							if (storedmodel.equals(name)){
 								duplicate = true;
 								//response = "<response>\n" + "Duplicate model name. Please delete the stored model first."+ "</response>\n";
@@ -133,7 +133,7 @@ public class UploadServiceImpl extends UploadAction {
 						}
 						//attention:filename sanitation is not directly notified to the user
 						name = RiscossUtil.sanitize(name);
-						
+						modelName = RiscossUtil.sanitize(modelName);
 						//store description for the model. Overwrites an existing description
 						db.storeModelDesc(modelName, name, item.get());
 						

@@ -23,6 +23,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -32,6 +33,7 @@ import eu.riscoss.client.Log;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecAHPInput;
 import eu.riscoss.client.codec.CodecChunkList;
+import eu.riscoss.client.codec.CodecStringList;
 import eu.riscoss.client.riskconfs.ModelSelectionDialog;
 import eu.riscoss.client.ui.ClickWrapper;
 import eu.riscoss.shared.EChunkType;
@@ -39,14 +41,17 @@ import eu.riscoss.shared.JAHPComparison;
 import eu.riscoss.shared.JAHPInput;
 import eu.riscoss.shared.JChunkItem;
 import eu.riscoss.shared.JChunkList;
+import eu.riscoss.shared.JStringList;
 
 public class RMAModule implements EntryPoint {
 	
 	List<String> models;
 	
-	DockPanel	dock = new DockPanel();
-	SimplePanel	contentPanel = new SimplePanel();
-	RiskEvaluationForm riskForm = new RiskEvaluationForm();
+	DockPanel			dock = new DockPanel();
+	SimplePanel			contentPanel = new SimplePanel();
+	RiskEvaluationForm	riskForm = new RiskEvaluationForm();
+	PreferenceMatrix	preferenceMatrix = new PreferenceMatrix( new ArrayList<JAHPComparison>() );
+	RMAOutputPanel		outputPanel = new RMAOutputPanel();
 	
 	Set<String> selection = new HashSet<String>();
 	
@@ -121,7 +126,7 @@ public class RMAModule implements EntryPoint {
 			}
 		}
 		
-		Grid grid = new Grid( goals.size() +1, 2 );
+		Grid criteriaSelectionForm = new Grid( goals.size() +1, 2 );
 		
 		int n = 0;
 		for( JChunkItem chunk : goals ) {
@@ -134,6 +139,7 @@ public class RMAModule implements EntryPoint {
 						selection.add( getValue() );
 					else
 						selection.remove( getValue() );
+					preferenceMatrix.loadValues( createComparisonList( selection ) );
 				}
 			});
 			Anchor a = new Anchor( chunk.getLabel() );
@@ -142,31 +148,45 @@ public class RMAModule implements EntryPoint {
 				public void onClick( ClickEvent event ) {
 					setSelectedGoal( getValue() );
 				}} );
-			grid.setWidget( n, 1, a );
-			grid.setWidget( n, 0, chk );
+			criteriaSelectionForm.setWidget( n, 1, a );
+			criteriaSelectionForm.setWidget( n, 0, chk );
 			n++;
 		}
 		
-		grid.setWidget( n, 0, new Button( "Evaluate", new ClickHandler() {
-			@Override
-			public void onClick( ClickEvent event ) {
-				onEvaluateClicked();
-			}
-		} ) );
-		grid.setWidget( n, 1, new Button( "Run", new ClickHandler() {
+//		criteriaSelectionForm.setWidget( n, 0, new Button( "Evaluate", new ClickHandler() {
+//			@Override
+//			public void onClick( ClickEvent event ) {
+//				onEvaluateClicked();
+//			}
+//		} ) );
+		
+		criteriaSelectionForm.setWidth( "100%" );
+		
+		
+		DockPanel outputContainer = new DockPanel();
+		outputContainer.add( new Button( "Run", new ClickHandler() {
 			@Override
 			public void onClick( ClickEvent event ) {
 				onRun();
-			}} ) );
+			}} ), DockPanel.NORTH );
+		outputContainer.add( outputPanel, DockPanel.CENTER );
 		
-		grid.setWidth( "100%" );
 		
-		HorizontalPanel hp = new HorizontalPanel();
+		Grid container = new Grid( 2, 2 );
 		
-		hp.add( grid );
-		hp.add( riskForm );
+		container.getColumnFormatter().setWidth( 0, "50%" );
 		
-		contentPanel.setWidget( hp );
+		container.setWidget( 0, 0, criteriaSelectionForm );
+		container.setWidget( 0, 1, riskForm );
+		container.setWidget( 1, 0, preferenceMatrix );
+		container.setWidget( 1, 1, outputContainer );
+		
+		container.getCellFormatter().setVerticalAlignment( 1, 0, HasVerticalAlignment.ALIGN_TOP );
+		container.getCellFormatter().setVerticalAlignment( 1, 1, HasVerticalAlignment.ALIGN_TOP );
+		
+		container.setSize( "100%", "100%" );
+		
+		contentPanel.setWidget( container );
 	}
 	
 	protected void onRun() {
@@ -184,6 +204,7 @@ public class RMAModule implements EntryPoint {
 			Log.println( "Creating risk comparison list for goal " + id );
 			List<JAHPComparison> comp = riskComparisons.get( id );
 			if( comp == null ) {
+				Log.println( "Creating empty list for goal " + id );
 				comp = createComparisonListFromChunks( risks );
 			}
 			ahp.risks.add( comp );
@@ -203,8 +224,10 @@ public class RMAModule implements EntryPoint {
 				new JsonCallback() {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
-				// TODO Auto-generated method stub
-				
+				Log.println( "" + response );
+				CodecStringList codec = GWT.create( CodecStringList.class );
+				JStringList list = codec.decode( response );
+				outputPanel.setOutput( list.list );
 			}
 			@Override
 			public void onFailure( Method method, Throwable exception ) {
@@ -222,9 +245,9 @@ public class RMAModule implements EntryPoint {
 		riskForm.loadValues( value, list );
 	}
 	
-	protected void onEvaluateClicked() {
-		new GoalEvaluationDialog( createComparisonList( selection ) ).show();
-	}
+//	protected void onEvaluateClicked() {
+//		new GoalEvaluationDialog( createComparisonList( selection ) ).show();
+//	}
 	
 	public static ArrayList<JAHPComparison> createComparisonListFromChunks( Collection<JChunkItem> items ) {
 		ArrayList<JAHPComparison> list = new ArrayList<JAHPComparison>();

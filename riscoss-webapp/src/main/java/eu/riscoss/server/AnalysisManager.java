@@ -22,6 +22,7 @@
 package eu.riscoss.server;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,6 +50,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import org.python.core.PyList;
+import org.python.core.PySystemState;
 import org.python.util.PythonInterpreter;
 
 import com.google.gson.Gson;
@@ -79,6 +82,7 @@ import eu.riscoss.shared.JAHPInput;
 import eu.riscoss.shared.JMissingData;
 import eu.riscoss.shared.JRASInfo;
 import eu.riscoss.shared.JRiskData;
+import eu.riscoss.shared.JStringList;
 import eu.riscoss.shared.JValueMap;
 
 @Path("analysis")
@@ -820,22 +824,23 @@ public class AnalysisManager {
 				strList2[i] = mkList( list, risk_map );
 			}
 			
-			String[] input = new String[4 + strList2.length];
-			input[0] = "jython";		// first argument in python is the program name
-			input[1] = "" + ahpInput.getGoalCount();
-			input[2] = "" + ahpInput.getRiskCount();
-			input[3] = strList1;
+			System.out.println( "Preparing args" );
+			PySystemState stm = new PySystemState();
+			List<String> args = new ArrayList<String>();
+			
+			args.add( "jython" );		// first argument in python is the program name
+			args.add( "" + ahpInput.getGoalCount() );
+			args.add( "" + ahpInput.getRiskCount() );
+			args.add( strList1 );
 			for( int i = 0; i < strList2.length; i++ ) {
-				input[4 + i] = strList2[i];
+				args.add( strList2[i] );
 			}
 			
-			System.out.println( "Initializing Jython" );
-			PythonInterpreter.initialize( System.getProperties(), new Properties(), input );
+			stm.argv = new PyList( args );
 			
 			System.out.println( "Creating Jython object" );
 			PythonInterpreter jython =
-				    new PythonInterpreter();
-			
+				    new PythonInterpreter( null, stm );
 			
 			System.out.println( "Seeting output stream" );
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -852,9 +857,9 @@ public class AnalysisManager {
 			try {
 				output = output.substring( 1, output.length() -2 );
 				String[] parts = output.split( "[,]" );
-				List<String> list = new ArrayList<String>();
+				JStringList list = new JStringList();
 				for( String p : parts ) {
-					list.add( p.trim() );
+					list.list.add( p.trim() );
 				}
 				return gson.toJson( list );
 			}
@@ -862,7 +867,8 @@ public class AnalysisManager {
 				ex.printStackTrace();
 			}
 			finally {
-				jython.close();
+				if( jython != null )
+					jython.close();
 			}
 			
 		}

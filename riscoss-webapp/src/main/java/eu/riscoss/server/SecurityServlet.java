@@ -59,9 +59,10 @@ public class SecurityServlet extends HttpServlet {
 		
 		User user = SecurityManager.get().getUser( req );
 		
-		if( SecurityManager.get().canAccess( user, req.getRequestURI() ) ) {
+//		if( SecurityManager.get().canAccess( user, req.getRequestURI() ) ) {
+		if( SecurityManager.get().canAccess( user, req.getPathInfo() ) ) {
 			
-			System.out.println( "User '" + user.getUsername() + "' can access resource '" + req.getRequestURI() + "'" );
+			System.out.println( "User '" + user.getUsername() + "' can access resource '" + req.getPathInfo() + "'" );
 			
 			super.service( req, resp );
 			
@@ -81,7 +82,7 @@ public class SecurityServlet extends HttpServlet {
 		//FIXME Problem 2: avoiding absolute paths
 		//FIXME Problem 3: the first request commonly does not have the uri of the file...?
 		
-		File file = new File( req.getSession().getServletContext().getRealPath("/") + req.getRequestURI() );
+		File file = new File( req.getSession().getServletContext().getRealPath("/") + req.getPathInfo() );
 		
 		//THIS WORKS BETTER BUT SEEMS ALSO TO HAVE SOME PROBLEM....
 		//File file = new File(req.getRequestURI().substring(1));

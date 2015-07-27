@@ -126,10 +126,11 @@ public class LayersModule implements EntryPoint {
 	    menu.addItem( "Rename Layer", new Command() {
 			@Override
 			public void execute() {
-				//call onRenameLayer();
+				new RenameLayerPanel().show();
 				//String s = RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
 				//txt.setText(s);
 				//TODO rename
+				
 			}});
 	    menu.addItem( "Delete Layer", new Command() {
 			@Override
@@ -172,7 +173,7 @@ public class LayersModule implements EntryPoint {
 						JSONObject o = (JSONObject)response.isArray().get( i );
 						combo.addItem( o.get( "name" ).isString().stringValue() );
 					}
-					panel.add( new LabeledWidget( "Parent layer:", combo ) );
+					panel.add( new LabeledWidget( "Layer to delete:", combo ) );
 					panel.add( new Button( "Ok", new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
@@ -258,5 +259,58 @@ public class LayersModule implements EntryPoint {
 		new NewLayerPanel().show();
 	}
 	
-
+	class RenameLayerPanel {
+		ListBox combo = new ListBox();
+		TextBox txt = new TextBox();
+		void show() {
+			RiscossJsonClient.listLayers( new JsonCallback() {
+				@Override
+				public void onSuccess(Method method, JSONValue response) {
+					VerticalPanel panel = new VerticalPanel();
+					for( int i = 0; i < response.isArray().size(); i++ ) {
+						JSONObject o = (JSONObject)response.isArray().get( i );
+						combo.addItem( o.get( "name" ).isString().stringValue() );
+					}
+					panel.add( new LabeledWidget( "Layer to rename:", combo ) );
+					txt.getElement().setId( "layers:edit:name:textbox" );//????
+					
+					panel.add( new LabeledWidget( "New name:", txt ) );
+					panel.add( new Button( "Ok", new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							
+							String newName = txt.getText().trim();
+									//RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
+							
+							while (!RiscossUtil.sanitize(newName).equals(newName)){
+								newName = Window.prompt( "Name contains prohibited characters (##,@,\") \nPlease re-enter name:", "" );
+								if( newName == null || "".equals( newName ) ) 
+									return;
+							}
+													
+							txt.setText(newName);
+							RiscossJsonClient.editLayer( combo.getItemText( combo.getSelectedIndex() ), newName, new JsonCallback() {
+								@Override
+								public void onFailure(Method method,Throwable exception) {
+									Window.alert( exception.getMessage() );
+								}
+								@Override
+								public void onSuccess(Method method,JSONValue response) {
+									Window.Location.reload();
+								}} );
+						}
+					} ) );
+					PopupPanel popup = new PopupPanel( true, true );
+					popup.setWidget( panel );
+					popup.setSize( "400px", "300px" );
+					popup.show();
+				}
+				@Override
+				public void onFailure(Method method, Throwable exception) {
+					Window.alert( exception.getMessage() );
+				}
+			});
+		}
+	}
+	
 }
