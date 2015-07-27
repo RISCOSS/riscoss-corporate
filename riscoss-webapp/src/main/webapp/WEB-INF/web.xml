@@ -12,14 +12,14 @@
 	</context-param>
 	
 	<!-- Uncomment this to customize the DB location -->
-<!-- 	<context-param> -->
-<!-- 		<param-name>eu.riscoss.db.address</param-name> -->
-<!-- 		<param-value>plocal:/Users/albertosiena/temp</param-value> -->
-<!-- 	</context-param> -->
-<!-- 	<context-param> -->
-<!-- 		<param-name>eu.riscoss.db.name</param-name> -->
-<!-- 		<param-value>riscoss-db</param-value> -->
-<!-- 	</context-param> -->
+	<!--context-param>
+		<param-name>eu.riscoss.db.address</param-name>
+		<param-value>plocal:/Users/albertosiena/temp</param-value>
+	</context-param>
+	<context-param>
+		<param-name>eu.riscoss.db.name</param-name>
+		<param-value>riscoss-db</param-value>
+	</context-param-->
 	
 	<!-- Not necesseary, for now -->
 <!-- 	<context-param> -->
@@ -32,11 +32,11 @@
 <!-- 	</context-param> -->
 	
 	<!-- Servlets -->
-	<servlet>
-		<servlet-name>SecurityServlet</servlet-name>
-		<servlet-class>eu.riscoss.server.SecurityServlet</servlet-class>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
+<!-- 	<servlet> -->
+<!-- 		<servlet-name>SecurityServlet</servlet-name> -->
+<!-- 		<servlet-class>eu.riscoss.server.SecurityServlet</servlet-class> -->
+<!-- 		<load-on-startup>1</load-on-startup> -->
+<!-- 	</servlet> -->
 	
 	<servlet>
 		<servlet-name>RiscossWebApp</servlet-name>
@@ -66,10 +66,10 @@
 	
 	<!-- Servlet mappings -->
 
-	<servlet-mapping>
-		<servlet-name>SecurityServlet</servlet-name>
-		<url-pattern>*.html</url-pattern>
-	</servlet-mapping>
+<!-- 	<servlet-mapping> -->
+<!-- 		<servlet-name>SecurityServlet</servlet-name> -->
+<!-- 		<url-pattern>*.html</url-pattern> -->
+<!-- 	</servlet-mapping> -->
 
 	<servlet-mapping>
 		<servlet-name>RiscossWebApp</servlet-name>
