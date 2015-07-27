@@ -34,8 +34,10 @@ import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Window;
 
+import eu.riscoss.client.codec.CodecLayerContextualInfo;
 import eu.riscoss.client.ui.WaitWidget;
 import eu.riscoss.shared.EAnalysisOption;
+import eu.riscoss.shared.JLayerContextualInfo;
 
 public class RiscossJsonClient {
 	
@@ -293,4 +295,19 @@ public class RiscossJsonClient {
 			.post().header( "values", values.toString() )
 			.send( cb );
 	}
+	
+	public static void getLayerContextualInfo( String layer, JsonCallback cb ) {
+		new Resource( GWT.getHostPageBaseURL() + "api/layers/ci" )
+			.addQueryParam( "layer", layer )
+			.get().send( cb );
+	}
+	
+	public static void setLayerContextualInfo( String layer, JLayerContextualInfo info, JsonCallback cb ) {
+		CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
+		String json = codec.encode( info ).toString();
+		new Resource( GWT.getHostPageBaseURL() + "api/layers/ci" )
+			.addQueryParam( "layer", layer )
+			.put().header( "info", json ).send( cb );
+	}
+	
 }

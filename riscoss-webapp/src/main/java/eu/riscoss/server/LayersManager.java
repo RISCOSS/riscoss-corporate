@@ -23,17 +23,23 @@ package eu.riscoss.server;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import eu.riscoss.db.RiscossDB;
+import eu.riscoss.shared.JLayerContextualInfo;
 
 @Path("layers")
 public class LayersManager {
+	
+	Gson gson = new Gson();
 	
 	public LayersManager() {
 	}
@@ -88,5 +94,19 @@ public class LayersManager {
 		finally {
 			DBConnector.closeDB( db );
 		}
+	}
+	
+	@GET @Path( "ci" )
+	public String getContextualInfo( @QueryParam("layer") String layer ) {
+		JLayerContextualInfo info = new JLayerContextualInfo();
+		// TODO read 'info' form the DB
+		return gson.toJson( info );
+	}
+	
+	@PUT @Path( "ci" )
+	public String setContextualInfo( @QueryParam("layer") String layer, @HeaderParam("info") String json ) {
+		JLayerContextualInfo info = gson.fromJson( json, JLayerContextualInfo.class );
+		// TODO store the content of 'info'
+		return "Ok";
 	}
 }
