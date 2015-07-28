@@ -235,8 +235,11 @@ public class LayersModule implements EntryPoint {
 					b.addClickHandler( new ClickWrapper<JSONArray>( (JSONArray)response.isArray() ) {
 						@Override
 						public void onClick(ClickEvent event) {
-							
 							String name = txt.getText().trim();
+							
+							if (name == null || name.equals("") ) 
+								return;
+							
 							//String s = RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
 							if (!RiscossUtil.sanitize(name).equals(name)){
 								//info: firefox has some problem with this window, and fires asssertion errors in dev mode
