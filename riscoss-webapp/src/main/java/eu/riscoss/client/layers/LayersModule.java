@@ -29,6 +29,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
+import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
@@ -43,6 +44,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+import eu.riscoss.client.Log;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.ui.ClickWrapper;
 import eu.riscoss.client.ui.FramePanel;
@@ -192,6 +194,12 @@ public class LayersModule implements EntryPoint {
 								}} );
 						}
 					} ) );
+					panel.add( new Button( "Cancel", new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							Window.Location.reload();
+						}
+					} )) ;
 					PopupPanel popup = new PopupPanel( true, true );
 					popup.setWidget( panel );
 					popup.setSize( "400px", "300px" );
@@ -222,17 +230,36 @@ public class LayersModule implements EntryPoint {
 					panel.add( new LabeledWidget( "Parent layer:", combo ) );
 					txt.getElement().setId( "layers:new:name:textbox" );
 					panel.add( new LabeledWidget( "Name:", txt ) );
-					panel.add( new Button( "Ok", new ClickHandler() {
+					
+					Button b = new Button( "Ok");
+					b.addClickHandler( new ClickWrapper<JSONArray>( (JSONArray)response.isArray() ) {
 						@Override
 						public void onClick(ClickEvent event) {
+							
+							String name = txt.getText().trim();
+							//String s = RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
+							if (!RiscossUtil.sanitize(name).equals(name)){
+								//info: firefox has some problem with this window, and fires asssertion errors in dev mode
+								Window.alert("Name contains prohibited characters (##,@,\") \nPlease re-enter name");
+								return;
+							}
+							
+							for(int i=0; i<getValue().size(); i++){
+								JSONObject o = (JSONObject)getValue().get(i);
+								if (name.equals(o.get( "name" ).isString().stringValue())){
+									//info: firefox has some problem with this window, and fires asssertion errors in dev mode
+									Window.alert("Layer name already in use.\nPlease re-enter name.");
+									return;
+								}
+							}
+							
 							String parent = combo.getItemText( combo.getSelectedIndex() );
 //							Window.alert( "'" + parent + "': " + "[top]".equals( parent ) );
 							if( "[top]".equals( parent ) ) {
 								parent = "$root";
 							}
-							String s = RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
-							txt.setText(s);
-							RiscossJsonClient.createLayer( s, parent, 
+							
+							RiscossJsonClient.createLayer( name, parent, 
 									new JsonCallback() {
 								@Override
 								public void onFailure(Method method, Throwable exception) {
@@ -244,7 +271,18 @@ public class LayersModule implements EntryPoint {
 									Window.Location.reload();
 								}} );
 						}
-					} ) );
+						
+					} );
+					
+					panel.add(b);
+					
+					panel.add( new Button( "Cancel", new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							Window.Location.reload();
+						}
+					} )) ;
+					
 					PopupPanel popup = new PopupPanel( true, true );
 					popup.setWidget( panel );
 					popup.setSize( "400px", "300px" );
@@ -276,22 +314,35 @@ public class LayersModule implements EntryPoint {
 						combo.addItem( o.get( "name" ).isString().stringValue() );
 					}
 					panel.add( new LabeledWidget( "Layer to rename:", combo ) );
-					txt.getElement().setId( "layers:edit:name:textbox" );//????
+					//txt.getElement().setId( "layers:edit:name:textbox" );
 					
 					panel.add( new LabeledWidget( "New name:", txt ) );
-					panel.add( new Button( "Ok", new ClickHandler() {
+					
+					Button b = new Button( "Ok");
+					b.addClickHandler( new ClickWrapper<JSONArray>( (JSONArray)response.isArray() ) {
+						
 						@Override
 						public void onClick(ClickEvent event) {
-							
+							//RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
 							String newName = txt.getText().trim();
-									//RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
-							
-							while (!RiscossUtil.sanitize(newName).equals(newName)){
-								newName = Window.prompt( "Name contains prohibited characters (##,@,\") \nPlease re-enter name:", "" );
-								if( newName == null || "".equals( newName ) ) 
-									return;
+							if (newName == null || newName.equals("") ) 
+								return;
+
+							if (!RiscossUtil.sanitize(newName).equals(newName)){
+								//info: firefox has some problem with this window, firing asssertion errors in dev mode
+								Window.alert("Name contains prohibited characters (##,@,\") \nPlease re-enter name");
+								return;
 							}
-													
+
+							for(int i=0; i<getValue().size(); i++){
+								JSONObject o = (JSONObject)getValue().get(i);
+								if (newName.equals(o.get( "name" ).isString().stringValue())){
+									//info: firefox has some problem with this window, firing asssertion errors in dev mode
+									Window.alert("Layer name already in use.\nPlease re-enter name.");
+									return;
+								}
+							}
+
 							txt.setText(newName);
 							RiscossJsonClient.editLayer( combo.getItemText( combo.getSelectedIndex() ), newName, new JsonCallback() {
 								@Override
@@ -303,7 +354,16 @@ public class LayersModule implements EntryPoint {
 									Window.Location.reload();
 								}} );
 						}
-					} ) );
+					} );
+					
+					panel.add(b);
+					
+					panel.add( new Button( "Cancel", new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							Window.Location.reload();
+						}
+					} )) ;
 					PopupPanel popup = new PopupPanel( true, true );
 					popup.setWidget( panel );
 					popup.setSize( "400px", "300px" );
