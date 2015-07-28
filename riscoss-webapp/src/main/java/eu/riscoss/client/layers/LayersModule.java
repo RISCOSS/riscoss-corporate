@@ -39,6 +39,7 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -89,6 +90,7 @@ public class LayersModule implements EntryPoint {
 							@Override
 							public void onClick(ClickEvent event) {
 								bottom.setUrl( "entities.html?layer=" + getValue() );
+								ppg.setSelectedLayer(getValue());
 							}
 						});
 						
@@ -142,24 +144,26 @@ public class LayersModule implements EntryPoint {
 	    
 	    MenuBar menuBar = new MenuBar();
 	    menuBar.addItem( "Edit structure", menu );
-	    
-	    dock.add( menuBar, DockPanel.NORTH );
-	    dock.add( bottom.getWidget(), DockPanel.SOUTH );
-//	    SimplePanel sp = new SimplePanel();
-//	    sp.setWidget( tree );
-//	    hpanel.add( tree );
-//	    hpanel.add( ppg );
-		dock.add( tree, DockPanel.CENTER );
-//		dock.add( ppg, DockPanel.EAST );
-//		dock.setCellWidth( ppg, "50%" );
 		
-		dock.setCellWidth( tree, "100%" );
+		dock.add( menuBar, DockPanel.NORTH );
+	    dock.add( bottom.getWidget(), DockPanel.SOUTH );
+	    SimplePanel sp = new SimplePanel();
+	    sp.setWidget( tree );
+	    hpanel.add( tree );
+	    hpanel.add( ppg );
+		dock.add( tree, DockPanel.CENTER );
+		dock.add( ppg, DockPanel.EAST );
+		dock.setCellWidth( ppg, "100%" );
+		
+		dock.setCellWidth( tree, "50%" );
 		dock.setCellHeight( tree, "50%" );
 		dock.setCellHeight( bottom.getWidget(), "50%" );
 		
+		hpanel.add(dock);
+		
 		RootPanel.get().add( dock );
 		RootPanel.get().setHeight( "100%" );
-		
+			
 	}
 	
 	class DeleteLayerPanel {
