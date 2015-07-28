@@ -14,7 +14,9 @@ public interface RiscossDB {
 	public abstract void addLayer(String name, String after);
 	public abstract void removeLayer(String name);
 	public abstract void renameLayer(String name, String newName);
-		
+	public abstract void setLayerData( String layer, String key, String value );
+	public abstract String getLayerData( String layer, String key );
+	
 	/*
 	 * Entities
 	 */

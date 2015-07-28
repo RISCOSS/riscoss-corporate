@@ -755,5 +755,20 @@ public class RiscossOrientDB implements RiscossDB {
 		if( id == null ) return null;
 		return dom.getAttribute( id, "descBlobName", "");
 	}
+
+	@Override
+	public void setLayerData( String layer, String key, String value ) {
+		NodeID id = dom.get( "/layers/" + layer );
+		if( id != null )
+			dom.setAttribute( id, key, value );
+	}
+
+	@Override
+	public String getLayerData( String layer, String key ) {
+		NodeID id = dom.get( "/layers/" + layer );
+		if( id != null )
+			return dom.getAttribute( id, key, "" );
+		return null;
+	}
 	
 }

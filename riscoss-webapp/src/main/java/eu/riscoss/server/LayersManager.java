@@ -102,15 +102,27 @@ public class LayersManager {
 	
 	@GET @Path( "ci" )
 	public String getContextualInfo( @QueryParam("layer") String layer ) {
-		JLayerContextualInfo info = new JLayerContextualInfo();
-		// TODO read 'info' form the DB
-		return gson.toJson( info );
+//		JLayerContextualInfo info = new JLayerContextualInfo();
+		RiscossDB db = DBConnector.openDB();
+		try {
+			String json = db.getLayerData( layer, "ci" );
+			return json;
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
 	}
 	
 	@PUT @Path( "ci" )
 	public String setContextualInfo( @QueryParam("layer") String layer, @HeaderParam("info") String json ) {
-		JLayerContextualInfo info = gson.fromJson( json, JLayerContextualInfo.class );
-		// TODO store the content of 'info'
+//		JLayerContextualInfo info = gson.fromJson( json, JLayerContextualInfo.class );
+		RiscossDB db = DBConnector.openDB();
+		try {
+			db.setLayerData( layer, "ci", json );
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
 		return "Ok";
 	}
 
