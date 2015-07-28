@@ -33,7 +33,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import eu.riscoss.client.Log;
 import eu.riscoss.db.RiscossDB;
 
 import eu.riscoss.shared.JLayerContextualInfo;
@@ -120,6 +119,7 @@ public class LayersManager {
 	public void editLayer( 
 			@QueryParam("name") String name, 
 			@QueryParam("newname") String newName ) {
+		System.out.println("Name change request: "+name+" to "+newName+".");
 		RiscossDB db = DBConnector.openDB();
 		try {
 			db.renameLayer( name, newName );
