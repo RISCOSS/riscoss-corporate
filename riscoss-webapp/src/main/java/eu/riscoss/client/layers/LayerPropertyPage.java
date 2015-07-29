@@ -27,6 +27,7 @@ import com.google.gwt.user.client.ui.Widget;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecLayerContextualInfo;
 import eu.riscoss.shared.JLayerContextualInfo;
+import eu.riscoss.shared.JLayerContextualInfoElement;
 
 public class LayerPropertyPage implements IsWidget {
 	
@@ -50,10 +51,11 @@ public class LayerPropertyPage implements IsWidget {
 	TextBox				max 			= new TextBox();
 	FlexTable			enumeration 	= new FlexTable();
 	ArrayList<String>	elements;
+	int 				count;
 	
 	ListBox				lBox;
 	
-	JSONValue			res;
+	JLayerContextualInfo info;
 	
 	public LayerPropertyPage() {
 		tab.add( panel , "Properties");
@@ -99,7 +101,8 @@ public class LayerPropertyPage implements IsWidget {
 			}
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
-				res = response;
+				CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
+				info = codec.decode( response );
 				loadProperties();	
 			}
 		});
@@ -123,9 +126,6 @@ public class LayerPropertyPage implements IsWidget {
 
 			@Override
 			public void onClick(ClickEvent arg0) {
-						
-				CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
-				JLayerContextualInfo info = codec.decode( res );
 				
 				if (lBox.getSelectedIndex() == 0) {
 					info.addContextualInfoInteger(name.getText(), min.getText(), max.getText());
@@ -133,11 +133,17 @@ public class LayerPropertyPage implements IsWidget {
 				
 				else if (lBox.getSelectedIndex() == 3) {
 					elements = new ArrayList<>();
-					for (int i = 0; i < enumeration.getRowCount(); ++i) {
+					int rCount = enumeration.getRowCount();
+					for (int i = 1; i < rCount; ++i) {
 						TextBox elem = (TextBox) enumeration.getWidget(i, 0);
 						elements.add(elem.getText());
 					}
 					info.addContextualInfoList(name.getText(), elements);
+					Widget w = enumeration.getWidget(0,0);
+					enumeration.removeAllRows();;
+					enumeration.insertRow(0);
+					enumeration.insertCell(0, 0);
+					enumeration.setWidget(0, 0, w);
 				}
 				
 				else {
@@ -157,7 +163,7 @@ public class LayerPropertyPage implements IsWidget {
 					public void onSuccess(Method method,
 							JSONValue response) {
 						
-						//reloadData();
+						reloadData();
 						
 					}
 					
@@ -265,16 +271,64 @@ public class LayerPropertyPage implements IsWidget {
 	
 	public void reloadData() {
 		
-		CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
-		JLayerContextualInfo info = codec.decode( res );
-		
 		FlexTable list = new FlexTable();
-		int i;
-		for (i = 0; i < info.getSize(); ++i) {
-			list.insertRow(i);
-			list.insertCell(i, 0);
-			String n = info.getContextualInfoElement(i).getName() + " - " + info.getContextualInfoElement(i).getType();
-			list.setWidget(i, 0, new Label(n));
+		for (count = 0; count < info.getSize(); ++count) {
+			list.insertRow(count);
+			list.insertCell(count, 0);
+			JLayerContextualInfoElement jElement = info.getContextualInfoElement(count);
+			String n = jElement.getName() + " - " + jElement.getType();
+			
+			HorizontalPanel hp = new HorizontalPanel();
+			hp.setSpacing(5);
+			
+			if (jElement.getType().equals("Integer")) {
+				n += " (min = " + jElement.getInfo().get(0) + " / max = " + jElement.getInfo().get(1) + ")";
+				hp.add(new Label(n));
+			}
+			
+			else if (jElement.getType().equals("List")) {
+				hp.add(new Label(n));
+				ListBox lB = new ListBox();
+				for (int i = 0; i < jElement.getInfo().size(); ++i) {
+					lB.addItem(jElement.getInfo().get(i));
+				}
+				hp.add(lB);
+			}
+			
+			else hp.add(new Label(n));
+			
+			
+			
+			list.setWidget(count, 0, hp);
+			list.insertCell(count, 1);
+			Button delete = new Button("X");
+			delete.addClickHandler(new ClickHandler() {
+				
+				int i = count;
+
+				@Override
+				public void onClick(ClickEvent arg0) {
+					info.deleteContextualInfoElement(i);
+					RiscossJsonClient.setLayerContextualInfo(layer, info, new JsonCallback() {
+
+						@Override
+						public void onFailure(Method method,
+								Throwable exception) {
+							Window.alert( exception.getMessage());
+						}
+
+						@Override
+						public void onSuccess(Method method,
+								JSONValue response) {
+							reloadData();
+						}
+						
+					});
+					
+				}
+				
+			});
+			list.setWidget(count, 1, delete);
 		}
 		
 		ciList.setWidget(2, 0, list);
