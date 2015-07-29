@@ -102,10 +102,13 @@ public class LayersManager {
 	
 	@GET @Path( "ci" )
 	public String getContextualInfo( @QueryParam("layer") String layer ) {
-//		JLayerContextualInfo info = new JLayerContextualInfo();
 		RiscossDB db = DBConnector.openDB();
 		try {
 			String json = db.getLayerData( layer, "ci" );
+			if( json == null ) {
+				JLayerContextualInfo info = new JLayerContextualInfo();
+				json = gson.toJson( info );
+			}
 			return json;
 		}
 		finally {
