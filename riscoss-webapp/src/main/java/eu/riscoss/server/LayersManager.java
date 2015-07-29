@@ -67,8 +67,7 @@ public class LayersManager {
 		return a.toString();
 	}
 	
-	@POST
-	@Path("new")
+	@POST @Path("new")
 	public void createNew(
 			@QueryParam("name") String name,
 			@QueryParam("parent") String parentName
@@ -117,8 +116,7 @@ public class LayersManager {
 	}
 	
 	@PUT @Path( "ci" )
-	public String setContextualInfo( @QueryParam("layer") String layer, @HeaderParam("info") String json ) {
-//		JLayerContextualInfo info = gson.fromJson( json, JLayerContextualInfo.class );
+	public void setContextualInfo( @QueryParam("layer") String layer, @HeaderParam("info") String json ) {
 		RiscossDB db = DBConnector.openDB();
 		try {
 			db.setLayerData( layer, "ci", json );
@@ -126,7 +124,6 @@ public class LayersManager {
 		finally {
 			DBConnector.closeDB( db );
 		}
-		return "Ok";
 	}
 
 	@POST
