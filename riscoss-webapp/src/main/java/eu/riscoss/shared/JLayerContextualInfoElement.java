@@ -1,12 +1,13 @@
 package eu.riscoss.shared;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class JLayerContextualInfoElement {
 
-	String				name;
-	String				type;
-	List<String> 	info;	
+	String				name 		= new String();
+	String				type		= new String();
+	List<String> 		info		= new ArrayList<>();	
 	
 	public String getName() {
 		return this.name;

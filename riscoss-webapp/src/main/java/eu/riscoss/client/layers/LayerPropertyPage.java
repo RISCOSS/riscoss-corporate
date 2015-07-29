@@ -270,11 +270,11 @@ public class LayerPropertyPage implements IsWidget {
 		
 		FlexTable list = new FlexTable();
 		int i;
-		name.setText(Integer.toString(info.getSize()));
 		for (i = 0; i < info.getSize(); ++i) {
 			list.insertRow(i);
 			list.insertCell(i, 0);
-			list.add(new Label(info.getContextualInfoElement(i).getName()));
+			String n = info.getContextualInfoElement(i).getName() + " - " + info.getContextualInfoElement(i).getType();
+			list.setWidget(i, 0, new Label(n));
 		}
 		
 		ciList.setWidget(2, 0, list);
