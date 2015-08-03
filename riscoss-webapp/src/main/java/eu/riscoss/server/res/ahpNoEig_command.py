@@ -73,6 +73,7 @@ def main ():
     n = eval(sys.argv[2])
     #print n
     #print m
+    pairsCriteria = [[0,0,1]]
     if m > 1:
         pairsCriteria = eval(sys.argv[3])
        # print pairsCriteria

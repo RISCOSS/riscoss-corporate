@@ -893,10 +893,16 @@ public class AnalysisManager {
 	}
 	
 	private String mkList( List<JAHPComparison> list, Map<String, Integer> id_map  ) {
+		final int[] numbers = new int[] { 9, 7, 5, 3, 1, 3, 5, 7, 9 };
 		String ret = "";
 		String sep = "";
 		for( JAHPComparison c : list ) {
-			ret += sep + "[" + id_map.get( c.getId1() ) + "," + id_map.get( c.getId2() ) + "," + c.value + "]";
+			if( c.value < 4 ) {
+				ret += sep + "[" + id_map.get( c.getId1() ) + "," + id_map.get( c.getId2() ) + "," + numbers[c.value] + "]";
+			}
+			else {
+				ret += sep + "[" + id_map.get( c.getId2() ) + "," + id_map.get( c.getId1() ) + "," + numbers[c.value] + "]";
+			}
 			sep = ",";
 		}
 		return "[" + ret + "]";

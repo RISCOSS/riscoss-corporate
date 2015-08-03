@@ -68,6 +68,9 @@ public class ModelManager {
 				a.add( o );
 			}
 		}
+		catch( Exception ex ) {
+			ex.printStackTrace();
+		}
 		finally {
 			DBConnector.closeDB( db );
 		}
