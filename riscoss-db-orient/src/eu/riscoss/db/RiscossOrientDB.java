@@ -121,8 +121,10 @@ public class RiscossOrientDB implements RiscossDB {
 	 */
 	@Override
 	public void storeModel( String modelBlob, String modelName ) {
-		NodeID id = dom.create( "/models/" + modelName );
+		NodeID id = dom.create( "/models/" + modelName );//"tag" field, defaults to the filename at a new model upload.
 		dom.setAttribute( id, "blob", modelBlob );
+		dom.setAttribute( id, "modelfilename", modelName ); // TODO: new!! read it out @ the description etc!
+		//TODO: check for duplicate name!
 	}
 	
 	@Override
@@ -133,8 +135,22 @@ public class RiscossOrientDB implements RiscossDB {
 		}
 	}
 	
+	@Override
+	public void updateModel(String modelName, String blobFilename, String modelBlob) {
+		NodeID id = dom.getVertex( "/models/" + modelName );
+		dom.setAttribute( id, "blob", modelBlob );
+		dom.setAttribute( id, "modelfilename", blobFilename );
+	}
+	
 	public String getName( NodeID id ) {
 		return dom.getAttribute( id, "tag", "-" );
+	}
+	
+	@Override
+	public void changeModelName(String modelName, String newName) {
+		NodeID id = dom.getVertex( "/models/" + modelName );
+		dom.setAttribute( id, "tag", newName );		
+		//TODO: check for duplicate name!
 	}
 	
 	/* (non-Javadoc)

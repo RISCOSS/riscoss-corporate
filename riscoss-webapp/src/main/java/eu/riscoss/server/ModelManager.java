@@ -485,5 +485,17 @@ public class ModelManager {
 			DBConnector.closeDB( db );
 		}
 	}
+	
+	@POST
+	@Path("/model/changename")
+	public void changeModelName( @QueryParam("name") String name, @QueryParam("newname") String newName ) {
+		RiscossDB db = DBConnector.openDB();
+		try {
+			db.changeModelName(name, newName);
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
+	}
 
 }

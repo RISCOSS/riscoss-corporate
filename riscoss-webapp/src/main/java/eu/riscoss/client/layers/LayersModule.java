@@ -242,7 +242,7 @@ public class LayersModule implements EntryPoint {
 							
 							//String s = RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
 							if (!RiscossUtil.sanitize(name).equals(name)){
-								//info: firefox has some problem with this window, and fires asssertion errors in dev mode
+								//info: firefox has some problem with this window, and fires assertion errors in dev mode
 								Window.alert("Name contains prohibited characters (##,@,\") \nPlease re-enter name");
 								return;
 							}
@@ -250,7 +250,7 @@ public class LayersModule implements EntryPoint {
 							for(int i=0; i<getValue().size(); i++){
 								JSONObject o = (JSONObject)getValue().get(i);
 								if (name.equals(o.get( "name" ).isString().stringValue())){
-									//info: firefox has some problem with this window, and fires asssertion errors in dev mode
+									//info: firefox has some problem with this window, and fires assertion errors in dev mode
 									Window.alert("Layer name already in use.\nPlease re-enter name.");
 									return;
 								}
@@ -332,7 +332,7 @@ public class LayersModule implements EntryPoint {
 								return;
 
 							if (!RiscossUtil.sanitize(newName).equals(newName)){
-								//info: firefox has some problem with this window, firing asssertion errors in dev mode
+								//info: firefox has some problem with this window, firing assertion errors in dev mode
 								Window.alert("Name contains prohibited characters (##,@,\") \nPlease re-enter name");
 								return;
 							}
@@ -340,7 +340,7 @@ public class LayersModule implements EntryPoint {
 							for(int i=0; i<getValue().size(); i++){
 								JSONObject o = (JSONObject)getValue().get(i);
 								if (newName.equals(o.get( "name" ).isString().stringValue())){
-									//info: firefox has some problem with this window, firing asssertion errors in dev mode
+									//info: firefox has some problem with this window, firing assertion errors in dev mode
 									Window.alert("Layer name already in use.\nPlease re-enter name.");
 									return;
 								}

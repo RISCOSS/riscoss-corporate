@@ -32,6 +32,7 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.safehtml.shared.SafeHtml;
@@ -47,9 +48,12 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
 
+import eu.riscoss.client.EntityInfo;
 import eu.riscoss.client.JsonCallbackWrapper;
+import eu.riscoss.client.JsonUtil;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.SimpleRiskCconf;
+import eu.riscoss.client.ui.ClickWrapper;
 import eu.riscoss.client.ui.LinkHtml;
 import eu.riscoss.shared.RiscossUtil;
 
@@ -198,6 +202,62 @@ public class RiskConfsModule implements EntryPoint {
 		String name = Window.prompt( "Name:", "" );
 		if( name == null || "".equals( name ) ) 
 			return;
+		
+		
+		/**Button bOk = new Button( "Ok" ); //, new ClickHandler() {
+
+		bOk.addClickHandler( new ClickWrapper<JSONArray>( (JSONArray)response.isArray() ) {
+			@Override
+			public void onClick(ClickEvent event) {
+				String name = txt.getText().trim();
+
+				if (name == null || name.equals("") ) 
+					return;
+
+				//String s = RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
+				if (!RiscossUtil.sanitize(name).equals(name)){
+					//info: firefox has some problem with this window, and fires asssertion errors in dev mode
+					Window.alert("Name contains prohibited characters (##,@,\") \nPlease re-enter name");
+					return;
+				}
+
+				for(int i=0; i<getValue().size(); i++){
+					JSONObject o = (JSONObject)getValue().get(i);
+					if (name.equals(o.get( "name" ).isString().stringValue())){
+						//info: firefox has some problem with this window, and fires asssertion errors in dev mode
+						Window.alert("Layer name already in use.\nPlease re-enter name.");
+						return;
+					}
+				}
+
+				RiscossJsonClient.createEntity( getChosenName(), getChosenLayer(), getChosenParent(), new JsonCallback() {
+					@Override
+					public void onFailure(Method method, Throwable exception) {
+						Window.alert( exception.getMessage() );
+					}
+					@Override
+					public void onSuccess(Method method, JSONValue response) {
+						String entity = response.isObject().get( "name" ).isString().stringValue();
+						EntityInfo info = new EntityInfo( entity );
+						info.setLayer( JsonUtil.getValue( response, "layer", "" ) );
+						insertEntityIntoTable( info );
+						dialog.hide();
+					}
+				} );
+			}
+		});
+		grid.setWidget( 3, 1, bOk);	
+		
+		grid.setWidget( 3, 2, new Button( "Cancel", new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				//Window.Location.reload();
+				dialog.hide();
+			}
+		} )) ; */
+		
+		
+		
 		
 		while (!RiscossUtil.sanitize(name).equals(name)){
 			name = Window.prompt( "Name contains prohibited characters (##,@,\") \nRe-enter name:", "" );

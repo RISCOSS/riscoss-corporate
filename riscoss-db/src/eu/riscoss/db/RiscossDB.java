@@ -49,6 +49,9 @@ public interface RiscossDB {
 	public abstract void storeModel(String modelBlob, String modelName);
 	public abstract String getModelBlob(String modelName);
 	public abstract void removeModelBlob(String modelName);
+	public abstract void updateModel(String modelName, String blobFilename, String modelBlob);
+	public abstract void changeModelName(String modelName, String newName);
+	
 	/*
 	 * Model description
 	 */

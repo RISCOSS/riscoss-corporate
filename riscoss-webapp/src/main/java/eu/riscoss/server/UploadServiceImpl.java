@@ -154,9 +154,60 @@ public class UploadServiceImpl extends UploadAction {
 
 	}
 	
+	class ModelUpdateUploader implements Action {
+
+		@Override
+		public String executeAction(HttpServletRequest request,
+				List<FileItem> sessionFiles) throws UploadActionException {
+			String response = "";
+
+			RiscossDB db = DBConnector.openDB();
+			
+			String modelName = null;
+			for (FileItem item : sessionFiles) { //reads the hidden field in which the model name is passed
+				if (item.isFormField()){
+					if (item.getFieldName().startsWith("modelname")){
+						modelName = item.getString();
+						break;
+					}
+				} 
+			}
+			
+			for (FileItem item : sessionFiles) {
+				if (!item.isFormField()){
+					try {
+						String filename = request.getParameter( "name" ); //the file name, used only to propose a filename when downloading
+						if( filename == null ) {
+							filename = item.getName();
+						}
+						//attention:filename sanitation is not directly notified to the user
+						filename = RiscossUtil.sanitize(filename);
+						modelName = RiscossUtil.sanitize(modelName);
+						//store description for the model. Overwrites an existing description
+						db.updateModel(modelName, filename, item.getString());
+						
+						response = filename + " uploaded.";
+
+					} catch (Exception e) {
+						throw new UploadActionException(e);
+					}
+				}
+			}
+
+			DBConnector.closeDB( db );
+			/// Remove files from session because we have a copy of them
+			removeSessionFileItems(request);
+			/// Send information of the received files to the client.
+			return response;
+		}
+
+	}
+	
+	
 	public UploadServiceImpl() {
 		actions.put( "modelblob", new ModelUploader() );
 		actions.put( "modeldescblob", new ModelDescUploader() );
+		actions.put( "modelupdateblob", new ModelUpdateUploader() );
 	}
 	
 	/**

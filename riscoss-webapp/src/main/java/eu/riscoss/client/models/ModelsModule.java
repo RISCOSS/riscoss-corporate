@@ -70,18 +70,9 @@ import gwtupload.client.SingleUploader;
 
 public class ModelsModule implements EntryPoint {
 
-//	public class MyFancyLookingButton extends Composite implements HasClickHandlers {
-//		SimplePanel widget = new SimplePanel();
-//		public MyFancyLookingButton() {
-//			DecoratorPanel widget = new DecoratorPanel();
-//			//initWidget( new Anchor( "Choose..." ) );
-//			initWidget(widget);
-//			widget.setWidget(new HTML("New..."));
-//		}
-//		public HandlerRegistration addClickHandler(ClickHandler handler) {
-//			return addDomHandler(handler, ClickEvent.getType());
-//		}
-//	}
+	private static final String BUTTON_UPDATE_MODEL	= "Upload new model";
+	private static final String BUTTON_UPLOAD_DESC 	= "Upload documentation";
+	private static final String BUTTON_NEW_MODEL 	= "New...";
 	
 	DockPanel dock = new DockPanel();
 
@@ -156,9 +147,7 @@ public class ModelsModule implements EntryPoint {
 
 		//MyFancyLookingButton button = new MyFancyLookingButton();
 		//SingleUploader uploader = new SingleUploader();//FileInputType.CUSTOM.with(button));// "New..."
-		SingleUploader uploader = new SingleUploader(FileInputType.BUTTON);// "New..."
-		//with a specific caption:
-		//SingleUploader uploader = new SingleUploader(FileInputType.CUSTOM.with(new Button("New...")));// "New..."
+		SingleUploader uploader = new SingleUploader(FileInputType.CUSTOM.with(new Button(BUTTON_NEW_MODEL)));
 		uploader.setTitle("Upload new model");
 		uploader.setAutoSubmit(true);
 		uploader.setServletPath(uploader.getServletPath() + "?t=modelblob");
@@ -219,7 +208,7 @@ public class ModelsModule implements EntryPoint {
 		});
 	}-*/;
 
-	static class EditModelDialog implements IsWidget {
+	public class EditModelDialog implements IsWidget {
 
 		// // Load the image in the document and in the case of success attach
 		// it to the viewer
@@ -257,6 +246,7 @@ public class ModelsModule implements EntryPoint {
 		TextArea area;
 		KeyValueGrid chunksGrid;
 		IndexedTab tab;
+		TextBox txt;
 
 		// PopupPanel popup = new PopupPanel( false, true );
 		// SingleUploader u = new SingleUploader();
@@ -286,22 +276,45 @@ public class ModelsModule implements EntryPoint {
 
 		void showEditDialog(JSONObject json) {
 			
-			Grid grid = new Grid(2, 2);
+			Grid grid = new Grid(3, 3);
 			grid.setWidget(0, 0, new Label("Name:"));
 			//Label txt = new Label();
-			TextBox txt = new TextBox();
-			txt.setReadOnly(true);
+			txt = new TextBox();
+			//txt.setReadOnly(true);
 			String jsname = json.get("name").isString().stringValue();
 			txt.setText(jsname);
 			grid.setWidget(0, 1, txt);
+			
+			Button changer = new MyNameButton(jsname, "Change name", new ClickHandler() {
+				public void onClick(ClickEvent event) {
+					
+					RiscossJsonClient.changeModelName(name, txt.getText(), new JsonCallback() {
+						@Override
+						public void onFailure(Method method, Throwable exception) {
+							Window.alert(exception.getMessage());
+						}
 
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							Window.Location.reload();
+//							dataProvider.getList().add(new ModelInfo(txt.getText()));
+//							dataProvider.getList().remove(name);
+//							dataProvider.refresh();
+						}
+					});
+				}
+			});
+			
+			grid.setWidget( 0, 2, changer);
+			
 //			grid.setWidget(1, 0, new Label("Description:"));
 //			txt = new TextBox();
 //			txt.setReadOnly(true);
 //			grid.setWidget(1, 1, txt);
 			
 			//Uploader///////////
-			SingleUploader docuUploader = new SingleUploader(); //FileInputType.CUSTOM.with(new Button("Upload model documentation")));// "New..."
+
+			SingleUploader docuUploader = new SingleUploader(FileInputType.CUSTOM.with(new Button(BUTTON_UPLOAD_DESC))); 
 			docuUploader.setTitle("Upload model documentation");
 			docuUploader.setAutoSubmit(true);
 			
@@ -334,6 +347,37 @@ public class ModelsModule implements EntryPoint {
 			});
 			
 			grid.setWidget( 1, 1, docuDownloader);
+			
+			
+			
+			//Model Update Uploader///////////
+			SingleUploader updateUploader = new SingleUploader(FileInputType.CUSTOM.with(new Button(BUTTON_UPDATE_MODEL)));
+			updateUploader.setTitle("Update the model to a new version");
+			updateUploader.setAutoSubmit(true);
+			
+			updateUploader.setServletPath(updateUploader.getServletPath() + "?t=modelupdateblob");
+					
+			updateUploader.add(new Hidden("modelname", jsname));
+				
+			updateUploader.addOnFinishUploadHandler(new OnFinishUploaderHandler() {
+				@Override
+				public void onFinish(IUploader uploader) {
+					UploadedInfo info = uploader.getServerInfo();
+					//String name = info.name;
+					//Log.println("SERVERMESS2 " + uploader.getServerMessage().getMessage());
+					
+					String response = uploader.getServerMessage().getMessage();
+					if (!response.trim().startsWith("Error"))
+						Window.confirm(response); //TODO change!
+					else
+						Window.alert("Error: " + response );
+				}
+			});
+			
+			grid.setWidget( 2, 0, updateUploader);
+			
+			
+			////////////////////////////////////
 			
 			area = new TextArea();
 			chunksGrid = new KeyValueGrid();
@@ -403,12 +447,12 @@ public class ModelsModule implements EntryPoint {
 			});
 
 			panel.add(tab, DockPanel.CENTER);
-			panel.add(new Button("Save", new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					onDoneClicked();
-				}
-			}), DockPanel.SOUTH);
+//			panel.add(new Button("Save", new ClickHandler() {
+//				@Override
+//				public void onClick(ClickEvent event) {
+//					onDoneClicked();
+//				}
+//			}), DockPanel.SOUTH);
 			panel.setSize("100%", "100%");
 		}
 
@@ -429,10 +473,7 @@ public class ModelsModule implements EntryPoint {
 		// }
 		// }
 
-		protected void onDoneClicked() {
-			// dialog.hide();
-		}
-
+		
 		@Override
 		public Widget asWidget() {
 			return panel;

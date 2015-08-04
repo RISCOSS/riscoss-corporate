@@ -23,6 +23,10 @@ package eu.riscoss.client;
 
 import java.util.List;
 
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
+
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
 import org.fusesource.restygwt.client.Resource;
@@ -204,6 +208,13 @@ public class RiscossJsonClient {
 		new Resource( GWT.getHostPageBaseURL() + "api/models/model/delete" )
 			.addQueryParam( "name", name )
 			.delete().send( cb );
+	}
+	
+	public static void changeModelName( String name, String newName, JsonCallback cb){
+		new Resource( GWT.getHostPageBaseURL() + "api/models/model/changename" )
+		.addQueryParam( "name", name )
+		.addQueryParam( "newname", newName )
+		.post().send( cb );
 	}
 	
 	public static void runAnalysis( String target, String rc, String verbosity, EAnalysisOption opt, JSONObject values, JsonCallback cb ) {
