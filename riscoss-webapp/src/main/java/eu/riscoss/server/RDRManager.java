@@ -35,8 +35,7 @@ import eu.riscoss.db.RiscossDB;
 @Path("rdr")
 public class RDRManager {
 	
-	@POST
-	@Path("/store")
+	@POST @Path("/store")
 	@Consumes({"application/json"})
 	public void store( @HeaderParam("json") String string ) {
 		System.out.println( string );

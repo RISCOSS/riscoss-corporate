@@ -314,24 +314,23 @@ public class EntityManager {
 		}
 	}
 	
-	@POST
-	@Path("/entity/rd/set")
-	public void setRiskData( @QueryParam("entity") String entity, @HeaderParam("rd") String string ) {
-		RiscossDB db = DBConnector.openDB();
-		try {
-			JsonObject json = (JsonObject)new JsonParser().parse( string );
-			JsonArray array = new JsonArray();
-			for( String id : db.listRiskData( entity ) ) {
-				JsonObject o = (JsonObject)new JsonParser().parse( db.readRiskData( entity, id ) );
-				array.add(  o );
-			}
-			json.add( "list", array );
-			//			return json.toString();
-		}
-		finally {
-			DBConnector.closeDB( db );
-		}
-	}
+//	@POST
+//	@Path("/entity/rd/set")
+//	public void setRiskData( @QueryParam("entity") String entity, @HeaderParam("rd") String string ) {
+//		RiscossDB db = DBConnector.openDB();
+//		try {
+//			JsonObject json = (JsonObject)new JsonParser().parse( string );
+//			JsonArray array = new JsonArray();
+//			for( String id : db.listRiskData( entity ) ) {
+//				JsonObject o = (JsonObject)new JsonParser().parse( db.readRiskData( entity, id ) );
+//				array.add(  o );
+//			}
+//			json.add( "list", array );
+//		}
+//		finally {
+//			DBConnector.closeDB( db );
+//		}
+//	}
 	
 	@GET
 	@Path("/entity/data")

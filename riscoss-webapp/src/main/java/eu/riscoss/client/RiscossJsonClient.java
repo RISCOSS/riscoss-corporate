@@ -23,10 +23,6 @@ package eu.riscoss.client;
 
 import java.util.List;
 
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
-
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
 import org.fusesource.restygwt.client.Resource;
@@ -228,7 +224,7 @@ public class RiscossJsonClient {
 			.header( "customData", values.toString() )
 			.send( new JsonWaitWrapper( cb ) );
 	}
-
+	
 	public static void getRiskData( String entity, JsonCallback cb ) {
 		new Resource( GWT.getHostPageBaseURL() + "api/entities/entity/rd/get" )
 			.addQueryParam( "entity", entity )
@@ -240,19 +236,13 @@ public class RiscossJsonClient {
 			.addQueryParam( "entity", entity )
 			.get().send( cb );
 	}
-
+	
 	public static void postRiskData( JSONArray o, JsonCallback cb ) {
 		new Resource( GWT.getHostPageBaseURL() + "api/rdr/store" )
 			.post().header( "json", o.toString() )
 			.send( cb );
 	}
-
-//	public static void listRCChunks( String rcName, JsonCallback cb ) {
-//		new Resource( GWT.getHostPageBaseURL() + "api/rcs/rc/chunks" )
-//			.addQueryParam( "rc", rcName )
-//			.get().send( cb );
-//	}
-
+	
 	public static void listEntities( JsonCallback cb ) {
 		new Resource( GWT.getHostPageBaseURL() + "api/entities/list" )
 			.get().send( cb );

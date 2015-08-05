@@ -224,6 +224,9 @@ public class RiscossOrientDB implements RiscossDB {
 			dom.setAttribute( id, "type", o.get( "type" ).getAsString() );
 			dom.setAttribute( id, "value", o.get( "value" ).getAsString() );
 			dom.setAttribute( id, "date", "" + o.get( "date" ) );
+			if( o.get( "datatype" ) != null ) {
+				dom.setAttribute( id, "datatype", o.get( "datatype" ).getAsString() );
+			}
 			if( o.get( "origin" ) != null ) {
 				dom.setAttribute( id, "origin", o.get( "origin" ).getAsString() );
 			}
@@ -261,6 +264,7 @@ public class RiscossOrientDB implements RiscossDB {
 		
 		String rid = getName( id );
 		String type = dom.getAttribute( id, "type", null );
+		String datatype = dom.getAttribute( id, "datatype", "" );
 		String value = dom.getAttribute( id, "value", null );
 		String target = dom.getAttribute( id, "target", null );
 		if( target == null ) target = getName( id );
@@ -272,6 +276,7 @@ public class RiscossOrientDB implements RiscossDB {
 		
 		try {
 			o.put( "type", type );
+			o.put( "datatype", datatype );
 			o.put( "value", value );
 			o.put( "target", target );
 			o.put( "date", date );

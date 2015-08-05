@@ -1,6 +1,5 @@
 package eu.riscoss.db;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
