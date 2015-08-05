@@ -18,12 +18,14 @@ import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextBox;
@@ -139,23 +141,44 @@ public class LayerPropertyPage implements IsWidget {
 		
 		this.add = new Button("Add", new ClickHandler() {
 
+			@SuppressWarnings("deprecation")
 			@Override
 			public void onClick(ClickEvent arg0) {
 				
-				if (lBox.getSelectedIndex() == 0) {
+				int type = lBox.getSelectedIndex();
+				if (type == 0) {
+					/*if (min.getText().equals("") || max.getText().equals(""))  {
+						Window.alert("No field must be empty");
+						return;
+					}
+					if (Integer.parseInt(min.getText()) > Integer.parseInt(max.getText())) {
+						Window.alert("Min cannot be greater than max");
+						return;
+					}*/
 					defvaluestring = ((TextBox) defvalue.getWidget()).getText();
+					/*if (Integer.parseInt(defvaluestring) > Integer.parseInt(max.getText()) ||
+							Integer.parseInt(defvaluestring) < Integer.parseInt(min.getText())) {
+						Window.alert("Default value must be in the limits");
+						return;
+					}*/
 					info.addContextualInfoInteger(id.getText(), name.getText(), description.getText(), defvaluestring, min.getText(), max.getText());
 					((TextBox) defvalue.getWidget()).setText("");
 				}
 				
-				else if (lBox.getSelectedIndex() == 1) {
+				else if (type == 1) {
 					defvaluestring = String.valueOf(((ListBox) defvalue.getWidget()).getSelectedIndex());
 					info.addContextualInfoBoolean(id.getText(), name.getText(), description.getText(), defvaluestring);
 				}
 				
-				else if (lBox.getSelectedIndex() == 2) {
-					//Date date = ((DatePicker) defvalue.getWidget()).getValue();
-					defvaluestring = "";
+				else if (type == 2) {
+					Date date = new Date();
+					date.setYear(Integer.parseInt(((TextBox) ((Grid) defvalue.getWidget()).getWidget(0, 1)).getText()));
+					date.setMonth(Integer.parseInt(((TextBox) ((Grid) defvalue.getWidget()).getWidget(0, 3)).getText()));
+					date.setDate(Integer.parseInt(((TextBox) ((Grid) defvalue.getWidget()).getWidget(0, 5)).getText()));
+					date.setHours(Integer.parseInt(((TextBox) ((Grid) defvalue.getWidget()).getWidget(1, 1)).getText()));
+					date.setMinutes(Integer.parseInt(((TextBox) ((Grid) defvalue.getWidget()).getWidget(1, 3)).getText()));
+					date.setSeconds(Integer.parseInt(((TextBox) ((Grid) defvalue.getWidget()).getWidget(1, 5)).getText()));
+					defvaluestring = date.toString();
 					info.addContextualInfoCalendar(id.getText(), name.getText(), description.getText(), defvaluestring);
 				}
 				
@@ -203,6 +226,7 @@ public class LayerPropertyPage implements IsWidget {
 				resource.get().send( new JsonCallback() {
 					
 					public void onSuccess(Method method, JSONValue response) {
+						int type = lBox.getSelectedIndex();
 						if( response.isArray() != null ) {
 							for( int i = 0; i < response.isArray().size(); i++ ) {
 								JSONObject ent = (JSONObject)response.isArray().get( i );
@@ -210,13 +234,17 @@ public class LayerPropertyPage implements IsWidget {
 								JSONObject o = new JSONObject();
 								o.put( "id", new JSONString( id.getText() ) );
 								o.put( "target", new JSONString( entity ) );
-								o.put( "value", new JSONString( defvaluestring ) );
-								String type;
-								if (lBox.getSelectedIndex() == 0) type = "Integer";
-								else if (lBox.getSelectedIndex() == 1) type = "Boolean";
-								else if (lBox.getSelectedIndex() == 2) type = "Date";
-								else type = "List";
-								o.put( "type", new JSONString( type ) );
+								String value = defvaluestring;
+								if (type == 0) value+=";"+min.getText()+";"+max.getText();
+								else if (type == 3) {
+									value+=";"+elements.size();
+									for (int k = 0; k < elements.size(); ++k) {
+										value+=";"+elements.get(k);
+									}
+								}
+								o.put( "value", new JSONString( value ) );
+								o.put( "type", new JSONString( "custom" ) );
+								o.put( "datatype", new JSONString( lBox.getItemText(type) ));
 								o.put( "origin", new JSONString( "user" ) );
 								JSONArray array = new JSONArray();
 								array.set( 0, o );
@@ -276,9 +304,36 @@ public class LayerPropertyPage implements IsWidget {
 				
 				else if (lBox.getSelectedIndex() == 2) {
 					ciList.setWidget(1, 0, null);
-					Grid g = new Grid(1,2);
-					g.setWidget(0, 0, new DatePicker());
-					g.setWidget(0, 1, null);
+					Grid g = new Grid(2,6);
+					g.setCellSpacing(5);
+					TextBox tb = new TextBox();
+					tb.setWidth("30px");
+					
+					g.setWidget(0, 0, tb);
+					g.setWidget(0, 1, new Label("YYYY"));
+					tb = new TextBox();
+					tb.setWidth("30px");
+					g.setWidget(0, 2, tb);
+					g.setWidget(0, 3, new Label("MM"));
+					tb = new TextBox();
+					tb.setWidth("30px");
+					g.setWidget(0, 4, tb);
+					g.setWidget(0, 5, new Label("DD"));
+					
+					tb = new TextBox();
+					tb.setWidth("30px");
+					
+					g.setWidget(1, 0, tb);
+					g.setWidget(1, 1, new Label("hh"));
+					tb = new TextBox();
+					tb.setWidth("30px");
+					g.setWidget(1, 2, tb);
+					g.setWidget(1, 3, new Label("mm"));
+					tb = new TextBox();
+					tb.setWidth("30px");
+					g.setWidget(1, 4, tb);
+					g.setWidget(1, 5, new Label("ss"));
+					
 					defvalue.setWidget(g);
 					ciItemPanel.setWidget(null);
 				}

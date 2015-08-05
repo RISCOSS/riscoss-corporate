@@ -276,11 +276,12 @@ public class EntityPropertyPage implements IsWidget {
 			userForm.insertRow(i);
 			userForm.insertCell(i, 0);
 			userForm.insertCell(i, 1);
+			userForm.insertCell(i, 2);
 			userForm.setWidget(i, 0, new Label(item.getId()));
-			//userForm.setWidget(i, 1, new Label(item.get))
+			userForm.setWidget(i, 1, new Label("type: " + item.getDataType()));
 			TextBox tb = new TextBox();
 			tb.setText(item.getValue());
-			userForm.setWidget(i, 1, tb);
+			userForm.setWidget(i, 2, tb);
 		}
 		userForm.insertRow(info.getUserData().size());
 		userForm.insertCell(info.getUserData().size(), 0);
@@ -297,8 +298,9 @@ public class EntityPropertyPage implements IsWidget {
 					JSONObject o = new JSONObject();
 					o.put( "id", new JSONString( ((Label) userForm.getWidget(k, 0)).getText() ) );
 					o.put( "target", new JSONString( entity ) );
-					o.put( "value", new JSONString( ((TextBox) userForm.getWidget(k, 1)).getText() ) );
-					o.put( "type", new JSONString( "" ));
+					o.put( "value", new JSONString( ((TextBox) userForm.getWidget(k, 2)).getText() ) );
+					o.put( "type", new JSONString( "custom" ) );
+					o.put( "datatype", new JSONString( ((Label) userForm.getWidget(k, 1)).getText() ) );
 					o.put( "origin", new JSONString( "user" ) );
 					array.set( k, o );
 				}

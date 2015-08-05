@@ -294,7 +294,8 @@ public class EntitiesModule implements EntryPoint {
 			o.put( "id", new JSONString( contextualInfo.getContextualInfoElement(k).getId() ) );
 			o.put( "target", new JSONString( newEntity ) );
 			o.put( "value", new JSONString( contextualInfo.getContextualInfoElement(k).getDefval() ) );
-			o.put( "type", new JSONString( contextualInfo.getContextualInfoElement(k).getType() ) );
+			o.put( "type", new JSONString( "custom" ) );
+			o.put( "datatype", new JSONString( contextualInfo.getContextualInfoElement(k).getType()));
 			o.put( "origin", new JSONString( "user" ) );
 			array.set( k, o );
 		}
