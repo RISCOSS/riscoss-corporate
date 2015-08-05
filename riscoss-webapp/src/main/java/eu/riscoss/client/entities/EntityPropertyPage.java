@@ -39,11 +39,13 @@ import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TabPanel;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -105,7 +107,7 @@ public class EntityPropertyPage implements IsWidget {
 	SimplePanel			summaryPanel	= new SimplePanel();
 	SimplePanel			ciPanel			= new SimplePanel();
 	SimplePanel			rasPanel		= new SimplePanel();
-	CustomizableForm	userForm;
+	FlexTable			userForm 		= new FlexTable();
 	
 	Anchor				rdcAnchor;
 	
@@ -268,24 +270,38 @@ public class EntityPropertyPage implements IsWidget {
 			grid.getColumnFormatter().setWidth( 0, "20%" );
 			grid.getColumnFormatter().setWidth( 1, "80%" );
 		}
-		userForm = new CustomizableForm();
+		userForm = new FlexTable();
 		for( int i = 0; i < info.getUserData().size(); i++ ) {
 			JsonRiskDataList.RiskDataItem item = info.getUserData().get( i );
-			userForm.addField( item.getId(), item.getValue() );
+			userForm.insertRow(i);
+			userForm.insertCell(i, 0);
+			userForm.insertCell(i, 1);
+			userForm.setWidget(i, 0, new Label(item.getId()));
+			//userForm.setWidget(i, 1, new Label(item.get))
+			TextBox tb = new TextBox();
+			tb.setText(item.getValue());
+			userForm.setWidget(i, 1, tb);
 		}
-		userForm.enableFastInsert();
-//		v.add( userForm );
-		userForm.addFieldListener( new CustomizableForm.FieldListener() {
+		userForm.insertRow(info.getUserData().size());
+		userForm.insertCell(info.getUserData().size(), 0);
+		Button save = new Button("Save");
+		userForm.setWidget(info.getUserData().size(), 0, save);
+		save.addClickHandler(new ClickHandler() {
+
 			@Override
-			public void valueChanged( CustomizableForm.CustomField field ) {
-				JSONObject o = new JSONObject();
-				o.put( "id", new JSONString( field.getName() ) );
-				o.put( "target", new JSONString( EntityPropertyPage.this.entity ) );
-				o.put( "value", new JSONString( field.getValue() ) );
-				o.put( "type", new JSONString( "NUMBER" ) );
-				o.put( "origin", new JSONString( "user" ) );
+			public void onClick(ClickEvent arg0) {
+				
+				int k;
 				JSONArray array = new JSONArray();
-				array.set( 0, o );
+				for (k = 0; k < userForm.getRowCount()-1; k++) {
+					JSONObject o = new JSONObject();
+					o.put( "id", new JSONString( ((Label) userForm.getWidget(k, 0)).getText() ) );
+					o.put( "target", new JSONString( entity ) );
+					o.put( "value", new JSONString( ((TextBox) userForm.getWidget(k, 1)).getText() ) );
+					o.put( "type", new JSONString( "" ));
+					o.put( "origin", new JSONString( "user" ) );
+					array.set( k, o );
+				}
 				RiscossJsonClient.postRiskData( array, new JsonCallback() {
 					@Override
 					public void onFailure( Method method, Throwable exception ) {
@@ -293,35 +309,12 @@ public class EntityPropertyPage implements IsWidget {
 					}
 					@Override
 					public void onSuccess( Method method, JSONValue response ) {
-						//								Window.alert( "Ok" );
+							//						Window.alert( "Ok" );
 					}} );
 			}
 			
-			@Override
-			public void labelChanged( CustomField field ) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void fieldDeleted( CustomField field ) {
-				JSONObject o = new JSONObject();
-				o.put( "id", new JSONString( field.getName() ) );
-				o.put( "target", new JSONString( EntityPropertyPage.this.entity ) );
-				JSONArray array = new JSONArray();
-				array.set( 0, o );
-				RiscossJsonClient.postRiskData( array,  new JsonCallbackWrapper<String>( field.getName() ) {
-					@Override
-					public void onSuccess( Method method, JSONValue response ) {
-						userForm.removeField( getValue() );
-					}
-					@Override
-					public void onFailure( Method method, Throwable exception ) {
-						Window.alert( exception.getMessage() );
-					}
-				});
-			}
 		});
+		
 		summaryPanel.setWidget( v );
 		ciPanel.setWidget( userForm );
 	}

@@ -1,15 +1,20 @@
 package eu.riscoss.client.layers;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
+import org.fusesource.restygwt.client.Resource;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
@@ -23,9 +28,15 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.datepicker.client.DatePicker;
 
+import eu.riscoss.client.EntityInfo;
+import eu.riscoss.client.JsonCallbackWrapper;
+import eu.riscoss.client.JsonEntitySummary;
+import eu.riscoss.client.JsonUtil;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecLayerContextualInfo;
+import eu.riscoss.client.entities.EntityPropertyPage;
 import eu.riscoss.shared.JLayerContextualInfo;
 import eu.riscoss.shared.JLayerContextualInfoElement;
 
@@ -38,12 +49,18 @@ public class LayerPropertyPage implements IsWidget {
 	HorizontalPanel		hPanel 			= new HorizontalPanel();
 	SimplePanel			ciItemPanel 	= new SimplePanel();
 	Grid				ciList			= new Grid(3,1);
+	Grid				newElement;
 	
 	
 	private String  	layer;
 	
 	TextBox				name			= new TextBox();
+	TextBox				id				= new TextBox();
+	TextBox				description		= new TextBox();
+	SimplePanel			defvalue 		= new SimplePanel();
+	String				defvaluestring 	= new String();
 	Button 				add;
+	Button				newElemButton;
 	
 	HorizontalPanel		integerItem		= new HorizontalPanel();
 	ArrayList<TextBox>	elems 			= new ArrayList<>();
@@ -55,7 +72,7 @@ public class LayerPropertyPage implements IsWidget {
 	
 	ListBox				lBox;
 	
-	JLayerContextualInfo info;
+	JLayerContextualInfo	info;
 	
 	public LayerPropertyPage() {
 		tab.add( panel , "Properties");
@@ -120,34 +137,44 @@ public class LayerPropertyPage implements IsWidget {
 		
 		panel.add(grid);
 		
-		//TODO get existing attributes
-		
 		this.add = new Button("Add", new ClickHandler() {
 
 			@Override
 			public void onClick(ClickEvent arg0) {
 				
 				if (lBox.getSelectedIndex() == 0) {
-					info.addContextualInfoInteger(name.getText(), min.getText(), max.getText());
+					defvaluestring = ((TextBox) defvalue.getWidget()).getText();
+					info.addContextualInfoInteger(id.getText(), name.getText(), description.getText(), defvaluestring, min.getText(), max.getText());
+					((TextBox) defvalue.getWidget()).setText("");
 				}
 				
-				else if (lBox.getSelectedIndex() == 3) {
+				else if (lBox.getSelectedIndex() == 1) {
+					defvaluestring = String.valueOf(((ListBox) defvalue.getWidget()).getSelectedIndex());
+					info.addContextualInfoBoolean(id.getText(), name.getText(), description.getText(), defvaluestring);
+				}
+				
+				else if (lBox.getSelectedIndex() == 2) {
+					//Date date = ((DatePicker) defvalue.getWidget()).getValue();
+					defvaluestring = "";
+					info.addContextualInfoCalendar(id.getText(), name.getText(), description.getText(), defvaluestring);
+				}
+				
+				else {
 					elements = new ArrayList<>();
 					int rCount = enumeration.getRowCount();
 					for (int i = 1; i < rCount; ++i) {
 						TextBox elem = (TextBox) enumeration.getWidget(i, 0);
 						elements.add(elem.getText());
 					}
-					info.addContextualInfoList(name.getText(), elements);
+					defvaluestring = String.valueOf(((ListBox) defvalue.getWidget()).getSelectedIndex());
+					info.addContextualInfoList(id.getText(), name.getText(), description.getText(), defvaluestring , elements);
 					Widget w = enumeration.getWidget(0,0);
 					enumeration.removeAllRows();;
 					enumeration.insertRow(0);
 					enumeration.insertCell(0, 0);
 					enumeration.setWidget(0, 0, w);
-				}
-				
-				else {
-					info.addContextualInfoBoolean(name.getText());
+					
+					defvalue.setWidget(new ListBox());
 				}
 				
 				RiscossJsonClient.setLayerContextualInfo(layer, info, new JsonCallback() {
@@ -168,14 +195,54 @@ public class LayerPropertyPage implements IsWidget {
 					}
 					
 				});
+				
+				String url = "api/entities/list/" + layer; 
+				
+				Resource resource = new Resource( GWT.getHostPageBaseURL() + url );
+				
+				resource.get().send( new JsonCallback() {
 					
-				min.setText("");
-				max.setText("");
-				name.setText("");
+					public void onSuccess(Method method, JSONValue response) {
+						if( response.isArray() != null ) {
+							for( int i = 0; i < response.isArray().size(); i++ ) {
+								JSONObject ent = (JSONObject)response.isArray().get( i );
+								String entity = ent.get( "name" ).isString().stringValue();
+								JSONObject o = new JSONObject();
+								o.put( "id", new JSONString( id.getText() ) );
+								o.put( "target", new JSONString( entity ) );
+								o.put( "value", new JSONString( defvaluestring ) );
+								String type;
+								if (lBox.getSelectedIndex() == 0) type = "Integer";
+								else if (lBox.getSelectedIndex() == 1) type = "Boolean";
+								else if (lBox.getSelectedIndex() == 2) type = "Date";
+								else type = "List";
+								o.put( "type", new JSONString( type ) );
+								o.put( "origin", new JSONString( "user" ) );
+								JSONArray array = new JSONArray();
+								array.set( 0, o );
+								RiscossJsonClient.postRiskData( array, new JsonCallback() {
+									@Override
+									public void onFailure( Method method, Throwable exception ) {
+										Window.alert( exception.getMessage() );
+									}
+									@Override
+									public void onSuccess( Method method, JSONValue response ) {
+																//		Window.alert( "Ok" );
+									}} );
+							}
+						}
+					}
+					
+					public void onFailure(Method method, Throwable exception) {
+						Window.alert( exception.getMessage() );
+					}
+				});
 				
 			}
 			
 		});
+		
+		newElement = new Grid(3,1);
 		
 		HorizontalPanel hPanel = new HorizontalPanel();
 		lBox = new ListBox();
@@ -192,16 +259,27 @@ public class LayerPropertyPage implements IsWidget {
 				
 				if (lBox.getSelectedIndex() == 0) {
 					ciList.setWidget(1, 0, null);
+					TextBox tb = new TextBox();
+					tb.setWidth("40px");
+					defvalue.setWidget(tb);
 					ciItemPanel.setWidget(integerItem);
 				}
 				
 				else if (lBox.getSelectedIndex() == 1) {
 					ciList.setWidget(1, 0, null);
+					ListBox lb = new ListBox();
+					lb.addItem("false");
+					lb.addItem("true");
+					defvalue.setWidget(lb);
 					ciItemPanel.setWidget(null);
 				}
 				
 				else if (lBox.getSelectedIndex() == 2) {
 					ciList.setWidget(1, 0, null);
+					Grid g = new Grid(1,2);
+					g.setWidget(0, 0, new DatePicker());
+					g.setWidget(0, 1, null);
+					defvalue.setWidget(g);
 					ciItemPanel.setWidget(null);
 				}
 				
@@ -209,6 +287,7 @@ public class LayerPropertyPage implements IsWidget {
 					enumeration = new FlexTable();
 					enumeration.insertRow(0);
 					enumeration.insertCell(0, 0);
+					defvalue.setWidget(new ListBox());
 					
 					HorizontalPanel buttons = new HorizontalPanel();
 					buttons.setSpacing(5);
@@ -221,6 +300,7 @@ public class LayerPropertyPage implements IsWidget {
 							enumeration.insertRow(k);
 							enumeration.insertCell(k,0);
 							enumeration.setWidget(k, 0, new TextBox());
+							((ListBox) defvalue.getWidget()).addItem(String.valueOf(k));
 						}
 						
 					});
@@ -231,7 +311,7 @@ public class LayerPropertyPage implements IsWidget {
 						public void onClick(ClickEvent arg0) {
 							int k = enumeration.getRowCount();
 							if (k > 1) enumeration.removeRow(k-1);
-							
+							if (k > 0) ((ListBox) defvalue.getWidget()).removeItem(k-1);
 						}
 						
 					});
@@ -246,20 +326,64 @@ public class LayerPropertyPage implements IsWidget {
 			
 		});
 		
-		min.setWidth("20px");
-		max.setWidth("20px");
+		min.setWidth("30px");
+		max.setWidth("30px");
+		id.setWidth("100px");
+		name.setWidth("100px");
+		description.setWidth("315px");
 		
 		hPanel.add(new Label("Type"));
 		hPanel.add(lBox);
+		hPanel.add(new Label("ID"));
+		hPanel.add(id);
 		hPanel.add(new Label("Name"));
 		hPanel.add(name);
 		
+		newElement.setWidget(0, 0, hPanel);
+		
+		HorizontalPanel hPanel2 = new HorizontalPanel();
+		
+		hPanel2.add(new Label("Description"));
+		hPanel2.add(description);
+		newElement.setWidget(1, 0, hPanel2);
+		
+		HorizontalPanel hPanel3 = new HorizontalPanel();
+		TextBox tb = new TextBox();
+		tb.setWidth("40px");
+		defvalue.setWidget(tb);
+		hPanel3.add(new Label("Default value"));
+		hPanel3.add(defvalue);
 		ciItemPanel.setWidget(integerItem);
-		hPanel.add(ciItemPanel);
-		hPanel.add(this.add);
+		hPanel3.add(ciItemPanel);
+		hPanel3.add(this.add);
+		Button cancel = new Button("Cancel");
+		cancel.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent arg0) {
+				ciList.setWidget(0, 0, newElemButton);
+			}
+			
+		});
+		hPanel3.add(cancel);
+		newElement.setWidget(2, 0, hPanel3);
 		
 		hPanel.setSpacing(5);
-		ciList.setWidget(0, 0, hPanel);
+		hPanel2.setSpacing(5);
+		hPanel3.setSpacing(5);
+		
+		//ciList.setWidget(0, 0, newElement);
+		
+		newElemButton = new Button("Add new element...");
+		newElemButton.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent arg0) {
+				ciList.setWidget(0, 0, newElement);
+			}
+			
+		});
+		ciList.setWidget(0, 0, newElemButton);
 		
 		ciList.setWidget(1, 0, null);
 		
@@ -275,8 +399,13 @@ public class LayerPropertyPage implements IsWidget {
 		for (count = 0; count < info.getSize(); ++count) {
 			list.insertRow(count);
 			list.insertCell(count, 0);
+			list.insertCell(count, 1);
+			list.insertCell(count, 2);
+			list.insertCell(count, 3);
 			JLayerContextualInfoElement jElement = info.getContextualInfoElement(count);
-			String n = jElement.getName() + " - " + jElement.getType();
+			
+			
+			/*String n = jElement.getId() + " - " + jElement.getName() + " - " + jElement.getType();
 			
 			HorizontalPanel hp = new HorizontalPanel();
 			hp.setSpacing(5);
@@ -295,19 +424,61 @@ public class LayerPropertyPage implements IsWidget {
 				hp.add(lB);
 			}
 			
-			else hp.add(new Label(n));
-			
-			
-			
-			list.setWidget(count, 0, hp);
-			list.insertCell(count, 1);
+			else hp.add(new Label(n));*/
+			list.setWidget(count, 0, new Label(jElement.getId()));
+			list.setWidget(count, 1, new Label(jElement.getName()));
+			list.setWidget(count, 2, new Label(jElement.getType()));
+			list.setWidget(count, 3, new Label(jElement.getDescription()));
+			list.insertCell(count, 4);
 			Button delete = new Button("X");
 			delete.addClickHandler(new ClickHandler() {
 				
 				int i = count;
+				String idEnt = info.getContextualInfoElement(i).getId();
 
 				@Override
 				public void onClick(ClickEvent arg0) {
+					
+					String url = "api/entities/list/" + layer; 
+					
+					Resource resource = new Resource( GWT.getHostPageBaseURL() + url );
+					
+					resource.get().send( new JsonCallback() {
+						
+						public void onSuccess(Method method, JSONValue response) {
+							if( response.isArray() != null ) {
+								
+								for( int k = 0; k < response.isArray().size(); k++ ) {
+									
+									JSONObject ent = (JSONObject)response.isArray().get( k );
+									String entity = ent.get( "name" ).isString().stringValue();
+									
+									JSONObject o = new JSONObject();
+									o.put( "id", new JSONString( idEnt ) );
+									o.put( "target", new JSONString( entity ) );
+									JSONArray array = new JSONArray();
+									array.set( 0, o );
+									RiscossJsonClient.postRiskData( array,  new JsonCallbackWrapper<String>( idEnt ) {
+										@Override
+										public void onSuccess( Method method, JSONValue response ) {
+											
+										}
+										@Override
+										public void onFailure( Method method, Throwable exception ) {
+											Window.alert( exception.getMessage() );
+										}
+									});
+								}
+								
+							}
+						}
+						
+						public void onFailure(Method method, Throwable exception) {
+							Window.alert( exception.getMessage() );
+						}
+						
+					});
+					
 					info.deleteContextualInfoElement(i);
 					RiscossJsonClient.setLayerContextualInfo(layer, info, new JsonCallback() {
 
@@ -328,7 +499,7 @@ public class LayerPropertyPage implements IsWidget {
 				}
 				
 			});
-			list.setWidget(count, 1, delete);
+			list.setWidget(count, 4, delete);
 		}
 		
 		ciList.setWidget(2, 0, list);

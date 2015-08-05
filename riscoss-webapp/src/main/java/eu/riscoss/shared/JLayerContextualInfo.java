@@ -7,11 +7,9 @@ public class JLayerContextualInfo {
 	
 	List<JLayerContextualInfoElement> 	contextInfoList = new ArrayList<>();
 	
-	public void addContextualInfoInteger(String name, String min, String max) {
+	public void addContextualInfoInteger(String id, String name, String description, String defval, String min, String max) {
 		
-		JLayerContextualInfoElement contextInfo = new JLayerContextualInfoElement();
-		contextInfo.setName(name);
-		contextInfo.setType("Integer");
+		JLayerContextualInfoElement contextInfo = new JLayerContextualInfoElement(id, name, description, defval, "Integer");
 		List<String> info = new ArrayList<>();
 		info.add(min);
 		info.add(max);
@@ -21,31 +19,25 @@ public class JLayerContextualInfo {
 		
 	}
 	
-	public void addContextualInfoBoolean(String name) {
+	public void addContextualInfoBoolean(String id, String name, String description, String defval) {
 		
-		JLayerContextualInfoElement contextInfo = new JLayerContextualInfoElement();
-		contextInfo.setName(name);
-		contextInfo.setType("Boolean");
+		JLayerContextualInfoElement contextInfo = new JLayerContextualInfoElement(id, name, description, defval, "Boolean");
 		
 		contextInfoList.add(contextInfo);
 		
 	}
 	
-	public void addContextualInfoCalendar(String name) {
+	public void addContextualInfoCalendar(String id, String name, String description, String defval) {
 		
-		JLayerContextualInfoElement contextInfo = new JLayerContextualInfoElement();
-		contextInfo.setName(name);
-		contextInfo.setType("Date");
-		
+		JLayerContextualInfoElement contextInfo = new JLayerContextualInfoElement(id, name, description, defval, "Date");
+
 		contextInfoList.add(contextInfo);
 		
 	}
 	
-	public void addContextualInfoList(String name, ArrayList<String> elements) {
+	public void addContextualInfoList(String id, String name, String description, String defval, ArrayList<String> elements) {
 		
-		JLayerContextualInfoElement contextInfo = new JLayerContextualInfoElement();
-		contextInfo.setName(name);
-		contextInfo.setType("List");
+		JLayerContextualInfoElement contextInfo = new JLayerContextualInfoElement(id, name, description, defval, "List");
 		contextInfo.setInfo(elements);
 		
 		contextInfoList.add(contextInfo);
