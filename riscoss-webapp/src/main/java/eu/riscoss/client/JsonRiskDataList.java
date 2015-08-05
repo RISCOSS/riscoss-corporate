@@ -51,6 +51,34 @@ public class JsonRiskDataList {
 			return val.isString().stringValue();
 		}
 		
+		public String getType() {
+			JSONValue val = json.get( "type" );
+			if( val == null ) return "";
+			if( val.isString() == null ) return "";
+			return val.isString().stringValue();
+		}
+		
+		public String getDataType() {
+			JSONValue val = json.get( "datatype" );
+			if( val == null ) return "";
+			if( val.isString() == null ) return "";
+			return val.isString().stringValue();
+		}
+		
+		public String getDate() {
+			JSONValue val = json.get( "date" );
+			if( val == null ) return "";
+			if( val.isString() == null ) return "";
+			return val.isString().stringValue();
+		}
+		
+		public String getOrigin() {
+			JSONValue val = json.get( "origin" );
+			if( val == null ) return "";
+			if( val.isString() == null ) return "";
+			return val.isString().stringValue();
+		}
+		
 	}
 	
 	private JSONObject json;
