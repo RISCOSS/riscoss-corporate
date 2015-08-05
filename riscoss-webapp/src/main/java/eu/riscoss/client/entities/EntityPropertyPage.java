@@ -23,6 +23,8 @@ package eu.riscoss.client.entities;
 
 import java.util.List;
 
+import javax.swing.SpinnerModel;
+
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
 
@@ -49,15 +51,15 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-import eu.riscoss.client.report.RiskAnalysisReport;
-import eu.riscoss.client.ui.CustomizableForm;
-import eu.riscoss.client.ui.CustomizableForm.CustomField;
-import eu.riscoss.client.ui.EntityBox;
 import eu.riscoss.client.JsonCallbackWrapper;
 import eu.riscoss.client.JsonEntitySummary;
 import eu.riscoss.client.JsonRiskDataList;
 import eu.riscoss.client.Log;
 import eu.riscoss.client.RiscossJsonClient;
+import eu.riscoss.client.report.RiskAnalysisReport;
+import eu.riscoss.client.ui.CustomizableForm;
+import eu.riscoss.client.ui.CustomizableForm.CustomField;
+import eu.riscoss.client.ui.EntityBox;
 
 public class EntityPropertyPage implements IsWidget {
 	
@@ -107,7 +109,7 @@ public class EntityPropertyPage implements IsWidget {
 	SimplePanel			summaryPanel	= new SimplePanel();
 	SimplePanel			ciPanel			= new SimplePanel();
 	SimplePanel			rasPanel		= new SimplePanel();
-	FlexTable			userForm 		= new FlexTable();
+	CustomizableForm	userForm 		= new CustomizableForm();
 	
 	Anchor				rdcAnchor;
 	
@@ -115,6 +117,7 @@ public class EntityPropertyPage implements IsWidget {
 	
 	RDCConfDialog		confDialog;
 	
+	String[]			contextualInfo;
 	boolean				rasLoaded		= false;
 	
 	public EntityPropertyPage() {
@@ -270,7 +273,7 @@ public class EntityPropertyPage implements IsWidget {
 			grid.getColumnFormatter().setWidth( 0, "20%" );
 			grid.getColumnFormatter().setWidth( 1, "80%" );
 		}
-		userForm = new FlexTable();
+		/*userForm = new FlexTable();
 		for( int i = 0; i < info.getUserData().size(); i++ ) {
 			JsonRiskDataList.RiskDataItem item = info.getUserData().get( i );
 			userForm.insertRow(i);
@@ -278,10 +281,15 @@ public class EntityPropertyPage implements IsWidget {
 			userForm.insertCell(i, 1);
 			userForm.insertCell(i, 2);
 			userForm.setWidget(i, 0, new Label(item.getId()));
-			userForm.setWidget(i, 1, new Label("type: " + item.getDataType()));
+			userForm.setWidget(i, 1, new Label(item.getDataType()));
 			TextBox tb = new TextBox();
-			tb.setText(item.getValue());
+			String vv = item.getValue();
+			String[] values = vv.split(";");
+			contextualInfo = "";
+			for (int k = 1; k < values.length; ++k) contextualInfo+=values[k];
+			tb.setText(values[0]);
 			userForm.setWidget(i, 2, tb);
+	
 		}
 		userForm.insertRow(info.getUserData().size());
 		userForm.insertCell(info.getUserData().size(), 0);
@@ -295,12 +303,15 @@ public class EntityPropertyPage implements IsWidget {
 				int k;
 				JSONArray array = new JSONArray();
 				for (k = 0; k < userForm.getRowCount()-1; k++) {
+					String type = ((Label) userForm.getWidget(k, 1)).getText();
+					String value = ((TextBox) userForm.getWidget(k, 2)).getText();
+					value+=contextualInfo;
 					JSONObject o = new JSONObject();
 					o.put( "id", new JSONString( ((Label) userForm.getWidget(k, 0)).getText() ) );
 					o.put( "target", new JSONString( entity ) );
-					o.put( "value", new JSONString( ((TextBox) userForm.getWidget(k, 2)).getText() ) );
+					o.put( "value", new JSONString( value ) );
 					o.put( "type", new JSONString( "custom" ) );
-					o.put( "datatype", new JSONString( ((Label) userForm.getWidget(k, 1)).getText() ) );
+					o.put( "datatype", new JSONString( type ) );
 					o.put( "origin", new JSONString( "user" ) );
 					array.set( k, o );
 				}
@@ -317,6 +328,66 @@ public class EntityPropertyPage implements IsWidget {
 			
 		});
 		
+		summaryPanel.setWidget( v );
+		ciPanel.setWidget( userForm );*/
+		
+		userForm = new CustomizableForm();
+		for( int i = 0; i < info.getUserData().size(); i++ ) {
+			JsonRiskDataList.RiskDataItem item = info.getUserData().get( i );
+			String val = item.getValue();
+			contextualInfo = val.split(";");
+			if (item.getDataType().equals("List")) val = contextualInfo[Integer.parseInt(contextualInfo[0])+1];
+			userForm.addField( item.getId(), contextualInfo[0] );
+		}
+		userForm.enableFastInsert();
+//		v.add( userForm );
+		userForm.addFieldListener( new CustomizableForm.FieldListener() {
+			@Override
+			public void valueChanged( CustomizableForm.CustomField field ) {
+				JSONObject o = new JSONObject();
+				o.put( "id", new JSONString( field.getName() ) );
+				o.put( "target", new JSONString( EntityPropertyPage.this.entity ) );
+				o.put( "value", new JSONString( field.getValue() ) );
+				o.put( "type", new JSONString( "NUMBER" ) );
+				o.put( "origin", new JSONString( "user" ) );
+				JSONArray array = new JSONArray();
+				array.set( 0, o );
+				RiscossJsonClient.postRiskData( array, new JsonCallback() {
+					@Override
+					public void onFailure( Method method, Throwable exception ) {
+						Window.alert( exception.getMessage() );
+					}
+					@Override
+					public void onSuccess( Method method, JSONValue response ) {
+						//								Window.alert( "Ok" );
+					}} );
+			}
+			
+			@Override
+			public void labelChanged( CustomField field ) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void fieldDeleted( CustomField field ) {
+				JSONObject o = new JSONObject();
+				o.put( "id", new JSONString( field.getName() ) );
+				o.put( "target", new JSONString( EntityPropertyPage.this.entity ) );
+				JSONArray array = new JSONArray();
+				array.set( 0, o );
+				RiscossJsonClient.postRiskData( array,  new JsonCallbackWrapper<String>( field.getName() ) {
+					@Override
+					public void onSuccess( Method method, JSONValue response ) {
+						userForm.removeField( getValue() );
+					}
+					@Override
+					public void onFailure( Method method, Throwable exception ) {
+						Window.alert( exception.getMessage() );
+					}
+				});
+			}
+		});
 		summaryPanel.setWidget( v );
 		ciPanel.setWidget( userForm );
 	}

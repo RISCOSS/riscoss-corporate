@@ -52,6 +52,7 @@ public class LayerPropertyPage implements IsWidget {
 	SimplePanel			ciItemPanel 	= new SimplePanel();
 	Grid				ciList			= new Grid(3,1);
 	Grid				newElement;
+	PopupPanel	 		simplePopup 	= new PopupPanel(true);
 	
 	
 	private String  	layer;
@@ -88,6 +89,10 @@ public class LayerPropertyPage implements IsWidget {
 		integerItem.add(new Label("Max"));
 		integerItem.add(max);
 		
+		
+		simplePopup.setPopupPosition(500, 100);
+		simplePopup.setWidth("180px");
+		simplePopup.setHeight("50px");
 	}
 	
 	@Override
@@ -145,22 +150,30 @@ public class LayerPropertyPage implements IsWidget {
 			@Override
 			public void onClick(ClickEvent arg0) {
 				
+				if (id.getText().equals("") || name.getText().equals("") || description.getText().equals("")) {
+					simplePopup.setWidget(new Label("No field can be empty"));
+					simplePopup.show();
+				}
+				
 				int type = lBox.getSelectedIndex();
 				if (type == 0) {
-					/*if (min.getText().equals("") || max.getText().equals(""))  {
-						Window.alert("No field must be empty");
+					if (min.getText().equals("") || max.getText().equals(""))  {
+						simplePopup.setWidget(new Label("No field can be empty"));
+						simplePopup.show();
 						return;
 					}
 					if (Integer.parseInt(min.getText()) > Integer.parseInt(max.getText())) {
-						Window.alert("Min cannot be greater than max");
+						simplePopup.setWidget(new Label("Min cannot be greater than max"));
+						simplePopup.show();
 						return;
-					}*/
+					}
 					defvaluestring = ((TextBox) defvalue.getWidget()).getText();
-					/*if (Integer.parseInt(defvaluestring) > Integer.parseInt(max.getText()) ||
+					if (Integer.parseInt(defvaluestring) > Integer.parseInt(max.getText()) ||
 							Integer.parseInt(defvaluestring) < Integer.parseInt(min.getText())) {
-						Window.alert("Default value must be in the limits");
+						simplePopup.setWidget(new Label("Value must be in limits"));
+						simplePopup.show();
 						return;
-					}*/
+					}
 					info.addContextualInfoInteger(id.getText(), name.getText(), description.getText(), defvaluestring, min.getText(), max.getText());
 					((TextBox) defvalue.getWidget()).setText("");
 				}
@@ -237,7 +250,6 @@ public class LayerPropertyPage implements IsWidget {
 								String value = defvaluestring;
 								if (type == 0) value+=";"+min.getText()+";"+max.getText();
 								else if (type == 3) {
-									value+=";"+elements.size();
 									for (int k = 0; k < elements.size(); ++k) {
 										value+=";"+elements.get(k);
 									}
