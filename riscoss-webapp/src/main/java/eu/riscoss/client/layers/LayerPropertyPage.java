@@ -12,6 +12,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
@@ -30,6 +31,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.datepicker.client.DateBox;
 import com.google.gwt.user.datepicker.client.DatePicker;
 
 import eu.riscoss.client.EntityInfo;
@@ -56,12 +58,14 @@ public class LayerPropertyPage implements IsWidget {
 	
 	
 	private String  	layer;
+	private	String		parent;
 	
 	TextBox				name			= new TextBox();
 	TextBox				id				= new TextBox();
 	TextBox				description		= new TextBox();
 	SimplePanel			defvalue 		= new SimplePanel();
 	String				defvaluestring 	= new String();
+	DateBox				dateBox;
 	Button 				add;
 	Button				newElemButton;
 	
@@ -98,6 +102,10 @@ public class LayerPropertyPage implements IsWidget {
 	@Override
 	public Widget asWidget() {
 		return this.tab;
+	}
+	
+	public void setParent( String parent ) {
+		this.parent = parent;
 	}
 	
 	public void setSelectedLayer( String layer ) {
@@ -140,7 +148,7 @@ public class LayerPropertyPage implements IsWidget {
 		grid.setText(0,0,"Name:");
 		grid.setText(0,1,layer);
 		grid.setText(1,0,"Parent:");
-		grid.setText(1,1,"parent_name");
+		grid.setText(1,1,parent);
 		
 		panel.add(grid);
 		
@@ -153,6 +161,7 @@ public class LayerPropertyPage implements IsWidget {
 				if (id.getText().equals("") || name.getText().equals("") || description.getText().equals("")) {
 					simplePopup.setWidget(new Label("No field can be empty"));
 					simplePopup.show();
+					return;
 				}
 				
 				int type = lBox.getSelectedIndex();
@@ -184,13 +193,20 @@ public class LayerPropertyPage implements IsWidget {
 				}
 				
 				else if (type == 2) {
-					Date date = new Date();
-					date.setYear(Integer.parseInt(((TextBox) ((Grid) defvalue.getWidget()).getWidget(0, 1)).getText()));
-					date.setMonth(Integer.parseInt(((TextBox) ((Grid) defvalue.getWidget()).getWidget(0, 3)).getText()));
-					date.setDate(Integer.parseInt(((TextBox) ((Grid) defvalue.getWidget()).getWidget(0, 5)).getText()));
-					date.setHours(Integer.parseInt(((TextBox) ((Grid) defvalue.getWidget()).getWidget(1, 1)).getText()));
-					date.setMinutes(Integer.parseInt(((TextBox) ((Grid) defvalue.getWidget()).getWidget(1, 3)).getText()));
-					date.setSeconds(Integer.parseInt(((TextBox) ((Grid) defvalue.getWidget()).getWidget(1, 5)).getText()));
+					if (((TextBox) ((Grid) defvalue.getWidget()).getWidget(0, 1)).getText().equals("") ||
+							((TextBox) ((Grid) defvalue.getWidget()).getWidget(0, 3)).getText().equals("") ||
+							((TextBox) ((Grid) defvalue.getWidget()).getWidget(0, 5)).getText().equals("")) {
+						simplePopup.setWidget(new Label("No field can be empty"));
+						simplePopup.show();
+						return;
+					}
+					int hour = Integer.parseInt(((TextBox) ((Grid) defvalue.getWidget()).getWidget(0, 1)).getText());
+					int minute = Integer.parseInt(((TextBox) ((Grid) defvalue.getWidget()).getWidget(0, 3)).getText());
+					int second = Integer.parseInt(((TextBox) ((Grid) defvalue.getWidget()).getWidget(0, 5)).getText());
+					Date date = dateBox.getValue();
+					date.setHours(hour);
+					date.setMinutes(minute);
+					date.setSeconds(second);
 					defvaluestring = date.toString();
 					info.addContextualInfoCalendar(id.getText(), name.getText(), description.getText(), defvaluestring);
 				}
@@ -316,35 +332,30 @@ public class LayerPropertyPage implements IsWidget {
 				
 				else if (lBox.getSelectedIndex() == 2) {
 					ciList.setWidget(1, 0, null);
-					Grid g = new Grid(2,6);
+					Grid g = new Grid(1,7);
 					g.setCellSpacing(5);
+					
 					TextBox tb = new TextBox();
 					tb.setWidth("30px");
-					
-					g.setWidget(0, 0, tb);
-					g.setWidget(0, 1, new Label("YYYY"));
-					tb = new TextBox();
-					tb.setWidth("30px");
-					g.setWidget(0, 2, tb);
-					g.setWidget(0, 3, new Label("MM"));
-					tb = new TextBox();
-					tb.setWidth("30px");
-					g.setWidget(0, 4, tb);
-					g.setWidget(0, 5, new Label("DD"));
+					DateTimeFormat dateFormat = DateTimeFormat.getLongDateFormat();
+				    dateBox = new DateBox();
+				    dateBox.setFormat(new DateBox.DefaultFormat(dateFormat));
+				    dateBox.getDatePicker().setYearArrowsVisible(true);
+				    
+					g.setWidget(0, 0, dateBox);
 					
 					tb = new TextBox();
 					tb.setWidth("30px");
-					
-					g.setWidget(1, 0, tb);
-					g.setWidget(1, 1, new Label("hh"));
+					g.setWidget(0, 1, tb);
+					g.setWidget(0, 2, new Label("hh"));
 					tb = new TextBox();
 					tb.setWidth("30px");
-					g.setWidget(1, 2, tb);
-					g.setWidget(1, 3, new Label("mm"));
+					g.setWidget(0, 3, tb);
+					g.setWidget(0, 4, new Label("mm"));
 					tb = new TextBox();
 					tb.setWidth("30px");
-					g.setWidget(1, 4, tb);
-					g.setWidget(1, 5, new Label("ss"));
+					g.setWidget(0, 5, tb);
+					g.setWidget(0, 6, new Label("ss"));
 					
 					defvalue.setWidget(g);
 					ciItemPanel.setWidget(null);

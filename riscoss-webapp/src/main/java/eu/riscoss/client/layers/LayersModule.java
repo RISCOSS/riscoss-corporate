@@ -69,6 +69,8 @@ public class LayersModule implements EntryPoint {
 	FramePanel			bottom = new FramePanel( "" );
 	LayerPropertyPage	ppg = new LayerPropertyPage();
 	
+	String				nextParent;
+	
 	public void onModuleLoad() {
 		
 		dock.setSize( "100%", "100%" );
@@ -82,16 +84,18 @@ public class LayersModule implements EntryPoint {
 					tree.asWidget().setWidth( "100%" );
 					for( int i = 0; i < response.isArray().size(); i++ ) {
 						JSONObject o = (JSONObject)response.isArray().get( i );
-						
+						if (i > 0) nextParent = ((JSONObject)response.isArray().get(i-1)).get("name").isString().stringValue();
+						else nextParent = "[top]";
 						HorizontalPanel p = new HorizontalPanel();
 						
 						Anchor anchor = new Anchor(
 								o.get( "name" ).isString().stringValue() );
 						anchor.addClickHandler( new ClickWrapper<String>( o.get( "name" ).isString().stringValue() ) {
-							
+							String parent = nextParent;
 							@Override
 							public void onClick(ClickEvent event) {
 								bottom.setUrl( "entities.html?layer=" + getValue() );
+								ppg.setParent(parent);
 								ppg.setSelectedLayer(getValue());
 							}
 						});

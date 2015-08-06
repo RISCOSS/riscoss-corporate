@@ -39,6 +39,7 @@ import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -336,6 +337,7 @@ public class EntityPropertyPage implements IsWidget {
 			JsonRiskDataList.RiskDataItem item = info.getUserData().get( i );
 			String val = item.getValue();
 			contextualInfo = val.split(";");
+			
 			if (item.getDataType().equals("List")) val = contextualInfo[Integer.parseInt(contextualInfo[0])+1];
 			userForm.addField( item.getId(), contextualInfo[0] );
 		}
