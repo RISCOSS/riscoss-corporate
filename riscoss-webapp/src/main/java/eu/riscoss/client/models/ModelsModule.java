@@ -43,6 +43,7 @@ import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.Grid;
@@ -71,8 +72,9 @@ import gwtupload.client.SingleUploader;
 public class ModelsModule implements EntryPoint {
 
 	private static final String BUTTON_UPDATE_MODEL	= "Upload new model";
-	private static final String BUTTON_UPLOAD_DESC 	= "Upload documentation";
+	private static final String BUTTON_UPLOAD_DESC 	= "Upload new documentation";
 	private static final String BUTTON_NEW_MODEL 	= "New...";
+	private static final String BUTTON_CHANGE_NAME 	= "Change name";
 	
 	DockPanel dock = new DockPanel();
 
@@ -285,13 +287,18 @@ public class ModelsModule implements EntryPoint {
 			txt.setText(jsname);
 			grid.setWidget(0, 1, txt);
 			
-			Button changer = new MyNameButton(jsname, "Change name", new ClickHandler() {
+			Button changer = new MyNameButton(jsname, BUTTON_CHANGE_NAME, new ClickHandler() {
 				public void onClick(ClickEvent event) {
+					
+					if (name.equals(txt.getText()))
+						return;// if the name was not changed, simply don't care about the button click.
+					
 					
 					RiscossJsonClient.changeModelName(name, txt.getText(), new JsonCallback() {
 						@Override
 						public void onFailure(Method method, Throwable exception) {
-							Window.alert(exception.getMessage());
+							//Window.alert(exception.getMessage());
+							Window.alert("Name already existing. Nothing changed. "); 
 						}
 
 						@Override
@@ -313,7 +320,19 @@ public class ModelsModule implements EntryPoint {
 //			grid.setWidget(1, 1, txt);
 			
 			//Uploader///////////
-
+			
+			String descfilename = json.get("modeldescfilename").isString().stringValue();
+//			Label descfLabel = new Label("Documentation:\n"+descfilename);
+			
+						
+			if (descfilename==null || descfilename.equals("")){
+				Label descfLabel = new Label("No documentation uploaded.");
+				grid.setWidget( 2, 0, descfLabel);
+			} else {
+				Anchor descfAnchor = new Anchor("Download documentation:\n"+descfilename, GWT.getHostPageBaseURL() +  "models/descBlob?name="+ name);
+				grid.setWidget( 2, 0, descfAnchor);
+			}
+			
 			SingleUploader docuUploader = new SingleUploader(FileInputType.CUSTOM.with(new Button(BUTTON_UPLOAD_DESC))); 
 			docuUploader.setTitle("Upload model documentation");
 			docuUploader.setAutoSubmit(true);
@@ -330,25 +349,26 @@ public class ModelsModule implements EntryPoint {
 					//Log.println("SERVERMESS2 " + uploader.getServerMessage().getMessage());
 					
 					String response = uploader.getServerMessage().getMessage();
-					if (!response.trim().startsWith("Error"))
-						Window.confirm(response); //TODO change!
-					else
+					if (!response.trim().startsWith("Error")){
+						//Window.confirm(response); //TODO change!
+						Window.Location.reload(); //TODO update on the fly without reloading
+					} else
 						Window.alert("Error: " + response );
 				}
 			});
 			
-			grid.setWidget( 1, 0, docuUploader);
+			grid.setWidget( 2, 1, docuUploader);
 			
-			//Downloader/////////
-			Button docuDownloader = new MyNameButton(jsname, "Download documentation", new ClickHandler() {
-				public void onClick(ClickEvent event) {
-					Window.open(GWT.getHostPageBaseURL() +  "models/descBlob?name="+ name, "_self", "enabled");					
-				}
-			});
+			//Downloader/////////done in Anchor now!
 			
-			grid.setWidget( 1, 1, docuDownloader);
+//			Button docuDownloader = new MyNameButton(jsname, "Download documentation", new ClickHandler() {
+//				public void onClick(ClickEvent event) {
+//					Window.open(GWT.getHostPageBaseURL() +  "models/descBlob?name="+ name, "_self", "enabled");					
+//				}
+//			});
 			
-			
+			//modeldescfilename
+			//grid.setWidget( 1, 2, docuDownloader);
 			
 			//Model Update Uploader///////////
 			SingleUploader updateUploader = new SingleUploader(FileInputType.CUSTOM.with(new Button(BUTTON_UPDATE_MODEL)));
@@ -374,7 +394,9 @@ public class ModelsModule implements EntryPoint {
 				}
 			});
 			
-			grid.setWidget( 2, 0, updateUploader);
+			grid.setWidget( 1, 0, new Label("Model filename: \n"+json.get("modelfilename").isString().stringValue()));
+			
+			grid.setWidget( 1, 1, updateUploader);
 			
 			
 			////////////////////////////////////

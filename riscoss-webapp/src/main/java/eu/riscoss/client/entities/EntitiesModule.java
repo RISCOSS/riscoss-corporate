@@ -57,6 +57,7 @@ import com.google.gwt.view.client.ListDataProvider;
 import eu.riscoss.client.EntityInfo;
 import eu.riscoss.client.JsonCallbackWrapper;
 import eu.riscoss.client.JsonUtil;
+import eu.riscoss.client.Log;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecLayerContextualInfo;
 import eu.riscoss.client.layers.LayersComboBox;
@@ -130,9 +131,10 @@ public class EntitiesModule implements EntryPoint {
 		a.addClickHandler( new ClickWrapper<String>( layer ) {
 			@Override
 			public void onClick(ClickEvent event) {
-				onCreateNewEntityClicked( getValue() );
+				new CreateEntityDialog( getValue() ).show();
 			}
 		});
+		
 		hpanel.add( a );
 		hpanel.setWidth( "100%" );
 		
@@ -200,6 +202,10 @@ public class EntitiesModule implements EntryPoint {
 		
 		String layer;
 
+		/**
+		 * Note: ensure that the layer is valid before calling this constructor!
+		 * @param layer
+		 */
 		CreateEntityDialog( String layer ) {
 			this.layer = layer;
 		}
@@ -210,9 +216,14 @@ public class EntitiesModule implements EntryPoint {
 			return s;
 		}
 		
+		/**
+		 * 
+		 * @return null if no layer available
+		 */
 		String getChosenLayer() {
-			if( layer != null ) return layer;
-			return layersBox.getSelectedLayer();
+			if( layer != null ) 
+				return layer;
+			return layersBox.getSelectedLayer(); 
 		}
 		
 		String getChosenParent() {
@@ -226,14 +237,12 @@ public class EntitiesModule implements EntryPoint {
 		EntityBox		entityBox;
 		
 		public void show() {
-			
 			if( layer == null )
 				layersBox = new LayersComboBox().preloaded();
 //			layersBox.setSelectedLayer( layer );
 			entityBox = new EntityBox();
 			
 			Grid grid = new Grid( 4, 2 );
-			
 			txt = new TextBox();
 			grid.setWidget( 0, 0, new Label( "Name:" ) );
 			grid.setWidget( 0, 1, txt );
@@ -243,11 +252,16 @@ public class EntitiesModule implements EntryPoint {
 				grid.setWidget( 1, 1, layersBox );
 			else
 				grid.setWidget( 1, 1, new Label( layer ) );
+			
 			grid.setWidget( 2, 0, new Label( "Parent entity:" ) );
 			
-			grid.setWidget( 3, 1, new Button( "Ok", new ClickHandler() {
+			grid.setWidget( 3, 0, new Button( "Ok", new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
+					if (getChosenLayer()==null||getChosenLayer().equals("")){
+						Window.alert("No Layer selected. Please create and/or select one first.");
+					} else {
+
 					RiscossJsonClient.createEntity( getChosenName(), getChosenLayer(), getChosenParent(), new JsonCallback() {
 						@Override
 						public void onFailure(Method method, Throwable exception) {
@@ -278,8 +292,17 @@ public class EntitiesModule implements EntryPoint {
 							});
 							
 						}} );
+					}
 				}
 			}) );
+			
+			grid.setWidget( 3, 1, new Button( "Cancel", new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					//Window.Location.reload();
+					dialog.hide();
+				}
+			} )) ;
 			
 			dialog.setWidget( grid );
 			dialog.show();

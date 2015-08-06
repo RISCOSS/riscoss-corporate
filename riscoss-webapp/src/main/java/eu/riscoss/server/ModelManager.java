@@ -449,8 +449,15 @@ public class ModelManager {
 	public String getInfo( @QueryParam("name") String name ) {
 		RiscossDB db = DBConnector.openDB();
 		try {
+			String filename = db.getModelFilename( name );  //modelfilename
+			String descfile = db.getModelDescFielname(name);
 			JsonObject o = new JsonObject();
+			
+			System.out.println("HHHHHHHHH"+name+":"+filename+":"+descfile);
+			
 			o.addProperty( "name", name );
+			o.addProperty( "modelfilename", filename);
+			o.addProperty( "modeldescfilename", descfile);
 			return o.toString();
 		}
 		finally {
@@ -488,14 +495,35 @@ public class ModelManager {
 	
 	@POST
 	@Path("/model/changename")
-	public void changeModelName( @QueryParam("name") String name, @QueryParam("newname") String newName ) {
+	public void changeModelName( @QueryParam("name") String name, @QueryParam("newname") String newName ) throws RuntimeException{
 		RiscossDB db = DBConnector.openDB();
-		try {
-			db.changeModelName(name, newName);
-		}
-		finally {
-			DBConnector.closeDB( db );
-		}
+		boolean duplicate = false;
+		
+		//String response = "";
+		//try {
+			for (String storedmodel : db.getModelList()) {
+				// System.out.println(storedmodel);
+				if (storedmodel.equals(newName)) {
+					duplicate = true;
+					// response = "<response>\n" +
+					// "Duplicate model name. Please delete the stored model first."+
+					// "</response>\n";
+					//response = "Error: This name is already in use.";
+					 throw new RuntimeException("Duplicate entry");
+					//break;
+					// throw new
+					// UploadActionException("Duplicate model name. Please delete the stored model first.");
+				}
+			}
+			if (duplicate == false) {
+				db.changeModelName(name, newName);
+				//response = "Success";
+			}
+			
+		//} finally {
+			DBConnector.closeDB(db);
+		//}
+		//return response;
 	}
 
 }

@@ -391,9 +391,10 @@ public class GDomDB {
 	
 	public String getAttribute( NodeID id, String key, String def ) {
 		Vertex v = graph.getVertex( id.toString() );
-		if( v == null ) return def;
-		String ret = v.getProperty( key );
-		return ret;
+		if (v == null)
+			return def;
+		String ret = v.getProperty(key);
+		return ret == null ? def : ret;
 	}
 	
 	public byte[] getByteAttribute(NodeID id, String key) {

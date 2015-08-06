@@ -31,6 +31,7 @@ import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
 
+import eu.riscoss.client.Log;
 import eu.riscoss.client.RiscossJsonClient;
 
 public class LayersComboBox implements IsWidget {
@@ -63,8 +64,14 @@ public class LayersComboBox implements IsWidget {
 		return combo;
 	}
 
+	/**
+	 * 
+	 * @return null if none selected
+	 */
 	public String getSelectedLayer() {
-		return combo.getItemText( combo.getSelectedIndex() );
+		if (combo.getSelectedIndex() >= 0)
+			return combo.getItemText( combo.getSelectedIndex() );
+		return null;
 	}
 
 	public void setSelectedLayer( String layer ) {

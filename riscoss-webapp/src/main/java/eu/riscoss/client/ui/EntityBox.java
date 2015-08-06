@@ -162,6 +162,9 @@ public class EntityBox implements IsWidget {
 	}
 
 	public String getSelectedEntity() {
+//		if (combo.getSelectedIndex() >= 0)
+//			return combo.getItemText( combo.getSelectedIndex() );
+//		return null;
 		return "";
 	}
 	
