@@ -88,7 +88,7 @@
 
     <servlet-mapping>
         <servlet-name>downloadServlet</servlet-name>
-        <url-pattern>/models/descBlob</url-pattern>
+        <url-pattern>/models/download</url-pattern>
     </servlet-mapping>
 
 	<!-- Default page to serve -->

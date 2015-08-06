@@ -17,16 +17,31 @@ public class DownloadServlet extends HttpServlet {
 		RiscossDB db = DBConnector.openDB();
 		try {
 			String modelName = request.getParameter("name");
+			String type = request.getParameter("type");
+			
+			String blobFileName = "";
+			byte[] blob;
+			
+			switch (type) {
+			case "desc":
+				// gets the description for the model
+				blobFileName = db.getModelDescFielname(modelName);
+				blob = db.getModelDescBlob(modelName);
+				break;
+			case "model":
+				// gets the model
+				blobFileName = db.getModelFilename(modelName);
+				blob = db.getModelBlob(modelName).getBytes();
+				break;
+			default:
+				return;
+			}
 
-			// gets the description for the model
-			String blobFileName = db.getModelDescFielname(modelName);
-
-			byte[] blob = db.getModelDescBlob(modelName);
 			response.setContentType("application/download");
 			response.setHeader("Content-Disposition", "attachment; filename="+blobFileName+";");
 			response.getOutputStream().write(blob);
 
-			//System.out.println("File "+blobFileName+ " exported.");
+			System.out.println("File "+blobFileName+ " sent.");
 			
 		} catch (Exception e) {
 			throw new ServletException(e);

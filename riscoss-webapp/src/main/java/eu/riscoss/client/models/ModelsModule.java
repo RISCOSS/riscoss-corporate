@@ -74,7 +74,7 @@ public class ModelsModule implements EntryPoint {
 	private static final String BUTTON_UPDATE_MODEL	= "Upload new model";
 	private static final String BUTTON_UPLOAD_DESC 	= "Upload new documentation";
 	private static final String BUTTON_NEW_MODEL 	= "New...";
-	private static final String BUTTON_CHANGE_NAME 	= "Change name";
+	private static final String BUTTON_CHANGE_NAME 	= "change";
 	
 	DockPanel dock = new DockPanel();
 
@@ -329,7 +329,7 @@ public class ModelsModule implements EntryPoint {
 				Label descfLabel = new Label("No documentation uploaded.");
 				grid.setWidget( 2, 0, descfLabel);
 			} else {
-				Anchor descfAnchor = new Anchor("Download documentation:\n"+descfilename, GWT.getHostPageBaseURL() +  "models/descBlob?name="+ name);
+				Anchor descfAnchor = new Anchor("Download documentation:\n"+descfilename, GWT.getHostPageBaseURL() +  "models/download?name="+ name+"&type=desc");
 				grid.setWidget( 2, 0, descfAnchor);
 			}
 			
@@ -387,14 +387,20 @@ public class ModelsModule implements EntryPoint {
 					//Log.println("SERVERMESS2 " + uploader.getServerMessage().getMessage());
 					
 					String response = uploader.getServerMessage().getMessage();
-					if (!response.trim().startsWith("Error"))
+					if (!response.trim().startsWith("Error")){
 						Window.confirm(response); //TODO change!
+						Window.Location.reload();
+					}
 					else
 						Window.alert("Error: " + response );
 				}
 			});
 			
-			grid.setWidget( 1, 0, new Label("Model filename: \n"+json.get("modelfilename").isString().stringValue()));
+			
+			
+			Anchor fAnchor = new Anchor("Download model:\n"+json.get("modelfilename"), GWT.getHostPageBaseURL() +  "models/download?name="+ name+"&type=model");
+			grid.setWidget( 1, 0, fAnchor);
+			//grid.setWidget( 1, 0, new Label("Model filename: \n"+json.get("modelfilename").isString().stringValue()));
 			
 			grid.setWidget( 1, 1, updateUploader);
 			
@@ -462,6 +468,8 @@ public class ModelsModule implements EntryPoint {
 							@Override
 							public void onSuccess(Method method, JSONValue response) {
 								area.setText(response.isObject().get("blob").isString().stringValue());
+								int height = (int)(Window.getClientHeight()*0.7); 
+								area.setHeight(height + "px");
 							}
 						});
 					}

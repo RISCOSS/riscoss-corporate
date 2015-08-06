@@ -453,8 +453,6 @@ public class ModelManager {
 			String descfile = db.getModelDescFielname(name);
 			JsonObject o = new JsonObject();
 			
-			System.out.println("HHHHHHHHH"+name+":"+filename+":"+descfile);
-			
 			o.addProperty( "name", name );
 			o.addProperty( "modelfilename", filename);
 			o.addProperty( "modeldescfilename", descfile);

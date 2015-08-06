@@ -82,24 +82,26 @@ public class LayersModule implements EntryPoint {
 				if( response.isArray() != null ) {
 					TreeWidget parent = tree;
 					tree.asWidget().setWidth( "100%" );
-					for( int i = 0; i < response.isArray().size(); i++ ) {
-						JSONObject o = (JSONObject)response.isArray().get( i );
-						if (i > 0) nextParent = ((JSONObject)response.isArray().get(i-1)).get("name").isString().stringValue();
-						else nextParent = "[top]";
+					for (int i = 0; i < response.isArray().size(); i++) {
+						JSONObject o = (JSONObject) response.isArray().get(i);
+						if (i > 0)
+							nextParent = ((JSONObject) response.isArray().get(i - 1)).get("name").isString().stringValue();
+						else
+							nextParent = "[top]";
 						HorizontalPanel p = new HorizontalPanel();
-						
-						Anchor anchor = new Anchor(
-								o.get( "name" ).isString().stringValue() );
-						anchor.addClickHandler( new ClickWrapper<String>( o.get( "name" ).isString().stringValue() ) {
+
+						Anchor anchor = new Anchor(o.get("name").isString().stringValue());
+						anchor.addClickHandler(new ClickWrapper<String>(o.get("name").isString().stringValue()) {
 							String parent = nextParent;
+
 							@Override
 							public void onClick(ClickEvent event) {
-								bottom.setUrl( "entities.html?layer=" + getValue() );
+								bottom.setUrl("entities.html?layer=" + getValue());
 								ppg.setParent(parent);
 								ppg.setSelectedLayer(getValue());
 							}
 						});
-						
+
 						p.add( anchor );
 						
 						p.setWidth( "100%" );
@@ -108,15 +110,15 @@ public class LayersModule implements EntryPoint {
 						parent.addChild( lw );
 						parent = lw;
 					}
-					Anchor anchor = new Anchor( "[none]" );
-					anchor.addClickHandler( new ClickHandler() {
-						@Override
-						public void onClick(ClickEvent event) {
-							bottom.setUrl( "entities.html?layer=-" );
-						}
-					});
-					TreeWidget lw = new TreeWidget( anchor );
-					parent.addChild( lw );
+//					Anchor anchor = new Anchor( "[none]" );
+//					anchor.addClickHandler( new ClickHandler() {
+//						@Override
+//						public void onClick(ClickEvent event) {
+//							bottom.setUrl( "entities.html?layer=-" );
+//						}
+//					});
+//					TreeWidget lw = new TreeWidget( anchor );
+//					parent.addChild( lw );
 				}
 			}
 			
@@ -135,10 +137,6 @@ public class LayersModule implements EntryPoint {
 			@Override
 			public void execute() {
 				new RenameLayerPanel().show();
-				//String s = RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
-				//txt.setText(s);
-				//TODO rename
-				
 			}});
 	    menu.addItem( "Delete Layer", new Command() {
 			@Override
@@ -187,6 +185,7 @@ public class LayersModule implements EntryPoint {
 					panel.add( new Button( "Ok", new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
+							Window.alert("Attention: entities associated to this layer cannot be re-associated to another layer and need to be deleted manually!");
 							RiscossJsonClient.deleteLayer( combo.getItemText( combo.getSelectedIndex() ), new JsonCallback() {
 								@Override
 								public void onFailure(Method method,Throwable exception) {
@@ -206,7 +205,7 @@ public class LayersModule implements EntryPoint {
 					} )) ;
 					PopupPanel popup = new PopupPanel( true, true );
 					popup.setWidget( panel );
-					popup.setSize( "400px", "300px" );
+					popup.setSize( "400px", "150px" );
 					popup.show();
 				}
 				@Override
@@ -292,7 +291,7 @@ public class LayersModule implements EntryPoint {
 					
 					PopupPanel popup = new PopupPanel( true, true );
 					popup.setWidget( panel );
-					popup.setSize( "400px", "300px" );
+					popup.setSize( "400px", "150px" );
 					popup.show();
 				}
 				
@@ -373,7 +372,7 @@ public class LayersModule implements EntryPoint {
 					} )) ;
 					PopupPanel popup = new PopupPanel( true, true );
 					popup.setWidget( panel );
-					popup.setSize( "400px", "300px" );
+					popup.setSize( "400px", "150px" );
 					popup.show();
 				}
 				@Override
