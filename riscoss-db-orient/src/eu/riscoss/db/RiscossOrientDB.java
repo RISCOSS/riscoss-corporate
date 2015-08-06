@@ -123,7 +123,7 @@ public class RiscossOrientDB implements RiscossDB {
 	public void storeModel( String modelBlob, String modelName ) {
 		NodeID id = dom.create( "/models/" + modelName );//"tag" field, defaults to the filename at a new model upload.
 		dom.setAttribute( id, "blob", modelBlob );
-		dom.setAttribute( id, "modelfilename", modelName ); // TODO: new!! read it out @ the description etc!
+		dom.setAttribute( id, "modelfilename", modelName ); 
 		//TODO: check for duplicate name!
 	}
 	
@@ -146,6 +146,17 @@ public class RiscossOrientDB implements RiscossDB {
 		return dom.getAttribute( id, "tag", "-" );
 	}
 	
+	public String getModelAttribute( String modelName, String attribute ) {
+		NodeID id = dom.getVertex( "/models/" + modelName );
+		if( id == null ) return "";
+		return dom.getAttribute( id, attribute, "" );
+	}
+	
+	@Override
+	public String getModelFilename(String modelName) {
+		return getModelAttribute(modelName, "modelfilename");
+	}
+		
 	@Override
 	public void changeModelName(String modelName, String newName) {
 		NodeID id = dom.getVertex( "/models/" + modelName );
@@ -767,9 +778,7 @@ public class RiscossOrientDB implements RiscossDB {
 
 	@Override
 	public String getModelDescFielname(String modelName) {
-		NodeID id = dom.getVertex( "/models/" + modelName );
-		if( id == null ) return null;
-		return dom.getAttribute( id, "descBlobName", "");
+		return getModelAttribute(modelName, "descBlobName");
 	}
 
 	@Override

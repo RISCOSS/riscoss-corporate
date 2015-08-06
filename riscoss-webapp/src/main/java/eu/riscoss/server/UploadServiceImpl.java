@@ -78,7 +78,7 @@ public class UploadServiceImpl extends UploadAction {
 							if (storedmodel.equals(name)){
 								duplicate = true;
 								//response = "<response>\n" + "Duplicate model name. Please delete the stored model first."+ "</response>\n";
-								response = "A model with this name was already uploaded. Please delete the stored model first.";
+								response = "A model with this name was already uploaded. Please update this model on the model's properties page, change its name or delete it.";
 								break;
 								//throw new UploadActionException("Duplicate model name. Please delete the stored model first.");
 							}
