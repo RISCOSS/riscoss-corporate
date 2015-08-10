@@ -21,6 +21,7 @@
 
 package eu.riscoss.client.entities;
 
+import java.sql.Date;
 import java.util.List;
 
 import javax.swing.SpinnerModel;
@@ -32,6 +33,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
@@ -46,11 +48,13 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.datepicker.client.DateBox;
 
 import eu.riscoss.client.JsonCallbackWrapper;
 import eu.riscoss.client.JsonEntitySummary;
@@ -111,6 +115,7 @@ public class EntityPropertyPage implements IsWidget {
 	SimplePanel			ciPanel			= new SimplePanel();
 	SimplePanel			rasPanel		= new SimplePanel();
 	CustomizableForm	userForm 		= new CustomizableForm();
+	FlexTable			tb;
 	
 	Anchor				rdcAnchor;
 	
@@ -332,15 +337,85 @@ public class EntityPropertyPage implements IsWidget {
 		summaryPanel.setWidget( v );
 		ciPanel.setWidget( userForm );*/
 		
+		tb = new FlexTable();
 		userForm = new CustomizableForm();
+		
+		int row = 0;
+		
 		for( int i = 0; i < info.getUserData().size(); i++ ) {
 			JsonRiskDataList.RiskDataItem item = info.getUserData().get( i );
-			String val = item.getValue();
-			contextualInfo = val.split(";");
 			
-			if (item.getDataType().equals("List")) val = contextualInfo[Integer.parseInt(contextualInfo[0])+1];
-			userForm.addField( item.getId(), contextualInfo[0] );
+			if (item.getDataType().equals("CUSTOM")) {
+				userForm.addField(item.getId(), item.getValue());
+			}
+			
+			else {
+				
+				String val = item.getValue();
+				contextualInfo = val.split(";");
+				
+				tb.insertRow(row);
+				tb.insertCell(row, 0);
+				tb.insertCell(row, 1);
+				tb.insertCell(row, 2);
+				tb.setWidget(row, 0, new Label(item.getId()));
+				tb.setWidget(row, 1, new Label(item.getDataType()));
+				
+				if (item.getDataType().equals("Integer")) {
+					TextBox t = new TextBox();
+					t.setText(contextualInfo[0]);
+					tb.setWidget(row, 2, t);
+				}
+				else if (item.getDataType().equals("Boolean")) {
+					CheckBox c = new CheckBox();
+					if (Integer.parseInt(contextualInfo[0]) == 1) c.setChecked(true);
+					tb.setWidget(row, 2, c);
+				}
+				else if (item.getDataType().equals("Calendar")) {
+					DateTimeFormat dateFormat = DateTimeFormat.getLongDateFormat();
+				    DateBox dateBox = new DateBox();
+				    dateBox.setFormat(new DateBox.DefaultFormat(dateFormat));
+				    dateBox.getDatePicker().setYearArrowsVisible(true);
+				    
+				    Grid g = new Grid(1,7);
+				    
+					g.setWidget(0, 0, dateBox);
+					
+					//Date d = Date.valueOf(contextualInfo[0]);
+					//dateBox.setValue(d);
+					
+					TextBox t = new TextBox();
+					t.setWidth("30px");
+					//t.setText(String.valueOf(d.getHours()));
+					g.setWidget(0, 1, t);
+					g.setWidget(0, 2, new Label("hh"));
+					t = new TextBox();
+					t.setWidth("30px");
+					//t.setText(String.valueOf(d.getMinutes()));
+					g.setWidget(0, 3, t);
+					g.setWidget(0, 4, new Label("mm"));
+					t = new TextBox();
+					t.setWidth("30px");
+					//t.setText(String.valueOf(d.getSeconds()));
+					g.setWidget(0, 5, t);
+					g.setWidget(0, 6, new Label("ss"));
+					
+					tb.setWidget(row, 2, g);
+				}
+				else {
+					ListBox lb = new ListBox();
+					for (int k = 1; k < contextualInfo.length; ++k) {
+						lb.addItem(contextualInfo[k]);
+					}
+					lb.setSelectedIndex(Integer.parseInt(contextualInfo[0]));
+					
+					tb.setWidget(row, 2, lb);
+				}
+				++row;
+			}
+			
 		}
+		
 		userForm.enableFastInsert();
 //		v.add( userForm );
 		userForm.addFieldListener( new CustomizableForm.FieldListener() {
@@ -350,7 +425,8 @@ public class EntityPropertyPage implements IsWidget {
 				o.put( "id", new JSONString( field.getName() ) );
 				o.put( "target", new JSONString( EntityPropertyPage.this.entity ) );
 				o.put( "value", new JSONString( field.getValue() ) );
-				o.put( "type", new JSONString( "NUMBER" ) );
+				o.put( "datatype", new JSONString ( "CUSTOM" ));
+				o.put( "type", new JSONString( "custom" ) );
 				o.put( "origin", new JSONString( "user" ) );
 				JSONArray array = new JSONArray();
 				array.set( 0, o );
@@ -391,7 +467,38 @@ public class EntityPropertyPage implements IsWidget {
 			}
 		});
 		summaryPanel.setWidget( v );
-		ciPanel.setWidget( userForm );
+		VerticalPanel vPanel = new VerticalPanel();
+		vPanel.add(tb);
+		vPanel.add(userForm);
+		Button save = new Button("Save");
+		save.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent arg0) {
+				/*for (int i = 0; i < tb.getRowCount(); ++i) {
+					JSONObject o = new JSONObject();
+					o.put( "id", new JSONString( ((Label)tb.getWidget(i, 0)).getText() ) );
+					o.put( "target", new JSONString( EntityPropertyPage.this.entity ) );
+					//o.put( "value", new JSONString( field.getValue() ) );
+					o.put( "datatype", new JSONString ( ((Label)tb.getWidget(i, 1)).getText() ) );
+					o.put( "type", new JSONString( "custom" ) );
+					o.put( "origin", new JSONString( "user" ) );
+					JSONArray array = new JSONArray();
+					array.set( 0, o );
+					RiscossJsonClient.postRiskData( array, new JsonCallback() {
+						@Override
+						public void onFailure( Method method, Throwable exception ) {
+							Window.alert( exception.getMessage() );
+						}
+						@Override
+						public void onSuccess( Method method, JSONValue response ) {
+							//								Window.alert( "Ok" );
+						}} );
+				}*/
+			}
+			
+		});
+		ciPanel.setWidget( vPanel );
 	}
 
 	protected void loadRAS( JSONValue response ) {
