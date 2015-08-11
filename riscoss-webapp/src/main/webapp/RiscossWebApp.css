@@ -77,3 +77,18 @@ A:hover
     right: 0px;
     bottom: 0px;
 }
+
+.gwt-MenuBar { 
+      background-color: #7EAC30 !important;
+      width: 100% !important;
+   }
+   .gwt-MenuBar .gwt-MenuItem { 
+      	background-color: #7EAC30; 
+      	color: #F3F3F3 !important;
+      	padding: 2px 40px !important;
+   }
+   .gwt-MenuBar .gwt-MenuItem-selected { 
+   		background-color: #7EAC30 !important;
+      	text-decoration: underline !important;
+      	color: #F3F3F3 !important;
+   }

@@ -30,6 +30,8 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.json.client.JSONValue;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
@@ -39,6 +41,8 @@ import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -50,7 +54,7 @@ import eu.riscoss.shared.CookieNames;
 
 public class RiscossWebApp implements EntryPoint {
 	
-	DockPanel dock;
+	VerticalPanel main;
 	
 	FramePanel currentPanel = null;
 	
@@ -82,49 +86,113 @@ public class RiscossWebApp implements EntryPoint {
 		
 		Log.println( "Loading UI for domain " + domain );
 		
-		TreeWidget root = new TreeWidget();
+		MenuBar menu = new MenuBar();
+		menu.setWidth(" 100% ");
+		menu.setAnimationEnabled(true);
 		
-		TreeWidget item;
-		
-		item = root.addChild( new TreeWidget( new Label( "Select" ) ) );
-		item.addChild( new TreeWidget( new OutlineLabel( "Domain (" + domain + ")", new ClickHandler() {
+		menu.addItem("Select Domain (" + domain + ")", new Command() {
 			@Override
-			public void onClick( ClickEvent event ) {
+			public void execute() {
 				showDomainSelectionDialog();
-			}} ) ) );
+			}
+		});
 		
-		item = root.addChild( new TreeWidget( new Label( "Configure" ) ) );
-		item.addChild( new TreeWidget( new OutlineLabel( "Layers", "layers.html" ) ) );
-		item.addChild( new TreeWidget( new OutlineLabel( "Entities", "entities.html" ) ) );
-		item.addChild( new TreeWidget( new OutlineLabel( "Models", "models.html" ) ) );
-		item.addChild( new TreeWidget( new OutlineLabel( "Risk Configurations", "riskconfs.html" ) ) );
+		MenuBar configure = new MenuBar(true);
+		configure.setAnimationEnabled(true);
+		menu.addItem("Configure", configure);
+		configure.addItem("Layers", new Command() {
+			@Override
+			public void execute() {
+				loadPanel( "layers.html" );
+			}
+		});
+		configure.addItem("Entities", new Command() {
+			@Override
+			public void execute() {
+				loadPanel( "entities.html" );
+			}
+		});
+		configure.addItem("Models", new Command() {
+			@Override
+			public void execute() {
+				loadPanel( "models.html" );
+			}
+		});
+		configure.addItem("Risk Configurations", new Command() {
+			@Override
+			public void execute() {
+				loadPanel( "riskconfs.html" );
+			}
+		});
 		
-		item = root.addChild( new TreeWidget( new Label( "Run" ) ) );
-		item.addChild( new TreeWidget( new OutlineLabel( "One-layer Analysis", "analysis.html" ) ) );
-		item.addChild( new TreeWidget( new OutlineLabel( "Multi-layer Analysis", "riskanalysis.html" ) ) );
-		item.addChild( new TreeWidget( new OutlineLabel( "What-If Analysis", "whatifanalysis.html" ) ) );
-		item.addChild( new TreeWidget( new OutlineLabel( "AHP Session", "rma.html" ) ) );
+		MenuBar run = new MenuBar(true);
+		run.setAnimationEnabled(true);
+		menu.addItem("Run", run);
+		run.addItem("One-layer Analysis", new Command() {
+			@Override
+			public void execute() {
+				loadPanel( "analysis.html" );
+			}
+		});
+		run.addItem("Multi-layer Analysis", new Command() {
+			@Override
+			public void execute() {
+				loadPanel( "riskanalysis.html" );
+			}
+		});
+		run.addItem("What-If Analysis", new Command() {
+			@Override
+			public void execute() {
+				loadPanel( "whatifanalysis.html" );
+			}
+		});
+		run.addItem("AHP Session", new Command() {
+			@Override
+			public void execute() {
+				loadPanel( "rma.html" );
+			}
+		});
 		
-		item = root.addChild( new TreeWidget( new Label( "Browse" ) ) );
-		item.addChild( new TreeWidget( new OutlineLabel( "Risk Data Repository", "rdr.html" ) ) );
-		item.addChild( new TreeWidget( new OutlineLabel( "Risk Analysis Sessions", "ras.html" ) ) );
+		MenuBar browse = new MenuBar(true);
+		browse.setAnimationEnabled(true);
+		menu.addItem("Browse", browse);
+		browse.addItem("Risk Data Repository", new Command() {
+			@Override
+			public void execute() {
+				loadPanel( "rdr.html" );
+			}
+		});
+		browse.addItem("Risk Analysis Sessions", new Command() {
+			@Override
+			public void execute() {
+				loadPanel( "ras.html" );
+			}
+		});
 		
-//		item = root.addChild( new TreeWidget( new Label( "Admin" ) ) );
-//		item.addChild( new TreeWidget( new OutlineLabel( "Users and Roles", "admin.html" ) ) );
+		/*MenuBar admin = new MenuBar(true);
+		 * admin.setAnimationEnabled(true);
+		 * menu.addItem("Admin", admin);
+		 * admin.addItem("Users and Roles", new Command() {
+		 * 	@Override
+		 * 	public void execute() {
+		 * 		loadPanel( "admin.html" );
+		 * 	}
+		 *});
+		 */
 		
-		VerticalPanel left = new VerticalPanel();
-		left.add( new Image( "logo3.png" ) );
-		left.setHeight("20%"); // any value here seems to resolve the firefox problem of showing only a small frame on the right side
-		left.add( root );
 		
-		dock = new DockPanel();
-		dock.setWidth( "100%" );
-		dock.add( left, DockPanel.WEST );
-		dock.setCellWidth( left, "222px" );
-		dock.setHeight( "90%" ); // <- not 100% to allow the "recompile" icon of iframes to appear
+		VerticalPanel north = new VerticalPanel();
+		north.add( new Image( "logo3.png" ) );
+		north.setHeight("5%"); // any value here seems to resolve the firefox problem of showing only a small frame on the right side
+		north.add( menu );
+		north.setWidth("100%");
+		/*main = new VerticalPanel();
+		main.setWidth( "100%" );
+		main.setHeight( "100%" );
+		main.setSpacing(0);
+		main.add( north );*/
 		
-		RootPanel.get().add( dock );
-		
+		RootPanel.get().add( north );
 	}
 	
 	static class DomainSelectionDialog {
@@ -233,14 +301,14 @@ public class RiscossWebApp implements EntryPoint {
 	protected void loadPanel( String url ) {
 		
 		if( currentPanel != null ) {
-			dock.remove( currentPanel.getWidget() );
+			RootPanel.get().remove( currentPanel.getWidget() );
 			currentPanel = null;
 		}
 		
 		currentPanel = new FramePanel( url );
 		
 		if( currentPanel != null ) {
-			dock.add( currentPanel.getWidget(), DockPanel.CENTER );
+			RootPanel.get().add( currentPanel.getWidget());
 //			currentPanel.getWidget().getParent().setHeight( "100%" );
 			currentPanel.activate();
 		}
