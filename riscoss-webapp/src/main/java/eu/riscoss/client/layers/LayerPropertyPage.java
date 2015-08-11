@@ -1,11 +1,13 @@
 package eu.riscoss.client.layers;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
 import org.fusesource.restygwt.client.Resource;
+import org.joda.time.DateTime;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -207,7 +209,10 @@ public class LayerPropertyPage implements IsWidget {
 					date.setHours(hour);
 					date.setMinutes(minute);
 					date.setSeconds(second);
-					defvaluestring = date.toString();
+					
+					DateTimeFormat fmt = DateTimeFormat.getFormat("yyyy-MM-dd:HH-mm-ss");
+				    defvaluestring = fmt.format(date);
+					
 					info.addContextualInfoCalendar(id.getText(), name.getText(), description.getText(), defvaluestring);
 				}
 				

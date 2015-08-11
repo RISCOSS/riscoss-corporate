@@ -21,7 +21,8 @@
 
 package eu.riscoss.client.entities;
 
-import java.sql.Date;
+import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.SpinnerModel;
@@ -124,6 +125,7 @@ public class EntityPropertyPage implements IsWidget {
 	RDCConfDialog		confDialog;
 	
 	String[]			contextualInfo;
+	ArrayList<String>	extraInfoList;
 	boolean				rasLoaded		= false;
 	
 	public EntityPropertyPage() {
@@ -164,6 +166,7 @@ public class EntityPropertyPage implements IsWidget {
 		}
 		
 		this.entity = entity;
+		extraInfoList = new ArrayList<>();
 		
 		if( this.entity == null ) return;
 		
@@ -279,63 +282,6 @@ public class EntityPropertyPage implements IsWidget {
 			grid.getColumnFormatter().setWidth( 0, "20%" );
 			grid.getColumnFormatter().setWidth( 1, "80%" );
 		}
-		/*userForm = new FlexTable();
-		for( int i = 0; i < info.getUserData().size(); i++ ) {
-			JsonRiskDataList.RiskDataItem item = info.getUserData().get( i );
-			userForm.insertRow(i);
-			userForm.insertCell(i, 0);
-			userForm.insertCell(i, 1);
-			userForm.insertCell(i, 2);
-			userForm.setWidget(i, 0, new Label(item.getId()));
-			userForm.setWidget(i, 1, new Label(item.getDataType()));
-			TextBox tb = new TextBox();
-			String vv = item.getValue();
-			String[] values = vv.split(";");
-			contextualInfo = "";
-			for (int k = 1; k < values.length; ++k) contextualInfo+=values[k];
-			tb.setText(values[0]);
-			userForm.setWidget(i, 2, tb);
-	
-		}
-		userForm.insertRow(info.getUserData().size());
-		userForm.insertCell(info.getUserData().size(), 0);
-		Button save = new Button("Save");
-		userForm.setWidget(info.getUserData().size(), 0, save);
-		save.addClickHandler(new ClickHandler() {
-
-			@Override
-			public void onClick(ClickEvent arg0) {
-				
-				int k;
-				JSONArray array = new JSONArray();
-				for (k = 0; k < userForm.getRowCount()-1; k++) {
-					String type = ((Label) userForm.getWidget(k, 1)).getText();
-					String value = ((TextBox) userForm.getWidget(k, 2)).getText();
-					value+=contextualInfo;
-					JSONObject o = new JSONObject();
-					o.put( "id", new JSONString( ((Label) userForm.getWidget(k, 0)).getText() ) );
-					o.put( "target", new JSONString( entity ) );
-					o.put( "value", new JSONString( value ) );
-					o.put( "type", new JSONString( "custom" ) );
-					o.put( "datatype", new JSONString( type ) );
-					o.put( "origin", new JSONString( "user" ) );
-					array.set( k, o );
-				}
-				RiscossJsonClient.postRiskData( array, new JsonCallback() {
-					@Override
-					public void onFailure( Method method, Throwable exception ) {
-						Window.alert( exception.getMessage() );
-					}
-					@Override
-					public void onSuccess( Method method, JSONValue response ) {
-							//						Window.alert( "Ok" );
-					}} );
-			}
-			
-		});
-		
-		summaryPanel.setWidget( v );
-		ciPanel.setWidget( userForm );*/
 		
 		tb = new FlexTable();
 		userForm = new CustomizableForm();
@@ -354,6 +300,12 @@ public class EntityPropertyPage implements IsWidget {
 				String val = item.getValue();
 				contextualInfo = val.split(";");
 				
+				String extrainfo = "";
+				for (int k = 1; k < contextualInfo.length; ++k) {
+					extrainfo += ";" + contextualInfo[k];
+				}
+				extraInfoList.add(extrainfo);
+				
 				tb.insertRow(row);
 				tb.insertCell(row, 0);
 				tb.insertCell(row, 1);
@@ -364,6 +316,7 @@ public class EntityPropertyPage implements IsWidget {
 				if (item.getDataType().equals("Integer")) {
 					TextBox t = new TextBox();
 					t.setText(contextualInfo[0]);
+					
 					tb.setWidget(row, 2, t);
 				}
 				else if (item.getDataType().equals("Boolean")) {
@@ -371,7 +324,7 @@ public class EntityPropertyPage implements IsWidget {
 					if (Integer.parseInt(contextualInfo[0]) == 1) c.setChecked(true);
 					tb.setWidget(row, 2, c);
 				}
-				else if (item.getDataType().equals("Calendar")) {
+				else if (item.getDataType().equals("Date")) {
 					DateTimeFormat dateFormat = DateTimeFormat.getLongDateFormat();
 				    DateBox dateBox = new DateBox();
 				    dateBox.setFormat(new DateBox.DefaultFormat(dateFormat));
@@ -381,22 +334,30 @@ public class EntityPropertyPage implements IsWidget {
 				    
 					g.setWidget(0, 0, dateBox);
 					
-					//Date d = Date.valueOf(contextualInfo[0]);
-					//dateBox.setValue(d);
+					String inf[] = contextualInfo[0].split(":");
+					String date[] = inf[0].split("-");
+					String time[] = inf[1].split("-");
+					
+					int year = Integer.parseInt(date[0]) - 1900;
+					int month = Integer.parseInt(date[1]) - 1;
+					if (month == 0) {month = 12;--year;}
+					int day = Integer.parseInt(date[2]);
+					Date d = new Date(year, month, day);
+					dateBox.setValue(d);
 					
 					TextBox t = new TextBox();
 					t.setWidth("30px");
-					//t.setText(String.valueOf(d.getHours()));
+					t.setText(String.valueOf(time[0]));
 					g.setWidget(0, 1, t);
 					g.setWidget(0, 2, new Label("hh"));
 					t = new TextBox();
 					t.setWidth("30px");
-					//t.setText(String.valueOf(d.getMinutes()));
+					t.setText(String.valueOf(time[1]));
 					g.setWidget(0, 3, t);
 					g.setWidget(0, 4, new Label("mm"));
 					t = new TextBox();
 					t.setWidth("30px");
-					//t.setText(String.valueOf(d.getSeconds()));
+					t.setText(String.valueOf(time[2]));
 					g.setWidget(0, 5, t);
 					g.setWidget(0, 6, new Label("ss"));
 					
@@ -443,7 +404,6 @@ public class EntityPropertyPage implements IsWidget {
 			
 			@Override
 			public void labelChanged( CustomField field ) {
-				// TODO Auto-generated method stub
 				
 			}
 
@@ -475,12 +435,38 @@ public class EntityPropertyPage implements IsWidget {
 
 			@Override
 			public void onClick(ClickEvent arg0) {
-				/*for (int i = 0; i < tb.getRowCount(); ++i) {
+				for (int i = 0; i < tb.getRowCount(); ++i) {
 					JSONObject o = new JSONObject();
 					o.put( "id", new JSONString( ((Label)tb.getWidget(i, 0)).getText() ) );
 					o.put( "target", new JSONString( EntityPropertyPage.this.entity ) );
-					//o.put( "value", new JSONString( field.getValue() ) );
-					o.put( "datatype", new JSONString ( ((Label)tb.getWidget(i, 1)).getText() ) );
+					String datatype = ((Label)tb.getWidget(i, 1)).getText();
+					String value = "";
+					if (datatype.equals("Integer")) {
+						value += ((TextBox) tb.getWidget(i, 2)).getText();
+						value += extraInfoList.get(i);
+					}
+					else if (datatype.equals("Boolean")) {
+						if (((CheckBox) tb.getWidget(i, 2)).isChecked()) value += "1";
+						else value += "0";
+					}
+					else if (datatype.equals("Date")) {
+						int hour = Integer.parseInt(((TextBox) ((Grid) tb.getWidget(i, 2)).getWidget(0, 1)).getText());
+						int minute = Integer.parseInt(((TextBox) ((Grid) tb.getWidget(i, 2)).getWidget(0, 3)).getText());
+						int second = Integer.parseInt(((TextBox) ((Grid) tb.getWidget(i, 2)).getWidget(0, 5)).getText());
+						Date date = ((DateBox) ((Grid) tb.getWidget(i,2)).getWidget(0, 0)).getValue();
+						date.setHours(hour);
+						date.setMinutes(minute);
+						date.setSeconds(second);
+						
+						DateTimeFormat fmt = DateTimeFormat.getFormat("yyyy-MM-dd:HH-mm-ss");
+					    value += fmt.format(date);
+					}
+					else {
+						value += ((ListBox) tb.getWidget(i, 2)).getSelectedIndex();
+						value += extraInfoList.get(i);
+					}
+					o.put( "value", new JSONString( value ) );
+					o.put( "datatype", new JSONString ( datatype ) );
 					o.put( "type", new JSONString( "custom" ) );
 					o.put( "origin", new JSONString( "user" ) );
 					JSONArray array = new JSONArray();
@@ -494,10 +480,12 @@ public class EntityPropertyPage implements IsWidget {
 						public void onSuccess( Method method, JSONValue response ) {
 							//								Window.alert( "Ok" );
 						}} );
-				}*/
+				}
+				
 			}
 			
 		});
+		vPanel.add(save);
 		ciPanel.setWidget( vPanel );
 	}
 
