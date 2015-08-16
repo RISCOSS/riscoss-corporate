@@ -36,6 +36,10 @@ A:hover
 	outline:0;
 }
 
+body {
+	background-color:#F2F2F2;
+}
+
 /** Most GWT widgets already have a style name defined */
 .gwt-DialogBox {
   width: 400px;
@@ -78,17 +82,111 @@ A:hover
     bottom: 0px;
 }
 
-.gwt-MenuBar { 
-      background-color: #7EAC30 !important;
-      width: 100% !important;
-   }
-   .gwt-MenuBar .gwt-MenuItem { 
+.mainMenu {
+	background-color: #7EAC30 !important;
+	width: 100% !important;
+	font-weight: bold !important;
+}
+	.mainMenu .gwt-MenuItem { 
       	background-color: #7EAC30; 
       	color: #F3F3F3 !important;
       	padding: 2px 40px !important;
    }
-   .gwt-MenuBar .gwt-MenuItem-selected { 
+   	.mainMenu .gwt-MenuItem-selected { 
    		background-color: #7EAC30 !important;
       	text-decoration: underline !important;
       	color: #F3F3F3 !important;
    }
+   
+.subMenu {
+	background-color: #7EAC30 !important;
+}
+	.subMenu .gwt-MenuItem { 
+      	background-color: #7EAC30; 
+      	color: #F3F3F3 !important;
+      	padding: 2px 20px !important;
+   }
+   	.subMenu .gwt-MenuItem-selected { 
+   		background-color: #7EAC30 !important;
+      	text-decoration: underline !important;
+      	color: #F3F3F3 !important;
+   }
+}
+
+.root {
+	background-color: #E6E6E6 !important;
+}
+
+.margin {
+	background-color: #F2F2F2 !important;
+}
+
+.mainViewLayer {
+	
+}
+
+	.layerData{
+		padding-bottom: 20px !important;
+		padding-top: 20px !important;
+	}
+	
+	.title {
+		font-size: 32px !important;
+		padding: 20px 0px 6px 20px !important;
+		border-bottom: 1px dashed #E6E6E6 !important;
+	}
+	
+	.subtitle {
+		font-size: 26px !important;
+		margin-top: 28px !important;
+		padding-bottom: 20px !important;
+	}
+	
+	.text {
+		font-size: 16px !important;
+		padding-right: 15px !important;
+	}
+
+	.button {
+		background-color:  #4D9244 !important;
+		color: #F3F3F3 !important;
+		font-weight: bold !important;
+		text-align: center !important;
+		margin-right: 20px !important;
+		padding: 5px !important;
+	}
+	
+	.layerNameField {
+		margin-right: 20px !important;
+	}
+	
+	.layerList {
+		padding-top: 24px !important;
+	}
+	
+	.layerListElement {
+		color: #FF8000 !important;
+		font-size: 16px !important;
+		margin-top: 6px !important;
+		border-bottom: 1px solid #E6E6E6 !important;
+	}
+	
+	.mainViewLayer .leftPanelLayer {
+		padding: 20px !important;
+		padding-left: 30px !important;
+	}
+	
+	.mainViewLayer .rightPanelLayer {
+		padding: 26px !important;
+		padding-left: -20px !important;
+		margin-left: -50px !important;
+	}
+	
+	.propertyTab {
+		margin-top: 20px !important;
+	}
+	
+	.entityProperties {
+		margin-top: 20px !important;
+	}
+

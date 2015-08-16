@@ -45,6 +45,7 @@ import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 import eu.riscoss.client.ui.ClickWrapper;
@@ -54,9 +55,12 @@ import eu.riscoss.shared.CookieNames;
 
 public class RiscossWebApp implements EntryPoint {
 	
-	VerticalPanel main;
+	VerticalPanel	main;
 	
-	FramePanel currentPanel = null;
+	FramePanel 		currentPanel = null;
+	VerticalPanel	background;
+	SimplePanel		margin;
+	
 	
 	public void onModuleLoad() {
 		String domain = Cookies.getCookie( CookieNames.DOMAIN_KEY );
@@ -89,6 +93,7 @@ public class RiscossWebApp implements EntryPoint {
 		MenuBar menu = new MenuBar();
 		menu.setWidth(" 100% ");
 		menu.setAnimationEnabled(true);
+		menu.setStyleName("mainMenu");
 		
 		menu.addItem("Select Domain (" + domain + ")", new Command() {
 			@Override
@@ -98,6 +103,7 @@ public class RiscossWebApp implements EntryPoint {
 		});
 		
 		MenuBar configure = new MenuBar(true);
+		configure.setStyleName("subMenu");
 		configure.setAnimationEnabled(true);
 		menu.addItem("Configure", configure);
 		configure.addItem("Layers", new Command() {
@@ -126,6 +132,7 @@ public class RiscossWebApp implements EntryPoint {
 		});
 		
 		MenuBar run = new MenuBar(true);
+		run.setStyleName("subMenu");
 		run.setAnimationEnabled(true);
 		menu.addItem("Run", run);
 		run.addItem("One-layer Analysis", new Command() {
@@ -154,6 +161,7 @@ public class RiscossWebApp implements EntryPoint {
 		});
 		
 		MenuBar browse = new MenuBar(true);
+		browse.setStyleName("subMenu");
 		browse.setAnimationEnabled(true);
 		menu.addItem("Browse", browse);
 		browse.addItem("Risk Data Repository", new Command() {
@@ -186,13 +194,23 @@ public class RiscossWebApp implements EntryPoint {
 		north.setHeight("5%"); // any value here seems to resolve the firefox problem of showing only a small frame on the right side
 		north.add( menu );
 		north.setWidth("100%");
-		/*main = new VerticalPanel();
-		main.setWidth( "100%" );
-		main.setHeight( "100%" );
-		main.setSpacing(0);
-		main.add( north );*/
+		
+		background = new VerticalPanel();
+		background.setWidth("100%");
+		background.setHeight("100%");
+		background.setSpacing(25);
+		background.setStyleName("background");
+		
+		margin = new SimplePanel();
+		margin.setWidth("100%");
+		margin.setHeight("100%");
+		margin.setStyleName("margin");
+		margin.setWidget(background);
 		
 		RootPanel.get().add( north );
+		RootPanel.get().add( margin );
+		RootPanel.get().setStyleName("root");
+
 	}
 	
 	static class DomainSelectionDialog {
@@ -301,14 +319,14 @@ public class RiscossWebApp implements EntryPoint {
 	protected void loadPanel( String url ) {
 		
 		if( currentPanel != null ) {
-			RootPanel.get().remove( currentPanel.getWidget() );
+			background.remove( currentPanel.getWidget() );
 			currentPanel = null;
 		}
 		
 		currentPanel = new FramePanel( url );
 		
 		if( currentPanel != null ) {
-			RootPanel.get().add( currentPanel.getWidget());
+			background.add( currentPanel.getWidget());
 //			currentPanel.getWidget().getParent().setHeight( "100%" );
 			currentPanel.activate();
 		}

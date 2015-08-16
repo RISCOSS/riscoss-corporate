@@ -127,13 +127,14 @@ public class EntitiesModule implements EntryPoint {
 		ppg = new EntityPropertyPage();
 		
 		HorizontalPanel hpanel = new HorizontalPanel();
-		Button a = new Button( "Create new entity..." );
+		Button a = new Button( "NEW ENTITY" );
 		a.addClickHandler( new ClickWrapper<String>( layer ) {
 			@Override
 			public void onClick(ClickEvent event) {
 				new CreateEntityDialog( getValue() ).show();
 			}
 		});
+		a.setStyleName("button");
 		
 		hpanel.add( a );
 		hpanel.setWidth( "100%" );
