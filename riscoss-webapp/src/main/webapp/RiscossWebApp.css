@@ -119,6 +119,19 @@ body {
 
 .margin {
 	background-color: #F2F2F2 !important;
+	padding: 20px !important;
+}
+
+.background {
+	margin: 0px 20px 20px 20px !important;
+}
+
+.version {
+	font-size:12px !important;
+	color: #4D9244 !important;
+	font-weight: bold !important;
+	margin-bottom: 8px !important;
+	margin-left: 8px !important;
 }
 
 .mainViewLayer {
@@ -127,13 +140,13 @@ body {
 
 	.layerData{
 		padding-bottom: 20px !important;
-		padding-top: 20px !important;
+		padding-top: 18px !important;
 	}
 	
 	.title {
 		font-size: 32px !important;
-		padding: 20px 0px 6px 20px !important;
-		border-bottom: 1px dashed #E6E6E6 !important;
+		margin: 20px 20px 8px 20px !important;
+		border-bottom: 1px solid #E6E6E6 !important;
 	}
 	
 	.subtitle {
@@ -154,6 +167,25 @@ body {
 		text-align: center !important;
 		margin-right: 20px !important;
 		padding: 5px !important;
+		margin-bottom: 24px !important;
+	}
+	
+	.cellbutton.gwt-Button {
+		background-color:  #4D9244 !important;
+		color: #F3F3F3 !important;
+		font-weight: bold !important;
+		text-align: center !important;
+		padding: 5px !important;
+	}
+	
+	.button2 {
+		background-color:  #4D9244 !important;
+		color: #F3F3F3 !important;
+		font-weight: bold !important;
+		text-align: center !important;
+		margin-right: 20px !important;
+		padding: 5px !important;
+		margin-top: 18px !important;
 	}
 	
 	.layerNameField {
@@ -161,7 +193,7 @@ body {
 	}
 	
 	.layerList {
-		padding-top: 24px !important;
+		
 	}
 	
 	.layerListElement {
@@ -177,9 +209,10 @@ body {
 	}
 	
 	.mainViewLayer .rightPanelLayer {
-		padding: 26px !important;
-		padding-left: -20px !important;
-		margin-left: -50px !important;
+		margin-left: 50px !important;
+		border-left: 1px solid #E6E6E6 !important;
+		padding-left: 20px !important;
+		float: left;
 	}
 	
 	.propertyTab {
@@ -190,3 +223,6 @@ body {
 		margin-top: 20px !important;
 	}
 
+.cellTableEvenRow {
+  background-color: #F2F2F2 !important;
+}

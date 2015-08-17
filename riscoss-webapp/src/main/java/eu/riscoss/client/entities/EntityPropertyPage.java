@@ -430,7 +430,8 @@ public class EntityPropertyPage implements IsWidget {
 		VerticalPanel vPanel = new VerticalPanel();
 		vPanel.add(tb);
 		vPanel.add(userForm);
-		Button save = new Button("Save");
+		Button save = new Button("SAVE");
+		save.setStyleName("button2");
 		save.addClickHandler(new ClickHandler() {
 
 			@Override

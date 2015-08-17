@@ -89,8 +89,6 @@ public class LayerPropertyPage implements IsWidget {
 		tab.selectTab(0);
 		tab.setSize( "100%", "100%" );
 		tab.setVisible(false);
-		tab.setWidth( "100%" );
-		tab.setStyleName( "propertyTab" );
 		
 		integerItem.add(new Label("Min"));
 		integerItem.add(min);

@@ -1,0 +1,14 @@
+/* Incremental changes from CellTable.css */ 
+.cellTableCell {
+	font-size: 16px !important;
+	color: #FF8000 !important;
+}
+
+.cellTableHeader {
+	font-size: 18px !important;
+	border-bottom: 2px solid #4D9244 !important;
+}
+
+.cellTableHoveredRowCell {
+	
+}

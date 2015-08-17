@@ -38,6 +38,7 @@ import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.CellTable.Resources;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.client.Window;
@@ -48,6 +49,7 @@ import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
@@ -74,12 +76,21 @@ public class EntitiesModule implements EntryPoint {
 	CellTable<EntityInfo>			table;
 	ListDataProvider<EntityInfo>	dataProvider;
 	
-	SimplePanel						rightPanel = new SimplePanel();
+	VerticalPanel					rightPanel = new VerticalPanel();
 	
 	EntityPropertyPage				ppg = null;
 	
+	VerticalPanel					page = new VerticalPanel();
+	HorizontalPanel					mainView = new HorizontalPanel();
+	VerticalPanel					leftPanel = new VerticalPanel();
+	VerticalPanel					rightPanel2 = new VerticalPanel();
+	
 	String							selectedEntity;
 	String 							newEntity;
+	
+	TextBox							entityName = new TextBox();
+	ListBox							layerName = new ListBox();
+	Button							newEntityButton;
 	
 	public EntitiesModule() {
 	}
@@ -97,7 +108,64 @@ public class EntitiesModule implements EntryPoint {
 		
 		String layer = Window.Location.getParameter( "layer" );
 		
-		table = new CellTable<>();
+		RiscossJsonClient.listLayers( new JsonCallback() {
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				for( int i = 0; i < response.isArray().size(); i++ ) {
+					JSONObject o = (JSONObject)response.isArray().get( i );
+					layerName.addItem( o.get( "name" ).isString().stringValue() );
+				}
+			}
+
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				
+			}
+		});
+		
+		mainView.setStyleName("mainViewLayer");
+		mainView.setWidth("100%");
+		leftPanel.setStyleName("leftPanelLayer");
+		leftPanel.setWidth("500px");
+		leftPanel.setHeight("100%");
+		rightPanel.setStyleName("rightPanelLayer");
+		//rightPanel.setWidth("60%");
+		rightPanel.setHeight("100%");
+		
+		Label title = new Label("Entity management");
+		title.setStyleName("title");
+		page.add(title);
+		
+		HorizontalPanel layerData = new HorizontalPanel();
+		layerData.setStyleName("layerData");
+		Label name = new Label("Name");
+		name.setStyleName("text");
+		layerData.add(name);
+		entityName.setWidth("120px");
+		entityName.setStyleName("layerNameField");
+		layerData.add(entityName);
+		Label parent = new Label("Layer");
+		parent.setStyleName("text");
+		layerData.add(parent);
+		layerName.setStyleName("parentNameField");
+		layerData.add(layerName);
+		leftPanel.add(layerData);
+		
+		HorizontalPanel buttons = new HorizontalPanel();
+		
+		newEntityButton = new Button("NEW ENTITY");
+		newEntityButton.setStyleName("button");
+		newEntityButton.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent arg0) {
+				createEntity();
+			}
+		});
+		buttons.add(newEntityButton);
+		
+		leftPanel.add(buttons);
+		
+		table = new CellTable<EntityInfo>(15, (Resources) GWT.create(TableResources.class));
 		
 		table.addColumn( new Column<EntityInfo,SafeHtml>(new SafeHtmlCell() ) {
 			@Override
@@ -109,7 +177,7 @@ public class EntitiesModule implements EntryPoint {
 			public SafeHtml getValue(EntityInfo object) {
 				return new LinkHtml( object.getLayer(), "" ); };
 		}, "Layer");
-		Column<EntityInfo,String> c = new Column<EntityInfo,String>(new ButtonCell() ) {
+		/*Column<EntityInfo,String> c = new Column<EntityInfo,String>(new ButtonCell() ) {
 			@Override
 			public String getValue(EntityInfo object) {
 				return "Delete";
@@ -120,7 +188,10 @@ public class EntitiesModule implements EntryPoint {
 					deleteEntity( object );
 				}
 			});
-		table.addColumn( c, "");
+		c.setCellStyleNames("cellbutton");
+		table.addColumn( c, "");*/
+		table.setStyleName("entityTable");
+		table.setWidth("100%");
 		
 		dataProvider = new ListDataProvider<EntityInfo>();
 		dataProvider.addDataDisplay( table );
@@ -143,6 +214,7 @@ public class EntitiesModule implements EntryPoint {
 	    pager.setDisplay( table );
 	    
 		VerticalPanel tablePanel = new VerticalPanel();
+		tablePanel.setWidth("100%");
 		tablePanel.add( table );
 		tablePanel.add( pager );
 		
@@ -159,8 +231,14 @@ public class EntitiesModule implements EntryPoint {
 		dock.setCellVerticalAlignment( tablePanel, DockPanel.ALIGN_TOP );
 		dock.setVerticalAlignment( DockPanel.ALIGN_TOP );
 		
-		RootPanel.get().add( dock );
+		//RootPanel.get().add( dock );
+		page.setWidth("100%");
+		leftPanel.add(tablePanel);
+		mainView.add(leftPanel);
+		mainView.add(rightPanel);
+		page.add(mainView);
 		
+		RootPanel.get().add( page );
 		
 		String url = ( layer != null ?
 				"api/entities/list/" + layer :
@@ -187,16 +265,48 @@ public class EntitiesModule implements EntryPoint {
 		});
 	}
 	
+	public DockPanel getDock() {
+		return this.dock;
+	}
+	
 	protected void setSelectedEntity( String entity ) {
-		if( rightPanel.getWidget() != null ) {
-			rightPanel.getWidget().removeFromParent();
-		}
-//		aDelete.setEnabled( true );
 		this.selectedEntity = entity;
 		ppg.setSelectedEntity( entity );
-		if( entity != null ) {
-			rightPanel.setWidget( ppg.asWidget() );
-		}
+		
+		mainView.remove(rightPanel);
+		rightPanel = new VerticalPanel();
+		rightPanel.setWidth("80%");
+		rightPanel.setStyleName("rightPanelLayer");
+		
+		Label l = new Label(selectedEntity);
+		l.setStyleName("subtitle");
+		rightPanel.add(l);
+		
+		HorizontalPanel buttons = new HorizontalPanel();
+		Button delete = new Button("DELETE");
+		delete.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							RiscossJsonClient.deleteEntity( selectedEntity, new JsonCallback() {
+								@Override
+								public void onFailure(Method method,Throwable exception) {
+									Window.alert( exception.getMessage() );
+								}
+								@Override
+								public void onSuccess(Method method,JSONValue response) {
+									Window.Location.reload();
+								}} );
+						}
+					} ) ;
+		delete.setStyleName("button");
+		buttons.add(delete);
+		rightPanel.add(buttons);
+		
+		rightPanel.add(ppg);
+		mainView.add(rightPanel);
+		
+//		aDelete.setEnabled( true );
+		
 	}
 	
 	class CreateEntityDialog {
@@ -309,6 +419,39 @@ public class EntitiesModule implements EntryPoint {
 			dialog.show();
 		}
 	}
+	
+	protected void createEntity() {
+			RiscossJsonClient.createEntity( entityName.getText(), layerName.getItemText(layerName.getSelectedIndex()),"", new JsonCallback() {
+				@Override
+				public void onFailure(Method method, Throwable exception) {
+					Window.alert( exception.getMessage() );
+				}
+				@Override
+				public void onSuccess(Method method, JSONValue response) {
+					newEntity = response.isObject().get( "name" ).isString().stringValue();
+					EntityInfo info = new EntityInfo( newEntity );
+					
+					
+					info.setLayer( JsonUtil.getValue( response, "layer", "" ) );
+					insertEntityIntoTable( info );
+					
+					
+					
+					RiscossJsonClient.getLayerContextualInfo(layerName.getItemText(layerName.getSelectedIndex()), new JsonCallback() {
+						@Override
+						public void onFailure(Method method, Throwable exception) {
+							Window.alert( exception.getMessage() );
+						}
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
+							JLayerContextualInfo jLayerContextualInfo = codec.decode( response );
+							updateContextualInfo(jLayerContextualInfo);
+						}
+					});
+					
+				}} );
+		}
 	
 	protected void updateContextualInfo( JLayerContextualInfo contextualInfo ) {
 		int k;

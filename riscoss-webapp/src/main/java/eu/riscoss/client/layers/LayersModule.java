@@ -91,8 +91,11 @@ public class LayersModule implements EntryPoint {
 		mainView.setStyleName("mainViewLayer");
 		mainView.setWidth("100%");
 		leftPanel.setStyleName("leftPanelLayer");
+		leftPanel.setWidth("500px");
+		leftPanel.setHeight("100%");
 		rightPanel.setStyleName("rightPanelLayer");
-		rightPanel.setWidth("100%");
+		//rightPanel.setWidth("60%");
+		rightPanel.setHeight("100%");
 		
 		RiscossJsonClient.listLayers( new JsonCallback() {
 			
@@ -218,6 +221,7 @@ public class LayersModule implements EntryPoint {
 							public void onSuccess(Method method, JSONValue response) {
 								Window.Location.reload();
 							}} );
+						
 					}
 					
 				} );
@@ -230,7 +234,7 @@ public class LayersModule implements EntryPoint {
 		});
 		
 		
-		/*newEntity = new Button("NEW ENTITY");
+		newEntity = new Button("NEW ENTITY");
 		newEntity.setStyleName("button");
 		newEntity.addClickHandler(new ClickHandler() {
 
@@ -240,7 +244,7 @@ public class LayersModule implements EntryPoint {
 			}
 			
 		});
-		newEntity.setEnabled(false);*/
+		newEntity.setEnabled(false);
 		buttons.add(newLayer);
 		//buttons.add(newEntity);
 		leftPanel.add(buttons);
@@ -299,6 +303,10 @@ public class LayersModule implements EntryPoint {
 	private void loadRightPanel() {
 		mainView.remove(rightPanel);
 		rightPanel = new VerticalPanel();
+		rightPanel.setStyleName("rightPanelLayer");
+		rightPanel.setWidth("90%");
+		rightPanel.setHeight("100%");
+		
 		Label l = new Label(selectedLayer);
 		l.setStyleName("subtitle");
 		rightPanel.add(l);
@@ -337,6 +345,7 @@ public class LayersModule implements EntryPoint {
 		});
 		rightPanel.add(ppg);
 		SimplePanel sp = new SimplePanel();
+		sp.setHeight("400px");
 		sp.setWidget(bottom.getWidget());
 		sp.setStyleName("entityProperties");
 		rightPanel.add(sp);
