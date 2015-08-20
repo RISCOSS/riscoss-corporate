@@ -48,6 +48,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.Hidden;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -76,12 +77,17 @@ public class ModelsModule implements EntryPoint {
 	private static final String BUTTON_NEW_MODEL 	= "New...";
 	private static final String BUTTON_CHANGE_NAME 	= "change";
 	
-	DockPanel dock = new DockPanel();
+	DockPanel 			dock = new DockPanel();
+	VerticalPanel		page = new VerticalPanel();
+	HorizontalPanel		mainView = new HorizontalPanel();
+	VerticalPanel		leftPanel = new VerticalPanel();
+	VerticalPanel		rightPanel = new VerticalPanel();
+	
 
 	CellTable<ModelInfo> table;
 	ListDataProvider<ModelInfo> dataProvider;
 	// private FlowPanel panelImages = new FlowPanel();
-	SimplePanel rightPanel = new SimplePanel();
+	SimplePanel rightPanel2 = new SimplePanel();
 
 	public ModelsModule() {
 	}
@@ -178,15 +184,55 @@ public class ModelsModule implements EntryPoint {
 		
 		dock.add(tablePanel, DockPanel.CENTER);
 		dock.add(uploader, DockPanel.NORTH);
-		dock.add(rightPanel, DockPanel.EAST);
+		dock.add(rightPanel2, DockPanel.EAST);
 
 		dock.setCellWidth(tablePanel, "40%");
-		dock.setCellHeight(rightPanel, "100%");
+		dock.setCellHeight(rightPanel2, "100%");
 		table.setWidth("100%");
 
 		dock.setSize("100%", "100%");
+		
+		mainView.setStyleName("mainViewLayer");
+		mainView.setWidth("100%");
+		leftPanel.setStyleName("leftPanelLayer");
+		leftPanel.setWidth("400px");
+		//leftPanel.setHeight("100%");
+		rightPanel.setStyleName("rightPanelLayer");
+		Label title = new Label("Model management");
+		title.setStyleName("title");
+		page.add(title);
+		
+		Button uploadModel = new Button("UPLOAD MODEL");
+		uploadModel.setStyleName("button");
+		SingleUploader upload = new SingleUploader(FileInputType.CUSTOM.with(uploadModel));
+		upload.setTitle("Upload new model");
+		upload.setAutoSubmit(true);
+		upload.setServletPath(upload.getServletPath() + "?t=modelblob");
+		upload.addOnFinishUploadHandler(new OnFinishUploaderHandler() {
+			@Override
+			public void onFinish(IUploader uploader) {
+				UploadedInfo info = uploader.getServerInfo();
+				String name = info.name;
+				//Log.println("SERVERMESS2 " + uploader.getServerMessage().getMessage());
+				
+				String response = uploader.getServerMessage().getMessage();
+				if (response.trim().equalsIgnoreCase("Success"))
+					dataProvider.getList().add(new ModelInfo(name));
+				else
+					Window.alert("Error: " + response );
+			}
+		});
+		leftPanel.add(upload);
+		
+		leftPanel.add(tablePanel);
+		
+		mainView.add(leftPanel);
+		mainView.add(rightPanel);
+		page.add(mainView);
+		page.setWidth("100%");
 
-		RootPanel.get().add(dock);
+		//RootPanel.get().add(dock);
+		RootPanel.get().add(page);
 	}
 
 	protected void deleteModel(ModelInfo info) {
@@ -511,11 +557,47 @@ public class ModelsModule implements EntryPoint {
 	}
 
 	public void setSelectedModel(String name) {
-		if (rightPanel.getWidget() != null) {
-			rightPanel.getWidget().removeFromParent();
+		if (rightPanel2.getWidget() != null) {
+			rightPanel2.getWidget().removeFromParent();
 		}
 		EditModelDialog panel = new EditModelDialog();
-		rightPanel.setWidget(panel);
+		rightPanel2.setWidget(panel);
 		panel.editModel(name);
+		
+		mainView.remove(rightPanel);
+		rightPanel = new VerticalPanel();
+		rightPanel.setStyleName("rightPanelLayer");
+		rightPanel.setWidth("90%");
+		
+		Label modelName = new Label(name);
+		modelName.setStyleName("subtitle");
+		rightPanel.add(modelName);
+		
+		HorizontalPanel buttons = new HorizontalPanel();
+		Button delete = new Button("DELETE");
+		delete.setStyleName("button");
+		delete.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent arg0) {
+				// TODO Auto-generated method stub
+			}
+		});
+		buttons.add(delete);
+		Button save = new Button("SAVE");
+		save.setStyleName("button");
+		save.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent arg0) {
+				// TODO Auto-generated method stub
+			}
+		});
+		buttons.add(save);
+		rightPanel.add(buttons);
+		
+		EditModelDialog panel2 = new EditModelDialog();
+		panel2.editModel(name);
+		rightPanel.add(panel);
+		mainView.add(rightPanel);
+		
 	}
 }

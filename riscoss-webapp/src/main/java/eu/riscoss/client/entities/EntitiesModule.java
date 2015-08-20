@@ -126,11 +126,11 @@ public class EntitiesModule implements EntryPoint {
 		mainView.setStyleName("mainViewLayer");
 		mainView.setWidth("100%");
 		leftPanel.setStyleName("leftPanelLayer");
-		leftPanel.setWidth("500px");
-		leftPanel.setHeight("100%");
+		leftPanel.setWidth("400px");
+		//leftPanel.setHeight("100%");
 		rightPanel.setStyleName("rightPanelLayer");
 		//rightPanel.setWidth("60%");
-		rightPanel.setHeight("100%");
+		//rightPanel.setHeight("100%");
 		
 		Label title = new Label("Entity management");
 		title.setStyleName("title");

@@ -36,8 +36,10 @@ import com.google.gwt.user.client.ui.DisclosurePanel;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import eu.riscoss.client.Callback;
@@ -50,6 +52,10 @@ import eu.riscoss.shared.EAnalysisResult;
 public class ReportModule implements EntryPoint {
 	
 	DockPanel dock = new DockPanel();
+	
+	VerticalPanel		page = new VerticalPanel();
+	HorizontalPanel		mainView = new HorizontalPanel();
+	
 
 	public ReportModule() {
 	}
@@ -212,7 +218,23 @@ public class ReportModule implements EntryPoint {
 		dock.add( a, DockPanel.NORTH );
 		dock.add( dp, DockPanel.SOUTH );
 		
-		RootPanel.get().add( dock );
+		mainView.setStyleName("mainViewLayer");
+		mainView.setWidth("100%");
+		page.setWidth("100%");
+		
+		Label title = new Label("Risk analysis report of " + object.get( "info" ).isObject().get( "entity" ).isString().stringValue());
+		title.setStyleName("title");
+		page.add(title);
+		
+		a.setStyleName("leftPanel");
+		page.add(a);
+		//report.setStyleName("leftPanel");
+		page.add(report);
+		dp.setStyleName("leftPanel");
+		page.add(dp);
+		
+		//RootPanel.get().add( dock );
+		RootPanel.get().add(page);
 	}
 	
 	static final JSONArray EMPTY_ARRAY = new JSONArray();

@@ -51,6 +51,7 @@ class IndexedTab implements IsWidget {
 				onTabActivated( event );
 			}
 		});
+		tab.setStyleName("tab");
 	}
 	
 	protected void onTabActivated( SelectionEvent<Integer> event ) {

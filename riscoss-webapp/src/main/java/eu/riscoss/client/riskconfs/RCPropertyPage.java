@@ -43,6 +43,7 @@ import eu.riscoss.client.SimpleRiskCconf;
 public class RCPropertyPage implements IsWidget {
 	
 	TabPanel tab = new TabPanel();
+	TextBox txt;
 	
 	@Override
 	public Widget asWidget() {
@@ -66,7 +67,7 @@ public class RCPropertyPage implements IsWidget {
 		VerticalPanel p = new VerticalPanel();
 		HorizontalPanel h = new HorizontalPanel();
 		h.add( new Label( "Name: " ) );
-		TextBox txt = new TextBox();
+		txt = new TextBox();
 		txt.setText( rc.getName() );
 		txt.setWidth( "100%" );
 		h.add( txt );
@@ -102,6 +103,10 @@ public class RCPropertyPage implements IsWidget {
 		tab.add( p, "Properties" );
 		tab.selectTab( 0 );
 		tab.setSize( "100%", "100%" );
+	}
+	
+	public String getName() {
+		return txt.getText();
 	}
 	
 	protected void saveRC() {

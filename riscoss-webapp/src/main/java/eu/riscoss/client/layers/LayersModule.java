@@ -24,12 +24,18 @@ package eu.riscoss.client.layers;
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
 
+import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.CellTable.Resources;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
@@ -45,10 +51,13 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+import eu.riscoss.client.EntityInfo;
 import eu.riscoss.client.RiscossJsonClient;
+import eu.riscoss.client.entities.TableResources;
 import eu.riscoss.client.ui.ClickWrapper;
 import eu.riscoss.client.ui.FramePanel;
 import eu.riscoss.client.ui.LabeledWidget;
+import eu.riscoss.client.ui.LinkHtml;
 import eu.riscoss.client.ui.TreeWidget;
 import eu.riscoss.shared.RiscossUtil;
 
@@ -85,17 +94,17 @@ public class LayersModule implements EntryPoint {
 	public void onModuleLoad() {
 		
 		dock.setSize( "100%", "100%" );
-		bottom.getWidget().setSize( "100%", "100%" );
+		//bottom.getWidget().setSize( "100%", "100%" );
 		parentName.addItem("[top]");
 		
 		mainView.setStyleName("mainViewLayer");
 		mainView.setWidth("100%");
 		leftPanel.setStyleName("leftPanelLayer");
-		leftPanel.setWidth("500px");
-		leftPanel.setHeight("100%");
+		leftPanel.setWidth("400px");
+		//leftPanel.setHeight("100%");
 		rightPanel.setStyleName("rightPanelLayer");
 		//rightPanel.setWidth("60%");
-		rightPanel.setHeight("100%");
+		//rightPanel.setHeight("100%");
 		
 		RiscossJsonClient.listLayers( new JsonCallback() {
 			
@@ -296,7 +305,7 @@ public class LayersModule implements EntryPoint {
 		
 		//RootPanel.get().add(dock);
 		RootPanel.get().add( page );
-		RootPanel.get().setHeight( "100%" );
+		//RootPanel.get().setHeight( "100%" );
 			
 	}
 	
@@ -305,7 +314,8 @@ public class LayersModule implements EntryPoint {
 		rightPanel = new VerticalPanel();
 		rightPanel.setStyleName("rightPanelLayer");
 		rightPanel.setWidth("90%");
-		rightPanel.setHeight("100%");
+		rightPanel.setHeight("auto");
+		//rightPanel.setHeight("100%");
 		
 		Label l = new Label(selectedLayer);
 		l.setStyleName("subtitle");
@@ -345,10 +355,11 @@ public class LayersModule implements EntryPoint {
 		});
 		rightPanel.add(ppg);
 		SimplePanel sp = new SimplePanel();
-		sp.setHeight("400px");
+		sp.setHeight("350px");
 		sp.setWidget(bottom.getWidget());
 		sp.setStyleName("entityProperties");
 		rightPanel.add(sp);
+		
 		mainView.add(rightPanel);
 	}
 	

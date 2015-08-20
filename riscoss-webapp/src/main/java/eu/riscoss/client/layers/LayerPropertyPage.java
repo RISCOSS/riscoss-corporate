@@ -147,10 +147,18 @@ public class LayerPropertyPage implements IsWidget {
 		
 		Grid grid = new Grid(2,2);
 		
-		grid.setText(0,0,"Name:");
-		grid.setText(0,1,layer);
-		grid.setText(1,0,"Parent:");
-		grid.setText(1,1,parent);
+		Label nameL = new Label("Name:");
+		nameL.setStyleName("tag");
+		grid.setWidget(0,0,nameL);
+		Label nameLv = new Label(layer);
+		nameLv.setStyleName("greentag");
+		grid.setWidget(0,1,nameLv);
+		Label parentN = new Label("Parent:");
+		parentN.setStyleName("tag");
+		grid.setWidget(1,0,parentN);
+		Label parentNv = new Label(parent);
+		parentNv.setStyleName("greentag");
+		grid.setWidget(1,1,parentNv);
 		
 		panel.add(grid);
 		
@@ -302,6 +310,7 @@ public class LayerPropertyPage implements IsWidget {
 			}
 			
 		});
+		//this.add.setStyleName("button");
 		
 		newElement = new Grid(3,1);
 		
@@ -448,6 +457,7 @@ public class LayerPropertyPage implements IsWidget {
 			}
 			
 		});
+		//cancel.setStyleName("button");
 		hPanel3.add(cancel);
 		newElement.setWidget(2, 0, hPanel3);
 		
@@ -466,6 +476,7 @@ public class LayerPropertyPage implements IsWidget {
 			}
 			
 		});
+		//newElemButton.setStyleName("button");
 		ciList.setWidget(0, 0, newElemButton);
 		
 		ciList.setWidget(1, 0, null);
@@ -514,6 +525,7 @@ public class LayerPropertyPage implements IsWidget {
 			list.setWidget(count, 3, new Label(jElement.getDescription()));
 			list.insertCell(count, 4);
 			Button delete = new Button("X");
+			//delete.setStyleName("button");
 			delete.addClickHandler(new ClickHandler() {
 				
 				int i = count;

@@ -36,16 +36,20 @@ import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.CellTable.Resources;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.EntityInfo;
 import eu.riscoss.client.ModelInfo;
+import eu.riscoss.client.entities.TableResources;
 import eu.riscoss.client.ui.LinkHtml;
 
 public class RiskAnalysisModule implements EntryPoint {
@@ -57,6 +61,11 @@ public class RiskAnalysisModule implements EntryPoint {
 
 	ListDataProvider<EntityInfo> entityDataProvider;
 	ListDataProvider<ModelInfo> modelDataProvider;
+	
+	VerticalPanel		page = new VerticalPanel();
+	HorizontalPanel		mainView = new HorizontalPanel();
+	VerticalPanel		leftPanel = new VerticalPanel();
+	VerticalPanel		rightPanel = new VerticalPanel();
 
 	Label entityLabel = new Label("-");
 	Label rcLabel = new Label("-");
@@ -67,8 +76,10 @@ public class RiskAnalysisModule implements EntryPoint {
 
 		exportJS();
 
-		entityTable = new CellTable<EntityInfo>();
-		modelTable = new CellTable<ModelInfo>();
+		entityTable = new CellTable<EntityInfo>(15, (Resources) GWT.create(TableResources.class));
+		entityTable.setStyleName("leftPanel");
+		modelTable = new CellTable<ModelInfo>(15, (Resources) GWT.create(TableResources.class));
+		modelTable.setStyleName("rightPanel");
 		
 		entityTable.addColumn( new Column<EntityInfo,SafeHtml>(new SafeHtmlCell() ) {
 			@Override
@@ -90,16 +101,24 @@ public class RiskAnalysisModule implements EntryPoint {
 		modelDataProvider.addDataDisplay(modelTable);
 		
 		Grid grid = new Grid( 3, 2 );
-		Button btn = new Button( "Run Analysis", new ClickHandler() {
+		Button btn = new Button( "RUN ANALYSIS", new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				runAnalysis();
 			}
 		});
-		grid.setWidget( 0, 0, new Label( "Selected entity:" ) );
-		grid.setWidget( 1, 0, new Label( "Selected risk configuration:" ) );
+		btn.setStyleName("button");
+		Label selEnt = new Label("Selected entity:");
+		selEnt.setStyleName("tag");
+		grid.setWidget( 0, 0, selEnt );
+		Label selRc = new Label("Selected risk configuration:");
+		selRc.setStyleName("tag");
+		grid.setWidget( 1, 0, selRc );
+		entityLabel.setStyleName("tagSelected");
 		grid.setWidget( 0, 1, entityLabel );
+		rcLabel.setStyleName("tagSelected");
 		grid.setWidget( 1, 1, rcLabel );
 		grid.setWidget( 2, 1, btn );
+		grid.setStyleName("gridRisk");
 		
 		dock = new DockPanel();
 
@@ -108,9 +127,24 @@ public class RiskAnalysisModule implements EntryPoint {
 		dock.add( grid, DockPanel.SOUTH );
 		dock.add( entityTable, DockPanel.WEST );
 		dock.add( modelTable, DockPanel.EAST );
-
-		RootPanel.get().add( dock );
-
+		
+		mainView.setStyleName("mainViewLayer");
+		mainView.setWidth("100%");
+		page.setWidth("100%");
+		
+		Label title = new Label("One-layer Analysis");
+		title.setStyleName("title");
+		page.add(title);
+		
+		mainView.add(entityTable);
+		mainView.add(modelTable);
+		page.add(mainView);
+		
+		page.add(grid);
+		
+		//RootPanel.get().add( dock );
+		RootPanel.get().add(page);
+		
 		loadEntities();
 	}
 

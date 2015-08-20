@@ -190,7 +190,9 @@ public class RiscossWebApp implements EntryPoint {
 		
 		
 		VerticalPanel north = new VerticalPanel();
-		north.add( new Image( "logo3.png" ) );
+		Image logo = new Image( "logo3.png" );
+		logo.setStyleName("logo");
+		north.add( logo );
 		north.setHeight("5%"); // any value here seems to resolve the firefox problem of showing only a small frame on the right side
 		Label version = new Label("v1.5.0");
 		version.setStyleName("version");
@@ -198,7 +200,7 @@ public class RiscossWebApp implements EntryPoint {
 		north.add( menu );
 		north.setWidth("100%");
 		
-		background = new SimplePanel();
+		/*background = new SimplePanel();
 		background.setWidth("95%");
 		background.setHeight("95%");
 		background.setStyleName("background");
@@ -207,10 +209,10 @@ public class RiscossWebApp implements EntryPoint {
 		margin.setWidth("100%");
 		margin.setHeight("100%");
 		margin.setStyleName("margin");
-		margin.setWidget(background);
+		margin.setWidget(background);*/
 		
 		RootPanel.get().add( north );
-		RootPanel.get().add( margin );
+		//RootPanel.get().add( margin );
 		RootPanel.get().setStyleName("root");
 
 	}
@@ -321,15 +323,16 @@ public class RiscossWebApp implements EntryPoint {
 	protected void loadPanel( String url ) {
 		
 		if( currentPanel != null ) {
-			background.remove( currentPanel.getWidget() );
+			RootPanel.get().remove( currentPanel.getWidget() );
 			currentPanel = null;
 		}
 		
 		currentPanel = new FramePanel( url );
-		currentPanel.getWidget().setHeight("100%");
+		//currentPanel.getWidget().setHeight("100%");
+		currentPanel.getWidget().setStyleName("main");
 		
 		if( currentPanel != null ) {
-			background.setWidget( currentPanel.getWidget());
+			RootPanel.get().add( currentPanel.getWidget());
 //			currentPanel.getWidget().getParent().setHeight( "100%" );
 			currentPanel.activate();
 		}

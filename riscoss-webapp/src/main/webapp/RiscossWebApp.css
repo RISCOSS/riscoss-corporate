@@ -82,6 +82,10 @@ body {
     bottom: 0px;
 }
 
+.logo {
+	margin-left:14px !important;
+}
+
 .mainMenu {
 	background-color: #7EAC30 !important;
 	width: 100% !important;
@@ -122,6 +126,10 @@ body {
 	padding: 20px !important;
 }
 
+.main {
+	background-color: #E6E6E6 !important;
+}
+
 .background {
 	margin: 0px 20px 20px 20px !important;
 }
@@ -132,6 +140,18 @@ body {
 	font-weight: bold !important;
 	margin-bottom: 8px !important;
 	margin-left: 8px !important;
+}
+
+.greentag {
+	font-size: 16px !important;
+	font-weight: bold !important;
+	margin-left: 8px !important;
+	color: #4D9244 !important;
+}
+
+.tab {
+    background-color: #CEF6CE !important;
+    font-size: 16px !important;
 }
 
 .mainViewLayer {
@@ -203,6 +223,35 @@ body {
 		border-bottom: 1px solid #E6E6E6 !important;
 	}
 	
+	.leftPanel {
+		margin: 20px !important;
+		margin-left: 30px !important;
+	}
+	
+	.rightPanel {
+		margin: 20px !important;
+		margin-left: 50px! important;
+	}
+	
+	.gridRisk {
+		margin: 16px !important;
+		margin-left: 26px !important;
+		font-size: 16px !important;
+	}
+	
+	.tag {
+		font-size: 16px !important;
+		margin: 8px !important;
+	}
+	
+	.tagSelected {
+		font-size: 16px !important;
+		margin: 8px !important;
+		margin-left: 14px !important;
+		font-weight: bold !important;
+		color: #4D9244 !important;
+	}
+	
 	.mainViewLayer .leftPanelLayer {
 		padding: 20px !important;
 		padding-left: 30px !important;
@@ -212,6 +261,7 @@ body {
 		margin-left: 50px !important;
 		border-left: 1px solid #E6E6E6 !important;
 		padding-left: 20px !important;
+		padding-bottom: 20px !important;
 		float: left;
 	}
 	
