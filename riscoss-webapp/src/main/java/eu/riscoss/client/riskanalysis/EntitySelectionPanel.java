@@ -35,14 +35,18 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.SimplePager;
+import com.google.gwt.user.cellview.client.CellTable.Resources;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.EntityInfo;
 import eu.riscoss.client.JsonUtil;
+import eu.riscoss.client.entities.TableResources;
 import eu.riscoss.client.ui.HtmlString;
 import eu.riscoss.client.ui.LinkHtml;
 
@@ -59,6 +63,7 @@ class EntitySelectionPanel implements IsWidget {
 	ArrayList<Listener>				listeners = new ArrayList<Listener>();
 	
 	String							selectedEntity = "";
+	Label 							entityLabel = new Label("-");
 	
 	VerticalPanel					tablePanel = new VerticalPanel();
 	
@@ -66,7 +71,7 @@ class EntitySelectionPanel implements IsWidget {
 		
 		exportJS();
 		
-		table = new CellTable<EntityInfo>();
+		table = new CellTable<EntityInfo>(15, (Resources) GWT.create(TableResources.class));
 		
 		table.addColumn( new Column<EntityInfo,SafeHtml>(new SafeHtmlCell() ) {
 			@Override
@@ -92,6 +97,7 @@ class EntitySelectionPanel implements IsWidget {
 	
 	public void setSelectedEntity( String entity ) {
 		this.selectedEntity = entity;
+		entityLabel.setText(entity);
 		for( Listener l : listeners ) {
 			l.onEntitySelected( entity );
 		}

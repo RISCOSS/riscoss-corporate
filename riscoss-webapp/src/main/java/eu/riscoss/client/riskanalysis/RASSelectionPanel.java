@@ -36,6 +36,7 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.SimplePager;
+import com.google.gwt.user.cellview.client.CellTable.Resources;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
@@ -46,6 +47,7 @@ import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.JsonCallbackWrapper;
 import eu.riscoss.client.codec.CodecRASInfo;
+import eu.riscoss.client.entities.TableResources;
 import eu.riscoss.client.ui.LinkHtml;
 import eu.riscoss.shared.JRASInfo;
 
@@ -69,7 +71,7 @@ public class RASSelectionPanel implements IsWidget {
 		
 		exportJS();
 		
-		table = new CellTable<JRASInfo>();
+		table = new CellTable<JRASInfo>(15, (Resources) GWT.create(TableResources.class));
 		
 		table.addColumn( new Column<JRASInfo,SafeHtml>(new SafeHtmlCell() ) {
 			@Override

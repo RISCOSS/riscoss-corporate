@@ -16,6 +16,8 @@ import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.ListDataProvider;
@@ -31,6 +33,11 @@ public class RASModule implements EntryPoint {
 	
 	CellTable<JRASInfo>			table;
 	ListDataProvider<JRASInfo>	dataProvider;
+	
+	VerticalPanel		page = new VerticalPanel();
+	HorizontalPanel		mainView = new HorizontalPanel();
+	VerticalPanel		leftPanel = new VerticalPanel();
+	VerticalPanel		rightPanel = new VerticalPanel();
 	
 	public native void exportJS() /*-{
 	var that = this;
@@ -49,7 +56,7 @@ public class RASModule implements EntryPoint {
 			@Override
 			public SafeHtml getValue(JRASInfo object) {
 				return new LinkHtml( object.getName(), "javascript:setSelectedRAS(\"" + object.getId() + "\")" ); };
-		}, "Available Risk Analysis Sessions");
+		}, "");
 		Column<JRASInfo,String> c = new Column<JRASInfo,String>(new ButtonCell() ) {
 			@Override
 			public String getValue(JRASInfo object) {
@@ -73,9 +80,24 @@ public class RASModule implements EntryPoint {
 		tablePanel.add( table );
 		tablePanel.add( pager );
 		
-		panel.add( tablePanel, DockPanel.CENTER );
+		mainView.setStyleName("mainViewLayer");
+		//mainView.setWidth("100%");
+		leftPanel.setStyleName("leftPanelLayer");
+		leftPanel.setWidth("400px");
+		//leftPanel.setHeight("100%");
+		rightPanel.setStyleName("rightPanelLayer");
+		page.setWidth("100%");
 		
-		RootPanel.get().add( panel );
+		Label title = new Label("Risk Analysis Sessions");
+		title.setStyleName("title");
+		
+		panel.add( tablePanel, DockPanel.CENTER );
+		panel.setStyleName("margin-left");
+		page.add(title);
+		page.add(panel);
+		
+		//RootPanel.get().add( panel );
+		RootPanel.get().add( page );
 		
 		loadRASList();
 	}

@@ -37,7 +37,10 @@ import com.google.gwt.user.cellview.client.HasKeyboardPagingPolicy.KeyboardPagin
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
@@ -71,6 +74,11 @@ public class RDRModule implements EntryPoint {
 	ListDataProvider<EntityInfo>	dataProvider;
 
 	CellList<EntityInfo>			cellList;
+	
+	VerticalPanel		page = new VerticalPanel();
+	HorizontalPanel		mainView = new HorizontalPanel();
+	VerticalPanel		leftPanel = new VerticalPanel();
+	VerticalPanel		rightPanel = new VerticalPanel();
 
 	EntityDataBox					ppg = null;
 
@@ -83,6 +91,7 @@ public class RDRModule implements EntryPoint {
 
 		ContactCell contactCell = new ContactCell(null); //images.contact());
 		cellList = new CellList<EntityInfo>(contactCell);
+		cellList.setStyleName("list");
 		cellList.setPageSize(30);
 		cellList.setKeyboardPagingPolicy(KeyboardPagingPolicy.INCREASE_RANGE);
 		cellList.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.BOUND_TO_SELECTION);
@@ -104,8 +113,29 @@ public class RDRModule implements EntryPoint {
 		dock.add(cellList,DockPanel.CENTER);
 		dock.add( ppg.asWidget(), DockPanel.EAST );
 		dock.setCellWidth( ppg.asWidget(), "60%" );
+		
+		mainView.setStyleName("mainViewLayer");
+		//mainView.setWidth("100%");
+		leftPanel.setStyleName("leftPanelLayer");
+		leftPanel.setWidth("400px");
+		//leftPanel.setHeight("100%");
+		rightPanel.setStyleName("rightPanelLayer");
+		page.setWidth("100%");
+		
+		Label title = new Label("Risk Data Repository");
+		title.setStyleName("title");
+		page.add(title);
+		
+		leftPanel.add(cellList);
+		rightPanel.add(ppg);
+		rightPanel.setWidth("90%");
+		mainView.add(leftPanel);
+		mainView.add(rightPanel);
+		
+		page.add(mainView);
 
-		RootPanel.get().add( dock );
+		RootPanel.get().add( page );
+		//RootPanel.get().add( dock );
 
 
 		String url = ( layer != null ?

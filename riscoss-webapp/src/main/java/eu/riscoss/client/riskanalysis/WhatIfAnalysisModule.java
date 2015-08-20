@@ -36,8 +36,10 @@ import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -55,6 +57,9 @@ public class WhatIfAnalysisModule implements EntryPoint {
 	ListBox		combo = new ListBox();
 //	ListBox		rcCombo = new ListBox();
 	SimplePanel	contentPanel = new SimplePanel();
+	
+	VerticalPanel		page = new VerticalPanel();
+	VerticalPanel		mainView = new VerticalPanel();
 	
 	boolean ready = false;
 	
@@ -103,7 +108,53 @@ public class WhatIfAnalysisModule implements EntryPoint {
 		dock.add( h, DockPanel.NORTH );
 		dock.add( contentPanel,DockPanel.CENTER );
 		dock.setSize( "100%", "100%" );
-		RootPanel.get().add( dock );
+		//RootPanel.get().add( dock );
+		
+		page.setWidth("100%");
+		
+		Label title = new Label("What-If Analysis");
+		title.setStyleName("title");
+		page.add(title);
+		mainView.setStyleName("mainViewPage");
+		
+		Button selectModels = new Button("SELECT MODELS...");
+		selectModels.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent arg0) {
+				ModelSelectionDialog dialog = new ModelSelectionDialog();
+				dialog.show( new Callback<List<String>>() {
+					@Override
+					public void onError( Throwable t ) {
+						// Do nothing
+					}
+					@Override
+					public void onDone( List<String> list ) {
+						models = list;
+						RiscossJsonClient.listChunks( list, new JsonCallback() {
+							@Override
+							public void onFailure( Method method, Throwable exception ) {
+								Window.alert( exception.getMessage() );
+							}
+
+							@Override
+							public void onSuccess( Method method, JSONValue response ) {
+//								try {
+									loadModel( response );
+//								} catch( Exception ex ) {
+//									Window.alert( ex.getMessage() );
+//								}
+							}} );
+					}
+				});
+			}
+		});
+		selectModels.setStyleName("button");
+		mainView.add(selectModels);
+		mainView.add(contentPanel);
+		
+		page.add(mainView);
+		
+		RootPanel.get().add(page);
 		
 		RiscossJsonClient.listModels( new JsonCallback() {
 			
@@ -146,7 +197,9 @@ public class WhatIfAnalysisModule implements EntryPoint {
 		
 		HorizontalPanel h = new HorizontalPanel();
 		h.setSize( "100%", "100%" );
-		VerticalPanel left = new VerticalPanel();
+		VerticalPanel left1 = new VerticalPanel();
+		VerticalPanel left2 = new VerticalPanel();
+		VerticalPanel left3 = new VerticalPanel();
 		VerticalPanel right = new VerticalPanel();
 		
 		JSONObject jo = response.isObject();
@@ -158,7 +211,9 @@ public class WhatIfAnalysisModule implements EntryPoint {
 			for( int i = 0; i < inputs.size(); i++ ) {
 				JSONObject jinput = inputs.get( i ).isObject();
 				IndicatorWidget iw = new IndicatorWidget( jinput );
-				left.add( iw );
+				if (i < inputs.size()/3) left1.add( iw );
+				else if (i >= inputs.size()/3 && i < 2*inputs.size()/3) left2.add( iw );
+				else left3.add( iw );
 				iw.addListener( new IndicatorWidget.Listener() {
 					@Override
 					public void IndicatorValueChanged() {
@@ -180,9 +235,15 @@ public class WhatIfAnalysisModule implements EntryPoint {
 				riskWidgets.put( jinput.get( "id" ).isString().stringValue(), rw );
 			}
 		}
-		
-		h.add( left );
+		left1.setSpacing(10);
+		left2.setSpacing(10);
+		left3.setSpacing(10);
+		h.add( left1 );
+		h.add( left2 );
+		h.add( left3 );
 		h.add( right );
+		right.setSpacing(20);
+		right.setStyleName("rightPanelLayer");
 		
 		contentPanel.setWidget( h );
 		

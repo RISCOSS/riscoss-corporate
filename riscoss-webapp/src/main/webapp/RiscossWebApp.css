@@ -13,7 +13,7 @@ h1 {
 A:link
 {
 	text-decoration: none;
-	color: rgb(64,64,64);
+	color: #FF8000 !important;
 	outline:0;
 }
 A:visited
@@ -134,12 +134,28 @@ body {
 	margin: 0px 20px 20px 20px !important;
 }
 
+.gwt-TabPanelBottom {
+	border: 0px solid #ffffff !important;
+	border-top: 3px solid #4D9244 !important;
+	border-bottom: 3px solid #4D9244 !important;
+}
+
+.gwt-TabBarItem {
+	padding: 8px !important;
+	background-color: #D8F6CE !important;
+	font-size: 14px !important;
+}
+
+.gwt-TabBarItem-selected {
+	background-color: #4D9244 !important;
+}
+
 .version {
 	font-size:12px !important;
 	color: #4D9244 !important;
 	font-weight: bold !important;
 	margin-bottom: 8px !important;
-	margin-left: 8px !important;
+	margin-left: 16px !important;
 }
 
 .greentag {
@@ -149,129 +165,165 @@ body {
 	color: #4D9244 !important;
 }
 
-.tab {
-    background-color: #CEF6CE !important;
-    font-size: 16px !important;
+.mainViewPage {
+	margin-top: 26px !important;
+	margin-left: 30px !important;
 }
 
 .mainViewLayer {
 	
 }
 
-	.layerData{
-		padding-bottom: 20px !important;
-		padding-top: 18px !important;
-	}
-	
-	.title {
-		font-size: 32px !important;
-		margin: 20px 20px 8px 20px !important;
-		border-bottom: 1px solid #E6E6E6 !important;
-	}
-	
-	.subtitle {
-		font-size: 26px !important;
-		margin-top: 28px !important;
-		padding-bottom: 20px !important;
-	}
-	
-	.text {
-		font-size: 16px !important;
-		padding-right: 15px !important;
-	}
 
-	.button {
-		background-color:  #4D9244 !important;
-		color: #F3F3F3 !important;
-		font-weight: bold !important;
-		text-align: center !important;
-		margin-right: 20px !important;
-		padding: 5px !important;
-		margin-bottom: 24px !important;
-	}
+
+.layerData{
+	padding-bottom: 20px !important;
+	padding-top: 18px !important;
+}
+
+.title {
+	font-size: 32px !important;
+	margin: 20px 20px 8px 20px !important;
+	border-bottom: 1px solid #E6E6E6 !important;
+}
+
+.subtitle {
+	font-size: 26px !important;
+	margin-top: 28px !important;
+	padding-bottom: 20px !important;
+}
+
+.text {
+	font-size: 16px !important;
+	padding-right: 15px !important;
+}
+
+.button {
+	background-color:  #4D9244 !important;
+	color: #F3F3F3 !important;
+	font-weight: bold !important;
+	text-align: center !important;
+	margin-right: 20px !important;
+	padding: 5px !important;
+	margin-bottom: 24px !important;
+}
+
+.deleteButton {
+	background-color:  #4D9244 !important;
+	color: #F3F3F3 !important;
+	font-weight: bold !important;
+}
+
+.cellbutton.gwt-Button {
+	background-color:  #4D9244 !important;
+	color: #F3F3F3 !important;
+	font-weight: bold !important;
+	text-align: center !important;
+	padding: 5px !important;
+}
+
+.button2 {
+	background-color:  #4D9244 !important;
+	color: #F3F3F3 !important;
+	font-weight: bold !important;
+	text-align: center !important;
+	margin-right: 20px !important;
+	padding: 5px !important;
+	margin-top: 18px !important;
+}
+
+.layerNameField {
+	margin-right: 20px !important;
+}
+
+.layerList {
 	
-	.cellbutton.gwt-Button {
-		background-color:  #4D9244 !important;
-		color: #F3F3F3 !important;
-		font-weight: bold !important;
-		text-align: center !important;
-		padding: 5px !important;
-	}
-	
-	.button2 {
-		background-color:  #4D9244 !important;
-		color: #F3F3F3 !important;
-		font-weight: bold !important;
-		text-align: center !important;
-		margin-right: 20px !important;
-		padding: 5px !important;
-		margin-top: 18px !important;
-	}
-	
-	.layerNameField {
-		margin-right: 20px !important;
-	}
-	
-	.layerList {
-		
-	}
-	
-	.layerListElement {
-		color: #FF8000 !important;
-		font-size: 16px !important;
-		margin-top: 6px !important;
-		border-bottom: 1px solid #E6E6E6 !important;
-	}
-	
-	.leftPanel {
-		margin: 20px !important;
-		margin-left: 30px !important;
-	}
-	
-	.rightPanel {
-		margin: 20px !important;
-		margin-left: 50px! important;
-	}
-	
-	.gridRisk {
-		margin: 16px !important;
-		margin-left: 26px !important;
-		font-size: 16px !important;
-	}
-	
-	.tag {
-		font-size: 16px !important;
-		margin: 8px !important;
-	}
-	
-	.tagSelected {
-		font-size: 16px !important;
-		margin: 8px !important;
-		margin-left: 14px !important;
-		font-weight: bold !important;
-		color: #4D9244 !important;
-	}
-	
-	.mainViewLayer .leftPanelLayer {
-		padding: 20px !important;
-		padding-left: 30px !important;
-	}
-	
-	.mainViewLayer .rightPanelLayer {
-		margin-left: 50px !important;
-		border-left: 1px solid #E6E6E6 !important;
-		padding-left: 20px !important;
-		padding-bottom: 20px !important;
-		float: left;
-	}
-	
-	.propertyTab {
-		margin-top: 20px !important;
-	}
-	
-	.entityProperties {
-		margin-top: 20px !important;
-	}
+}
+
+.layerListElement {
+	color: #FF8000 !important;
+	font-size: 16px !important;
+	margin-top: 6px !important;
+	border-bottom: 1px solid #E6E6E6 !important;
+}
+
+.leftPanel {
+	margin: 20px !important;
+	margin-left: 30px !important;
+}
+
+.margin-left {
+	margin-left: 30px !important;
+}
+
+.rightPanel {
+	margin: 20px !important;
+	margin-left: 50px! important;
+}
+
+.contextTableInfo {
+	vertical-align: middle !important;
+	text-align: center !important;
+	font-size: 10px !important;
+	border: 0px solid #ffffff !important;
+}
+
+.wizard {
+	margin-left: 30px !important;
+	margin-top: 20px !important;
+}
+
+.head {
+	font-size: 14px !important;
+	padding: 8px !important;
+	font-weight: bold !important;
+	border: 0px solid #ffffff !important;
+	border-bottom: 2px solid #7EAC30 !important;
+}
+
+.gridRisk {
+	margin: 16px !important;
+	margin-left: 26px !important;
+	font-size: 16px !important;
+}
+
+.tag {
+	font-size: 16px !important;
+	margin: 8px !important;
+}
+
+.list {
+	font-size: 16px !important;
+}
+
+.tagSelected {
+	font-size: 16px !important;
+	margin: 8px !important;
+	margin-left: 14px !important;
+	font-weight: bold !important;
+	color: #4D9244 !important;
+}
+
+.leftPanelLayer {
+	padding: 20px !important;
+	padding-left: 30px !important;
+}
+
+.rightPanelLayer {
+	margin-left: 50px !important;
+	border-left: 1px solid #E6E6E6 !important;
+	padding-left: 20px !important;
+	padding-bottom: 20px !important;
+	float: left;
+}
+
+.propertyTab {
+	margin-top: 20px !important;
+}
+
+.entityProperties {
+	margin-top: 20px !important;
+}
 
 .cellTableEvenRow {
   background-color: #F2F2F2 !important;

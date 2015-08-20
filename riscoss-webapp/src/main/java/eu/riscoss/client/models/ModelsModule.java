@@ -42,6 +42,7 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.SimplePager;
+import com.google.gwt.user.cellview.client.CellTable.Resources;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
@@ -62,8 +63,10 @@ import com.google.gwt.view.client.ListDataProvider;
 import eu.riscoss.client.JsonCallbackWrapper;
 import eu.riscoss.client.ModelInfo;
 import eu.riscoss.client.RiscossJsonClient;
+import eu.riscoss.client.entities.TableResources;
 import eu.riscoss.client.riskanalysis.KeyValueGrid;
 import eu.riscoss.client.ui.LinkHtml;
+import eu.riscoss.shared.RiscossUtil;
 import gwtupload.client.IFileInput.FileInputType;
 import gwtupload.client.IUploader;
 import gwtupload.client.IUploader.OnFinishUploaderHandler;
@@ -83,6 +86,7 @@ public class ModelsModule implements EntryPoint {
 	VerticalPanel		leftPanel = new VerticalPanel();
 	VerticalPanel		rightPanel = new VerticalPanel();
 	
+	JSONValue			modelsList;
 
 	CellTable<ModelInfo> table;
 	ListDataProvider<ModelInfo> dataProvider;
@@ -104,8 +108,19 @@ public class ModelsModule implements EntryPoint {
 	public void onModuleLoad() {
 
 		exportJS();
+		
+		RiscossJsonClient.listModels(new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				// TODO Auto-generated method stub	
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				modelsList = response;
+			}
+		});
 
-		table = new CellTable<ModelInfo>();
+		table = new CellTable<ModelInfo>(15, (Resources) GWT.create(TableResources.class));
 
 		table.addColumn(new Column<ModelInfo, SafeHtml>(new SafeHtmlCell()) {
 			@Override
@@ -164,6 +179,24 @@ public class ModelsModule implements EntryPoint {
 			public void onFinish(IUploader uploader) {
 				UploadedInfo info = uploader.getServerInfo();
 				String name = info.name;
+				if (name == null || name.equals("") ) 
+					return;
+				
+				//String s = RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
+				if (!RiscossUtil.sanitize(name).equals(name)){
+					//info: firefox has some problem with this window, and fires assertion errors in dev mode
+					Window.alert("Name contains prohibited characters (##,@,\") \nPlease rename file");
+					return;
+				}
+				
+				for(int i=0; i< modelsList.isArray().size(); i++){
+					JSONObject o = (JSONObject)modelsList.isArray().get(i);
+					if (name.equals(o.get( "name" ).isString().stringValue())){
+						//info: firefox has some problem with this window, and fires assertion errors in dev mode
+						Window.alert("Model name already in use.\nPlease rename file.");
+						return;
+					}
+				}
 				//Log.println("SERVERMESS2 " + uploader.getServerMessage().getMessage());
 				
 				String response = uploader.getServerMessage().getMessage();

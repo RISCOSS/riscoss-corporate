@@ -136,7 +136,9 @@ public class RiskAnalysisModule implements EntryPoint {
 		title.setStyleName("title");
 		page.add(title);
 		
+		entityTable.setWidth("100%");
 		mainView.add(entityTable);
+		modelTable.setWidth("50%");
 		mainView.add(modelTable);
 		page.add(mainView);
 		

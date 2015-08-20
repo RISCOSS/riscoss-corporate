@@ -25,7 +25,9 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class RiskAnalysisWizard implements EntryPoint {
 	
@@ -39,12 +41,28 @@ public class RiskAnalysisWizard implements EntryPoint {
 	HorizontalPanel			topPanel = new HorizontalPanel();
 //	HorizontalPanel			bottomPanel = new HorizontalPanel();
 	
+	VerticalPanel					page = new VerticalPanel();
+	HorizontalPanel					mainView = new HorizontalPanel();
+	VerticalPanel					leftPanel = new VerticalPanel();
+	VerticalPanel					rightPanel = new VerticalPanel();
+	
 	Wizard					wizard = new Wizard();
 	
 	
 	public void onModuleLoad() {
 		
 		try {
+			
+			mainView.setStyleName("mainViewLayer");
+			mainView.setWidth("100%");
+			page.setWidth("100%");
+			//leftPanel.setWidth("400px");
+			//leftPanel.setHeight("100%");
+			
+			Label title = new Label("Multi-layer Analysis");
+			title.setStyleName("title");
+			page.add(title);
+			
 			
 			wizard.addPanel( "Select Entity", entitySelectionPanel );
 			wizard.addPanel( "Select Risk Configuration", rcSelectionPanel );
@@ -69,6 +87,14 @@ public class RiskAnalysisWizard implements EntryPoint {
 					rasPanel.loadRAS( rasSelectionPanel.getSelectedRAS() );
 				}
 			} );
+			wizard.asWidget().setStyleName("wizard");
+			wizard.asWidget().setWidth("100%");
+			leftPanel.add(wizard);
+			leftPanel.setWidth("100%");
+			mainView.add(leftPanel);
+			
+			page.add(mainView);
+			RootPanel.get().add(page);
 			
 		}
 		catch( Exception ex ) {

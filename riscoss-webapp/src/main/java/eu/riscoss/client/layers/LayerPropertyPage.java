@@ -84,6 +84,7 @@ public class LayerPropertyPage implements IsWidget {
 	JLayerContextualInfo	info;
 	
 	public LayerPropertyPage() {
+		
 		tab.add( panel , "Properties");
 		tab.add( ciPanel , "Contextual Information");
 		tab.selectTab(0);
@@ -150,9 +151,10 @@ public class LayerPropertyPage implements IsWidget {
 		Label nameL = new Label("Name:");
 		nameL.setStyleName("tag");
 		grid.setWidget(0,0,nameL);
-		Label nameLv = new Label(layer);
-		nameLv.setStyleName("greentag");
-		grid.setWidget(0,1,nameLv);
+		TextBox tb = new TextBox();
+		tb.setText(layer);
+		tb.setWidth("120px");
+		grid.setWidget(0,1,tb);
 		Label parentN = new Label("Parent:");
 		parentN.setStyleName("tag");
 		grid.setWidget(1,0,parentN);
@@ -440,9 +442,9 @@ public class LayerPropertyPage implements IsWidget {
 		newElement.setWidget(1, 0, hPanel2);
 		
 		HorizontalPanel hPanel3 = new HorizontalPanel();
-		TextBox tb = new TextBox();
-		tb.setWidth("40px");
-		defvalue.setWidget(tb);
+		TextBox tb2 = new TextBox();
+		tb2.setWidth("40px");
+		defvalue.setWidget(tb2);
 		hPanel3.add(new Label("Default value"));
 		hPanel3.add(defvalue);
 		ciItemPanel.setWidget(integerItem);
@@ -467,7 +469,8 @@ public class LayerPropertyPage implements IsWidget {
 		
 		//ciList.setWidget(0, 0, newElement);
 		
-		newElemButton = new Button("Add new element...");
+		newElemButton = new Button("ADD NEW ELEMENT...");
+		newElemButton.setStyleName("button");
 		newElemButton.addClickHandler(new ClickHandler() {
 
 			@Override
@@ -490,12 +493,33 @@ public class LayerPropertyPage implements IsWidget {
 	public void reloadData() {
 		
 		FlexTable list = new FlexTable();
+		list.setStyleName("contextInfoTable");
+		list.insertRow(0);
+		list.insertCell(0, 0);
+		list.insertCell(0, 1);
+		list.insertCell(0, 2);
+		list.insertCell(0, 3);
+		
+		Label id = new Label("ID");
+		Label name = new Label("Name");
+		Label type = new Label("Type");
+		Label description = new Label("Description");
+		id.setStyleName("head");
+		name.setStyleName("head");
+		type.setStyleName("head");
+		description.setStyleName("head");
+		
+		list.setWidget(0, 0, id);
+		list.setWidget(0, 1, name);
+		list.setWidget(0, 2, type);
+		list.setWidget(0, 3, description);
+		
 		for (count = 0; count < info.getSize(); ++count) {
-			list.insertRow(count);
-			list.insertCell(count, 0);
-			list.insertCell(count, 1);
-			list.insertCell(count, 2);
-			list.insertCell(count, 3);
+			list.insertRow(count+1);
+			list.insertCell(count+1, 0);
+			list.insertCell(count+1, 1);
+			list.insertCell(count+1, 2);
+			list.insertCell(count+1, 3);
 			JLayerContextualInfoElement jElement = info.getContextualInfoElement(count);
 			
 			
@@ -519,13 +543,13 @@ public class LayerPropertyPage implements IsWidget {
 			}
 			
 			else hp.add(new Label(n));*/
-			list.setWidget(count, 0, new Label(jElement.getId()));
-			list.setWidget(count, 1, new Label(jElement.getName()));
-			list.setWidget(count, 2, new Label(jElement.getType()));
-			list.setWidget(count, 3, new Label(jElement.getDescription()));
-			list.insertCell(count, 4);
+			list.setWidget(count+1, 0, new Label(jElement.getId()));
+			list.setWidget(count+1, 1, new Label(jElement.getName()));
+			list.setWidget(count+1, 2, new Label(jElement.getType()));
+			list.setWidget(count+1, 3, new Label(jElement.getDescription()));
+			list.insertCell(count+1, 4);
 			Button delete = new Button("X");
-			//delete.setStyleName("button");
+			delete.setStyleName("deleteButton");
 			delete.addClickHandler(new ClickHandler() {
 				
 				int i = count;
@@ -594,7 +618,7 @@ public class LayerPropertyPage implements IsWidget {
 				}
 				
 			});
-			list.setWidget(count, 4, delete);
+			list.setWidget(count+1, 4, delete);
 		}
 		
 		ciList.setWidget(2, 0, list);

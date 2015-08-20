@@ -39,6 +39,7 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.SimplePager;
+import com.google.gwt.user.cellview.client.CellTable.Resources;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
@@ -56,6 +57,7 @@ import eu.riscoss.client.JsonCallbackWrapper;
 import eu.riscoss.client.JsonUtil;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.SimpleRiskCconf;
+import eu.riscoss.client.entities.TableResources;
 import eu.riscoss.client.ui.ClickWrapper;
 import eu.riscoss.client.ui.LinkHtml;
 import eu.riscoss.shared.RiscossUtil;
@@ -84,8 +86,9 @@ public class RiskConfsModule implements EntryPoint {
 	
 	RCPropertyPage 		ppg;
 	
-	JSONObject					currentRC = null;
-	String						selectedRC = null;
+	JSONValue			riskconfsList;
+	JSONObject			currentRC = null;
+	String				selectedRC = null;
 	
 	public RiskConfsModule() {
 	}
@@ -127,7 +130,7 @@ public class RiskConfsModule implements EntryPoint {
 		
 		exportJS();
 		
-		table = new CellTable<RCInfo>();
+		table = new CellTable<RCInfo>(15, (Resources) GWT.create(TableResources.class));
 		
 		table.addColumn( new Column<RCInfo,SafeHtml>(new SafeHtmlCell() ) {
 			@Override
@@ -152,6 +155,7 @@ public class RiskConfsModule implements EntryPoint {
 			RiscossJsonClient.listRCs( new JsonCallback() {
 				
 				public void onSuccess(Method method, JSONValue response) {
+					riskconfsList = response;
 					GWT.log( response.toString() );
 					if( response.isArray() != null ) {
 						for( int i = 0; i < response.isArray().size(); i++ ) {
@@ -218,6 +222,16 @@ public class RiskConfsModule implements EntryPoint {
 				@Override
 				public void onClick(ClickEvent arg0) {
 					String name = riskConfName.getText();
+					for(int i=0; i< riskconfsList.isArray().size(); i++){
+						JSONObject o = (JSONObject)riskconfsList.isArray().get(i);
+						if (name.equals(o.get( "name" ).isString().stringValue())){
+							//info: firefox has some problem with this window, and fires assertion errors in dev mode
+							Window.alert("Model name already in use.\nPlease rename file.");
+							return;
+						}
+					}
+					if( name == null || "".equals( name ) ) 
+						return;
 					while (!RiscossUtil.sanitize(name).equals(name)){
 						name = Window.prompt( "Name contains prohibited characters (##,@,\") \nRe-enter name:", "" );
 						if( name == null || "".equals( name ) ) 
@@ -234,6 +248,7 @@ public class RiskConfsModule implements EntryPoint {
 						public void onSuccess(Method method, JSONValue response) {
 							dataProvider.getList().add( new RCInfo( 
 									response.isObject().get( "name" ).isString().stringValue() ) );
+							Window.Location.reload();
 						}} );
 				}
 			});

@@ -126,7 +126,7 @@ public class EntitiesModule implements EntryPoint {
 		mainView.setStyleName("mainViewLayer");
 		mainView.setWidth("100%");
 		leftPanel.setStyleName("leftPanelLayer");
-		leftPanel.setWidth("400px");
+		leftPanel.setWidth("500px");
 		//leftPanel.setHeight("100%");
 		rightPanel.setStyleName("rightPanelLayer");
 		//rightPanel.setWidth("60%");
@@ -158,7 +158,32 @@ public class EntitiesModule implements EntryPoint {
 		newEntityButton.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent arg0) {
-				createEntity();
+				if (entityName.getText() == null || entityName.getText().equals("") ) 
+					return;
+				//String s = RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
+				if (!RiscossUtil.sanitize(entityName.getText()).equals(entityName.getText())){
+					//info: firefox has some problem with this window, and fires assertion errors in dev mode
+					Window.alert("Name contains prohibited characters (##,@,\") \nPlease re-enter name");
+					return;
+				}
+				RiscossJsonClient.listEntities(new JsonCallback() {
+					@Override
+					public void onFailure(Method method, Throwable exception) {
+						// TODO Auto-generated method stub
+					}
+					@Override
+					public void onSuccess(Method method, JSONValue response) {
+						for(int i=0; i<response.isArray().size(); i++){
+							JSONObject o = (JSONObject)response.isArray().get(i);
+							if (entityName.getText().equals(o.get( "name" ).isString().stringValue())){
+								//info: firefox has some problem with this window, and fires assertion errors in dev mode
+								Window.alert("Entity name already in use.\nPlease re-enter name.");
+								return;
+							}
+						}
+						createEntity();
+					}
+				});
 			}
 		});
 		buttons.add(newEntityButton);
@@ -421,6 +446,7 @@ public class EntitiesModule implements EntryPoint {
 	}
 	
 	protected void createEntity() {
+			
 			RiscossJsonClient.createEntity( entityName.getText(), layerName.getItemText(layerName.getSelectedIndex()),"", new JsonCallback() {
 				@Override
 				public void onFailure(Method method, Throwable exception) {
