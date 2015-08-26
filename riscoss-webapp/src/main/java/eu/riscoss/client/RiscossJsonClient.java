@@ -32,10 +32,12 @@ import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
+import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Window;
 
 import eu.riscoss.client.codec.CodecLayerContextualInfo;
 import eu.riscoss.client.ui.WaitWidget;
+import eu.riscoss.shared.CookieNames;
 import eu.riscoss.shared.EAnalysisOption;
 import eu.riscoss.shared.JLayerContextualInfo;
 
@@ -58,26 +60,31 @@ public class RiscossJsonClient {
 		}
 	}
 	
+	public static String getDomain() {
+		String domain = Cookies.getCookie( CookieNames.DOMAIN_KEY );
+		return domain;
+	}
+	
 	public static void listLayers( JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/layers/list").get().send( cb 	);
+		new Resource( GWT.getHostPageBaseURL() + "api/layers/" + getDomain() + "/list").get().send( cb 	);
 	}
 	
 	public static void createLayer( String layerName, String parentName, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/layers/new" )
+		new Resource( GWT.getHostPageBaseURL() + "api/layers/" + getDomain() + "/new" )
 			.addQueryParam( "name", layerName )
 			.addQueryParam( "parent", parentName )
 			.post().send( cb );
 	}
 	
 	public static void editLayer( String oldLayerName, String newLayerName, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/layers/edit" )
+		new Resource( GWT.getHostPageBaseURL() + "api/layers/" + getDomain() + "/edit" )
 			.addQueryParam( "name", oldLayerName )
 			.addQueryParam( "newname", newLayerName )
 			.post().send( cb );
 	}
 	
 	public static void deleteLayer( String layerName, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/layers/delete" )
+		new Resource( GWT.getHostPageBaseURL() + "api/layers/" + getDomain() + "/delete" )
 		.addQueryParam( "name", layerName )
 		.delete().send( cb );
 	}
@@ -87,35 +94,35 @@ public class RiscossJsonClient {
 	}
 	
 	public static void listRDCs( String entity, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/entities/rdcs/list" )
+		new Resource( GWT.getHostPageBaseURL() + "api/entities/" + getDomain() + "/rdcs/list" )
 			.addQueryParam( "entity", entity )
 			.get().send( cb );
 	}
 	
 	public static void saveRDCs( JSONObject rdcMap, String entity, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/entities/rdcs/save" )
+		new Resource( GWT.getHostPageBaseURL() + "api/entities/" + getDomain() + "/rdcs/save" )
 			.addQueryParam( "entity", entity )
 			.put().header( "rdcmap", rdcMap.toString() ).send( cb );
 	}
 	
 	public static void runRDCs( String entityName, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/entities/rdcs/newrun" )
+		new Resource( GWT.getHostPageBaseURL() + "api/entities/" + getDomain() + "/rdcs/newrun" )
 			.addQueryParam( "entity", entityName )
 			.get().send( cb );
 	}
 	
 	public static void listRCs( JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/rcs/list" ).get().send( cb );
+		new Resource( GWT.getHostPageBaseURL() + "api/rcs/" + getDomain() + "/list" ).get().send( cb );
 	}
 	
 	public static void getRCContent( String rcname, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/rcs/rc/get" )
+		new Resource( GWT.getHostPageBaseURL() + "api/rcs/" + getDomain() + "/rc/get" )
 			.addQueryParam( "name", rcname )
 			.get().send( cb );
 	}
 
 	public static void listModels( JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/models/list").get().send( cb );
+		new Resource( GWT.getHostPageBaseURL() + "api/models/" + getDomain() + "/list").get().send( cb );
 	}
 	
 	public static void setRCContent( String rcName, SimpleRiskCconf rc, JsonCallback cb ) {
@@ -124,7 +131,7 @@ public class RiscossJsonClient {
 //		json.put( "rc", new JSONString( rcName ) );
 //		json.put( "models", rc.getModels() );
 //		Window.alert( "" + rc );
-		new Resource( GWT.getHostPageBaseURL() + "api/rcs/rc/put")
+		new Resource( GWT.getHostPageBaseURL() + "api/rcs/" + getDomain() + "/rc/put")
 			.addQueryParam( "content", rc.json.toString() )
 			.put().send( cb );
 		}
@@ -134,13 +141,13 @@ public class RiscossJsonClient {
 	}
 	
 	public static void deleteEntity( String entity, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/entities/entity/delete" )
+		new Resource( GWT.getHostPageBaseURL() + "api/entities/" + getDomain() + "/entity/delete" )
 			.addQueryParam( "entity", entity )
 			.delete().send( cb );
 	}
 	
 	public static void createRC( String name, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/rcs/rc/new" )
+		new Resource( GWT.getHostPageBaseURL() + "api/rcs/" + getDomain() + "/rc/new" )
 			.addQueryParam( "name", name )
 			.post().send( cb );
 	}
@@ -152,19 +159,19 @@ public class RiscossJsonClient {
 	}
 	
 	public static void createModelEntry( String name, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/models/model/new" )
+		new Resource( GWT.getHostPageBaseURL() + "api/models/" + getDomain() + "/model/new" )
 			.addQueryParam( "name", name )
 			.post().send( cb );
 	}
 	
 	public static void getModelinfo( String name, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/models/model/get" )
+		new Resource( GWT.getHostPageBaseURL() + "api/models/" + getDomain() + "/model/get" )
 			.addQueryParam( "name", name )
 			.get().send( cb );
 	}
 
 	public static void getModelBlob( String name, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/models/model/blob" )
+		new Resource( GWT.getHostPageBaseURL() + "api/models/" + getDomain() + "/model/blob" )
 		.addQueryParam( "name", name )
 		.get().send( cb );
 	}
@@ -176,7 +183,7 @@ public class RiscossJsonClient {
 	}
 
 	public static void createEntity( String name, String layer, String parent, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/entities/new" )
+		new Resource( GWT.getHostPageBaseURL() + "api/entities/" + getDomain() + "/new" )
 			.addQueryParam( "name", name )
 			.addQueryParam( "parent", parent )
 			.addQueryParam( "layer", layer )
@@ -194,20 +201,20 @@ public class RiscossJsonClient {
 			}
 			o.put( "parents", a );
 		}
-		new Resource( GWT.getHostPageBaseURL() + "api/entities/create" )
+		new Resource( GWT.getHostPageBaseURL() + "api/entities/" + getDomain() + "/create" )
 			.post()
 			.header( "info", o.toString() )
 			.send( cb );
 	}
 	
 	public static void deleteModel( String name, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/models/model/delete" )
+		new Resource( GWT.getHostPageBaseURL() + "api/models/" + getDomain() + "/model/delete" )
 			.addQueryParam( "name", name )
 			.delete().send( cb );
 	}
 	
 	public static void changeModelName( String name, String newName, JsonCallback cb){
-		new Resource( GWT.getHostPageBaseURL() + "api/models/model/changename" )
+		new Resource( GWT.getHostPageBaseURL() + "api/models/" + getDomain() + "/model/changename" )
 		.addQueryParam( "name", name )
 		.addQueryParam( "newname", newName )
 		.post().send( cb );
@@ -215,7 +222,7 @@ public class RiscossJsonClient {
 	
 	public static void runAnalysis( String target, String rc, String verbosity, EAnalysisOption opt, JSONObject values, JsonCallback cb ) {
 		
-		new Resource( GWT.getHostPageBaseURL() + "api/analysis/new" )
+		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + getDomain() + "/new" )
 			.addQueryParam( "target", target )
 			.addQueryParam( "rc", rc )
 			.addQueryParam( "verbosity", verbosity )
@@ -226,25 +233,25 @@ public class RiscossJsonClient {
 	}
 	
 	public static void getRiskData( String entity, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/entities/entity/rd/get" )
+		new Resource( GWT.getHostPageBaseURL() + "api/entities/" + getDomain() + "/entity/rd/get" )
 			.addQueryParam( "entity", entity )
 			.get().send( cb );
 	}
 	
 	public static void getEntityData( String entity, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/entities/entity/data" )
+		new Resource( GWT.getHostPageBaseURL() + "api/entities/" + getDomain() + "/entity/data" )
 			.addQueryParam( "entity", entity )
 			.get().send( cb );
 	}
 	
 	public static void postRiskData( JSONArray o, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/rdr/store" )
+		new Resource( GWT.getHostPageBaseURL() + "api/rdr/" + getDomain() + "/store" )
 			.post().header( "json", o.toString() )
 			.send( cb );
 	}
 	
 	public static void listEntities( JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/entities/list" )
+		new Resource( GWT.getHostPageBaseURL() + "api/entities/" + getDomain() + "/list" )
 			.get().send( cb );
 	}
 	
@@ -255,13 +262,13 @@ public class RiscossJsonClient {
 			array.set( array.size(), new JSONString( e ) );
 		}
 		json.put( "list", array );
-		new Resource( GWT.getHostPageBaseURL() + "api/entities/entity/parent" )
+		new Resource( GWT.getHostPageBaseURL() + "api/entities/" + getDomain() + "/entity/parent" )
 			.addQueryParam( "entity", entity )
 			.post().header( "entities", json.toString() ).send( cb );
 	}
 	
 	public static void getHierarchyInfo( String entity, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/entities/entity/hierarchy" )
+		new Resource( GWT.getHostPageBaseURL() + "api/entities/" + getDomain() + "/entity/hierarchy" )
 			.addQueryParam( "entity", entity )
 			.get().send( cb );
 	}
@@ -273,19 +280,19 @@ public class RiscossJsonClient {
 			array.set( array.size(), new JSONString( e ) );
 		}
 		json.put( "list", array );
-		new Resource( GWT.getHostPageBaseURL() + "api/entities/entity/children" )
+		new Resource( GWT.getHostPageBaseURL() + "api/entities/" + getDomain() + "/entity/children" )
 			.addQueryParam( "entity", entity )
 			.post().header( "entities", json.toString() ).send( cb );
 	}
 
 	public static void getRASResults( String entity, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/entities/entity/ras" )
+		new Resource( GWT.getHostPageBaseURL() + "api/entities/" + getDomain() + "/entity/ras" )
 			.addQueryParam( "entity", entity )
 			.get().send( cb );
 	}
 
 	public static void listChunks( List<String> list, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/models/model/chunks" )
+		new Resource( GWT.getHostPageBaseURL() + "api/models/" + getDomain() + "/model/chunks" )
 			.get().header( "models", mkJsonArray( list ).toString() ).send( cb );
 	}
 	
@@ -298,14 +305,14 @@ public class RiscossJsonClient {
 	}
 
 	public static void runWhatIfAnalysis( List<String> models, JSONObject values, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/analysis/whatif" )
+		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + getDomain() + "/whatif" )
 			.addQueryParam( "models", mkJsonArray( models ).toString() )
 			.post().header( "values", values.toString() )
 			.send( cb );
 	}
 	
 	public static void getLayerContextualInfo( String layer, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/layers/ci" )
+		new Resource( GWT.getHostPageBaseURL() + "api/layers/" + getDomain() + "/ci" )
 			.addQueryParam( "layer", layer )
 			.get().send( cb );
 	}
@@ -313,7 +320,7 @@ public class RiscossJsonClient {
 	public static void setLayerContextualInfo( String layer, JLayerContextualInfo info, JsonCallback cb ) {
 		CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
 		String json = codec.encode( info ).toString();
-		new Resource( GWT.getHostPageBaseURL() + "api/layers/ci" )
+		new Resource( GWT.getHostPageBaseURL() + "api/layers/" + getDomain() + "/ci" )
 			.addQueryParam( "layer", layer )
 			.put().header( "info", json ).send( cb );
 	}

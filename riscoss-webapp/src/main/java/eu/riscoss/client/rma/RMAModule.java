@@ -78,7 +78,7 @@ public class RMAModule implements EntryPoint {
 					@Override
 					public void onDone( List<String> list ) {
 						models = list;
-						new Resource( GWT.getHostPageBaseURL() + "api/models/model/chunklist" )
+						new Resource( GWT.getHostPageBaseURL() + "api/models/" + RiscossJsonClient.getDomain() + "/model/chunklist" )
 						.get().header( "models", RiscossJsonClient.mkJsonArray( list ).toString() )
 						.send( new JsonCallback() {
 							@Override
@@ -217,7 +217,7 @@ public class RMAModule implements EntryPoint {
 		String json = codec.encode( ahp ).toString();
 		
 		Log.println( "Calling" );
-		new Resource( GWT.getHostPageBaseURL() + "api/analysis/ahp" ).post()
+		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/ahp" ).post()
 		.text( json )
 //		.header("ahp-param",json)
 		.send( 

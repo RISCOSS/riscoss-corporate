@@ -22,13 +22,13 @@
 package eu.riscoss.server;
 
 import java.io.File;
-import java.util.HashMap;
 
 import eu.riscoss.db.RiscossDB;
 import eu.riscoss.db.RiscossOrientDB;
-import eu.riscoss.shared.CookieNames;
 
 public class DBConnector {
+	
+	public static final String DEFAULT_DOMAIN = "Public Domain";
 	
 	static String db_addr = null;
 	
@@ -47,27 +47,31 @@ public class DBConnector {
 		return new File( new File( s ).getParent() );
 	}
 	
-	static ThreadLocal<HashMap<String,String>> threadMap = new ThreadLocal<>();
+//	static ThreadLocal<HashMap<String,String>> threadMap = new ThreadLocal<>();
+//	
+//	public static synchronized void setThreadLocalValue( String key, String value ) {
+//		HashMap<String,String> map = threadMap.get();
+//		if( map == null ) {
+//			map = new HashMap<String,String>();
+//			threadMap.set( map );
+//		}
+//		map.put( key, value );
+//	}
+//	
+//	public static synchronized String getThreadLocalValue( String key, String def ) {
+//		HashMap<String,String> map = threadMap.get();
+//		if( map == null )return def;
+//		String ret = map.get( key );
+//		if( ret == null ) return def;
+//		return ret;
+//	}
 	
-	public static synchronized void setThreadLocalValue( String key, String value ) {
-		HashMap<String,String> map = threadMap.get();
-		if( map == null ) {
-			map = new HashMap<String,String>();
-			threadMap.set( map );
-		}
-		map.put( key, value );
-	}
+//	static RiscossDB openDB() {
+//		return openDB( getThreadLocalValue( CookieNames.DOMAIN_KEY, DEFAULT_DOMAIN ) );
+//	}
 	
-	public static synchronized String getThreadLocalValue( String key, String def ) {
-		HashMap<String,String> map = threadMap.get();
-		if( map == null )return def;
-		String ret = map.get( key );
-		if( ret == null ) return def;
-		return ret;
-	}
-	
-	static RiscossDB openDB() {
-		return new RiscossOrientDB( db_addr, getThreadLocalValue( CookieNames.DOMAIN_KEY, "Public Domain" ) );
+	static RiscossDB openDB( String domain ) {
+		return new RiscossOrientDB( db_addr, domain );
 	}
 	
 	static void closeDB( RiscossDB db ) {

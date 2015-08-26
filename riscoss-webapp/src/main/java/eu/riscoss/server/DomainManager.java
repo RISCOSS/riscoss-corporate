@@ -19,7 +19,7 @@ public class DomainManager {
 		String initString = req.getServletContext().getInitParameter( "eu.riscoss.param.domains.list" );
 		if( initString == null ) {
 			// If not domains configured, proceed
-			return new JsonPrimitive( "Public Domain" ).toString();
+			return new JsonPrimitive( DBConnector.DEFAULT_DOMAIN ).toString();
 		}
 		
 		if( domain == null ) {

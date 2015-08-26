@@ -55,7 +55,9 @@ public class UploadServiceImpl extends UploadAction {
 				List<FileItem> sessionFiles) throws UploadActionException {
 			String response = "";
 
-			RiscossDB db = DBConnector.openDB();
+			String domain = request.getParameter("domain");
+			
+			RiscossDB db = DBConnector.openDB( domain );
 
 			for (FileItem item : sessionFiles) {
 				if (false == item.isFormField()) {
@@ -111,8 +113,10 @@ public class UploadServiceImpl extends UploadAction {
 		public String executeAction(HttpServletRequest request,
 				List<FileItem> sessionFiles) throws UploadActionException {
 			String response = "";
-
-			RiscossDB db = DBConnector.openDB();
+			
+			String domain = request.getParameter("domain");
+			
+			RiscossDB db = DBConnector.openDB( domain );
 			
 			String modelName = null;
 			for (FileItem item : sessionFiles) { //reads the hidden field in which the model name is passed
@@ -160,8 +164,10 @@ public class UploadServiceImpl extends UploadAction {
 		public String executeAction(HttpServletRequest request,
 				List<FileItem> sessionFiles) throws UploadActionException {
 			String response = "";
-
-			RiscossDB db = DBConnector.openDB();
+			
+			String domain = request.getParameter("domain");
+			
+			RiscossDB db = DBConnector.openDB( domain );
 			
 			String modelName = null;
 			for (FileItem item : sessionFiles) { //reads the hidden field in which the model name is passed
@@ -232,7 +238,8 @@ public class UploadServiceImpl extends UploadAction {
 	@Override
 	public void getUploadedFile(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String fieldName = request.getParameter( UConsts.PARAM_SHOW );
-		RiscossDB db = DBConnector.openDB();
+		String domain = request.getParameter("domain");
+		RiscossDB db = DBConnector.openDB( domain );
 		try {
 			//only for checking if empty?
 			String blob = db.getModelBlob( fieldName );
@@ -248,7 +255,8 @@ public class UploadServiceImpl extends UploadAction {
 	
 	@Override
 	public void removeItem( HttpServletRequest request, String fieldName )  throws UploadActionException {
-		RiscossDB db = DBConnector.openDB();
+		String domain = request.getParameter("domain");
+		RiscossDB db = DBConnector.openDB( domain );
 		try {
 			db.removeModelBlob( fieldName );
 		}

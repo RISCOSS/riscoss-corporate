@@ -266,8 +266,8 @@ public class EntitiesModule implements EntryPoint {
 		RootPanel.get().add( page );
 		
 		String url = ( layer != null ?
-				"api/entities/list/" + layer :
-				"api/entities/list" );
+				"api/entities/" + RiscossJsonClient.getDomain() + "/list/" + layer :
+				"api/entities/" + RiscossJsonClient.getDomain() + "/list" );
 		
 		Resource resource = new Resource( GWT.getHostPageBaseURL() + url );
 		

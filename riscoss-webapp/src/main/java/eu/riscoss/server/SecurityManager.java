@@ -4,10 +4,12 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 
@@ -43,7 +45,7 @@ public class SecurityManager {
 	
 	public boolean canAccess( User user, String requestURI ) {
 		
-		RiscossDB db = DBConnector.openDB();
+		RiscossDB db = DBConnector.openDB( "" );
 		try {
 //			return db.canAccess( user, requestURI );
 		}
@@ -54,15 +56,15 @@ public class SecurityManager {
 		return true;
 	}
 	
-	@POST @Path("domains/create")
-	public String createDomain( @QueryParam("name") String name ) {
+	@POST @Path("/{domain}/domains/create")
+	public String createDomain( @DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("name") String name ) {
 		return "";
 	}
 	
-	@POST @Path("roles/create")
-	public String createRole( @QueryParam("name") String name ) {
+	@POST @Path("{domain}/roles/create")
+	public String createRole( @DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("name") String name ) {
 		
-		RiscossDB db = DBConnector.openDB();
+		RiscossDB db = DBConnector.openDB( domain );
 		
 		try {
 			
@@ -79,10 +81,10 @@ public class SecurityManager {
 		}
 	}
 	
-	@GET @Path("roles/list")
-	public String listRoles() {
+	@GET @Path("{domain}/roles/list")
+	public String listRoles( @DefaultValue("Playground") @PathParam("domain") String domain ) {
 		
-		RiscossDB db = DBConnector.openDB();
+		RiscossDB db = DBConnector.openDB( domain );
 		
 		try {
 			
@@ -105,10 +107,10 @@ public class SecurityManager {
 //		return "";
 	}
 	
-	@GET @Path("users/list")
-	public String listUsers() {
+	@GET @Path("{domain}/users/list")
+	public String listUsers( @DefaultValue("Playground") @PathParam("domain") String domain ) {
 		
-		RiscossDB db = DBConnector.openDB();
+		RiscossDB db = DBConnector.openDB( domain );
 		
 		try {
 			
@@ -129,9 +131,10 @@ public class SecurityManager {
 		}
 	}
 	
-	@POST @Path("users/create")
+	@POST @Path("{domain}/users/create")
 	public void createUser( 
 			@Context HttpServletRequest req,
+			@DefaultValue("Playground") @PathParam("domain") String domain, 
 			@HeaderParam("firstName") String firstName,
 			@HeaderParam("lastName") String lastName,
 			@HeaderParam("username") String username,

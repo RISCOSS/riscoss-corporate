@@ -46,6 +46,7 @@ import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
 
 import eu.riscoss.client.EntityInfo;
+import eu.riscoss.client.RiscossJsonClient;
 
 class ContactCell extends AbstractCell<EntityInfo> {
 
@@ -139,8 +140,8 @@ public class RDRModule implements EntryPoint {
 
 
 		String url = ( layer != null ?
-				"api/entities/list/" + layer :
-				"api/entities/list" );
+				"api/entities/" + RiscossJsonClient.getDomain() + "/list/" + layer :
+				"api/entities/" + RiscossJsonClient.getDomain() + "/list" );
 
 		Resource resource = new Resource( GWT.getHostPageBaseURL() + url );
 

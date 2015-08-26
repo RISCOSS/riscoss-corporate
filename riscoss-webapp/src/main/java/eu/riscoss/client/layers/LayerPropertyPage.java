@@ -1,13 +1,11 @@
 package eu.riscoss.client.layers;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
 import org.fusesource.restygwt.client.Resource;
-import org.joda.time.DateTime;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -21,7 +19,6 @@ import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -34,15 +31,10 @@ import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DateBox;
-import com.google.gwt.user.datepicker.client.DatePicker;
 
-import eu.riscoss.client.EntityInfo;
 import eu.riscoss.client.JsonCallbackWrapper;
-import eu.riscoss.client.JsonEntitySummary;
-import eu.riscoss.client.JsonUtil;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecLayerContextualInfo;
-import eu.riscoss.client.entities.EntityPropertyPage;
 import eu.riscoss.shared.JLayerContextualInfo;
 import eu.riscoss.shared.JLayerContextualInfoElement;
 
@@ -263,7 +255,7 @@ public class LayerPropertyPage implements IsWidget {
 					
 				});
 				
-				String url = "api/entities/list/" + layer; 
+				String url = "api/entities/" + RiscossJsonClient.getDomain() + "/list/" + layer; 
 				
 				Resource resource = new Resource( GWT.getHostPageBaseURL() + url );
 				
@@ -558,7 +550,7 @@ public class LayerPropertyPage implements IsWidget {
 				@Override
 				public void onClick(ClickEvent arg0) {
 					
-					String url = "api/entities/list/" + layer; 
+					String url = "api/entities/" + RiscossJsonClient.getDomain() + "/list/" + layer; 
 					
 					Resource resource = new Resource( GWT.getHostPageBaseURL() + url );
 					

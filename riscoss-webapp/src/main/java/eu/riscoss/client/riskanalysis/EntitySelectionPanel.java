@@ -33,11 +33,10 @@ import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.CellTable.Resources;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.SimplePager;
-import com.google.gwt.user.cellview.client.CellTable.Resources;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -46,6 +45,7 @@ import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.EntityInfo;
 import eu.riscoss.client.JsonUtil;
+import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.entities.TableResources;
 import eu.riscoss.client.ui.HtmlString;
 import eu.riscoss.client.ui.LinkHtml;
@@ -112,7 +112,7 @@ class EntitySelectionPanel implements IsWidget {
 	}-*/;
 	
 	void loadEntities() {
-		Resource resource = new Resource( GWT.getHostPageBaseURL() + "api/entities/list");
+		Resource resource = new Resource( GWT.getHostPageBaseURL() + "api/entities/" + RiscossJsonClient.getDomain() + "/list");
 		
 		resource.get().send( new JsonCallback() {
 			

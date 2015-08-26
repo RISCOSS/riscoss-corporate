@@ -146,7 +146,7 @@ public class ModelsModule implements EntryPoint {
 		dataProvider = new ListDataProvider<ModelInfo>();
 		dataProvider.addDataDisplay(table);
 
-		Resource resource = new Resource(GWT.getHostPageBaseURL() + "api/models/list");
+		Resource resource = new Resource(GWT.getHostPageBaseURL() + "api/models/" + RiscossJsonClient.getDomain() + "/list");
 
 		resource.get().send(new JsonCallback() {
 
@@ -173,7 +173,7 @@ public class ModelsModule implements EntryPoint {
 		SingleUploader uploader = new SingleUploader(FileInputType.CUSTOM.with(new Button(BUTTON_NEW_MODEL)));
 		uploader.setTitle("Upload new model");
 		uploader.setAutoSubmit(true);
-		uploader.setServletPath(uploader.getServletPath() + "?t=modelblob");
+		uploader.setServletPath(uploader.getServletPath() + "?t=modelblob&domain=" + RiscossJsonClient.getDomain());
 		uploader.addOnFinishUploadHandler(new OnFinishUploaderHandler() {
 			@Override
 			public void onFinish(IUploader uploader) {
@@ -408,7 +408,7 @@ public class ModelsModule implements EntryPoint {
 				Label descfLabel = new Label("No documentation uploaded.");
 				grid.setWidget( 2, 0, descfLabel);
 			} else {
-				Anchor descfAnchor = new Anchor("Download documentation:\n"+descfilename, GWT.getHostPageBaseURL() +  "models/download?name="+ name+"&type=desc");
+				Anchor descfAnchor = new Anchor("Download documentation:\n"+descfilename, GWT.getHostPageBaseURL() +  "models/download?domain=" + RiscossJsonClient.getDomain() + "&name="+ name+"&type=desc");
 				grid.setWidget( 2, 0, descfAnchor);
 			}
 			
@@ -416,7 +416,7 @@ public class ModelsModule implements EntryPoint {
 			docuUploader.setTitle("Upload model documentation");
 			docuUploader.setAutoSubmit(true);
 			
-			docuUploader.setServletPath(docuUploader.getServletPath() + "?t=modeldescblob");
+			docuUploader.setServletPath(docuUploader.getServletPath() + "?t=modeldescblob&domain=" + RiscossJsonClient.getDomain());
 					
 			docuUploader.add(new Hidden("Modelname", jsname));
 				
@@ -477,7 +477,7 @@ public class ModelsModule implements EntryPoint {
 			
 			
 			
-			Anchor fAnchor = new Anchor("Download model:\n"+json.get("modelfilename"), GWT.getHostPageBaseURL() +  "models/download?name="+ name+"&type=model");
+			Anchor fAnchor = new Anchor("Download model:\n"+json.get("modelfilename"), GWT.getHostPageBaseURL() +  "models/download?domain=" + RiscossJsonClient.getDomain() + "&name="+ name+"&type=model");
 			grid.setWidget( 1, 0, fAnchor);
 			//grid.setWidget( 1, 0, new Label("Model filename: \n"+json.get("modelfilename").isString().stringValue()));
 			

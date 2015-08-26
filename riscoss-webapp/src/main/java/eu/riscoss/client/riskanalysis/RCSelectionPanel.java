@@ -41,6 +41,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.ModelInfo;
+import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.entities.TableResources;
 import eu.riscoss.client.ui.LinkHtml;
 
@@ -90,7 +91,7 @@ class RCSelectionPanel implements IsWidget {
 		
 		modelDataProvider.getList().clear();
 		
-		Resource resource = new Resource( GWT.getHostPageBaseURL() + "api/rcs/list");
+		Resource resource = new Resource( GWT.getHostPageBaseURL() + "api/rcs/" + RiscossJsonClient.getDomain() + "/list");
 		
 		resource.addQueryParam( "entity", entity ).get().send( new JsonCallback() {
 			

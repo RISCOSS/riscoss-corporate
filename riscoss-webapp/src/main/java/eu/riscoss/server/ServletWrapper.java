@@ -31,8 +31,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.reflections.Reflections;
@@ -91,7 +89,7 @@ public class ServletWrapper extends ServletContainer {
 			System.out.println( "DB address: " + dbaddr );
 			System.out.println( "DB name: " + dbname );
 			
-			DBConnector.closeDB( DBConnector.openDB() );
+			DBConnector.closeDB( DBConnector.openDB( "Playground" ) );
 			
 			Reflections reflections = new Reflections( RDCRunner.class.getPackage().getName() );
 			
@@ -110,13 +108,13 @@ public class ServletWrapper extends ServletContainer {
 	
 	public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
 		
-		try {
-			HttpServletRequest httpReq = (HttpServletRequest) req;
-			for( Cookie cookie : httpReq.getCookies() ) {
-				DBConnector.setThreadLocalValue( cookie.getName(), cookie.getValue() );
-			}
-		}
-		catch( Exception ex ) {}
+//		try {
+//			HttpServletRequest httpReq = (HttpServletRequest) req;
+//			for( Cookie cookie : httpReq.getCookies() ) {
+//				DBConnector.setThreadLocalValue( cookie.getName(), cookie.getValue() );
+//			}
+//		}
+//		catch( Exception ex ) {}
 		
 		super.service( req, res );
 		

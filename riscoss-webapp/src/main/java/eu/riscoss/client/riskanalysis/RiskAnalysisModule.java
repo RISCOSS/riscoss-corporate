@@ -49,6 +49,7 @@ import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.EntityInfo;
 import eu.riscoss.client.ModelInfo;
+import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.entities.TableResources;
 import eu.riscoss.client.ui.LinkHtml;
 
@@ -151,7 +152,7 @@ public class RiskAnalysisModule implements EntryPoint {
 	}
 
 	void loadEntities() {
-		Resource resource = new Resource( GWT.getHostPageBaseURL() + "api/entities/list");
+		Resource resource = new Resource( GWT.getHostPageBaseURL() + "api/entities/" + RiscossJsonClient.getDomain() + "/list");
 
 		resource.get().send( new JsonCallback() {
 
@@ -173,7 +174,7 @@ public class RiskAnalysisModule implements EntryPoint {
 	}
 
 	void loadRiskConfs() {
-		Resource resource = new Resource( GWT.getHostPageBaseURL() + "api/rcs/list");
+		Resource resource = new Resource( GWT.getHostPageBaseURL() + "api/rcs/" + RiscossJsonClient.getDomain() + "/list");
 
 		resource.get().send( new JsonCallback() {
 

@@ -46,6 +46,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.JsonCallbackWrapper;
+import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecRASInfo;
 import eu.riscoss.client.entities.TableResources;
 import eu.riscoss.client.ui.LinkHtml;
@@ -115,7 +116,7 @@ public class RASSelectionPanel implements IsWidget {
 	}
 	
 	protected void deleteRAS( JRASInfo info ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/analysis/session/" + info.getId() + "/delete" ).delete().send( new JsonCallbackWrapper<JRASInfo>( info ) {
+		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/session/" + info.getId() + "/delete" ).delete().send( new JsonCallbackWrapper<JRASInfo>( info ) {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				
@@ -150,7 +151,7 @@ public class RASSelectionPanel implements IsWidget {
 		if( name == null ) return;
 		name = name.trim();
 		if( "".equals( name ) ) return;
-		new Resource( GWT.getHostPageBaseURL() + "api/analysis/session/new" )
+		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/session/new" )
 			.addQueryParam( "target", selectedEntity )
 			.addQueryParam( "rc", selectedRC )
 			.addQueryParam( "name", name )
@@ -180,7 +181,7 @@ public class RASSelectionPanel implements IsWidget {
 		
 		dataProvider.getList().clear();
 		
-		new Resource( GWT.getHostPageBaseURL() + "api/analysis/session/list")
+		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/session/list")
 			.addQueryParam( "entity", entity )
 			.addQueryParam( "rc", rc )
 			.get().send( new JsonCallback() {

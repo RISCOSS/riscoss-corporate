@@ -59,7 +59,7 @@ public class RASPanel implements IsWidget {
 	
 	public void loadRAS( String selectedRAS ) {
 		this.selectedRAS = selectedRAS;
-		new Resource( GWT.getHostPageBaseURL() + "api/analysis/session/" + selectedRAS + "/summary" ).get().send( new JsonCallback() {
+		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/session/" + selectedRAS + "/summary" ).get().send( new JsonCallback() {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				loadRASSummary( new JsonRiskAnalysis( response ) );
@@ -120,7 +120,7 @@ public class RASPanel implements IsWidget {
 		
 		panel.setWidget( grid );
 		
-		new Resource( GWT.getHostPageBaseURL() + "api/analysis/session/" + selectedRAS + "/results" ).get().send( new JsonCallback() {
+		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/session/" + selectedRAS + "/results" ).get().send( new JsonCallback() {
 			@Override
 			public void onFailure( Method method, Throwable exception ) {
 				Window.alert( "" + exception );
@@ -140,7 +140,7 @@ public class RASPanel implements IsWidget {
 	}
 	
 	protected void onEditMissingValues() {
-		new Resource( GWT.getHostPageBaseURL() + "api/analysis/session/" + selectedRAS + "/missing-data" )
+		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/session/" + selectedRAS + "/missing-data" )
 			.get().send( new JsonCallback() {
 				@Override
 				public void onSuccess( Method method, JSONValue response ) {
@@ -156,7 +156,7 @@ public class RASPanel implements IsWidget {
 	}
 
 	protected void onUpdatedIndicatorsClicked() {
-		new Resource( GWT.getHostPageBaseURL() + "api/analysis/session/" + selectedRAS + "/update-data" ).get().send( new JsonCallback() {
+		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/session/" + selectedRAS + "/update-data" ).get().send( new JsonCallback() {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				Window.alert( "Done" );
@@ -170,7 +170,7 @@ public class RASPanel implements IsWidget {
 	}
 
 	protected void onRunAnalysisClicked() {
-		new Resource( GWT.getHostPageBaseURL() + "api/analysis/session/" + selectedRAS + "/newrun" ).post().send( 
+		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/session/" + selectedRAS + "/newrun" ).post().send( 
 				new RiscossJsonClient.JsonWaitWrapper(
 				new JsonCallback() {
 			@Override

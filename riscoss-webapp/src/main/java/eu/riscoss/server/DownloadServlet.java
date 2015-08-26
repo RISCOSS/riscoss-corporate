@@ -14,7 +14,8 @@ public class DownloadServlet extends HttpServlet {
 	private static final long serialVersionUID = -4857621467686120020L;
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		RiscossDB db = DBConnector.openDB();
+		String domain = request.getParameter("domain");
+		RiscossDB db = DBConnector.openDB( domain );
 		try {
 			String modelName = request.getParameter("name");
 			String type = request.getParameter("type");

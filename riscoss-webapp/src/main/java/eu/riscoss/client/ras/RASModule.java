@@ -23,6 +23,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.JsonCallbackWrapper;
+import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecRASInfo;
 import eu.riscoss.client.ui.LinkHtml;
 import eu.riscoss.shared.JRASInfo;
@@ -106,7 +107,7 @@ public class RASModule implements EntryPoint {
 		
 		dataProvider.getList().clear();
 		
-		new Resource( GWT.getHostPageBaseURL() + "api/analysis/session/list")
+		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/session/list")
 			.get().send( new JsonCallback() {
 			public void onSuccess(Method method, JSONValue response) {
 				if( response == null ) return;
@@ -133,7 +134,7 @@ public class RASModule implements EntryPoint {
 	}
 	
 	protected void deleteRAS( JRASInfo info ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/analysis/session/" + info.getId() + "/delete" ).delete().send( new JsonCallbackWrapper<JRASInfo>( info ) {
+		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/session/" + info.getId() + "/delete" ).delete().send( new JsonCallbackWrapper<JRASInfo>( info ) {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				dataProvider.getList().remove( getValue() );

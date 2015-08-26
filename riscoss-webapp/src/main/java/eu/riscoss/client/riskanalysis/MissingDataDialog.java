@@ -13,6 +13,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockPanel;
 
+import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecRiskData;
 import eu.riscoss.shared.JMissingData;
 
@@ -49,7 +50,7 @@ public class MissingDataDialog {
 		CodecRiskData crd = GWT.create( CodecRiskData.class );
 		String values = crd.encode( inputForm.getValueMap() ).toString();
 		
-		new Resource( GWT.getHostPageBaseURL() + "api/analysis/session/" + ras + "/missing-data" )
+		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/session/" + ras + "/missing-data" )
 			.put().header( "values", values ).send( new JsonCallback() {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {

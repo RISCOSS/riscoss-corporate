@@ -35,8 +35,7 @@ import eu.riscoss.rdc.RDCParameter;
 @Path("rdcs")
 public class RDCManager {
 	
-	@GET
-	@Path("/list")
+	@GET @Path("/list")
 	public String listRDCs() {
 		
 		JsonObject o = new JsonObject();

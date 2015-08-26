@@ -22,9 +22,11 @@
 package eu.riscoss.server;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -35,12 +37,12 @@ import eu.riscoss.db.RiscossDB;
 @Path("rdr")
 public class RDRManager {
 	
-	@POST @Path("/store")
+	@POST @Path("/{domain}/store")
 	@Consumes({"application/json"})
-	public void store( @HeaderParam("json") String string ) {
+	public void store( @DefaultValue("Playground") @PathParam("domain") String domain, @HeaderParam("json") String string ) {
 		System.out.println( string );
 		JsonArray json = (JsonArray)new JsonParser().parse( string );
-		RiscossDB db = DBConnector.openDB();
+		RiscossDB db = DBConnector.openDB( domain );
 		try {
 			for( int i = 0; i < json.size(); i++ ) {
 				JsonObject o = json.get( i ).getAsJsonObject();

@@ -32,6 +32,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 
 import com.google.gson.JsonArray;
@@ -45,12 +46,11 @@ import eu.riscoss.shared.RiscossUtil;
 @Path("rcs")
 public class RiskConfManager {
 	
-	@GET
-	@Path( "/list" )
+	@GET @Path( "/{domain}/list" )
 	public String list(
-			@DefaultValue("") @QueryParam("entity") String entity ) {
+			@DefaultValue("Playground") @PathParam("domain") String domain, @DefaultValue("") @QueryParam("entity") String entity ) {
 		
-		RiscossDB db = DBConnector.openDB();
+		RiscossDB db = DBConnector.openDB( domain );
 		
 		JsonArray a = new JsonArray();
 		
@@ -83,13 +83,12 @@ public class RiskConfManager {
 		return a.toString();
 	}
 	
-	@GET
-	@Path("/rc/get")
-	public String getContent( @QueryParam("name") String name ) {
+	@GET @Path("/{domain}/rc/get")
+	public String getContent( @DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("name") String name ) {
 		
 		JsonObject json = new JsonObject();
 		
-		RiscossDB db = DBConnector.openDB();
+		RiscossDB db = DBConnector.openDB( domain );
 		try {
 			json.addProperty( "name", name );
 			json.addProperty( "type", "layered" );
@@ -126,11 +125,10 @@ public class RiskConfManager {
 		}
 	}
 	
-	@PUT
-	@Path("/rc/put")
-	public void setContent( @QueryParam("content") String value ) {
+	@PUT @Path("/{domain}/rc/put")
+	public void setContent( @DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("content") String value ) {
 		JsonObject json = (JsonObject)new JsonParser().parse( value );
-		RiscossDB db = DBConnector.openDB();
+		RiscossDB db = DBConnector.openDB( domain );
 		try {
 			String rc = json.get( "name" ).getAsString();
 			try {
@@ -166,10 +164,9 @@ public class RiskConfManager {
 		}
 	}
 	
-	@POST
-	@Path("/rc/new")
-	public String createNew( @QueryParam("name") String name ) {
-		RiscossDB db = DBConnector.openDB();
+	@POST @Path("/{domain}/rc/new")
+	public String createNew( @DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("name") String name ) {
+		RiscossDB db = DBConnector.openDB( domain );
 		//attention:filename sanitation is not directly notified to the user
 		name = RiscossUtil.sanitize(name);
 		try {
@@ -183,10 +180,9 @@ public class RiskConfManager {
 		}
 	}
 	
-	@DELETE
-	@Path("/rc/delete")
-	public String delete( @QueryParam("name") String name ) {
-		RiscossDB db = DBConnector.openDB();
+	@DELETE @Path("/{domain}/rc/delete")
+	public String delete( @DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("name") String name ) {
+		RiscossDB db = DBConnector.openDB( domain );
 		try {
 			db.removeRiskConfiguration( name );
 			JsonObject o = new JsonObject();
