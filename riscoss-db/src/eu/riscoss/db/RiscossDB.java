@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+// TODO: To be renamed in something like "RiscossDomainDB"
+
 public interface RiscossDB {
 	
 	/*

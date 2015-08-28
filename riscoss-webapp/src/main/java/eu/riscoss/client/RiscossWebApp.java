@@ -13,11 +13,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-*/
+ */
 
 /**
  * @author 	Alberto Siena
-**/
+ **/
 
 package eu.riscoss.client;
 
@@ -30,19 +30,16 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.json.client.JSONValue;
-import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -50,7 +47,6 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 import eu.riscoss.client.ui.ClickWrapper;
 import eu.riscoss.client.ui.FramePanel;
-import eu.riscoss.client.ui.TreeWidget;
 import eu.riscoss.shared.CookieNames;
 
 public class RiscossWebApp implements EntryPoint {
@@ -61,25 +57,81 @@ public class RiscossWebApp implements EntryPoint {
 	SimplePanel	 	background;
 	SimplePanel		margin;
 	
+	String			username;
+	
 	
 	public void onModuleLoad() {
 		String domain = Cookies.getCookie( CookieNames.DOMAIN_KEY );
 		Log.println( "Current domain: " + domain );
-		new Resource( GWT.getHostPageBaseURL() + "api/domains/selected" )
-		.addQueryParam( "domain", domain )
-		.post().send( new JsonCallback() {
+		
+		RiscossCall.fromCookies().withDomain(null).auth().fx( "username" ).get( new JsonCallback() {
+			
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
-				Log.println( "Domain check response: " + response );
-				if( response == null ) showDomainSelectionDialog();
-				else if( response.isString() == null ) showDomainSelectionDialog();
-				else showUI( response.isString().stringValue() );
+				if( response != null ) {
+					if( response.isString() != null )
+						username = response.isString().stringValue();
+				}
+				if( username == null )
+					username = "";
+				Log.println( "username: " + username );
+				
+				Resource res = new Resource( GWT.getHostPageBaseURL() + "api/auth/domains/selected" )
+				.addQueryParam( "domain", Cookies.getCookie( CookieNames.DOMAIN_KEY ) );
+				Log.println( "query OLD: " + res.getQuery() );
+				
+//				new Resource( GWT.getHostPageBaseURL() + "api/auth/domains/selected" )
+//				.addQueryParam( "domain", Cookies.getCookie( CookieNames.DOMAIN_KEY ) )
+//				.post().send( new JsonCallback() {
+//					@Override
+//					public void onSuccess( Method method, JSONValue response ) {
+//						Log.println( "Domain check response: " + response );
+//						if( response == null ) showDomainSelectionDialog();
+//						else if( response.isString() == null ) showDomainSelectionDialog();
+//						else showUI( response.isString().stringValue() );
+//					}
+//					@Override
+//					public void onFailure( Method method, Throwable exception ) {
+//						Window.alert( exception.getMessage() );
+//					}
+//				});
+//				Log.println( ">>>" + Cookies.getCookie( CookieNames.DOMAIN_KEY ) );
+				RiscossCall.fromCookies().withDomain(null).auth().fx( "domains/selected" ).arg( "domain", Cookies.getCookie( CookieNames.DOMAIN_KEY ) ).post( new JsonCallback() {
+					@Override
+					public void onSuccess( Method method, JSONValue response ) {
+						Log.println( "Domain check response: " + response );
+						if( response == null ) showDomainSelectionDialog();
+						else if( response.isString() == null ) showDomainSelectionDialog();
+						else showUI( response.isString().stringValue() );
+					}
+					@Override
+					public void onFailure( Method method, Throwable exception ) {
+						Window.alert( exception.getMessage() );
+					}
+				} );
 			}
+			
 			@Override
 			public void onFailure( Method method, Throwable exception ) {
 				Window.alert( exception.getMessage() );
 			}
 		});
+		
+//		new Resource( GWT.getHostPageBaseURL() + "api/domains/selected" )
+//		.addQueryParam( "domain", domain )
+//		.post().send( new JsonCallback() {
+//			@Override
+//			public void onSuccess( Method method, JSONValue response ) {
+//				Log.println( "Domain check response: " + response );
+//				if( response == null ) showDomainSelectionDialog();
+//				else if( response.isString() == null ) showDomainSelectionDialog();
+//				else showUI( response.isString().stringValue() );
+//			}
+//			@Override
+//			public void onFailure( Method method, Throwable exception ) {
+//				Window.alert( exception.getMessage() );
+//			}
+//		});
 	}
 	
 	void showUI() {
@@ -95,10 +147,29 @@ public class RiscossWebApp implements EntryPoint {
 		menu.setAnimationEnabled(true);
 		menu.setStyleName("mainMenu");
 		
-		menu.addItem("Select Domain (" + domain + ")", new Command() {
+//		menu.addItem("Select Domain (" + domain + ")", new Command() {
+//			@Override
+//			public void execute() {
+//				showDomainSelectionDialog();
+//			}
+//		});
+		
+		MenuBar account = new MenuBar(true);
+		account.setStyleName("subMenu");
+		account.setAnimationEnabled(true);
+		menu.addItem( username + " (" + domain + ")", account);
+		account.addItem("Change domain", new Command() {
 			@Override
 			public void execute() {
 				showDomainSelectionDialog();
+			}
+		});
+		account.addItem("Logout", new Command() {
+			@Override
+			public void execute() {
+				Cookies.removeCookie( CookieNames.TOKEN_KEY );
+				Cookies.removeCookie( CookieNames.DOMAIN_KEY );
+				Window.Location.reload();
 			}
 		});
 		
@@ -177,16 +248,29 @@ public class RiscossWebApp implements EntryPoint {
 			}
 		});
 		
-		/*MenuBar admin = new MenuBar(true);
-		 * admin.setAnimationEnabled(true);
-		 * menu.addItem("Admin", admin);
-		 * admin.addItem("Users and Roles", new Command() {
-		 * 	@Override
-		 * 	public void execute() {
-		 * 		loadPanel( "admin.html" );
-		 * 	}
-		 *});
-		 */
+//		MenuBar account = new MenuBar(true);
+//		account.setStyleName("subMenu");
+//		account.setAnimationEnabled(true);
+//		menu.addItem( "Account", account);
+//		account.addItem("Logout", new Command() {
+//			@Override
+//			public void execute() {
+//				Cookies.removeCookie( CookieNames.TOKEN_KEY );
+//				Cookies.removeCookie( CookieNames.DOMAIN_KEY );
+//				Window.Location.reload();
+//			}
+//		});
+		
+		MenuBar admin = new MenuBar(true);
+		admin.setAnimationEnabled(true);
+		menu.addItem("Admin", admin);
+		admin.addItem("Users and Roles", new Command() {
+			@Override
+			public void execute() {
+				loadPanel( "admin.html" );
+			}
+		});
+		
 		
 		
 		VerticalPanel north = new VerticalPanel();
@@ -214,7 +298,7 @@ public class RiscossWebApp implements EntryPoint {
 		RootPanel.get().add( north );
 		//RootPanel.get().add( margin );
 		RootPanel.get().setStyleName("root");
-
+		
 	}
 	
 	static class DomainSelectionDialog {
@@ -236,14 +320,12 @@ public class RiscossWebApp implements EntryPoint {
 		
 		protected void selectDomain( String value ) {
 			dialog.hide();
-			new Resource( GWT.getHostPageBaseURL() + "api/domains/selected" )
-				.addQueryParam( "domain", value )
-					.post().send( new JsonCallback() {
+//			Log.println( "> " + value );
+			RiscossCall.fromCookies().withDomain(null).auth().fx( "domains/selected" ).arg( "domain", value ).post( new JsonCallback() {
 				@Override
 				public void onSuccess( Method method, JSONValue response ) {
 					if( response == null ) return;
 					if( response.isString() == null ) return;
-//					if( !"Ok".equals( response.isString().stringValue() ) ) return;
 					Log.println( "Domain set to " + response.isString().stringValue() );
 					Cookies.setCookie( CookieNames.DOMAIN_KEY, response.isString().stringValue() );
 					Window.Location.reload();
@@ -252,9 +334,26 @@ public class RiscossWebApp implements EntryPoint {
 				public void onFailure( Method method, Throwable exception ) {
 					Window.alert( exception.getMessage() );
 				}
-			});
+			} );
+			
+//			new Resource( GWT.getHostPageBaseURL() + "api/auth/domains/selected" )
+//			.addQueryParam( "domain", value )
+//			.post().send( new JsonCallback() {
+//				@Override
+//				public void onSuccess( Method method, JSONValue response ) {
+//					if( response == null ) return;
+//					if( response.isString() == null ) return;
+//					Log.println( "Domain set to " + response.isString().stringValue() );
+//					Cookies.setCookie( CookieNames.DOMAIN_KEY, response.isString().stringValue() );
+//					Window.Location.reload();
+//				}
+//				@Override
+//				public void onFailure( Method method, Throwable exception ) {
+//					Window.alert( exception.getMessage() );
+//				}
+//			});
 		}
-
+		
 		public void show() {
 			HorizontalPanel h = new HorizontalPanel();
 			h.add( new Button( "Cancel", new ClickHandler() {
@@ -277,7 +376,8 @@ public class RiscossWebApp implements EntryPoint {
 	
 	
 	protected void showDomainSelectionDialog() {
-		new Resource( GWT.getHostPageBaseURL() + "api/domains/predefined/list" ).get().send( new JsonCallback() {
+		
+		RiscossCall.fromCookies().withDomain(null).auth().domains().list().get( new JsonCallback() {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				DomainSelectionDialog dsDialog = null;
@@ -293,9 +393,27 @@ public class RiscossWebApp implements EntryPoint {
 			public void onFailure( Method method, Throwable exception ) {
 				Window.alert( exception.getMessage() );
 			}
-		});
+		} );
+		
+		//		new Resource( GWT.getHostPageBaseURL() + "api/domains/predefined/list" ).get().send( new JsonCallback() {
+		//			@Override
+		//			public void onSuccess( Method method, JSONValue response ) {
+		//				DomainSelectionDialog dsDialog = null;
+		//				if( dsDialog == null ) {
+		//					dsDialog = new DomainSelectionDialog();
+		//				}
+		//				for( int i = 0; i < response.isArray().size(); i++ ) {
+		//					dsDialog.addDomainOption( response.isArray().get( i ).isString().stringValue() );
+		//				}
+		//				dsDialog.show();
+		//			}
+		//			@Override
+		//			public void onFailure( Method method, Throwable exception ) {
+		//				Window.alert( exception.getMessage() );
+		//			}
+		//		});
 	}
-
+	
 	class OutlineLabel extends Anchor {
 		String panelUrl;
 		public OutlineLabel( String label, String panelName, ClickHandler h ) {
@@ -333,9 +451,9 @@ public class RiscossWebApp implements EntryPoint {
 		
 		if( currentPanel != null ) {
 			RootPanel.get().add( currentPanel.getWidget());
-//			currentPanel.getWidget().getParent().setHeight( "100%" );
+			//			currentPanel.getWidget().getParent().setHeight( "100%" );
 			currentPanel.activate();
 		}
 	}
-
+	
 }

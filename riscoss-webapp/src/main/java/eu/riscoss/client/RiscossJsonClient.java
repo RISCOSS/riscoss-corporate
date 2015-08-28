@@ -65,29 +65,39 @@ public class RiscossJsonClient {
 		return domain;
 	}
 	
-	public static void listLayers( JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/layers/" + getDomain() + "/list").get().send( cb 	);
+	public static String getToken() {
+		String token = Cookies.getCookie( CookieNames.TOKEN_KEY );
+		// A null or empty string gives an error when setting it in the request header
+		if( token == null ) token = "-";
+		return token;
 	}
 	
-	public static void createLayer( String layerName, String parentName, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/layers/" + getDomain() + "/new" )
-			.addQueryParam( "name", layerName )
-			.addQueryParam( "parent", parentName )
-			.post().send( cb );
-	}
-	
-	public static void editLayer( String oldLayerName, String newLayerName, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/layers/" + getDomain() + "/edit" )
-			.addQueryParam( "name", oldLayerName )
-			.addQueryParam( "newname", newLayerName )
-			.post().send( cb );
-	}
-	
-	public static void deleteLayer( String layerName, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/layers/" + getDomain() + "/delete" )
-		.addQueryParam( "name", layerName )
-		.delete().send( cb );
-	}
+//	public static void listLayers( JsonCallback cb ) {
+//		new Resource( GWT.getHostPageBaseURL() + "api/layers/" + getDomain() + "/list")
+//		.get()
+//		.header( "token", getToken() )
+//		.send( cb );
+//	}
+//	
+//	public static void createLayer( String layerName, String parentName, JsonCallback cb ) {
+//		new Resource( GWT.getHostPageBaseURL() + "api/layers/" + getDomain() + "/new" )
+//			.addQueryParam( "name", layerName )
+//			.addQueryParam( "parent", parentName )
+//			.post().send( cb );
+//	}
+//	
+//	public static void editLayer( String oldLayerName, String newLayerName, JsonCallback cb ) {
+//		new Resource( GWT.getHostPageBaseURL() + "api/layers/" + getDomain() + "/edit" )
+//			.addQueryParam( "name", oldLayerName )
+//			.addQueryParam( "newname", newLayerName )
+//			.post().send( cb );
+//	}
+//	
+//	public static void deleteLayer( String layerName, JsonCallback cb ) {
+//		new Resource( GWT.getHostPageBaseURL() + "api/layers/" + getDomain() + "/delete" )
+//		.addQueryParam( "name", layerName )
+//		.delete().send( cb );
+//	}
 	
 	public static void listRDCs( JsonCallback cb ) {
 		new Resource( GWT.getHostPageBaseURL() + "api/rdcs/list" ).get().send( cb );
@@ -311,19 +321,19 @@ public class RiscossJsonClient {
 			.send( cb );
 	}
 	
-	public static void getLayerContextualInfo( String layer, JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/layers/" + getDomain() + "/ci" )
-			.addQueryParam( "layer", layer )
-			.get().send( cb );
-	}
-	
-	public static void setLayerContextualInfo( String layer, JLayerContextualInfo info, JsonCallback cb ) {
-		CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
-		String json = codec.encode( info ).toString();
-		new Resource( GWT.getHostPageBaseURL() + "api/layers/" + getDomain() + "/ci" )
-			.addQueryParam( "layer", layer )
-			.put().header( "info", json ).send( cb );
-	}
+//	public static void getLayerContextualInfo( String layer, JsonCallback cb ) {
+//		new Resource( GWT.getHostPageBaseURL() + "api/layers/" + getDomain() + "/ci" )
+//			.addQueryParam( "layer", layer )
+//			.get().send( cb );
+//	}
+//	
+//	public static void setLayerContextualInfo( String layer, JLayerContextualInfo info, JsonCallback cb ) {
+//		CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
+//		String json = codec.encode( info ).toString();
+//		new Resource( GWT.getHostPageBaseURL() + "api/layers/" + getDomain() + "/ci" )
+//			.addQueryParam( "layer", layer )
+//			.put().header( "info", json ).send( cb );
+//	}
 
 
 }

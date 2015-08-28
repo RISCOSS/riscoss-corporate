@@ -93,7 +93,7 @@
 
 	<!-- Default page to serve -->
 	<welcome-file-list>
-		<welcome-file>RiscossWebApp.html</welcome-file>
+		<welcome-file>index.jsp</welcome-file>
 	</welcome-file-list>
 	
 

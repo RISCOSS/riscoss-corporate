@@ -35,6 +35,7 @@ import javax.servlet.ServletResponse;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.reflections.Reflections;
 
+import eu.riscoss.db.RiscossDatabase;
 import eu.riscoss.rdc.RDC;
 import eu.riscoss.rdc.RDCFactory;
 import eu.riscoss.rdc.RDCRunner;
@@ -89,7 +90,18 @@ public class ServletWrapper extends ServletContainer {
 			System.out.println( "DB address: " + dbaddr );
 			System.out.println( "DB name: " + dbname );
 			
-			DBConnector.closeDB( DBConnector.openDB( "Playground" ) );
+			String initString = sc.getInitParameter( "eu.riscoss.param.domains.list" );
+			
+			RiscossDatabase db = DBConnector.openDatabase( null, null );
+			if( initString != null ) {
+				String[] tokens = initString.split( "[,]" );
+				for( String tok : tokens ) {
+					db.createDomain( tok );
+				}
+			}
+			db.close();
+			
+//			DBConnector.closeDB( DBConnector.openDB( "Playground" ) ); // Old stuff
 			
 			Reflections reflections = new Reflections( RDCRunner.class.getPackage().getName() );
 			

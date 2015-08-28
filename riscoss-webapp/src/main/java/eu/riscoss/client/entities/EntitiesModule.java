@@ -25,8 +25,6 @@ import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
 import org.fusesource.restygwt.client.Resource;
 
-import com.google.gwt.cell.client.ButtonCell;
-import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -42,7 +40,6 @@ import com.google.gwt.user.cellview.client.CellTable.Resources;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockPanel;
@@ -51,7 +48,6 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.ListDataProvider;
@@ -59,7 +55,7 @@ import com.google.gwt.view.client.ListDataProvider;
 import eu.riscoss.client.EntityInfo;
 import eu.riscoss.client.JsonCallbackWrapper;
 import eu.riscoss.client.JsonUtil;
-import eu.riscoss.client.Log;
+import eu.riscoss.client.RiscossCall;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecLayerContextualInfo;
 import eu.riscoss.client.layers.LayersComboBox;
@@ -108,7 +104,7 @@ public class EntitiesModule implements EntryPoint {
 		
 		String layer = Window.Location.getParameter( "layer" );
 		
-		RiscossJsonClient.listLayers( new JsonCallback() {
+		RiscossCall.fromCookies().layers().list().get( new JsonCallback() {
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
 				for( int i = 0; i < response.isArray().size(); i++ ) {
@@ -414,7 +410,7 @@ public class EntitiesModule implements EntryPoint {
 							
 							dialog.hide();
 							
-							RiscossJsonClient.getLayerContextualInfo(layer, new JsonCallback() {
+							RiscossCall.fromCookies().layers().layer( layer ).property( RiscossCall.ContextualInfo ).get( new JsonCallback() {
 								@Override
 								public void onFailure(Method method, Throwable exception) {
 									Window.alert( exception.getMessage() );
@@ -461,9 +457,7 @@ public class EntitiesModule implements EntryPoint {
 					info.setLayer( JsonUtil.getValue( response, "layer", "" ) );
 					insertEntityIntoTable( info );
 					
-					
-					
-					RiscossJsonClient.getLayerContextualInfo(layerName.getItemText(layerName.getSelectedIndex()), new JsonCallback() {
+					RiscossCall.fromCookies().layers().layer( layerName.getItemText(layerName.getSelectedIndex()) ).property( RiscossCall.ContextualInfo ).get( new JsonCallback() {
 						@Override
 						public void onFailure(Method method, Throwable exception) {
 							Window.alert( exception.getMessage() );

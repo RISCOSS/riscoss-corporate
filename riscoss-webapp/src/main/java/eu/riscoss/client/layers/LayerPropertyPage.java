@@ -33,6 +33,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DateBox;
 
 import eu.riscoss.client.JsonCallbackWrapper;
+import eu.riscoss.client.RiscossCall;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecLayerContextualInfo;
 import eu.riscoss.shared.JLayerContextualInfo;
@@ -121,7 +122,7 @@ public class LayerPropertyPage implements IsWidget {
 		
 		tab.setVisible(true);
 		
-		RiscossJsonClient.getLayerContextualInfo(layer, new JsonCallback() {
+		RiscossCall.fromCookies().layers().layer( layer ).property( RiscossCall.ContextualInfo ).get( new JsonCallback() {
 			@Override
 			public void onFailure(Method method, Throwable exception) {
 				Window.alert( exception.getMessage() );
@@ -236,21 +237,18 @@ public class LayerPropertyPage implements IsWidget {
 					defvalue.setWidget(new ListBox());
 				}
 				
-				RiscossJsonClient.setLayerContextualInfo(layer, info, new JsonCallback() {
+				CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
+				JSONValue json = codec.encode( info );
+				
+				RiscossCall.fromCookies().layers().layer( layer ).property( RiscossCall.ContextualInfo ).post( json, new JsonCallback() {
 
 					@Override
-					public void onFailure(Method method,
-							Throwable exception) {
+					public void onFailure( Method method, Throwable exception ) {
 						Window.alert( exception.getMessage());
-						
 					}
-
 					@Override
-					public void onSuccess(Method method,
-							JSONValue response) {
-						
+					public void onSuccess( Method method, JSONValue response ) {
 						reloadData();
-						
 					}
 					
 				});
@@ -591,7 +589,11 @@ public class LayerPropertyPage implements IsWidget {
 					});
 					
 					info.deleteContextualInfoElement(i);
-					RiscossJsonClient.setLayerContextualInfo(layer, info, new JsonCallback() {
+					
+					CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
+					JSONValue json = codec.encode( info );
+					
+					RiscossCall.fromCookies().layers().layer( layer ).property( RiscossCall.ContextualInfo ).put( json, new JsonCallback() {
 
 						@Override
 						public void onFailure(Method method,

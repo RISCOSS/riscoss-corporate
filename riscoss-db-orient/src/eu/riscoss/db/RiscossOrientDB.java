@@ -6,55 +6,90 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import org.codehaus.jettison.json.JSONObject;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
+import com.orientechnologies.orient.core.metadata.security.OToken;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.sql.OCommandSQL;
-import com.orientechnologies.orient.core.sql.OSQLEngine;
-import com.orientechnologies.orient.core.sql.functions.OSQLFunction;
-import com.orientechnologies.orient.graph.sql.functions.OGraphFunctionFactory;
+import com.orientechnologies.orient.server.token.OrientTokenHandler;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
+import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
 public class RiscossOrientDB implements RiscossDB {
 	
-	static {
-		registerGraphFunctions();
-	}
+//	static {
+//		registerGraphFunctions();
+//	}
+//	
+//	private static final OServerParameterConfiguration[] I_PARAMS = new OServerParameterConfiguration[] { 
+//		new OServerParameterConfiguration( OrientTokenHandler.SIGN_KEY_PAR, "any key")
+//	};
+//	
+//	private static void registerGraphFunctions() {
+//		OGraphFunctionFactory graphFunctions = new OGraphFunctionFactory();
+//		Set<String> names = graphFunctions.getFunctionNames();
+//		
+//		for (String name : names) {
+//			System.out.println("ODB graph function found: [" + name + "]");
+//			OSQLEngine.getInstance().registerFunction(name, graphFunctions.createFunction(name)); 
+//			OSQLFunction function = OSQLEngine.getInstance().getFunction(name);
+//			if (function != null) {
+//				// Dummy call, to ensure that the class is loaded
+//				function.getSyntax();
+////				System.out.println("ODB graph function [" + name + "] is registered: [" + function.getSyntax() + "]");
+//			}
+//			else {
+////				System.out.println("ODB graph function [" + name + "] NOT registered!!!");
+//			}
+//		}
+//	}
 	
-	private static void registerGraphFunctions() {
-		OGraphFunctionFactory graphFunctions = new OGraphFunctionFactory();
-		Set<String> names = graphFunctions.getFunctionNames();
-		
-		for (String name : names) {
-			System.out.println("ODB graph function found: [" + name + "]");
-			OSQLEngine.getInstance().registerFunction(name, graphFunctions.createFunction(name)); 
-			OSQLFunction function = OSQLEngine.getInstance().getFunction(name);
-			if (function != null) {
-				System.out.println("ODB graph function [" + name + "] is registered: [" + function.getSyntax() + "]");
-			}
-			else {
-				System.out.println("ODB graph function [" + name + "] NOT registered!!!");
-			}
-		}
-	}
+//	static Map<String,OrientGraphFactory> factories = new HashMap<String,OrientGraphFactory>();
+//	
+//	private synchronized static OrientGraph acquireFactory( String dbaddress ) {
+//		OrientGraphFactory factory = factories.get( dbaddress );
+//		if( factory == null ) {
+//			factory = new OrientGraphFactory( dbaddress ); //.setupPool(1,10);
+//			factories.put( dbaddress, factory );
+//		}
+//		return factory.getTx();
+//	}
 	
 	GDomDB		dom = null;
 	
 	public RiscossOrientDB( String address, String domain ) {
 		
-		dom = new GDomDB( address, domain );
+		OrientGraphNoTx graph = new OrientGraphFactory( address ).getNoTx();
 		
-		if( dom.getVertex( "/layers" ) == null ) {
-			System.out.println( "DB initialized" );
-		}
-		else {
-			//System.out.println( "DB found" );
-		}
+		dom = new GDomDB( graph, domain );
+		
+	}
+	
+	public RiscossOrientDB( String address, String domain, String username, String password ) {
+		
+		OrientGraphNoTx graph = new OrientGraphFactory( address, username, password ).getNoTx();
+		
+		dom = new GDomDB( graph, domain );
+		
+	}
+	
+	public RiscossOrientDB( String address, String domain, byte[] token ) {
+		
+		OrientTokenHandler handler = RiscossOrientDatabase.createTokenHandler();
+		
+		OToken tok = handler.parseWebToken(token);
+		handler.validateBinaryToken( tok );
+		
+		@SuppressWarnings("resource") // FIXME
+		OrientGraphNoTx graph = new OrientGraphNoTx( (ODatabaseDocumentTx)new ODatabaseDocumentTx( address ).open( tok ) );
+		
+		dom = new GDomDB( graph, domain );
 	}
 	
 	NodeID getLink( NodeID from, String link ) {

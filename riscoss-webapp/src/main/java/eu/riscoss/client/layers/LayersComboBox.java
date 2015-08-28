@@ -31,15 +31,14 @@ import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
 
-import eu.riscoss.client.Log;
-import eu.riscoss.client.RiscossJsonClient;
+import eu.riscoss.client.RiscossCall;
 
 public class LayersComboBox implements IsWidget {
 	
 	ListBox combo = new ListBox();
 	
 	void loadLayers() {
-		RiscossJsonClient.listLayers( new JsonCallback() {
+		RiscossCall.fromCookies().layers().list().get( new JsonCallback() {
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
 				for( int i = 0; i < response.isArray().size(); i++ ) {

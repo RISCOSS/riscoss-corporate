@@ -23,8 +23,12 @@ package eu.riscoss.server;
 
 import java.io.File;
 
+import org.apache.commons.codec.binary.Base64;
+
 import eu.riscoss.db.RiscossDB;
+import eu.riscoss.db.RiscossDatabase;
 import eu.riscoss.db.RiscossOrientDB;
+import eu.riscoss.db.RiscossOrientDatabase;
 
 public class DBConnector {
 	
@@ -47,34 +51,27 @@ public class DBConnector {
 		return new File( new File( s ).getParent() );
 	}
 	
-//	static ThreadLocal<HashMap<String,String>> threadMap = new ThreadLocal<>();
-//	
-//	public static synchronized void setThreadLocalValue( String key, String value ) {
-//		HashMap<String,String> map = threadMap.get();
-//		if( map == null ) {
-//			map = new HashMap<String,String>();
-//			threadMap.set( map );
-//		}
-//		map.put( key, value );
-//	}
-//	
-//	public static synchronized String getThreadLocalValue( String key, String def ) {
-//		HashMap<String,String> map = threadMap.get();
-//		if( map == null )return def;
-//		String ret = map.get( key );
-//		if( ret == null ) return def;
-//		return ret;
-//	}
+	public static RiscossDatabase openDatabase( String username, String password ) {
+		return new RiscossOrientDatabase( db_addr, username, password );
+	}
 	
-//	static RiscossDB openDB() {
-//		return openDB( getThreadLocalValue( CookieNames.DOMAIN_KEY, DEFAULT_DOMAIN ) );
-//	}
+	public static RiscossDatabase openDatabase( String token ) {
+		return new RiscossOrientDatabase( db_addr, Base64.decodeBase64( token ) );
+	}
 	
-	static RiscossDB openDB( String domain ) {
+	public static RiscossDB openDB( String domain ) {
 		return new RiscossOrientDB( db_addr, domain );
 	}
 	
-	static void closeDB( RiscossDB db ) {
+	public static RiscossDB openDB( String domain, String username, String password ) {
+		return new RiscossOrientDB( db_addr, domain, username, password );
+	}
+	
+	public static RiscossDB openDB( String domain, String token ) {
+		return new RiscossOrientDB( db_addr, domain, Base64.decodeBase64( token ) );
+	}
+	
+	public static void closeDB( RiscossDB db ) {
 		if( db == null ) return;
 		try {
 			db.close();

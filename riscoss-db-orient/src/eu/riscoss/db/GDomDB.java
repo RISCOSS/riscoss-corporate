@@ -2,7 +2,6 @@ package eu.riscoss.db;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -10,8 +9,7 @@ import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
+import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 
 public class GDomDB {
@@ -22,35 +20,35 @@ public class GDomDB {
 	public static final String ROOT_CLASS = "Space";
 	public static final String NODE_CLASS = "Node";
 	
-	static Map<String,OrientGraphFactory> factories = new HashMap<String,OrientGraphFactory>();
+//	static Map<String,OrientGraphFactory> factories = new HashMap<String,OrientGraphFactory>();
+//	
+//	private synchronized static OrientGraph acquireFactory( String dbaddress ) {
+//		OrientGraphFactory factory = factories.get( dbaddress );
+//		if( factory == null ) {
+//			factory = new OrientGraphFactory( dbaddress ); //.setupPool(1,10);
+//			factories.put( dbaddress, factory );
+//		}
+//		return factory.getTx();
+//	}
 	
-	private synchronized static OrientGraph acquireFactory( String dbaddress ) {
-		OrientGraphFactory factory = factories.get( dbaddress );
-		if( factory == null ) {
-			factory = new OrientGraphFactory( dbaddress ); //.setupPool(1,10);
-			factories.put( dbaddress, factory );
-		}
-		return factory.getTx();
-	}
-	
-	OrientGraph graph = null;
+	OrientBaseGraph graph = null;
 	Vertex root;
 	String rootName;
 	
-	public GDomDB( String dbaddress, String rootName ) {
-		OrientGraph graph = acquireFactory( dbaddress );
+//	public GDomDB( String dbaddress, String rootName ) {
+//		OrientGraph graph = acquireFactory( dbaddress );
+//		init( graph, rootName );
+//	}
+	
+//	public GDomDB( String dbaddress ) {
+//		this( dbaddress, "Root" );
+//	}
+	
+	public GDomDB( OrientBaseGraph graph, String rootName ) {
 		init( graph, rootName );
 	}
 	
-	public GDomDB( String dbaddress ) {
-		this( dbaddress, "Root" );
-	}
-	
-	public GDomDB( OrientGraph graph, String rootName ) {
-		init( graph, rootName );
-	}
-	
-	private void init( OrientGraph graph, String rootName ) {
+	private void init( OrientBaseGraph graph, String rootName ) {
 		this.graph = graph;
 		this.rootName = rootName;
 		ensureNodeTypeExistence( graph, ROOT_CLASS );
@@ -65,13 +63,13 @@ public class GDomDB {
 		}
 	}
 	
-	private void ensureEdgeTypeExistence(OrientGraph graph, String type ) {
+	private void ensureEdgeTypeExistence(OrientBaseGraph graph, String type ) {
 		if( graph.getEdgeType( type ) == null ) {
 			graph.createEdgeType( type );
 		}
 	}
 
-	private void ensureNodeTypeExistence( OrientGraph graph, String type ) {
+	private void ensureNodeTypeExistence( OrientBaseGraph graph, String type ) {
 		if( graph.getVertexType( type ) == null ) {
 			graph.createVertexType( type );
 		}

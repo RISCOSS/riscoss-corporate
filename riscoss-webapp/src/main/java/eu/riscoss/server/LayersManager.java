@@ -48,11 +48,15 @@ public class LayersManager {
 	}
 	
 	@GET @Path("/{domain}/list")
-	public String list( @DefaultValue("Playground") @PathParam("domain") String domain ) {
+	public String list( 
+			@DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token ) {
+		
+		System.out.println( "Received token: " + token );
 		
 		JsonArray a = new JsonArray();
 		
-		RiscossDB db = DBConnector.openDB( domain );
+		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
 			for( String layer : db.layerNames() ) {
 				JsonObject o = new JsonObject();
@@ -69,8 +73,9 @@ public class LayersManager {
 	}
 	
 	@POST @Path("{domain}/new")
-	public void createNew(
+	public void createNew_old(
 			@DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, 
 			@QueryParam("name") String name,
 			@QueryParam("parent") String parentName
 			) {
@@ -79,7 +84,29 @@ public class LayersManager {
 		
 		parentName = parentName.trim();
 		
-		RiscossDB db = DBConnector.openDB( domain );
+		RiscossDB db = DBConnector.openDB( domain, token );
+		try
+		{
+			db.addLayer( name, parentName );
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
+	}
+	
+	@POST @Path("{domain}/create")
+	public void createNew(
+			@DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, 
+			@QueryParam("name") String name,
+			@QueryParam("parent") String parentName
+			) {
+		//attention:filename sanitation is not directly notified to the user
+		name = RiscossUtil.sanitize(name.trim());
+		
+		parentName = parentName.trim();
+		
+		RiscossDB db = DBConnector.openDB( domain, token );
 		try
 		{
 			db.addLayer( name, parentName );
@@ -90,9 +117,12 @@ public class LayersManager {
 	}
 	
 	@DELETE @Path("{domain}/delete")
-	public void deleteLayer( @DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("name") String name ) {
+	public void deleteLayer( @DefaultValue(
+			"Playground") @PathParam("domain") String domain, 
+			@DefaultValue("") @HeaderParam("token") String token, 
+			@QueryParam("name") String name ) {
 		
-		RiscossDB db = DBConnector.openDB( domain );
+		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
 			db.removeLayer( name );
 		}
@@ -102,10 +132,51 @@ public class LayersManager {
 		
 	}
 	
-	@GET @Path( "{domain}/ci" )
-	public String getContextualInfo( @DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("layer") String layer ) {
+//	@GET @Path( "{domain}/ci" )
+//	public String getContextualInfo( 
+//			@DefaultValue("Playground") @PathParam("domain") String domain, 
+//			@DefaultValue("") @HeaderParam("token") String token, 
+//			@QueryParam("layer") String layer ) {
+//		
+//		RiscossDB db = DBConnector.openDB( domain, token );
+//		try {
+//			String json = db.getLayerData( layer, "ci" );
+//			if( json == null ) {
+//				JLayerContextualInfo info = new JLayerContextualInfo();
+//				json = gson.toJson( info );
+//			}
+//			return json;
+//		}
+//		finally {
+//			DBConnector.closeDB( db );
+//		}
+//		
+//	}
+//	
+//	@PUT @Path( "{domain}/ci" )
+//	public void setContextualInfo( 
+//			@DefaultValue("Playground") @PathParam("domain") String domain,
+//			@DefaultValue("") @HeaderParam("token") String token, 
+//			@QueryParam("layer") String layer, 
+//			@HeaderParam("info") String json ) {
+//		
+//		RiscossDB db = DBConnector.openDB( domain, token );
+//		try {
+//			db.setLayerData( layer, "ci", json );
+//		}
+//		finally {
+//			DBConnector.closeDB( db );
+//		}
+//		
+//	}
+	
+	@GET @Path( "{domain}/{layer}/properties/ci" )
+	public String getContextualInfo( 
+			@DefaultValue("Playground") @PathParam("domain") String domain, 
+			@DefaultValue("") @HeaderParam("token") String token, 
+			@QueryParam("layer") String layer ) {
 		
-		RiscossDB db = DBConnector.openDB( domain );
+		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
 			String json = db.getLayerData( layer, "ci" );
 			if( json == null ) {
@@ -120,13 +191,14 @@ public class LayersManager {
 		
 	}
 	
-	@PUT @Path( "{domain}/ci" )
+	@PUT @Path( "{domain}/{layer}/properties/ci" )
 	public void setContextualInfo( 
 			@DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, 
 			@QueryParam("layer") String layer, 
 			@HeaderParam("info") String json ) {
 		
-		RiscossDB db = DBConnector.openDB( domain );
+		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
 			db.setLayerData( layer, "ci", json );
 		}
@@ -138,14 +210,33 @@ public class LayersManager {
 	
 	@POST
 	@Path("{domain}/edit")
-	public void editLayer( 
+	public void editLayerOld( 
 			@DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, 
 			@QueryParam("name") String name, 
 			@QueryParam("newname") String newName ) {
 		
 		System.out.println("Name change request: "+name+" to "+newName+".");
 		
-		RiscossDB db = DBConnector.openDB( domain );
+		RiscossDB db = DBConnector.openDB( domain, token );
+		try {
+			db.renameLayer( name, newName );
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
+	}
+	
+	@PUT @Path("{domain}/{layer}/name")
+	public void editLayer( 
+			@DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, 
+			@PathParam("layer") String name, 
+			@QueryParam("value") String newName ) {
+		
+		System.out.println("Name change request: "+name+" to "+newName+".");
+		
+		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
 			db.renameLayer( name, newName );
 		}
