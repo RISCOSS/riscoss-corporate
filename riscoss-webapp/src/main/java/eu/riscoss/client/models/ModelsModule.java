@@ -164,19 +164,44 @@ public class ModelsModule implements EntryPoint {
 				Window.alert(exception.getMessage());
 			}
 		});
+		
+		SimplePager pager = new SimplePager();
+		pager.setDisplay(table);
 
-		// Attach the image viewer to the document
-		// RootPanel.get().add(panelImages);
+		VerticalPanel tablePanel = new VerticalPanel();
+		tablePanel.add(table);
+		tablePanel.add(pager);
+		
+		
+		dock.add(tablePanel, DockPanel.CENTER);
+		dock.add(rightPanel2, DockPanel.EAST);
 
-		//MyFancyLookingButton button = new MyFancyLookingButton();
-		//SingleUploader uploader = new SingleUploader();//FileInputType.CUSTOM.with(button));// "New..."
-		SingleUploader uploader = new SingleUploader(FileInputType.CUSTOM.with(new Button(BUTTON_NEW_MODEL)));
-		uploader.setTitle("Upload new model");
-		uploader.setAutoSubmit(true);
-		uploader.setServletPath(uploader.getServletPath() + "?t=modelblob&domain=" + RiscossJsonClient.getDomain());
-		uploader.addOnFinishUploadHandler(new OnFinishUploaderHandler() {
+		dock.setCellWidth(tablePanel, "40%");
+		dock.setCellHeight(rightPanel2, "100%");
+		table.setWidth("100%");
+
+		dock.setSize("100%", "100%");
+		
+		mainView.setStyleName("mainViewLayer");
+		mainView.setWidth("100%");
+		leftPanel.setStyleName("leftPanelLayer");
+		leftPanel.setWidth("400px");
+		//leftPanel.setHeight("100%");
+		rightPanel.setStyleName("rightPanelLayer");
+		Label title = new Label("Model management");
+		title.setStyleName("title");
+		page.add(title);
+		
+		Button uploadModel = new Button("UPLOAD MODEL");
+		uploadModel.setStyleName("button");
+		SingleUploader upload = new SingleUploader(FileInputType.CUSTOM.with(uploadModel));
+		upload.setTitle("Upload new model");
+		upload.setAutoSubmit(true);
+		upload.setServletPath(upload.getServletPath() + "?t=modelblob&domain=" + RiscossJsonClient.getDomain() );
+		upload.addOnFinishUploadHandler(new OnFinishUploaderHandler() {
 			@Override
 			public void onFinish(IUploader uploader) {
+				
 				UploadedInfo info = uploader.getServerInfo();
 				String name = info.name;
 				if (name == null || name.equals("") ) 
@@ -204,55 +229,7 @@ public class ModelsModule implements EntryPoint {
 					dataProvider.getList().add(new ModelInfo(name));
 				else
 					Window.alert("Error: " + response );
-			}
-		});
-
-		SimplePager pager = new SimplePager();
-		pager.setDisplay(table);
-
-		VerticalPanel tablePanel = new VerticalPanel();
-		tablePanel.add(table);
-		tablePanel.add(pager);
-		
-		
-		dock.add(tablePanel, DockPanel.CENTER);
-		dock.add(uploader, DockPanel.NORTH);
-		dock.add(rightPanel2, DockPanel.EAST);
-
-		dock.setCellWidth(tablePanel, "40%");
-		dock.setCellHeight(rightPanel2, "100%");
-		table.setWidth("100%");
-
-		dock.setSize("100%", "100%");
-		
-		mainView.setStyleName("mainViewLayer");
-		mainView.setWidth("100%");
-		leftPanel.setStyleName("leftPanelLayer");
-		leftPanel.setWidth("400px");
-		//leftPanel.setHeight("100%");
-		rightPanel.setStyleName("rightPanelLayer");
-		Label title = new Label("Model management");
-		title.setStyleName("title");
-		page.add(title);
-		
-		Button uploadModel = new Button("UPLOAD MODEL");
-		uploadModel.setStyleName("button");
-		SingleUploader upload = new SingleUploader(FileInputType.CUSTOM.with(uploadModel));
-		upload.setTitle("Upload new model");
-		upload.setAutoSubmit(true);
-		upload.setServletPath(upload.getServletPath() + "?t=modelblob");
-		upload.addOnFinishUploadHandler(new OnFinishUploaderHandler() {
-			@Override
-			public void onFinish(IUploader uploader) {
-				UploadedInfo info = uploader.getServerInfo();
-				String name = info.name;
-				//Log.println("SERVERMESS2 " + uploader.getServerMessage().getMessage());
-				
-				String response = uploader.getServerMessage().getMessage();
-				if (response.trim().equalsIgnoreCase("Success"))
-					dataProvider.getList().add(new ModelInfo(name));
-				else
-					Window.alert("Error: " + response );
+			
 			}
 		});
 		leftPanel.add(upload);
