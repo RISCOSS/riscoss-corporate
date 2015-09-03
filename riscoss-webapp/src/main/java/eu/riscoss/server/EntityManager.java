@@ -13,11 +13,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-*/
+ */
 
 /**
  * @author 	Alberto Siena
-**/
+ **/
 
 package eu.riscoss.server;
 
@@ -49,412 +49,435 @@ import eu.riscoss.shared.RiscossUtil;
 
 @Path("entities")
 public class EntityManager {
-	
+
 	@GET
 	@Path("/{domain}/list")
-	public String list( @DefaultValue("Playground") @PathParam("domain") String domain ) {
-		
+	public String list(@DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token ) {
+
 		JsonArray a = new JsonArray();
-		
-		RiscossDB db = DBConnector.openDB( domain );
+
+		RiscossDB db = DBConnector.openDB(domain, token);
 		try {
-			for( String name : db.entities() ) {
+			for (String name : db.entities()) {
 				JsonObject o = new JsonObject();
-				o.addProperty( "name", name );
-				o.addProperty( "layer", db.layerOf( name ) );
-				a.add( o );
+				o.addProperty("name", name);
+				o.addProperty("layer", db.layerOf(name));
+				a.add(o);
 			}
+		} finally {
+			DBConnector.closeDB(db);
 		}
-		finally {
-			DBConnector.closeDB( db );
-		}
-		
+
 		return a.toString();
-		
+
 	}
-	
+
 	@GET
 	@Path("/{domain}/list/{layer}")
-	public String list( @DefaultValue("Playground") @PathParam("domain") String domain, @PathParam("layer") String layer ) {
-		
+	public String list(@DefaultValue("Playground") @PathParam("domain") String domain,
+			@PathParam("layer") String layer, @DefaultValue("") @HeaderParam("token") String token) {
+
 		JsonArray a = new JsonArray();
-		
-		RiscossDB db = DBConnector.openDB( domain );
+
+		RiscossDB db = DBConnector.openDB(domain, token);
 		try {
-			for( String name : db.entities( layer ) ) {
+			for (String name : db.entities(layer)) {
 				JsonObject o = new JsonObject();
-				o.addProperty( "name", name );
-				o.addProperty( "layer", layer );
-				a.add( o );
+				o.addProperty("name", name);
+				o.addProperty("layer", layer);
+				a.add(o);
 			}
+		} finally {
+			DBConnector.closeDB(db);
 		}
-		finally {
-			DBConnector.closeDB( db );
-		}
-		
+
 		return a.toString();
-		
+
+	}
+
+
+	@POST
+	@Path("/{domain}/new")
+	@Produces("application/json")
+	//TODO: remove parent. Extra call for adding parents.
+	public String createEntity(@DefaultValue("Playground") @PathParam("domain") String domain,
+			@QueryParam("name") String name, @QueryParam("layer") String layer, @QueryParam("parent") String parent,
+			@DefaultValue("") @HeaderParam("token") String token ) {
+
+		// attention:filename sanitation is not directly notified to the user
+		name = RiscossUtil.sanitize(name);
+
+		RiscossDB db = DBConnector.openDB(domain, token);
+		try {
+			JsonObject ret = new JsonObject();
+			db.addEntity(name, layer);
+			if (parent != null) {
+				if (!"".equals(parent)) {
+					if (db.existsEntity(parent)) {
+						db.assignEntity(name, parent);
+					}
+				}
+			}
+			ret.addProperty("name", name);
+			ret.addProperty("layer", layer);
+			ret.addProperty("parent", parent);
+			System.out.println(ret.toString());
+			return ret.toString(); // Response.ok(ret,
+									// MediaType.APPLICATION_JSON).build();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return ""; // Response.ok( "", MediaType.APPLICATION_JSON).build();
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
+
+	@POST
+	@Path("/{domain}/create")
+	@Produces("application/json")
+	@Deprecated
+	public String createEntity(@DefaultValue("Playground") @PathParam("domain") String domain,
+			@HeaderParam("info") String str, @DefaultValue("") @HeaderParam("token") String token ) {
+		RiscossDB db = DBConnector.openDB(domain, token);
+		try {
+			JsonObject json = (JsonObject) new JsonParser().parse(str);
+			String name = json.get("name").getAsString();
+			String layer = json.get("layer").getAsString();
+			// attention:filename sanitation is not directly notified to the
+			// user
+			name = RiscossUtil.sanitize(name);
+			db.addEntity(name, layer);
+			JsonArray a = json.get("parents").getAsJsonArray();
+			for (int i = 0; i < a.size(); i++) {
+				String parent = a.get(i).getAsString();
+				db.assignEntity(name, parent);
+			}
+			JsonObject ret = new JsonObject();
+			ret.addProperty("name", name);
+			ret.addProperty("layer", "layer");
+			System.out.println(ret.toString());
+			return ret.toString();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return "";
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
+	
+	@DELETE
+	@Path("/{domain}/entity/delete")
+	public void deleteEntity(@DefaultValue("Playground") @PathParam("domain") String domain,
+			@QueryParam("entity") String entity,
+			@DefaultValue("") @HeaderParam("token") String token ) {
+		RiscossDB db = DBConnector.openDB(domain, token);
+		try {
+			db.removeEntity(entity);
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
+
+	@GET
+	@Path("/{domain}/entity/data")
+	public String getEntityData(@DefaultValue("Playground") @PathParam("domain") String domain,
+			@QueryParam("entity") String entity,
+			@DefaultValue("") @HeaderParam("token") String token ) {
+		RiscossDB db = DBConnector.openDB(domain, token);
+		try {
+			JsonObject json = new JsonObject();
+
+			json.addProperty("name", entity);
+			json.addProperty("layer", db.layerOf(entity));
+
+			{
+				JsonArray a = new JsonArray();
+				for (String e : db.getParents(entity)) {
+					a.add(new JsonPrimitive(e));
+				}
+				json.add("parents", a);
+			}
+
+			{
+				JsonArray a = new JsonArray();
+				for (String e : db.getChildren(entity)) {
+					a.add(new JsonPrimitive(e));
+				}
+				json.add("children", a);
+			}
+
+			{
+				JsonArray jlist = new JsonArray();
+				for (RDC rdc : RDCFactory.get().listRDCs()) {
+					String rdcName = rdc.getName();
+					if (db.isRDCEnabled(entity, rdcName)) {
+						jlist.add(new JsonPrimitive(rdc.getName()));
+					}
+				}
+				json.add("rdcs", jlist);
+			}
+
+			JsonArray array = new JsonArray();
+			for (String id : db.listUserData(entity)) {
+
+				JsonObject o = (JsonObject) new JsonParser().parse(db.readRiskData(entity, id));
+				array.add(o);
+
+			}
+			json.add("userdata", array);
+
+			System.out.println("Returning: " + json.toString());
+			return json.toString();
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
+
+	@POST
+	@Path("/{domain}/entity/parent")
+	@Produces("application/json")
+	//TODO: put "entities" to body
+	public void setParent(@DefaultValue("Playground") @PathParam("domain") String domain,
+			@QueryParam("entity") String entity, @HeaderParam("entities") String str,
+			@DefaultValue("") @HeaderParam("token") String token ) {
+		RiscossDB db = DBConnector.openDB(domain, token);
+		try {
+			JsonObject json = (JsonObject) new JsonParser().parse(str);
+			JsonArray a = json.get("list").getAsJsonArray();
+			for (int i = 0; i < a.size(); i++) {
+				String parent = a.get(i).getAsString();
+				db.assignEntity(entity, parent);
+			}
+		} finally {
+			DBConnector.closeDB(db);
+		}
 	}
 	
 	@GET
-	@Path("/{domain}/rdcs/list")
-	public String listRDCs( @DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("entity") String entityName ) {
-		JsonObject o = new JsonObject();
-		RiscossDB db = DBConnector.openDB( domain );
+	@Path("/{domain}/entity/parent")
+	@Produces("application/json")
+	/**
+	 * Returns a list of parents. TODO: Rename to getParents
+	 * @param domain
+	 * @param entity
+	 * @param token
+	 * @return
+	 */
+	public String getParent(@DefaultValue("Playground") @PathParam("domain") String domain,
+			@QueryParam("entity") String entity,
+			@DefaultValue("") @HeaderParam("token") String token ) {
+		RiscossDB db = DBConnector.openDB(domain, token);
 		try {
-			for( RDC rdc : RDCFactory.get().listRDCs() ) {
+			JsonObject json = new JsonObject();
+			JsonArray array = new JsonArray();
+			for (String e : db.getParents(entity)) {
+				array.add(new JsonPrimitive(e));
+			}
+			json.add("entities", array);
+			return json.toString();
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
+
+	@POST
+	@Path("/{domain}/entity/children")
+	@Produces("application/json")
+	public void setChildren(@DefaultValue("Playground") @PathParam("domain") String domain,
+			@QueryParam("entity") String entity, @HeaderParam("entities") String str,
+			@DefaultValue("") @HeaderParam("token") String token ) {
+		RiscossDB db = DBConnector.openDB(domain, token);
+		try {
+			JsonObject json = (JsonObject) new JsonParser().parse(str);
+			JsonArray a = json.get("list").getAsJsonArray();
+			for (int i = 0; i < a.size(); i++) {
+				String child = a.get(i).getAsString();
+				db.assignEntity(child, entity);
+			}
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
+
+	@GET
+	@Path("/{domain}/entity/hierarchy")
+	@Produces("application/json")
+	//TODO: put str to body
+	public String getHierarchyInfo(@DefaultValue("Playground") @PathParam("domain") String domain,
+			@QueryParam("entity") String entity,
+			@DefaultValue("") @HeaderParam("token") String token) {
+		RiscossDB db = DBConnector.openDB(domain, token);
+		try {
+			JsonObject json = new JsonObject();
+			JsonArray array = new JsonArray();
+			for (String e : db.getParents(entity)) {
+				array.add(new JsonPrimitive(e));
+			}
+			json.add("parents", array);
+			array = new JsonArray();
+			for (String e : db.getChildren(entity)) {
+				array.add(new JsonPrimitive(e));
+			}
+			json.add("children", array);
+			return json.toString();
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
+	
+	
+
+	@GET
+	@Path("/{domain}/rdcs/list")
+	public String listRDCs(@DefaultValue("Playground") @PathParam("domain") String domain,
+			@QueryParam("entity") String entityName,
+			@DefaultValue("") @HeaderParam("token") String token ) {
+		JsonObject o = new JsonObject();
+		RiscossDB db = DBConnector.openDB(domain, token);
+		try {
+			for (RDC rdc : RDCFactory.get().listRDCs()) {
 				String rdcName = rdc.getName();
-				boolean enabled = db.isRDCEnabled( entityName, rdcName );
-				if( enabled ) {
+				boolean enabled = db.isRDCEnabled(entityName, rdcName);
+				if (enabled) {
 					JsonObject jrdc = new JsonObject();
 					JsonObject params = new JsonObject();
-					for( RDCParameter par : rdc.getParameterList() ) {
-						params.addProperty( par.getName(), 
-								db.getRDCParmeter(entityName, rdcName, par.getName(), "" ) );
+					for (RDCParameter par : rdc.getParameterList()) {
+						params.addProperty(par.getName(), db.getRDCParmeter(entityName, rdcName, par.getName(), ""));
 					}
-					jrdc.addProperty( "enabled", enabled );
-					jrdc.add( "params", params );
-					o.add( rdc.getName(), jrdc );
+					jrdc.addProperty("enabled", enabled);
+					jrdc.add("params", params);
+					o.add(rdc.getName(), jrdc);
 				}
 			}
-			System.out.println( "Returning: " + o.toString() );
+			System.out.println("Returning: " + o.toString());
 			return o.toString();
-		}
-		finally {
-			DBConnector.closeDB( db );
+		} finally {
+			DBConnector.closeDB(db);
 		}
 	}
-	
+
 	@PUT
 	@Path("/{domain}/rdcs/save")
-	public void setRDCs( 
-			@DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("entity") String entityName,
-			@HeaderParam("rdcmap") String rdcmapString ) {
-		RiscossDB db = DBConnector.openDB( domain );
+	public void setRDCs(@DefaultValue("Playground") @PathParam("domain") String domain,
+			@QueryParam("entity") String entityName, @HeaderParam("rdcmap") String rdcmapString,
+			@DefaultValue("") @HeaderParam("token") String token ) {
+		RiscossDB db = DBConnector.openDB(domain, token);
 		try {
-			System.out.println( "Received: " + rdcmapString );
-			JsonObject json = (JsonObject)new JsonParser().parse( rdcmapString );
-			for( Map.Entry<String, JsonElement> entry : json.entrySet() ) {
+			System.out.println("Received: " + rdcmapString);
+			JsonObject json = (JsonObject) new JsonParser().parse(rdcmapString);
+			for (Map.Entry<String, JsonElement> entry : json.entrySet()) {
 				String rdcName = entry.getKey();
 				JsonObject o = entry.getValue().getAsJsonObject();
-				
-				//				Do we need to add this check?
-				if( RDCFactory.get().getRDC( rdcName ) == null ) continue;
-				
+
+				// Do we need to add this check?
+				if (RDCFactory.get().getRDC(rdcName) == null)
+					continue;
+
 				boolean enabled = false;
-				
+
 				try {
-					enabled = "true".equals( entry.getValue().getAsJsonObject().get( "enabled" ).getAsString() );
+					enabled = "true".equals(entry.getValue().getAsJsonObject().get("enabled").getAsString());
+				} catch (Exception ex) {
 				}
-				catch( Exception ex ) {}
-				
-				db.setRDCEnabled( entityName, rdcName, enabled );
-				if( enabled ) {
-					for( RDCParameter par : RDCFactory.get().getRDC( rdcName ).getParameterList() ) {
-						String value = 
-								o.get( "params" ).getAsJsonObject().get( par.getName() ).getAsString().toString();
-						db.setRDCParmeter( entityName, rdcName, par.getName(), value );
+
+				db.setRDCEnabled(entityName, rdcName, enabled);
+				if (enabled) {
+					for (RDCParameter par : RDCFactory.get().getRDC(rdcName).getParameterList()) {
+						String value = o.get("params").getAsJsonObject().get(par.getName()).getAsString().toString();
+						db.setRDCParmeter(entityName, rdcName, par.getName(), value);
 					}
 				}
 			}
-		}
-		finally {
-			DBConnector.closeDB( db );
-		}
-	}
-	
-	@POST @Path("/{domain}/new")
-	@Produces("application/json")
-	public String createEntity( 
-			@DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("name") String name,
-			@QueryParam( "layer") String layer,
-			@QueryParam("parent") String parent ) {
-		
-		//attention:filename sanitation is not directly notified to the user
-		name = RiscossUtil.sanitize(name);
-		
-		RiscossDB db = DBConnector.openDB( domain );
-		try {
-			JsonObject ret = new JsonObject();
-			db.addEntity( name, layer );
-			if( parent != null ) {
-				if( !"".equals( parent ) ) {
-					if( db.existsEntity( parent ) ) {
-						db.assignEntity( name, parent );
-					}
-				}
-			}
-			ret.addProperty( "name", name );
-			ret.addProperty( "layer", layer );
-			ret.addProperty( "parent", parent );
-			System.out.println( ret.toString() );
-			return ret.toString(); //Response.ok(ret, MediaType.APPLICATION_JSON).build();
-		}
-		catch( Exception ex ) {
-			ex.printStackTrace();
-			return ""; //Response.ok( "", MediaType.APPLICATION_JSON).build();
-		}
-		finally {
-			DBConnector.closeDB( db );
+		} finally {
+			DBConnector.closeDB(db);
 		}
 	}
 	
-	@POST @Path("/{domain}/create")
+	@GET
+	@Path("/{domain}/rdcs/newrun")
 	@Produces("application/json")
-	public String createEntity( 
-			@DefaultValue("Playground") @PathParam("domain") String domain, @HeaderParam("info") String str ) {
-		RiscossDB db = DBConnector.openDB( domain );
-		try {
-			JsonObject json = (JsonObject)new JsonParser().parse( str );
-			String name = json.get( "name" ).getAsString();
-			String layer = json.get( "layer" ).getAsString();
-			//attention:filename sanitation is not directly notified to the user
-			name = RiscossUtil.sanitize(name);
-			db.addEntity( name, layer );
-			JsonArray a = json.get("parents" ).getAsJsonArray();
-			for( int i = 0; i < a.size(); i++ ) {
-				String parent = a.get( i ).getAsString();
-				db.assignEntity( name, parent);
-			}
-			JsonObject ret = new JsonObject();
-			ret.addProperty( "name", name );
-			ret.addProperty( "layer", "layer" );
-			System.out.println( ret.toString() );
-			return ret.toString();
-		}
-		catch( Exception ex ) {
-			ex.printStackTrace();
-			return "";
-		}
-		finally {
-			DBConnector.closeDB( db );
-		}
-	}
-	
-	@GET @Path("/{domain}/rdcs/newrun")
-	@Produces("application/json")
-	public String runRDCS( @DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("entity") String entityName ) {
-		RiscossDB db = DBConnector.openDB( domain );
+	public String runRDCS(@DefaultValue("Playground") @PathParam("domain") String domain,
+			@QueryParam("entity") String entityName,
+			@DefaultValue("") @HeaderParam("token") String token ) {
+		RiscossDB db = DBConnector.openDB(domain, token);
 		try {
 			JsonObject json = new JsonObject();
 			String msg = "Data successfully stored in the data repository";
-			for( RDC rdc : RDCFactory.get().listRDCs() ) {
+			for (RDC rdc : RDCFactory.get().listRDCs()) {
 				String rdcName = rdc.getName();
-				boolean enabled = db.isRDCEnabled( entityName, rdcName );
-				if( enabled ) {
+				boolean enabled = db.isRDCEnabled(entityName, rdcName);
+				if (enabled) {
 					JsonObject o = new JsonObject();
-					for( RDCParameter par : rdc.getParameterList() ) {
-						rdc.setParameter( par.getName(), 
-								db.getRDCParmeter( entityName, rdcName, par.getName(), "" ) );
+					for (RDCParameter par : rdc.getParameterList()) {
+						rdc.setParameter(par.getName(), db.getRDCParmeter(entityName, rdcName, par.getName(), ""));
 					}
 					try {
-						Map<String,RiskData> values = rdc.getIndicators( entityName );
-						if( values == null ) {
-							throw new Exception( "The RDC '" + rdcName + "' returned an empty map for the entity '" + entityName + "'" );
+						Map<String, RiskData> values = rdc.getIndicators(entityName);
+						if (values == null) {
+							throw new Exception("The RDC '" + rdcName + "' returned an empty map for the entity '"
+									+ entityName + "'");
 						}
-						for( String key : values.keySet() ) {
-							RiskData rd = values.get( key );
+						for (String key : values.keySet()) {
+							RiskData rd = values.get(key);
 							try {
-								db.storeRiskData( rd.toJSON() );
+								db.storeRiskData(rd.toJSON());
 							} catch (Exception e) {
 								e.printStackTrace();
 							}
 						}
-						o.addProperty( "result", "ok" );
-						json.add( rdcName, o );
-					}
-					catch( Exception ex ) {
+						o.addProperty("result", "ok");
+						json.add(rdcName, o);
+					} catch (Exception ex) {
 						ex.printStackTrace();
 						msg = "Some data were not gathered and/or stored in the RDR";
-						o.addProperty( "result", "error" );
-						o.addProperty( "error-message", ex.getMessage() );
-						json.add( rdcName, o );
+						o.addProperty("result", "error");
+						o.addProperty("error-message", ex.getMessage());
+						json.add(rdcName, o);
 					}
 				}
 			}
-			json.addProperty( "msg", msg );
-			System.out.println( "Returning: " + json.toString() );
+			json.addProperty("msg", msg);
+			System.out.println("Returning: " + json.toString());
 			return json.toString();
-		}
-		finally {
-			DBConnector.closeDB( db );
-		}
-	}
-	
-	@DELETE @Path("/{domain}/entity/delete")
-	public void deleteEntity( @DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("entity") String entity ) {
-		RiscossDB db = DBConnector.openDB( domain );
-		try {
-			db.removeEntity( entity );
-		}
-		finally {
-			DBConnector.closeDB( db );
+		} finally {
+			DBConnector.closeDB(db);
 		}
 	}
+
 	
-	@GET @Path("/{domain}/entity/rd/get")
-	public String getRiskData( @DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("entity") String entity ) {
-		RiscossDB db = DBConnector.openDB( domain );
+	@GET
+	@Path("/{domain}/entity/rd/get")
+	public String getRiskData(@DefaultValue("Playground") @PathParam("domain") String domain,
+			@QueryParam("entity") String entity,
+			@DefaultValue("") @HeaderParam("token") String token ) {
+		RiscossDB db = DBConnector.openDB(domain, token);
 		try {
 			JsonObject json = new JsonObject();
 			JsonArray array = new JsonArray();
-			for( String id : db.listRiskData( entity ) ) {
-				JsonObject o = (JsonObject)new JsonParser().parse( db.readRiskData( entity, id ) );
-				array.add(  o );
+			for (String id : db.listRiskData(entity)) {
+				JsonObject o = (JsonObject) new JsonParser().parse(db.readRiskData(entity, id));
+				array.add(o);
 			}
-			json.add( "list", array );
+			json.add("list", array);
 			return json.toString();
-		}
-		finally {
-			DBConnector.closeDB( db );
-		}
-	}
-	
-	@GET @Path("/{domain}/entity/data")
-	public String getEntityData( @DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("entity") String entity ) {
-		RiscossDB db = DBConnector.openDB( domain );
-		try {
-			JsonObject json = new JsonObject();
-			
-			json.addProperty( "name", entity );
-			json.addProperty( "layer", db.layerOf( entity ) );
-			
-			{
-				JsonArray a = new JsonArray();
-				for( String e : db.getParents( entity ) ) {
-					a.add( new JsonPrimitive( e ) );
-				}
-				json.add( "parents", a );
-			}
-			
-			{
-				JsonArray a = new JsonArray();
-				for( String e : db.getChildren( entity ) ) {
-					a.add( new JsonPrimitive( e ) );
-				}
-				json.add( "children", a );
-			}
-			
-			{
-				JsonArray jlist = new JsonArray();
-				for( RDC rdc : RDCFactory.get().listRDCs() ) {
-					String rdcName = rdc.getName();
-					if( db.isRDCEnabled( entity, rdcName ) ) {
-						jlist.add( new JsonPrimitive( rdc.getName() ) );
-					}
-				}
-				json.add( "rdcs", jlist );
-			}
-			
-			JsonArray array = new JsonArray();
-			for( String id : db.listUserData( entity ) ) {
-				
-				JsonObject o = (JsonObject)new JsonParser().parse( db.readRiskData( entity, id ) );
-				array.add(  o );
-				
-			}
-			json.add( "userdata", array );
-			
-			System.out.println( "Returning: " + json.toString() );
-			return json.toString();
-		}
-		finally {
-			DBConnector.closeDB( db );
+		} finally {
+			DBConnector.closeDB(db);
 		}
 	}
-	
-	@POST @Path("/{domain}/entity/parent")
+
+	@GET
+	@Path("/{domain}/entity/ras")
 	@Produces("application/json")
-	public void setParent( 
-			@DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("entity") String entity,
-			@HeaderParam("entities") String str ) {
-		RiscossDB db = DBConnector.openDB( domain );
+	public String getRAD(@DefaultValue("Playground") @PathParam("domain") String domain,
+			@QueryParam("entity") String entity,
+			@DefaultValue("") @HeaderParam("token") String token ) {
+		RiscossDB db = DBConnector.openDB(domain, token);
 		try {
-			JsonObject json = (JsonObject)new JsonParser().parse( str );
-			JsonArray a = json.get("list" ).getAsJsonArray();
-			for( int i = 0; i < a.size(); i++ ) {
-				String parent = a.get( i ).getAsString();
-				db.assignEntity( entity, parent);
-			}
-		}
-		finally {
-			DBConnector.closeDB( db );
+			return db.readRASResult(entity);
+		} finally {
+			DBConnector.closeDB(db);
 		}
 	}
-	
-	@POST @Path("/{domain}/entity/children")
-	@Produces("application/json")
-	public void setChildren( 
-			@DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("entity") String entity,
-			@HeaderParam("entities") String str ) {
-		RiscossDB db = DBConnector.openDB( domain );
-		try {
-			JsonObject json = (JsonObject)new JsonParser().parse( str );
-			JsonArray a = json.get("list" ).getAsJsonArray();
-			for( int i = 0; i < a.size(); i++ ) {
-				String child = a.get( i ).getAsString();
-				db.assignEntity( child, entity );
-			}
-		}
-		finally {
-			DBConnector.closeDB( db );
-		}
-	}
-	
-	@GET @Path("/{domain}/entity/parent")
-	@Produces("application/json")
-	public String getParent( 
-			@DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("entity") String entity ) {
-		RiscossDB db = DBConnector.openDB( domain );
-		try {
-			JsonObject json = new JsonObject();
-			JsonArray array = new JsonArray();
-			for( String e : db.getParents( entity ) ) {
-				array.add( new JsonPrimitive( e ) );
-			}
-			json.add( "entities", array );
-			return json.toString();
-		}
-		finally {
-			DBConnector.closeDB( db );
-		}
-	}
-	
-	@GET @Path("/{domain}/entity/hierarchy")
-	@Produces("application/json")
-	public String getHierarchyInfo( 
-			@DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("entity") String entity ) {
-		RiscossDB db = DBConnector.openDB( domain );
-		try {
-			JsonObject json = new JsonObject();
-			JsonArray array = new JsonArray();
-			for( String e : db.getParents( entity ) ) {
-				array.add( new JsonPrimitive( e ) );
-			}
-			json.add( "parents", array );
-			array = new JsonArray();
-			for( String e : db.getChildren( entity ) ) {
-				array.add( new JsonPrimitive( e ) );
-			}
-			json.add( "children", array );
-			return json.toString();
-		}
-		finally {
-			DBConnector.closeDB( db );
-		}
-	}
-	
-	@GET @Path("/{domain}/entity/ras")
-	@Produces("application/json")
-	public String getRAD( 
-			@DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("entity") String entity ) {
-		RiscossDB db = DBConnector.openDB( domain );
-		try {
-			return db.readRASResult( entity );
-		}
-		finally {
-			DBConnector.closeDB( db );
-		}
-	}
-	
+
 }

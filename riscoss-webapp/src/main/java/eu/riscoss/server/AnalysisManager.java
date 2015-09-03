@@ -109,9 +109,10 @@ public class AnalysisManager {
 	
 	@GET @Path( "/{domain}/session/list")
 	public String listRAS(
-			@DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("entity") String entity, @QueryParam("rc") String rc ) {
+			@DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, @QueryParam("entity") String entity, @QueryParam("rc") String rc ) {
 		
-		RiscossDB db = DBConnector.openDB( domain );
+		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
 			JsonObject json = new JsonObject();
 			JsonArray array = new JsonArray();
@@ -130,10 +131,11 @@ public class AnalysisManager {
 	
 	@POST @Path("/{domain}/session/new")
 	public String createSession(
-			@DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("rc") String rc,
+			@DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, @QueryParam("rc") String rc,
 			@QueryParam("target") String target, @QueryParam("name") String name
 			) {
-		RiscossDB db = DBConnector.openDB( domain );
+		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
 			
 			// Create a new risk analysis session
@@ -192,8 +194,9 @@ public class AnalysisManager {
 	 * reads the required data from the rdr, and stores the data in the risk analysis session
 	 */
 	@GET @Path("/{domain}/session/{sid}/update-data")
-	public void updateSessionData( @DefaultValue("Playground") @PathParam("domain") String domain, @PathParam("sid") String sid ) {
-		RiscossDB db = DBConnector.openDB( domain );
+	public void updateSessionData( @DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, @PathParam("sid") String sid ) {
+		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
 			
 			RiskAnalysisSession ras = db.openRAS( sid );
@@ -238,9 +241,10 @@ public class AnalysisManager {
 	
 	@GET @Path("/{domain}/session/{sid}/missing-data")
 	public String getSessionMissingData(
-			@DefaultValue("Playground") @PathParam("domain") String domain, @PathParam("sid") String sid
+			@DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, @PathParam("sid") String sid
 			) {
-		RiscossDB db = DBConnector.openDB( domain );
+		RiscossDB db = DBConnector.openDB( domain, token );
 		
 		try {
 			// Sia i dati che mancano, sia quelli marcati come "user"
@@ -260,12 +264,13 @@ public class AnalysisManager {
 	
 	@PUT @Path("/{domain}/session/{sid}/missing-data")
 	public void setSessionMissingData(
-			@DefaultValue("Playground") @PathParam("domain") String domain, 
+			@DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, 
 			@PathParam("sid") String sid,
 			@HeaderParam("values") String values
 			) {
 		JsonObject json = (JsonObject)new JsonParser().parse( values );
-		RiscossDB db = DBConnector.openDB( domain );
+		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
 			JValueMap valueMap = gson.fromJson(json, JValueMap.class );
 			RiskAnalysisSession ras = db.openRAS( sid );
@@ -284,9 +289,10 @@ public class AnalysisManager {
 	
 	@GET @Path("/{domain}/session/{sid}/summary")
 	public String getSessionSummary(
-			@DefaultValue("Playground") @PathParam("domain") String domain, @PathParam("sid") String sid
+			@DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, @PathParam("sid") String sid
 			) {
-		RiscossDB db = DBConnector.openDB( domain );
+		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
 			RiskAnalysisSession ras = db.openRAS( sid );
 			JsonObject json = new JsonObject();
@@ -310,8 +316,9 @@ public class AnalysisManager {
 	@GET @Path("/{domain}/session/{sid}/results")
 	@Produces("application/json")
 	public String getRAD( 
-			@DefaultValue("Playground") @PathParam("domain") String domain, @PathParam("sid") String sid ) {
-		RiscossDB db = DBConnector.openDB( domain );
+			@DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, @PathParam("sid") String sid ) {
+		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
 			RiskAnalysisSession ras = db.openRAS( sid );
 			return ras.readResults();
@@ -322,8 +329,9 @@ public class AnalysisManager {
 	}
 	
 	@DELETE @Path("/{domain}/session/{sid}/delete")
-	public void deleteRiskAnalysis( @DefaultValue("Playground") @PathParam("domain") String domain, @PathParam("sid") String sid ) {
-		RiscossDB db = DBConnector.openDB( domain );
+	public void deleteRiskAnalysis( @DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, @PathParam("sid") String sid ) {
+		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
 			db.destroyRAS( sid );
 		}
@@ -334,11 +342,12 @@ public class AnalysisManager {
 	
 	@POST @Path("/{domain}/session/{sid}/newrun")
 	public String runRiskAnalysis(
-			@DefaultValue("Playground") @PathParam("domain") String domain, @PathParam("sid") String sid,
+			@DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, @PathParam("sid") String sid,
 			@DefaultValue("RunThrough") @QueryParam("opt") String strOpt /* See AnalysisOption.RunThrough */
 			) {
 		
-		RiscossDB db = DBConnector.openDB( domain );
+		RiscossDB db = DBConnector.openDB( domain, token );
 		
 		try {
 			
@@ -479,7 +488,8 @@ public class AnalysisManager {
 	
 	@POST @Path("/{domain}/new")
 	public String runAnalysisWithRealDataOld( 
-			@DefaultValue("Playground") @PathParam("domain") String domain, 
+			@DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, 
 			@QueryParam("rc") String rc,
 			@QueryParam("target") String target,
 			@QueryParam("verbosity") String flags,
@@ -507,7 +517,7 @@ public class AnalysisManager {
 		
 		RiskAnalysisEngine rae = ReasoningLibrary.get().createRiskAnalysisEngine();
 		
-		RiscossDB db = DBConnector.openDB( domain );
+		RiscossDB db = DBConnector.openDB( domain, token );
 		
 		try {
 			
@@ -669,7 +679,8 @@ public class AnalysisManager {
 	@POST @Path("/{domain}/whatif")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public String runAnalysisWithCustomData( 
-			@DefaultValue("Playground") @PathParam("domain") String domain, 
+			@DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, 
 			@QueryParam("models") String modelsString,
 			@HeaderParam("values") String valuesString ) throws Exception {
 		
@@ -678,7 +689,7 @@ public class AnalysisManager {
 		
 		RiskAnalysisEngine rae = ReasoningLibrary.get().createRiskAnalysisEngine();
 		
-		RiscossDB db = DBConnector.openDB( domain );
+		RiscossDB db = DBConnector.openDB( domain, token );
 		
 		try {
 			for( int i = 0; i < jmodels.size(); i++ ) {

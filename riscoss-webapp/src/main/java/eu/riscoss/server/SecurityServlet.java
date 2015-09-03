@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 
+@Deprecated
 public class SecurityServlet extends HttpServlet {
 	
 	private static final long serialVersionUID = 2410335502314521014L;

@@ -39,10 +39,12 @@ public class RDRManager {
 	
 	@POST @Path("/{domain}/store")
 	@Consumes({"application/json"})
-	public void store( @DefaultValue("Playground") @PathParam("domain") String domain, @HeaderParam("json") String string ) {
+	public void store( @DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, 
+			@HeaderParam("json") String string ) {
 		System.out.println( string );
 		JsonArray json = (JsonArray)new JsonParser().parse( string );
-		RiscossDB db = DBConnector.openDB( domain );
+		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
 			for( int i = 0; i < json.size(); i++ ) {
 				JsonObject o = json.get( i ).getAsJsonObject();

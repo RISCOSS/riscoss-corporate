@@ -1,0 +1,318 @@
+\section{Riscoss platform API}
+
+\subsection{Servlets}
+\begin{verbatim}
+<url-pattern>/api/*</url-pattern>
+<servlet-name>RiscossWebApp</servlet-name>
+<servlet-class>eu.riscoss.server.ServletWrapper</servlet-class>
+
+<url-pattern>/gauge</url-pattern>
+<servlet-name>GaugeServlet</servlet-name>
+<servlet-class>eu.riscoss.server.GaugeServlet</servlet-class>
+
+<url-pattern>*.gupld</url-pattern>
+<servlet-name>uploadServlet</servlet-name>
+<servlet-class>eu.riscoss.server.UploadServiceImpl</servlet-class>
+
+<url-pattern>/models/download</url-pattern>
+<servlet-name>downloadServlet</servlet-name>
+<servlet-class>eu.riscoss.server.DownloadServlet</servlet-class>
+\end{verbatim}
+
+\subsubsection{LayersManager}
+
+\textbf{Path "layers"}
+all calls have parameters: 
+    @HeaderParam ``token'', 
+    @PathParam ``domain''
+
+  GET "/{domain}/list"
+    calls db.layerNames()
+  POST "{domain}/new" //$deprecated!$
+	  @QueryParam("name")
+	  @QueryParam("parent")
+	  comment: automatic name sanitisation, not notified
+	calls db.addLayer( name, parentName );  
+  POST "{domain}/create"
+  	  @QueryParam("name")
+	  @QueryParam("parent")
+	  comment: automatic name sanitisation, not notified
+	calls db.addLayer( name, parentName );
+  DELETE "{domain}/delete"
+  	  @QueryParam("name")
+      calls db.removeLayer( name );
+   GET "{domain}/{layer}/properties/ci"  //contextual info
+	  @QueryParam("layer")
+    calls db.getLayerData( layer, "ci" );  //reads attributes of a layer node
+  PUT "{domain}/{layer}/properties/ci"   //contextual info
+	  @QueryParam("layer")
+	  @HeaderParam("info")  //json format $move to body!$
+	calls db.setLayerData( layer, "ci", json ); //sets attributes of a layer node
+  POST "{domain}/edit"  //$deprecated!$
+	@QueryParam("name") String name, 
+	@QueryParam("newname") String newName )
+      calls db.renameLayer( name, newName );
+   PUT "{domain}/{layer}/name"
+	@PathParam("layer") String name, 
+	@QueryParam("value") String newName 
+      calls db.renameLayer( name, newName );
+      
+\subsection{EntityManager}
+
+\textbf{Path "entities"}
+all calls have parameters: 
+    @HeaderParam ``token'', 
+    @PathParam ``domain''
+   
+   GET "/{domain}/list"  //lists all entities with layer and name
+    calls db.entities()    //note: layer retrieved by db.layerOf(name)
+    
+    GET "/{domain}/list/{layer}"  //lists all entities for a layer
+	@PathParam("layer") String layer, 
+	calls db.entities(layer)
+	
+    POST "/{domain}/new"
+      @Produces("application/json")
+      @QueryParam("name") String name, 
+      @QueryParam("layer") String layer, 
+      @QueryParam("parent") String parent  $attention single parent...to be removed - extra call for setting parents!$
+      comment: automatic name sanitisation, not notified
+	calls db.addEntity(name, layer)
+	
+	POST "/{domain}/create"   //$deprecated!$
+	  @HeaderParam("info") String str  $json, split to name (QP), layer (QP), parents (to body!)$
+	  comment: for a list of parents
+	  
+	DELETE "/{domain}/entity/delete"
+	  @QueryParam("entity") String entity
+	  calls db.removeEntity(entity)
+	  
+	GET "/{domain}/entity/data"
+	  @QueryParam("entity") String entity
+	returns layers, parents, children, rdcs, userdata (risk data)
+
+\paragraph{Manage entity hierarchy} 	  
+      POST "/{domain}/entity/parent"  //for a single parent, to be called multiple times
+	  @QueryParam("entity") String entity
+	  calls db.assignEntity(entity, parent);
+
+      GET "/{domain}/entity/parent"  $rename to parentS, it returns a json list!$
+	  @QueryParam("entity") String entity
+	  
+      POST "/{domain}/entity/children"  $reorganise, remove ``entity'' etc...$ 
+	  note: for a single parent, to be called multiple times
+	  note: same than multiple call to parent with switched params
+	  @QueryParam("entity") String entity
+	  @HeaderParam("entities") String str  $json, put to body!$
+	  calls db.assignEntity(child, entity) foreach child.
+	  
+	GET "/{domain}/entity/hierarchy"
+	  @QueryParam("entity") String entity
+	  //returns parents and children in a json list
+	
+\paragraph{Risk Data Collectors Management} 
+  GET "/{domain}/rdcs/list"  //lists risk data collectors enabled for an entity and their parameters
+	@QueryParam("entity") String entityName,
+	  calls db.isRDCEnabled, db.getRDCParmeter
+   PUT "/{domain}/rdcs/save"
+      @QueryParam("entity") String entityName
+      @HeaderParam("rdcmap") String rdcmapString  ((json format)) $move to body!$
+        calls db.setRDCEnabled(entityName, rdcName, enabled); db.setRDCParmeter
+    
+    GET /{domain}/rdcs/newrun
+	  @QueryParam("entity") String entityName
+	  //runs rdc.getIndicators for every registered rdc, stores data in RDR	  
+	  
+	  
+\paragraph{RiskData Access} 
+	GET "/{domain}/entity/rd/get" $reorganise, remove ``entity'' etc...$
+	  @QueryParam("entity") String entity
+	  @HeaderParam("entities") String str  $json, put to body!$
+	  calls db.readRiskData(entity, id)
+	  
+\paragraph{Risk Analysis results} 
+	GET "/{domain}/entity/rd/get" $reorganise, remove ``entity'' etc...$
+	  @QueryParam("entity") String entity
+	  calls db.readRASResult(entity);
+
+\subsection{AuthManager}
+
+\textbf{Path "auth"}
+
+      POST "/login"
+	@HeaderParam("username") String username, 
+	@HeaderParam("password") String password
+	logs in on the DB,
+	returns the new token
+	
+	GET ``/token''  $ change to POST?!$
+	@HeaderParam("token") String token
+	Opens the database with this token.
+	returns OK
+	
+	POST "/register"
+	@HeaderParam("username") String username, 
+	@HeaderParam("password") String password
+	registers AS GUEST! 
+	returns OK
+	
+	GET ``/username''
+	@HeaderParam("token") String token
+	returns the username for this token
+	
+	GET "/domains/list"  $deprecated$
+	@Context HttpServletRequest req   $uses @Context$!
+	
+	POST "/domains/selected" $deprecated$
+	@Context HttpServletRequest req   $uses @Context$!
+	@QueryParam("domain") String domain
+	
+\subsection{ModelManager}
+
+\textbf{Path "models"}
+all calls have parameters: 
+    @HeaderParam ``token''
+    @PathParam ``domain''
+    
+    GET "/{domain}/list"
+      calls db.getModelList()
+      
+     GET "/{domain}/model/chunklist" 
+     @HeaderParam("models") String models   $json, put to body??$
+     calls db.getModelBlob( modelName ), extracts all data to json
+     //returns also the type of each object (goal/risk/...) and is used in AHP
+	
+     GET "/{domain}/model/chunks" 
+     @HeaderParam("models") String models  $json, put to body??$
+      calls db.getModelBlob( modelName ),
+      //used in the whatifanalysis, and in the ModelsModule (for showing the content)
+      //returns various info, but not the types.
+      
+      GET "/{domain}/model/get"
+      @QueryParam("name") String name 
+      calls db.getModelFilename( name ), db.getModelDescFilename( name )
+      returns json properties name, modelfilename, modeldescfilename
+      
+      GET "/{domain}/model/blob"
+      @QueryParam("name") String name 
+      calls db.getModelBlob( name )
+      returns the model content
+     
+     DELETE "/{domain}/model/delete"
+     @QueryParam("name") String name 
+      calls db.removeModel( name )
+      
+      POST "/{domain}/model/changename"
+	@QueryParam("name") String name 
+	@QueryParam("newname") String newName 
+	calls db.changeModelName(name, newName)
+     
+\subsection{RDCManager}
+   
+\textbf{Path "rdcs"} Risk data collectors
+	GET "/list"
+	returns RDC list from RDCFactory.get().listRDCs(), without database calls
+	
+\subsection{RDRManager}
+   
+\textbf{Path "rdr"} Risk data repository
+all calls have parameters: 
+    @HeaderParam ``token''
+    @PathParam ``domain''
+
+	POST "/{domain}/store"
+	@HeaderParam("json") String string $list of RiskData, should be in body$
+	calls db.storeRiskData( o.toString() );
+	
+\subsection{RiskConfManager}
+   
+\textbf{Path "rcs"} Risk configurations
+all calls have parameters: 
+    @HeaderParam ``token''
+    @PathParam ``domain''
+	
+	GET "/{domain}/list"
+	@QueryParam("entity") String entity
+	calls db.layerOf( entity ); db.findCandidateRCs( layer );
+	
+	GET "/{domain}/rc/get"
+	@QueryParam("name") String name
+	For a risk configuration name, returns json with list of *models* associated, and layers with their models
+	
+	PUT "/{domain}/rc/put"
+	@QueryParam("content") String value $json, contains models and layers$
+	Sets models and layers/models for an RC
+	
+	POST "/{domain}/rc/new"
+	@QueryParam("name") String name 
+	calls db.createRiskConfiguration( name );
+	
+	DELETE "/{domain}/rc/delete"
+	@QueryParam("name") String name 
+	calls db.removeRiskConfiguration( name );
+	
+	
+\subsection{AnalysisManager}
+   
+\textbf{Path "analysis"}
+all calls have parameters: 
+    @HeaderParam ``token''	
+    @PathParam ``domain''
+ calls not detailed, since they will actually not changed.  
+   
+    @GET @Path( "/{domain}/session/list")
+    @POST @Path("/{domain}/session/new")
+    @GET @Path("/{domain}/session/{sid}/update-data")
+	@GET @Path("/{domain}/session/{sid}/missing-data")
+	@PUT @Path("/{domain}/session/{sid}/missing-data")
+	@GET @Path("/{domain}/session/{sid}/summary")
+	@GET @Path("/{domain}/session/{sid}/results")
+	@DELETE @Path("/{domain}/session/{sid}/delete")
+	@POST @Path("/{domain}/session/{sid}/newrun")
+	@POST @Path("/{domain}/new")
+	@POST @Path("/{domain}/whatif")
+	@POST @Path("/{domain}/ahp")
+
+\subsection{SecurityManager}
+TODO when it is finished.
+
+\subsection{DownloadServlet extends HttpServlet }  
+direct GET download of model files and description files
+doGet <url-pattern>/models/download</url-pattern>
+	String domain = request.getParameter("domain");
+	String token = request.getParameter("token");
+	String modelName = request.getParameter("name");
+	String type = request.getParameter("type");  //"desc" or ``model''
+	
+\subsection{UploadServlet extends UploadAction }  
+Upload through the gupload service
+<url-pattern>*.gupld</url-pattern>
+
+all calls have parameters: 
+	String domain = request.getParameter("domain");		
+	String token = request.getParameter("token");
+   
+	"modelblob"
+	ModelUploader.executeAction
+	String name = request.getParameter( "name" );
+	returns: ``Success'' or the failure message
+	comment: automatic name sanitisation, not notified
+	
+	"modeldescblob"
+	ModelDescUploader.executeAction
+	String name = request.getParameter( "name" ); //the file name, used only to propose a filename when downloading
+	returns: success message or Exception
+	comment: automatic name sanitisation, not notified
+	
+	"modelupdateblob"
+	ModelUpdateUploader.executeAction
+	String name = request.getParameter( "name" );
+	returns: success message or Exception
+	comment: automatic name sanitisation, not notified
+	
+	getUploadedFile  //not used??
+	removeItem  //not used??
+	
+
+
+

@@ -410,7 +410,7 @@ public class EntitiesModule implements EntryPoint {
 							
 							dialog.hide();
 							
-							RiscossCall.fromCookies().layers().layer( layer ).property( RiscossCall.ContextualInfo ).get( new JsonCallback() {
+							RiscossCall.fromCookies().layers().layer( layer ).property( RiscossCall.CONTEXTUALINFO ).get( new JsonCallback() {
 								@Override
 								public void onFailure(Method method, Throwable exception) {
 									Window.alert( exception.getMessage() );
@@ -457,7 +457,7 @@ public class EntitiesModule implements EntryPoint {
 					info.setLayer( JsonUtil.getValue( response, "layer", "" ) );
 					insertEntityIntoTable( info );
 					
-					RiscossCall.fromCookies().layers().layer( layerName.getItemText(layerName.getSelectedIndex()) ).property( RiscossCall.ContextualInfo ).get( new JsonCallback() {
+					RiscossCall.fromCookies().layers().layer( layerName.getItemText(layerName.getSelectedIndex()) ).property( RiscossCall.CONTEXTUALINFO ).get( new JsonCallback() {
 						@Override
 						public void onFailure(Method method, Throwable exception) {
 							Window.alert( exception.getMessage() );

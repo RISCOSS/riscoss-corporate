@@ -85,7 +85,7 @@ public class ServletWrapper extends ServletContainer {
 				dbaddr = dbaddr + "/" + dbname;
 			}
 			
-			DBConnector.db_addr = dbaddr;
+			DBConnector.setDbaddr(dbaddr);
 			
 			System.out.println( "DB address: " + dbaddr );
 			System.out.println( "DB name: " + dbname );

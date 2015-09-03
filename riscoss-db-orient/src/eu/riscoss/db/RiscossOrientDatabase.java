@@ -17,6 +17,11 @@ import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
+/**
+ * (ONLY) Riscoss database superadmin access, for changing domains and users.
+ * Use RiscossDB for all accesses to the database content (except users and domain) with a defined domain and user credentials
+ *
+ */
 public class RiscossOrientDatabase implements RiscossDatabase {
 	
 	private static final OServerParameterConfiguration[] I_PARAMS = new OServerParameterConfiguration[] { 

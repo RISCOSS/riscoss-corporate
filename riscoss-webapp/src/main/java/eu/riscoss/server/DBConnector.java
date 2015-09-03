@@ -51,22 +51,48 @@ public class DBConnector {
 		return new File( new File( s ).getParent() );
 	}
 	
+	/**
+	 * Opens the database with username and password, specific for "superuser" access to change domains and users.
+	 * @param username
+	 * @param password
+	 * @return
+	 */
 	public static RiscossDatabase openDatabase( String username, String password ) {
 		return new RiscossOrientDatabase( db_addr, username, password );
 	}
-	
+	/**
+	 * Opens the database with a previously stored token (e.g. from a cookie), specific for "superuser" access to change domains and users.
+	 * @param token
+	 * @return
+	 */
 	public static RiscossDatabase openDatabase( String token ) {
 		return new RiscossOrientDatabase( db_addr, Base64.decodeBase64( token ) );
 	}
 	
-	public static RiscossDB openDB( String domain ) {
-		return new RiscossOrientDB( db_addr, domain );
-	}
+	/**
+	 * to delete, no user check!
+	 * @param domain
+	 * @return
+	 */
+//	public static RiscossDB openDB( String domain ) {
+//		return new RiscossOrientDB( db_addr, domain );
+//	}
 	
+	/**
+	 * Opens the database with username and password, for normal access with domain and user
+	 * @param domain
+	 * @param username
+	 * @param password
+	 * @return
+	 */
 	public static RiscossDB openDB( String domain, String username, String password ) {
 		return new RiscossOrientDB( db_addr, domain, username, password );
 	}
-	
+	/**
+	 * Opens the database with a previously stored token (e.g. from a cookie), for normal access with domain and user
+	 * @param token
+	 * @return
+	 */
 	public static RiscossDB openDB( String domain, String token ) {
 		return new RiscossOrientDB( db_addr, domain, Base64.decodeBase64( token ) );
 	}
@@ -79,6 +105,10 @@ public class DBConnector {
 		catch( Exception ex ) {
 			ex.printStackTrace();
 		}
+	}
+
+	public static void setDbaddr(String dbaddr) {
+		db_addr=dbaddr;	
 	}
 	
 }

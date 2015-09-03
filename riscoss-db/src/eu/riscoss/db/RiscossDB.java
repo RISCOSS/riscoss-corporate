@@ -7,6 +7,10 @@ import java.util.Map;
 
 // TODO: To be renamed in something like "RiscossDomainDB"
 
+/**
+ * Riscoss database access, for all accesses to the database content (except users and domain) with a defined domain and user credentials
+ * For access to changing domains and users only, "RiscossDatabase" has to be used.
+ */
 public interface RiscossDB {
 	
 	/*

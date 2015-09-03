@@ -73,6 +73,7 @@ public class LayersManager {
 	}
 	
 	@POST @Path("{domain}/new")
+	@Deprecated
 	public void createNew_old(
 			@DefaultValue("Playground") @PathParam("domain") String domain,
 			@DefaultValue("") @HeaderParam("token") String token, 
@@ -210,6 +211,7 @@ public class LayersManager {
 	
 	@POST
 	@Path("{domain}/edit")
+	@Deprecated  
 	public void editLayerOld( 
 			@DefaultValue("Playground") @PathParam("domain") String domain,
 			@DefaultValue("") @HeaderParam("token") String token, 

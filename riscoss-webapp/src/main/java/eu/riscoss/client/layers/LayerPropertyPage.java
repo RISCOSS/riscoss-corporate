@@ -122,7 +122,7 @@ public class LayerPropertyPage implements IsWidget {
 		
 		tab.setVisible(true);
 		
-		RiscossCall.fromCookies().layers().layer( layer ).property( RiscossCall.ContextualInfo ).get( new JsonCallback() {
+		RiscossCall.fromCookies().layers().layer( layer ).property( RiscossCall.CONTEXTUALINFO ).get( new JsonCallback() {
 			@Override
 			public void onFailure(Method method, Throwable exception) {
 				Window.alert( exception.getMessage() );
@@ -240,7 +240,7 @@ public class LayerPropertyPage implements IsWidget {
 				CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
 				JSONValue json = codec.encode( info );
 				
-				RiscossCall.fromCookies().layers().layer( layer ).property( RiscossCall.ContextualInfo ).post( json, new JsonCallback() {
+				RiscossCall.fromCookies().layers().layer( layer ).property( RiscossCall.CONTEXTUALINFO ).post( json, new JsonCallback() {
 
 					@Override
 					public void onFailure( Method method, Throwable exception ) {
@@ -593,7 +593,7 @@ public class LayerPropertyPage implements IsWidget {
 					CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
 					JSONValue json = codec.encode( info );
 					
-					RiscossCall.fromCookies().layers().layer( layer ).property( RiscossCall.ContextualInfo ).put( json, new JsonCallback() {
+					RiscossCall.fromCookies().layers().layer( layer ).property( RiscossCall.CONTEXTUALINFO ).put( json, new JsonCallback() {
 
 						@Override
 						public void onFailure(Method method,

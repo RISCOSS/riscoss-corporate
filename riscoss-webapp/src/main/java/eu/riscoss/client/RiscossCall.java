@@ -1,20 +1,18 @@
 package eu.riscoss.client;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.fusesource.restygwt.client.JsonCallback;
-import org.fusesource.restygwt.client.Resource;
-
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Cookies;
 
 import eu.riscoss.shared.CookieNames;
 
-public class RiscossCall {
+public class RiscossCall extends JSONCall{
 	
-	public static final String ContextualInfo = "ci";
+	public static final String CONTEXTUALINFO = "ci";
+	
+	//called from the static methods
+	private RiscossCall() {
+		super(new JSONData());
+	}
 
 
 	public static String getDomain() {
@@ -35,7 +33,7 @@ public class RiscossCall {
 	}
 	
 	public static RiscossCall fromDomain( String domain ) {
-		return new RiscossCall().domain( domain );
+		return new RiscossCall().withDomain( domain );
 	}
 	
 	/**
@@ -44,200 +42,261 @@ public class RiscossCall {
 	 * @return
 	 */
 	public static RiscossCall fromCookies() {
-		return new RiscossCall().withToken( getToken() ).domain( getDomain() );
+		return new RiscossCall().withToken( getToken() ).withDomain( getDomain() );
 	}
 	
-	public class Service {
+	
+	
+	/**
+	 * set the domain
+	 * @param domainName
+	 * @return
+	 */
+	public RiscossCall withDomain( String domainName ) {
+		d.domain = domainName;
+		return this;
+	}
+//	private RiscossCall domain( String domainName ) {
+//	this.domain = domainName;
+//	return this;
+//}
+	
+	/**
+	 * Sets the token. Token should be set only from cookie to align access.
+	 * @param token
+	 * @return
+	 */
+	@Deprecated
+	RiscossCall withToken( String token ) {
+		d.token = token;
+		return this;
+	}
+	
+	/**
+	 * set the service. Deprecated. Use the specific service methods rcs(), layers(), entities(),...!
+	 * @param name
+	 * @return
+	 */
+	@Deprecated
+	public RiscossCall withService( String serviceName ) {
+		d.service = serviceName;
+		return this;
+	}
+	
+	//deleted. use the constructor!
+//	private Service service( String name ) {
+//		this.service = name;
+//		return new Service();
+//	}
+	
+	/**
+	 * Please comment this when you use it!!
+	 * @param value
+	 * @return
+	 */
+	public RiscossCall withObject( JSONValue value ) {
+		d.value = value;
+		return this;
+	}
+	
+	/**
+	 * set service Risk Configurations "rcs"
+	 * @return
+	 */
+	public Service rcs() {
+		return new Service( "rcs" );
+	}
+	
+	/**
+	 * set service Risk Data Collectors "rdcs".
+	 * The list of RDCS is domain-independent
+	 * @return
+	 */
+	public Service rdcs() {
+		return new Service( "rcs" );
+	}
+	
+	/**
+	 * set service = "layers"
+	 * @return 
+	 */
+	public Service layers() {
+		return new Service( "layers" );
+	}
+	
+	/**
+	 * set service Authentication "auth"
+	 * @return
+	 */
+	public Service auth() {
+		return new Service( "auth" );
+	}
+	
+	/**
+	 * service = "entities"
+	 * @return
+	 */
+	public Service entities() {
+		return new Service( "entities" );
+	}
+	
+	
+	
+	/**
+	 * Defines the possible functions to apply to a Service 
+	 * 
+	 */
+	public class Service extends JSONCall{
+		
+		Service(String name) {
+			super(RiscossCall.this.d);
+			d.service = name;
+		}
+		
 		public Function fx( String path ) {
-			return new Function( "/" + path );
+			return new Function( path );
 		}
-		public Function domains() {
-			return new Function( "/domains" );
+		
+//		/**
+//		 * adds a function "/domains"
+//		 * TODO: check if and why it fits here...
+//		 * @return
+//		 */
+//		public Function domains() {
+//			return new Function( "domains" );
+//		}
+		/**
+		 * adds a function "/domainname"
+		 * TODO: check if and why it fits here...
+		 * @return
+		 */
+		public Function domain(String domainname) {
+			return new Function( domainname );
 		}
+		/**
+		 * lists all items available in the selected service
+		 * @return
+		 */
 		public Function list() {
-			return new Function( "/list" );
+			return new Function().list(); //new Function( "/list" );
 		}
+		
+		/**
+		 * to delete...
+		 * @param selectedLayer
+		 * @return
+		 */
 		public Function layer( String selectedLayer ) {
-			return new Function( "/" + selectedLayer );
+			return item( selectedLayer );
 		}
+		
+		/**
+		 * access a single item for the selected service
+		 * @param selectedLayer
+		 * @return
+		 */
+		public Function item( String selectedItem ) {
+			return new Function( selectedItem );
+		}
+		/**
+		 * creates a new item in the selected service
+		 * @return
+		 */
 		public Function create() {
-			return new Function( "/create" );
+			//return new Function( "/create" );
+			return new Function().create();
+		}
+		/**
+		 * creates a new item in the selected service
+		 * @param name name of the item
+		 * @return
+		 */
+		public Function create(String name) {
+			return new Function().create(name); //( "/create" );
 		}
 	}
 	
-	public class Function {
-		Function() {}
-		Function( String path ) {
-			fx += path;
+	public class Function extends JSONCall {
+		
+		public Function() {
+			super(RiscossCall.this.d);
+		}
+		
+		private Function( String path ) { //call fx() from outside
+			super(RiscossCall.this.d);
+			d.fx = d.fx + "/" + path;
 		}
 		public Function fx( String path ) {
 			return new Function( path );
 		}
 		public Function list() {
-			fx += "/list";
-			return new Function();
-		}
-		public void get( JsonCallback cb ) {
-			get( null, cb );
+			return new Function("list");
 		}
 		
-		public void post( JsonCallback cb ) {
-			post( null, cb );
+		/**
+		 * adds a function "/create"
+		 * @return
+		 */
+		public Function create() {
+			return new Function("create");
 		}
 		
-		public void put( JsonCallback cb ) {
-			put( null, cb );
+		/**
+		 * adds a function "/create"
+		 * @param name added as argument
+		 * @return
+		 */
+		public Function create(String name) {
+			arg("name", name );
+			return create();
 		}
 		
-		public void delete( JsonCallback cb ) {
-			delete( null, cb );
-		}
-		public void get( JSONValue json, JsonCallback cb ) {
-			RiscossCall.this.get( json, cb );
-		}
-		
-		public void post( JSONValue json, JsonCallback cb ) {
-			RiscossCall.this.post( json, cb );
+		/**
+		 * Adds a function "/properties/" + name
+		 * @param name
+		 * @return
+		 */
+		public Function property( String name ) {
+			return new Function( "properties/" + name );
 		}
 		
-		public void put( JSONValue json, JsonCallback cb ) {
-			RiscossCall.this.put( json, cb );
-		}
-		
-		public void delete( JSONValue json, JsonCallback cb ) {
-			RiscossCall.this.delete( json, cb );
-		}
+		/**
+		 * adds an argument to the call, as a key-value pair
+		 * @param key
+		 * @param value
+		 * @return
+		 */
 		public Argument arg( String key, String value ) {
 			return new Argument( key, value );
 		}
-		public Function property( String name ) {
-			return new Function( "/properties/" + name );
-		}
+
 	}
 	
-	public class Argument {
+	public class Argument extends JSONCall{
 		String key;
 		String value;
+		/**
+		 * adds an argument to the call, as a key-value pair
+		 * @param key
+		 * @param value
+		 * @return
+		 */
 		public Argument( String key, String value ) {
+			super(RiscossCall.this.d);
 			this.key = key;
 			this.value = value;
-			args.add( this );
+			d.args.add( this );
 		}
+		/**
+		 * adds an argument to the call, as a key-value pair
+		 * @param key
+		 * @param value
+		 * @return
+		 */
 		public Argument arg( String key, String value ) {
 			return new Argument( key, value );
 		}
-		public void get( JsonCallback cb ) {
-			get( null, cb );
-		}
-		
-		public void post( JsonCallback cb ) {
-			post( null, cb );
-		}
-		
-		public void put( JsonCallback cb ) {
-			put( null, cb );
-		}
-		
-		public void delete( JsonCallback cb ) {
-			delete( null, cb );
-		}
-		public void get( JSONValue json, JsonCallback cb ) {
-			RiscossCall.this.get( json, cb );
-		}
-		
-		public void post( JSONValue json, JsonCallback cb ) {
-			RiscossCall.this.post( json, cb );
-		}
-		
-		public void put( JSONValue json, JsonCallback cb ) {
-			RiscossCall.this.put( json, cb );
-		}
-		
-		public void delete( JSONValue json, JsonCallback cb ) {
-			RiscossCall.this.delete( json, cb );
-		}
+
+
 	}
-	
-	private String		domain = null;
-	private String		token = "";
-	private String		service = "";
-	private String		fx = "";
-	private JSONValue	value;
-	List<Argument> args = new ArrayList<Argument>();
-	
-	
-	private void get( JSONValue json, JsonCallback cb ) {
-		Resource res = new Resource( GWT.getHostPageBaseURL() + "api/" + service + ( domain != null? "/" + domain : "" ) + fx );
-		for( Argument arg : args ) res = res.addQueryParam( arg.key, arg.value );
-		if( json != null ) res.options().json( json );
-		res.get().header( "token", token ).send( cb );
-	}
-	
-	private void post( JSONValue json, JsonCallback cb ) {
-		Resource res = new Resource( GWT.getHostPageBaseURL() + "api/" + service + ( domain != null? "/" + domain : "" ) + fx );
-		for( Argument arg : args ) res = res.addQueryParam( arg.key, arg.value );
-		if( json != null ) res.options().json( json );
-		res.post().header( "token", token ).send( cb );
-	}
-	
-	private void put( JSONValue json, JsonCallback cb ) {
-		Resource res = new Resource( GWT.getHostPageBaseURL() + "api/" + service + ( domain != null? "/" + domain : "" ) + fx );
-		for( Argument arg : args ) res = res.addQueryParam( arg.key, arg.value );
-		if( json != null ) res.options().json( json );
-		res.put().header( "token", token ).send( cb );
-	}
-	
-	private void delete( JSONValue json, JsonCallback cb ) {
-		Resource res = new Resource( GWT.getHostPageBaseURL() + "api/" + service + ( domain != null? "/" + domain : "" ) + fx );
-		for( Argument arg : args ) res = res.addQueryParam( arg.key, arg.value );
-		if( json != null ) res.options().json( json );
-		res.delete().header( "token", token ).send( cb );
-	}
-	
-	public RiscossCall domain( String domainName ) {
-		this.domain = domainName;
-		return this;
-	}
-	
-	public RiscossCall withDomain( String domainName ) {
-		this.domain = domainName;
-		return this;
-	}
-	
-	RiscossCall withToken( String token ) {
-		this.token = token;
-		return this;
-	}
-	
-	public RiscossCall withService( String serviceName ) {
-		this.service = serviceName;
-		return this;
-	}
-	
-	public RiscossCall withObject( JSONValue value ) {
-		this.value = value;
-		return this;
-	}
-	
-	private Service service( String name ) {
-		this.service = name;
-		return new Service();
-	}
-	
-	public Service rcs() {
-		return service( "rcs" );
-	}
-	
-	public Service layers() {
-		return service( "layers" );
-	}
-	
-	public Service auth() {
-		return service( "auth" );
-	}
-	
-	public Service entities() {
-		return service( "entities" );
-	}
-	
 }

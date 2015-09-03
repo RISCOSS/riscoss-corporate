@@ -58,11 +58,12 @@ public class ModelManager {
 	Gson gson = new Gson();
 	
 	@GET @Path("/{domain}/list")
-	public String getList( @DefaultValue("Playground") @PathParam("domain") String domain ) {
+	public String getList( @DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token ) {
 		
 		JsonArray a = new JsonArray();
 		
-		RiscossDB db = DBConnector.openDB( domain );
+		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
 			for( String model : db.getModelList() ) {
 				JsonObject o = new JsonObject();
@@ -82,13 +83,16 @@ public class ModelManager {
 	}
 	
 	@GET @Path("/{domain}/model/chunklist")
-	public String getModelChunkList( @DefaultValue("Playground") @PathParam("domain") String domain, @HeaderParam("models") String models ) {
+	//returns also the type of each object (goal/risk/...) and is used in AHP
+	public String getModelChunkList( @DefaultValue("Playground") @PathParam("domain") String domain, 
+			@HeaderParam("models") String models,
+			@DefaultValue("") @HeaderParam("token") String token ) {
 		
 		JsonArray json = (JsonArray)new JsonParser().parse( models );
 		
 		JChunkList list = new JChunkList();
 		
-		RiscossDB db = DBConnector.openDB( domain );
+		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
 			
 			for( int i = 0; i < json.size(); i++ ) {
@@ -268,7 +272,10 @@ public class ModelManager {
 
 	@GET
 	@Path("/{domain}/model/chunks")
-	public String getModelChunks( @DefaultValue("Playground") @PathParam("domain") String domain, @HeaderParam("models") String models ) {
+	//used in the whatifanalysis, and in the ModelsModule (for showing the content)
+	//returns various info, but not the types.
+	public String getModelChunks( @DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, @HeaderParam("models") String models ) {
 		
 		JsonArray json = (JsonArray)new JsonParser().parse( models );
 		
@@ -278,7 +285,7 @@ public class ModelManager {
 		ret.add( "inputs", inputs );
 		ret.add( "outputs", outputs );
 		
-		RiscossDB db = DBConnector.openDB( domain );
+		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
 			
 			for( int i = 0; i < json.size(); i++ ) {
@@ -429,8 +436,9 @@ public class ModelManager {
 	}
 	
 	@GET @Path("/{domain}/model/get")
-	public String getInfo( @DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("name") String name ) {
-		RiscossDB db = DBConnector.openDB( domain );
+	public String getInfo( @DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, @QueryParam("name") String name ) {
+		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
 			String filename = db.getModelFilename( name );  //modelfilename
 			String descfile = db.getModelDescFielname(name);
@@ -447,8 +455,9 @@ public class ModelManager {
 	}
 	
 	@GET @Path("/{domain}/model/blob")
-	public String getBlob( @DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("name") String name ) {
-		RiscossDB db = DBConnector.openDB( domain );
+	public String getBlob( @DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, @QueryParam("name") String name ) {
+		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
 			String blob = db.getModelBlob( name );
 			JsonObject o = new JsonObject();
@@ -462,8 +471,9 @@ public class ModelManager {
 	}
 	
 	@DELETE @Path("/{domain}/model/delete")
-	public void deleteModel( @DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("name") String name ) {
-		RiscossDB db = DBConnector.openDB( domain );
+	public void deleteModel( @DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, @QueryParam("name") String name ) {
+		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
 			db.removeModel( name );
 		}
@@ -473,8 +483,10 @@ public class ModelManager {
 	}
 	
 	@POST @Path("/{domain}/model/changename")
-	public void changeModelName( @DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("name") String name, @QueryParam("newname") String newName ) throws RuntimeException{
-		RiscossDB db = DBConnector.openDB( domain );
+	public void changeModelName( @DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, @QueryParam("name") String name, 
+			@QueryParam("newname") String newName ) throws RuntimeException{
+		RiscossDB db = DBConnector.openDB( domain, token );
 		boolean duplicate = false;
 		
 		//String response = "";

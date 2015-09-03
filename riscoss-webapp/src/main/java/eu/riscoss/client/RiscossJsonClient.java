@@ -261,8 +261,8 @@ public class RiscossJsonClient {
 	}
 	
 	public static void listEntities( JsonCallback cb ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/entities/" + getDomain() + "/list" )
-			.get().send( cb );
+		RiscossCall.fromCookies().entities().fx(getDomain()).list().get( cb );
+		//new Resource( GWT.getHostPageBaseURL() + "api/entities/" + getDomain() + "/list" ).get().send( cb );
 	}
 	
 	public static void setParent( String entity, List<String> entities, JsonCallback cb ) {
