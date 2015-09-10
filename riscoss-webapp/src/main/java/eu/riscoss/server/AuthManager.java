@@ -1,5 +1,7 @@
 package eu.riscoss.server;
 
+import java.io.File;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -31,9 +33,16 @@ public class AuthManager {
 		new OServerParameterConfiguration( OrientTokenHandler.SIGN_KEY_PAR, "any key")
 	};
 	
+	/**
+	 * Logs in on the DB
+	 * @param username
+	 * @param password
+	 * @return the new token
+	 * @throws Exception
+	 */
 	@POST @Path("/login")
 	public String login( @HeaderParam("username") String username, @HeaderParam("password") String password ) throws Exception {
-		
+		System.out.println("#### DB address "+new File(DBConnector.db_addr).getAbsolutePath()+" ####");
 		OrientGraphNoTx graph = new OrientGraphFactory( DBConnector.db_addr, username, password ).getNoTx();
 		
 //		String token = getStringToken( graph );
@@ -53,6 +62,7 @@ public class AuthManager {
 	}
 	
 	@GET @Path("token")
+	//TODO: change to POST?!
 	public String checkToken( @HeaderParam("token") String token ) {
 		System.out.println( "Received token: " + token );
 		DBConnector.openDatabase( token ).close();
@@ -122,6 +132,7 @@ public class AuthManager {
 	}
 	
 	@GET @Path("/domains/list")
+	@Deprecated
 	public String getAvailableDomains(  @Context HttpServletRequest req ) {
 		
 		JsonArray array = new JsonArray();
@@ -139,6 +150,7 @@ public class AuthManager {
 	}
 	
 	@POST @Path("/domains/selected")
+	@Deprecated
 	public String setSessionSelectedDomain( @Context HttpServletRequest req, @QueryParam("domain") String domain ) {
 		
 		System.out.println( "[SERVER] selected domain " + domain );

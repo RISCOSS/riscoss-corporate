@@ -72,7 +72,7 @@ public class LayersManager {
 		return a.toString();
 	}
 	
-	@POST @Path("{domain}/new")
+	//@POST @Path("{domain}/new")
 	@Deprecated
 	public void createNew_old(
 			@DefaultValue("Playground") @PathParam("domain") String domain,
@@ -117,11 +117,11 @@ public class LayersManager {
 		}
 	}
 	
-	@DELETE @Path("{domain}/delete")
+	@DELETE @Path("{domain}/{layer}/delete")
 	public void deleteLayer( @DefaultValue(
 			"Playground") @PathParam("domain") String domain, 
 			@DefaultValue("") @HeaderParam("token") String token, 
-			@QueryParam("name") String name ) {
+			@PathParam("layer") String name ) {
 		
 		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
@@ -171,11 +171,11 @@ public class LayersManager {
 //		
 //	}
 	
-	@GET @Path( "{domain}/{layer}/properties/ci" )
+	@GET @Path( "{domain}/{layer}/ci" )
 	public String getContextualInfo( 
 			@DefaultValue("Playground") @PathParam("domain") String domain, 
 			@DefaultValue("") @HeaderParam("token") String token, 
-			@QueryParam("layer") String layer ) {
+			@PathParam("layer") String layer ) {
 		
 		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
@@ -192,12 +192,12 @@ public class LayersManager {
 		
 	}
 	
-	@PUT @Path( "{domain}/{layer}/properties/ci" )
+	@POST @Path( "{domain}/{layer}/ci" )
 	public void setContextualInfo( 
 			@DefaultValue("Playground") @PathParam("domain") String domain,
 			@DefaultValue("") @HeaderParam("token") String token, 
-			@QueryParam("layer") String layer, 
-			@HeaderParam("info") String json ) {
+			@PathParam("layer") String layer, 
+			String json ) { //@HeaderParam("info") ) {
 		
 		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
@@ -209,32 +209,32 @@ public class LayersManager {
 		
 	}
 	
-	@POST
-	@Path("{domain}/edit")
-	@Deprecated  
-	public void editLayerOld( 
-			@DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, 
-			@QueryParam("name") String name, 
-			@QueryParam("newname") String newName ) {
-		
-		System.out.println("Name change request: "+name+" to "+newName+".");
-		
-		RiscossDB db = DBConnector.openDB( domain, token );
-		try {
-			db.renameLayer( name, newName );
-		}
-		finally {
-			DBConnector.closeDB( db );
-		}
-	}
+//	@POST
+//	@Path("{domain}/edit")
+//	@Deprecated  
+//	public void editLayerOld( 
+//			@DefaultValue("Playground") @PathParam("domain") String domain,
+//			@DefaultValue("") @HeaderParam("token") String token, 
+//			@QueryParam("name") String name, 
+//			@QueryParam("newname") String newName ) {
+//		
+//		System.out.println("Name change request: "+name+" to "+newName+".");
+//		
+//		RiscossDB db = DBConnector.openDB( domain, token );
+//		try {
+//			db.renameLayer( name, newName );
+//		}
+//		finally {
+//			DBConnector.closeDB( db );
+//		}
+//	}
 	
-	@PUT @Path("{domain}/{layer}/name")
+	@PUT @Path("{domain}/{layer}/rename")
 	public void editLayer( 
 			@DefaultValue("Playground") @PathParam("domain") String domain,
 			@DefaultValue("") @HeaderParam("token") String token, 
 			@PathParam("layer") String name, 
-			@QueryParam("value") String newName ) {
+			@QueryParam("newname") String newName ) {
 		
 		System.out.println("Name change request: "+name+" to "+newName+".");
 		

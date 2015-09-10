@@ -152,9 +152,7 @@ public class RiskAnalysisModule implements EntryPoint {
 	}
 
 	void loadEntities() {
-		Resource resource = new Resource( GWT.getHostPageBaseURL() + "api/entities/" + RiscossJsonClient.getDomain() + "/list");
-
-		resource.get().send( new JsonCallback() {
+		RiscossJsonClient.listEntities(new JsonCallback() {
 
 			public void onSuccess(Method method, JSONValue response) {
 				if( response.isArray() != null ) {
@@ -174,9 +172,8 @@ public class RiskAnalysisModule implements EntryPoint {
 	}
 
 	void loadRiskConfs() {
-		Resource resource = new Resource( GWT.getHostPageBaseURL() + "api/rcs/" + RiscossJsonClient.getDomain() + "/list");
-
-		resource.get().send( new JsonCallback() {
+		//Resource resource = new Resource( GWT.getHostPageBaseURL() + "api/rcs/" + RiscossJsonClient.getDomain() + "/list");
+		RiscossJsonClient.listRCs( new JsonCallback() {
 
 			public void onSuccess(Method method, JSONValue response) {
 				GWT.log( response.toString() );

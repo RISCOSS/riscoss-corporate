@@ -62,6 +62,7 @@ import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.JsonCallbackWrapper;
 import eu.riscoss.client.ModelInfo;
+import eu.riscoss.client.RiscossCall;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.entities.TableResources;
 import eu.riscoss.client.riskanalysis.KeyValueGrid;
@@ -146,9 +147,7 @@ public class ModelsModule implements EntryPoint {
 		dataProvider = new ListDataProvider<ModelInfo>();
 		dataProvider.addDataDisplay(table);
 
-		Resource resource = new Resource(GWT.getHostPageBaseURL() + "api/models/" + RiscossJsonClient.getDomain() + "/list");
-
-		resource.get().send(new JsonCallback() {
+		RiscossJsonClient.listModels( new JsonCallback() {
 
 			public void onSuccess(Method method, JSONValue response) {
 				GWT.log(response.toString());
@@ -197,7 +196,7 @@ public class ModelsModule implements EntryPoint {
 		SingleUploader upload = new SingleUploader(FileInputType.CUSTOM.with(uploadModel));
 		upload.setTitle("Upload new model");
 		upload.setAutoSubmit(true);
-		upload.setServletPath(upload.getServletPath() + "?t=modelblob&domain=" + RiscossJsonClient.getDomain() );
+		upload.setServletPath(upload.getServletPath() + "?t=modelblob&domain=" + RiscossJsonClient.getDomain()+"&token="+RiscossCall.getToken() );
 		upload.addOnFinishUploadHandler(new OnFinishUploaderHandler() {
 			@Override
 			public void onFinish(IUploader uploader) {
@@ -385,7 +384,8 @@ public class ModelsModule implements EntryPoint {
 				Label descfLabel = new Label("No documentation uploaded.");
 				grid.setWidget( 2, 0, descfLabel);
 			} else {
-				Anchor descfAnchor = new Anchor("Download documentation:\n"+descfilename, GWT.getHostPageBaseURL() +  "models/download?domain=" + RiscossJsonClient.getDomain() + "&name="+ name+"&type=desc");
+				Anchor descfAnchor = new Anchor("Download documentation:\n"+descfilename, GWT.getHostPageBaseURL() +  "models/download?domain=" + RiscossJsonClient.getDomain() + 
+						"&name="+ name+"&type=desc&token="+RiscossCall.getToken());
 				grid.setWidget( 2, 0, descfAnchor);
 			}
 			
@@ -393,7 +393,7 @@ public class ModelsModule implements EntryPoint {
 			docuUploader.setTitle("Upload model documentation");
 			docuUploader.setAutoSubmit(true);
 			
-			docuUploader.setServletPath(docuUploader.getServletPath() + "?t=modeldescblob&domain=" + RiscossJsonClient.getDomain());
+			docuUploader.setServletPath(docuUploader.getServletPath() + "?t=modeldescblob&domain=" + RiscossJsonClient.getDomain()+"&token="+RiscossCall.getToken());
 					
 			docuUploader.add(new Hidden("Modelname", jsname));
 				
@@ -431,8 +431,7 @@ public class ModelsModule implements EntryPoint {
 			updateUploader.setTitle("Update the model to a new version");
 			updateUploader.setAutoSubmit(true);
 			
-			updateUploader.setServletPath(updateUploader.getServletPath() + "?t=modelupdateblob");
-					
+			updateUploader.setServletPath(updateUploader.getServletPath() + "?t=modelupdateblob"+ RiscossJsonClient.getDomain()+"&token="+RiscossCall.getToken());
 			updateUploader.add(new Hidden("modelname", jsname));
 				
 			updateUploader.addOnFinishUploadHandler(new OnFinishUploaderHandler() {
@@ -454,7 +453,8 @@ public class ModelsModule implements EntryPoint {
 			
 			
 			
-			Anchor fAnchor = new Anchor("Download model:\n"+json.get("modelfilename"), GWT.getHostPageBaseURL() +  "models/download?domain=" + RiscossJsonClient.getDomain() + "&name="+ name+"&type=model");
+			Anchor fAnchor = new Anchor("Download model:\n"+json.get("modelfilename"), GWT.getHostPageBaseURL() + 
+					"models/download?domain=" + RiscossJsonClient.getDomain() + "&name="+ name+"&type=model&token="+RiscossCall.getToken());
 			grid.setWidget( 1, 0, fAnchor);
 			//grid.setWidget( 1, 0, new Label("Model filename: \n"+json.get("modelfilename").isString().stringValue()));
 			

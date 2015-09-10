@@ -236,7 +236,7 @@ public class UploadServiceImpl extends UploadAction {
 	}
 	
 	/**
-	 * Get the content of an uploaded file.
+	 * Get the content of an uploaded file. (mm: Not used(??))
 	 */
 	@Override
 	public void getUploadedFile(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -257,7 +257,9 @@ public class UploadServiceImpl extends UploadAction {
 		}
 	}
 	
-	
+	/**
+	 * (mm: Not used(??) - note:called in doGet(?))
+	 */
 	@Override
 	public void removeItem( HttpServletRequest request, String fieldName )  throws UploadActionException {
 		String domain = request.getParameter("domain");		

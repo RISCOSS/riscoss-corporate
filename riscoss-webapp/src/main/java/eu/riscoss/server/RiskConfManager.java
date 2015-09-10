@@ -92,9 +92,9 @@ public class RiskConfManager {
 	 * @param name
 	 * @return
 	 */
-	@GET @Path("/{domain}/rc/get")
+	@GET @Path("/{domain}/{rc}/get")
 	public String getContent( @DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, @QueryParam("name") String name ) {
+			@DefaultValue("") @HeaderParam("token") String token, @PathParam("rc") String name ) {
 		
 		JsonObject json = new JsonObject();
 		
@@ -135,21 +135,22 @@ public class RiskConfManager {
 		}
 	}
 	
-	@PUT @Path("/{domain}/rc/put")
+	@POST @Path("/{domain}/{rc}/store")
 	public void setContent( @DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, @QueryParam("content") String value ) {
+			@DefaultValue("") @HeaderParam("token") String token, 
+			@PathParam("rc") String name, String riskConfigs ) {
 		
-		JsonObject json = (JsonObject)new JsonParser().parse( value );
+		JsonObject json = (JsonObject)new JsonParser().parse( riskConfigs );
 		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
-			String rc = json.get( "name" ).getAsString();
+			//String rc = json.get( "name" ).getAsString();
 			try {
 				List<String> list = new ArrayList<String>();
 				JsonArray array = json.get( "models" ).getAsJsonArray();
 				for( int i = 0; i < array.size(); i++ ) {
 					list.add( array.get( i ).getAsJsonObject().get( "name" ).getAsString() );
 				}
-				db.setModelsFromRiskCfg( rc, list );
+				db.setModelsFromRiskCfg( name, list );
 			}
 			catch( Exception ex ) {}
 			try {
@@ -165,7 +166,7 @@ public class RiskConfManager {
 					}
 					map.put( layer, models );
 				}
-				db.setRCModels( rc, map );
+				db.setRCModels( name, map );
 			}
 			catch( Exception ex ) {
 				ex.printStackTrace();
@@ -176,7 +177,7 @@ public class RiskConfManager {
 		}
 	}
 	
-	@POST @Path("/{domain}/rc/new")
+	@POST @Path("/{domain}/create")
 	public String createNew( @DefaultValue("Playground") @PathParam("domain") String domain,
 			@DefaultValue("") @HeaderParam("token") String token, @QueryParam("name") String name ) {
 		RiscossDB db = DBConnector.openDB( domain, token );
@@ -193,9 +194,9 @@ public class RiskConfManager {
 		}
 	}
 	
-	@DELETE @Path("/{domain}/rc/delete")
+	@DELETE @Path("/{domain}/{rc}/delete")
 	public String delete( @DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, @QueryParam("name") String name ) {
+			@DefaultValue("") @HeaderParam("token") String token, @PathParam("rc") String name ) {
 		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
 			db.removeRiskConfiguration( name );

@@ -112,9 +112,8 @@ class EntitySelectionPanel implements IsWidget {
 	}-*/;
 	
 	void loadEntities() {
-		Resource resource = new Resource( GWT.getHostPageBaseURL() + "api/entities/" + RiscossJsonClient.getDomain() + "/list");
-		
-		resource.get().send( new JsonCallback() {
+		//Resource resource = new Resource( GWT.getHostPageBaseURL() + "api/entities/" + RiscossJsonClient.getDomain() + "/list");
+		RiscossJsonClient.listEntities( new JsonCallback() {
 			
 			public void onSuccess(Method method, JSONValue response) {
 				if( response.isArray() != null ) {

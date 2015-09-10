@@ -28,31 +28,27 @@ all calls have parameters:
 
   GET "/{domain}/list"
     calls db.layerNames()
-  POST "{domain}/new" //$deprecated!$
-	  @QueryParam("name")
-	  @QueryParam("parent")
-	  comment: automatic name sanitisation, not notified
-	calls db.addLayer( name, parentName );  
+    
   POST "{domain}/create"
-  	  @QueryParam("name")
+  	  @QueryParam("name")  
 	  @QueryParam("parent")
 	  comment: automatic name sanitisation, not notified
 	calls db.addLayer( name, parentName );
-  DELETE "{domain}/delete"
+	
+  DELETE "{domain}/{layer}/delete"
   	  @QueryParam("name")
       calls db.removeLayer( name );
-   GET "{domain}/{layer}/properties/ci"  //contextual info
+      
+   GET "{domain}/{layer}/ci"  //contextual info
 	  @PathParam("layer")
 	calls db.getLayerData( layer, "ci" );  //reads attributes of a layer node
-  PUT "{domain}/{layer}/properties/ci"   //contextual info
+	
+  PUT "{domain}/{layer}/ci"   //contextual info
 	  @PathParam("layer")
 	  @HeaderParam("info")  //json format $move to body!$
 	calls db.setLayerData( layer, "ci", json ); //sets attributes of a layer node
-  POST "{domain}/edit"  //$deprecated!$
-	@QueryParam("name") String name, 
-	@QueryParam("newname") String newName )
-      calls db.renameLayer( name, newName );
-   PUT "{domain}/{layer}/name"
+	
+   PUT "{domain}/{layer}/rename"
 	@PathParam("layer") String name, 
 	@QueryParam("value") String newName 
       calls db.renameLayer( name, newName );
@@ -241,7 +237,7 @@ all calls have parameters:
 	@QueryParam("name") String name
 	For a risk configuration name, returns json with list of *models* associated, and layers with their models
 	
-	PUT "/{domain}/rc/put"
+	PUT "/{domain}/rc/put" $changed to store$
 	@QueryParam("content") String value $json, contains models and layers$
 	Sets models and layers/models for an RC
 	
@@ -263,7 +259,7 @@ all calls have parameters:
  calls not detailed, since they will actually not changed.  
    `
     @GET @Path( "/{domain}/session/list")
-    @POST @Path("/{domain}/session/store")
+    @POST @Path("/{domain}/session/new")
     @GET @Path("/{domain}/session/{sid}/update-data")
 	@GET @Path("/{domain}/session/{sid}/missing-data")
 	@PUT @Path("/{domain}/session/{sid}/missing-data")
@@ -271,7 +267,7 @@ all calls have parameters:
 	@GET @Path("/{domain}/session/{sid}/results")
 	@DELETE @Path("/{domain}/session/{sid}/delete")
 	@POST @Path("/{domain}/session/{sid}/newrun")
-	@POST @Path("/{domain}/new")  $deprecated$??!!
+	@POST @Path("/{domain}/new")
 	@POST @Path("/{domain}/whatif")
 	@POST @Path("/{domain}/ahp")
 

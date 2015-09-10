@@ -31,7 +31,11 @@ import eu.riscoss.rdc.RDC;
 import eu.riscoss.rdc.RDCFactory;
 import eu.riscoss.rdc.RDCParameter;
 
-
+/**
+ * Risk Data Coellectors
+ * @author morandini
+ *
+ */
 @Path("rdcs")
 public class RDCManager {
 	

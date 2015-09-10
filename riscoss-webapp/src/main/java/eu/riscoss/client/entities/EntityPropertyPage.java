@@ -521,8 +521,8 @@ public class EntityPropertyPage implements IsWidget {
 			}} );
 	}
 
-	protected void onParentEntitySelected( List<String> entities ) {
-		RiscossJsonClient.setParent( entity, entities, new JsonCallback() {
+	protected void onParentEntitySelected( List<String> parents ) {
+		RiscossJsonClient.setParents( entity, parents, new JsonCallback() {
 			@Override
 			public void onFailure( Method method, Throwable exception ) {
 				Window.alert( exception.getMessage() );

@@ -129,7 +129,7 @@ public class AnalysisManager {
 		
 	}
 	
-	@POST @Path("/{domain}/session/new")
+	@POST @Path("/{domain}/session/create")
 	public String createSession(
 			@DefaultValue("Playground") @PathParam("domain") String domain,
 			@DefaultValue("") @HeaderParam("token") String token, @QueryParam("rc") String rc,
@@ -262,31 +262,26 @@ public class AnalysisManager {
 		}
 	}
 	
-	@PUT @Path("/{domain}/session/{sid}/missing-data")
-	public void setSessionMissingData(
-			@DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, 
-			@PathParam("sid") String sid,
-			@HeaderParam("values") String values
-			) {
-		JsonObject json = (JsonObject)new JsonParser().parse( values );
-		RiscossDB db = DBConnector.openDB( domain, token );
+	@POST @Path("/{domain}/session/{sid}/missing-data")
+	public void setSessionMissingData(@DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, @PathParam("sid") String sid, String values // @HeaderParam("values")
+	) {
+		JsonObject json = (JsonObject) new JsonParser().parse(values);
+		RiscossDB db = DBConnector.openDB(domain, token);
 		try {
-			JValueMap valueMap = gson.fromJson(json, JValueMap.class );
-			RiskAnalysisSession ras = db.openRAS( sid );
-			for( String entity : valueMap.map.keySet() ) {
-				for( JRiskData jrd : valueMap.map.get( entity ) ) {
-					RiskData rd = new RiskData( 
-							jrd.id, entity, new Date(), RiskDataType.NUMBER, jrd.value );
-					ras.saveInput( entity, rd.getId(), "user", gson.toJson( rd ) );
+			JValueMap valueMap = gson.fromJson(json, JValueMap.class);
+			RiskAnalysisSession ras = db.openRAS(sid);
+			for (String entity : valueMap.map.keySet()) {
+				for (JRiskData jrd : valueMap.map.get(entity)) {
+					RiskData rd = new RiskData(jrd.id, entity, new Date(), RiskDataType.NUMBER, jrd.value);
+					ras.saveInput(entity, rd.getId(), "user", gson.toJson(rd));
 				}
 			}
-		}
-		finally {
-			DBConnector.closeDB( db );
+		} finally {
+			DBConnector.closeDB(db);
 		}
 	}
-	
+
 	@GET @Path("/{domain}/session/{sid}/summary")
 	public String getSessionSummary(
 			@DefaultValue("Playground") @PathParam("domain") String domain,

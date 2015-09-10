@@ -48,10 +48,12 @@ public class MissingDataDialog {
 	protected void onDone() {
 		
 		CodecRiskData crd = GWT.create( CodecRiskData.class );
-		String values = crd.encode( inputForm.getValueMap() ).toString();
+		//String values = crd.encode( inputForm.getValueMap() ).toString();
+		JSONValue values = crd.encode( inputForm.getValueMap() );
 		
-		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/session/" + ras + "/missing-data" )
-			.put().header( "values", values ).send( new JsonCallback() {
+//		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/session/" + ras + "/missing-data" ).put().header( "values", values ).send( 
+					
+		RiscossJsonClient.setAnalysisMissingData(ras, values, new JsonCallback() {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				// TODO Auto-generated method stub

@@ -74,9 +74,10 @@ public class DBConnector {
 	 * @param domain
 	 * @return
 	 */
-//	public static RiscossDB openDB( String domain ) {
-//		return new RiscossOrientDB( db_addr, domain );
-//	}
+	@Deprecated
+	public static RiscossDB openDB( String domain ) {
+		return new RiscossOrientDB( db_addr, domain );
+	}
 	
 	/**
 	 * Opens the database with username and password, for normal access with domain and user
@@ -94,6 +95,7 @@ public class DBConnector {
 	 * @return
 	 */
 	public static RiscossDB openDB( String domain, String token ) {
+		System.out.println("domain "+domain+", token "+token);
 		return new RiscossOrientDB( db_addr, domain, Base64.decodeBase64( token ) );
 	}
 	

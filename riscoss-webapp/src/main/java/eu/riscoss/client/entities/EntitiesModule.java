@@ -103,8 +103,7 @@ public class EntitiesModule implements EntryPoint {
 		exportJS();
 		
 		String layer = Window.Location.getParameter( "layer" );
-		
-		RiscossCall.fromCookies().layers().list().get( new JsonCallback() {
+		RiscossJsonClient.listLayers(new JsonCallback() {
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
 				for( int i = 0; i < response.isArray().size(); i++ ) {
@@ -261,13 +260,16 @@ public class EntitiesModule implements EntryPoint {
 		
 		RootPanel.get().add( page );
 		
-		String url = ( layer != null ?
-				"api/entities/" + RiscossJsonClient.getDomain() + "/list/" + layer :
-				"api/entities/" + RiscossJsonClient.getDomain() + "/list" );
+//		String url = ( layer != null ?
+//				"api/entities/" + RiscossJsonClient.getDomain() + "/list/" + layer :
+//				"api/entities/" + RiscossJsonClient.getDomain() + "/list" );
+//		
+//		
+//		Resource resource = new Resource( GWT.getHostPageBaseURL() + url );
+//		
+		//resource.get().send( new JsonCallback() 
 		
-		Resource resource = new Resource( GWT.getHostPageBaseURL() + url );
-		
-		resource.get().send( new JsonCallback() {
+		RiscossJsonClient.listEntities(layer, new JsonCallback() {
 			
 			public void onSuccess(Method method, JSONValue response) {
 				if( response.isArray() != null ) {
@@ -409,8 +411,7 @@ public class EntitiesModule implements EntryPoint {
 							insertEntityIntoTable( info );
 							
 							dialog.hide();
-							
-							RiscossCall.fromCookies().layers().layer( layer ).property( RiscossCall.CONTEXTUALINFO ).get( new JsonCallback() {
+							RiscossJsonClient.getLayerContextualInfo(layer, new JsonCallback() {
 								@Override
 								public void onFailure(Method method, Throwable exception) {
 									Window.alert( exception.getMessage() );
@@ -457,7 +458,7 @@ public class EntitiesModule implements EntryPoint {
 					info.setLayer( JsonUtil.getValue( response, "layer", "" ) );
 					insertEntityIntoTable( info );
 					
-					RiscossCall.fromCookies().layers().layer( layerName.getItemText(layerName.getSelectedIndex()) ).property( RiscossCall.CONTEXTUALINFO ).get( new JsonCallback() {
+					RiscossJsonClient.getLayerContextualInfo(layerName.getItemText(layerName.getSelectedIndex()), new JsonCallback() {
 						@Override
 						public void onFailure(Method method, Throwable exception) {
 							Window.alert( exception.getMessage() );

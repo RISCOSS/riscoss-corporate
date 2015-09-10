@@ -137,16 +137,11 @@ public class RDRModule implements EntryPoint {
 
 		RootPanel.get().add( page );
 		//RootPanel.get().add( dock );
+//		String url = ( layer != null ?
+//				"api/entities/" + RiscossJsonClient.getDomain() + "/list/" + layer :
+//				"api/entities/" + RiscossJsonClient.getDomain() + "/list" );
 
-
-		String url = ( layer != null ?
-				"api/entities/" + RiscossJsonClient.getDomain() + "/list/" + layer :
-				"api/entities/" + RiscossJsonClient.getDomain() + "/list" );
-
-		Resource resource = new Resource( GWT.getHostPageBaseURL() + url );
-
-		resource.get().send( new JsonCallback() {
-
+		RiscossJsonClient.listEntities(layer, new JsonCallback() {
 			public void onSuccess(Method method, JSONValue response) {
 				if( response.isArray() != null ) {
 					for( int i = 0; i < response.isArray().size(); i++ ) {

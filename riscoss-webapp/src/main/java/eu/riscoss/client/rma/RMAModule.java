@@ -30,6 +30,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 
 import eu.riscoss.client.Callback;
 import eu.riscoss.client.Log;
+import eu.riscoss.client.RiscossCall;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecAHPInput;
 import eu.riscoss.client.codec.CodecChunkList;
@@ -78,9 +79,7 @@ public class RMAModule implements EntryPoint {
 					@Override
 					public void onDone( List<String> list ) {
 						models = list;
-						new Resource( GWT.getHostPageBaseURL() + "api/models/" + RiscossJsonClient.getDomain() + "/model/chunklist" )
-						.get().header( "models", RiscossJsonClient.mkJsonArray( list ).toString() )
-						.send( new JsonCallback() {
+						RiscossJsonClient.listChunkslist(list, new JsonCallback() {
 							@Override
 							public void onSuccess( Method method, JSONValue response ) {
 								loadModel( response );
@@ -217,11 +216,7 @@ public class RMAModule implements EntryPoint {
 		String json = codec.encode( ahp ).toString();
 		
 		Log.println( "Calling" );
-		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/ahp" ).post()
-		.text( json )
-//		.header("ahp-param",json)
-		.send( 
-				new JsonCallback() {
+		RiscossJsonClient.runAHP( json, new JsonCallback() {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				Log.println( "" + response );

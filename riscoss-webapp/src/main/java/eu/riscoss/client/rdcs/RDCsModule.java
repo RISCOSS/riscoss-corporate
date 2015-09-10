@@ -37,6 +37,8 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 
+import eu.riscoss.client.RiscossJsonClient;
+
 public class RDCsModule implements EntryPoint {
 	
 	DockPanel dock = new DockPanel();
@@ -52,9 +54,10 @@ public class RDCsModule implements EntryPoint {
 		dock.add( grid, DockPanel.CENTER );
 		RootPanel.get().add( dock );
 		
-		Resource resource = new Resource( GWT.getHostPageBaseURL() + "api/rdcs/list" );
+//		Resource resource = new Resource( GWT.getHostPageBaseURL() + "api/rdcs/list" );
+//		resource.get().send( new JsonCallback() 
 		
-		resource.get().send( new JsonCallback() {
+		RiscossJsonClient.listRDCs( new JsonCallback() {
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
 				loadRDCs( response );

@@ -45,7 +45,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
-import eu.riscoss.client.RiscossCall;
+import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.ui.ClickWrapper;
 import eu.riscoss.client.ui.FramePanel;
 import eu.riscoss.client.ui.LabeledWidget;
@@ -97,7 +97,7 @@ public class LayersModule implements EntryPoint {
 		//rightPanel.setWidth("60%");
 		//rightPanel.setHeight("100%");
 		
-		RiscossCall.fromCookies().layers().list().get( new JsonCallback() {
+		RiscossJsonClient.listLayers( new JsonCallback() {
 			
 			public void onSuccess(Method method, JSONValue response) {
 				if( response.isArray() != null ) {
@@ -234,8 +234,7 @@ public class LayersModule implements EntryPoint {
 		
 		newLayer = new Button("NEW LAYER");
 		newLayer.setStyleName("button");
-		
-		RiscossCall.fromCookies().layers().list().get( new JsonCallback() {
+		RiscossJsonClient.listLayers( new JsonCallback() {
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
 				newLayer.addClickHandler( new ClickWrapper<JSONArray>( (JSONArray)response.isArray() ) {
@@ -268,7 +267,7 @@ public class LayersModule implements EntryPoint {
 							parent = "$root";
 						}
 						
-						RiscossCall.fromCookies().layers().create().arg( "name", name ).arg( "parent", parent ).post( new JsonCallback() {
+						RiscossJsonClient.createLayer(name, parent, new JsonCallback() {
 							@Override
 							public void onFailure(Method method, Throwable exception) {
 								Window.alert( exception.getMessage() );
@@ -431,7 +430,7 @@ public class LayersModule implements EntryPoint {
 						@Override
 						public void onClick(ClickEvent event) {
 							Window.alert("Attention: entities associated to this layer cannot be re-associated to another layer and need to be deleted manually!");
-							RiscossCall.fromCookies().layers().layer( selectedLayer ).delete( new JsonCallback() {
+							RiscossJsonClient.deleteLayer(selectedLayer, new JsonCallback() {
 								@Override
 								public void onFailure(Method method,Throwable exception) {
 									Window.alert( exception.getMessage() );
@@ -479,7 +478,7 @@ public class LayersModule implements EntryPoint {
 	class DeleteLayerPanel {
 		ListBox combo = new ListBox();
 		void show() {
-			RiscossCall.fromCookies().layers().list().get( new JsonCallback() {
+			RiscossJsonClient.listLayers( new JsonCallback() {
 				@Override
 				public void onSuccess(Method method, JSONValue response) {
 					VerticalPanel panel = new VerticalPanel();
@@ -492,7 +491,7 @@ public class LayersModule implements EntryPoint {
 						@Override
 						public void onClick(ClickEvent event) {
 							Window.alert("Attention: entities associated to this layer cannot be re-associated to another layer and need to be deleted manually!");
-							RiscossCall.fromCookies().layers().layer( selectedLayer ).delete( new JsonCallback() {
+							RiscossJsonClient.deleteLayer(combo.getItemText( combo.getSelectedIndex()) , new JsonCallback() {
 //							RiscossJsonClient.deleteLayer( combo.getItemText( combo.getSelectedIndex() ), new JsonCallback() {
 								@Override
 								public void onFailure(Method method,Throwable exception) {
@@ -527,7 +526,7 @@ public class LayersModule implements EntryPoint {
 		TextBox txt = new TextBox();
 		ListBox combo = new ListBox();
 		void show() {
-			RiscossCall.fromCookies().layers().list().get( new JsonCallback() {
+			RiscossJsonClient.listLayers(new JsonCallback() {
 				@Override
 				public void onSuccess(Method method, JSONValue response) {
 					VerticalPanel panel = new VerticalPanel();
@@ -572,7 +571,7 @@ public class LayersModule implements EntryPoint {
 								parent = "$root";
 							}
 							
-							RiscossCall.fromCookies().layers().create().arg( "name", name ).arg( "parent", parent ).post( new JsonCallback() {
+							RiscossJsonClient.createLayer(name, parent, new JsonCallback() {
 								@Override
 								public void onFailure(Method method, Throwable exception) {
 									Window.alert( exception.getMessage() );
@@ -697,8 +696,7 @@ public class LayersModule implements EntryPoint {
 		ListBox combo = new ListBox();
 		TextBox txt = new TextBox();
 		void show() {
-			
-			RiscossCall.fromCookies().layers().list().get( new JsonCallback() {
+			RiscossJsonClient.listLayers( new JsonCallback() {
 				@Override
 				public void onSuccess(Method method, JSONValue response) {
 					VerticalPanel panel = new VerticalPanel();
@@ -739,7 +737,7 @@ public class LayersModule implements EntryPoint {
 							txt.setText(newName);
 							
 							String oldLayerName = combo.getItemText( combo.getSelectedIndex() );
-							RiscossCall.fromCookies().layers().layer( oldLayerName ).fx( "name" ).arg( "value", newName ).put( new JsonCallback() {
+							RiscossJsonClient.renameLayer(oldLayerName, newName, new JsonCallback() {
 								@Override
 								public void onFailure(Method method,Throwable exception) {
 									Window.alert( exception.getMessage() );

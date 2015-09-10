@@ -122,7 +122,7 @@ public class LayerPropertyPage implements IsWidget {
 		
 		tab.setVisible(true);
 		
-		RiscossCall.fromCookies().layers().layer( layer ).property( RiscossCall.CONTEXTUALINFO ).get( new JsonCallback() {
+		RiscossJsonClient.getLayerContextualInfo(layer, new JsonCallback() {
 			@Override
 			public void onFailure(Method method, Throwable exception) {
 				Window.alert( exception.getMessage() );
@@ -240,8 +240,7 @@ public class LayerPropertyPage implements IsWidget {
 				CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
 				JSONValue json = codec.encode( info );
 				
-				RiscossCall.fromCookies().layers().layer( layer ).property( RiscossCall.CONTEXTUALINFO ).post( json, new JsonCallback() {
-
+				RiscossJsonClient.setLayerContextualInfo(layer, json, new JsonCallback() {
 					@Override
 					public void onFailure( Method method, Throwable exception ) {
 						Window.alert( exception.getMessage());
@@ -253,11 +252,7 @@ public class LayerPropertyPage implements IsWidget {
 					
 				});
 				
-				String url = "api/entities/" + RiscossJsonClient.getDomain() + "/list/" + layer; 
-				
-				Resource resource = new Resource( GWT.getHostPageBaseURL() + url );
-				
-				resource.get().send( new JsonCallback() {
+				RiscossJsonClient.listEntities(layer, new JsonCallback() {
 					
 					public void onSuccess(Method method, JSONValue response) {
 						int type = lBox.getSelectedIndex();
@@ -548,11 +543,7 @@ public class LayerPropertyPage implements IsWidget {
 				@Override
 				public void onClick(ClickEvent arg0) {
 					
-					String url = "api/entities/" + RiscossJsonClient.getDomain() + "/list/" + layer; 
-					
-					Resource resource = new Resource( GWT.getHostPageBaseURL() + url );
-					
-					resource.get().send( new JsonCallback() {
+					RiscossJsonClient.listEntities(layer, new JsonCallback() {
 						
 						public void onSuccess(Method method, JSONValue response) {
 							if( response.isArray() != null ) {
@@ -593,7 +584,7 @@ public class LayerPropertyPage implements IsWidget {
 					CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
 					JSONValue json = codec.encode( info );
 					
-					RiscossCall.fromCookies().layers().layer( layer ).property( RiscossCall.CONTEXTUALINFO ).put( json, new JsonCallback() {
+					RiscossJsonClient.setLayerContextualInfo(layer, json, new JsonCallback() {
 
 						@Override
 						public void onFailure(Method method,

@@ -377,7 +377,7 @@ public class RiscossWebApp implements EntryPoint {
 	
 	protected void showDomainSelectionDialog() {
 		
-		RiscossCall.fromCookies().withDomain(null).auth().domains().list().get( new JsonCallback() {
+		RiscossCall.fromCookies().withDomain(null).auth().fx("domains").list().get( new JsonCallback() {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				DomainSelectionDialog dsDialog = null;
