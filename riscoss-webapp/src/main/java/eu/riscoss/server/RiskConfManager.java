@@ -60,7 +60,7 @@ public class RiskConfManager {
 		try {
 			
 			if( entity != null ) {
-				if( !"".equals( entity ) ) {
+				if( !entity.equals( "" ) ) {
 					String layer = db.layerOf( entity );
 					List<String> rcs = db.findCandidateRCs( layer );
 					for( String rc : rcs ) {

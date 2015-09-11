@@ -91,9 +91,8 @@ class RCSelectionPanel implements IsWidget {
 		
 		modelDataProvider.getList().clear();
 		
-		Resource resource = new Resource( GWT.getHostPageBaseURL() + "api/rcs/" + RiscossJsonClient.getDomain() + "/list");
-		
-		resource.addQueryParam( "entity", entity ).get().send( new JsonCallback() {
+		//Resource resource = new Resource( GWT.getHostPageBaseURL() + "api/rcs/" + RiscossJsonClient.getDomain() + "/list");
+		RiscossJsonClient.listRCs(entity, new JsonCallback() {
 			
 			public void onSuccess(Method method, JSONValue response) {
 				if( response.isArray() != null ) {

@@ -284,6 +284,15 @@ public class RiscossJsonClient {
 	}
 	
 	//TODO:rcs
+	public static void listRCs( String entity, JsonCallback cb ) {
+		RiscossCall.fromCookies().rcs().list().arg("entity", entity).get(cb);
+//		new Resource( GWT.getHostPageBaseURL() + "api/rcs/" + getDomain() + "/list" ).get().send( cb );
+	}
+	
+	/**
+	 * Without defining an entity, all the risk configurations are returned
+	 * @param cb
+	 */
 	public static void listRCs( JsonCallback cb ) {
 		RiscossCall.fromCookies().rcs().list().get(cb);
 //		new Resource( GWT.getHostPageBaseURL() + "api/rcs/" + getDomain() + "/list" ).get().send( cb );
