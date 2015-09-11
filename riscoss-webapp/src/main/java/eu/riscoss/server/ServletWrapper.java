@@ -35,10 +35,19 @@ import javax.servlet.ServletResponse;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.reflections.Reflections;
 
+import com.google.gson.Gson;
+
+import eu.riscoss.db.RiscossDB;
+import eu.riscoss.db.RiscossDBResource;
 import eu.riscoss.db.RiscossDatabase;
 import eu.riscoss.rdc.RDC;
 import eu.riscoss.rdc.RDCFactory;
 import eu.riscoss.rdc.RDCRunner;
+import eu.riscoss.shared.DBResource;
+import eu.riscoss.shared.JPageInfo;
+import eu.riscoss.shared.JSiteMap;
+import eu.riscoss.shared.KnownRoles;
+import eu.riscoss.shared.Pair;
 
 public class ServletWrapper extends ServletContainer {
 	
@@ -54,6 +63,9 @@ public class ServletWrapper extends ServletContainer {
 			
 			String dbaddr = sc.getInitParameter( "eu.riscoss.db.address" );
 			String dbname = sc.getInitParameter( "eu.riscoss.db.name" );
+			
+			String superadmin = sc.getInitParameter( "eu.riscoss.db.admin.username" );
+			String superpwd = sc.getInitParameter( "eu.riscoss.db.admin.password" );
 			
 			if( dbname == null ) {
 				dbname = "riscoss-db";
@@ -85,24 +97,52 @@ public class ServletWrapper extends ServletContainer {
 				dbaddr = dbaddr + "/" + dbname;
 			}
 			
-			DBConnector.setDbaddr(dbaddr);
+			DBConnector.initDatabase( dbaddr );
 			
 			System.out.println( "DB address: " + dbaddr );
 			System.out.println( "DB name: " + dbname );
 			
 			String initString = sc.getInitParameter( "eu.riscoss.param.domains.list" );
 			
-			RiscossDatabase db = DBConnector.openDatabase( null, null );
+			RiscossDatabase db = DBConnector.openDatabase( superadmin, superpwd );
+			
+			db.init();
+			
+			for( KnownRoles r : KnownRoles.values() ) {
+				db.createRole( r.name() );
+			}
+			
+			Gson gson = new Gson();
+			
+			JSiteMap sitemap = new JSiteMap();
+			
+			sitemap.add( new JPageInfo( "Users and Roles", "admin.html", gson.toJson( sitemap ) ) );
+			
+			db.setRoleProperty( "Guest", "allowedPages", "" );
+			
 			if( initString != null ) {
 				String[] tokens = initString.split( "[,]" );
 				for( String tok : tokens ) {
 					db.createDomain( tok );
 				}
 			}
+			
+			
+			if( initString != null ) {
+				String[] tokens = initString.split( "[,]" );
+				for( String tok : tokens ) {
+					RiscossDB domainDB = DBConnector.openDB( tok, superadmin, superpwd );
+					for( KnownRoles r : KnownRoles.values() ) {
+						domainDB.createRole( r.name() );
+						for( Pair<DBResource,String> perm : r.permissions() ) {
+							domainDB.addPermissions( r.name(), RiscossDBResource.valueOf( perm.getLeft().name() ), perm.getRight() );
+						}
+						db.setPredefinedRole( tok, KnownRoles.Administrator.name() );
+					}
+					domainDB.close();
+				}
+			}
 			db.close();
-			
-//			DBConnector.closeDB( DBConnector.openDB( "Playground" ) ); // Old stuff
-			
 			Reflections reflections = new Reflections( RDCRunner.class.getPackage().getName() );
 			
 			Set<Class<? extends RDC>> subTypes = reflections.getSubTypesOf(RDC.class);
@@ -119,14 +159,6 @@ public class ServletWrapper extends ServletContainer {
 	}
 	
 	public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
-		
-//		try {
-//			HttpServletRequest httpReq = (HttpServletRequest) req;
-//			for( Cookie cookie : httpReq.getCookies() ) {
-//				DBConnector.setThreadLocalValue( cookie.getName(), cookie.getValue() );
-//			}
-//		}
-//		catch( Exception ex ) {}
 		
 		super.service( req, res );
 		

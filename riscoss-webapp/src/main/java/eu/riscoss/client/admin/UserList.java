@@ -11,12 +11,12 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.ui.LinkHtml;
-import eu.riscoss.shared.JRoleInfo;
+import eu.riscoss.shared.JUserInfo;
 
 public class UserList implements IsWidget {
 	
-	CellTable<JRoleInfo>			table;
-	ListDataProvider<JRoleInfo>	dataProvider;
+	CellTable<JUserInfo>			table;
+	ListDataProvider<JUserInfo>	dataProvider;
 	
 	VerticalPanel				tablePanel = new VerticalPanel();
 	
@@ -24,10 +24,10 @@ public class UserList implements IsWidget {
 		
 		table = new CellTable<>();
 		
-		table.addColumn( new Column<JRoleInfo,SafeHtml>(new SafeHtmlCell() ) {
+		table.addColumn( new Column<JUserInfo,SafeHtml>(new SafeHtmlCell() ) {
 			@Override
-			public SafeHtml getValue(JRoleInfo roleInfo) {
-				return new LinkHtml( roleInfo.getName(), "javascript:selectUser(\"" + roleInfo.getName() + "\")" ); };
+			public SafeHtml getValue(JUserInfo roleInfo) {
+				return new LinkHtml( roleInfo.getUsername(), "javascript:selectUser(\"" + roleInfo.getUsername() + "\")" ); };
 		}, "User");
 //		Column<RoleInfo,String> c = new Column<RoleInfo,String>(new ButtonCell() ) {
 //			@Override
@@ -42,7 +42,7 @@ public class UserList implements IsWidget {
 //			});
 //		table.addColumn( c, "");
 		
-		dataProvider = new ListDataProvider<JRoleInfo>();
+		dataProvider = new ListDataProvider<JUserInfo>();
 		dataProvider.addDataDisplay( table );
 		
 		SimplePager pager = new SimplePager();
@@ -57,6 +57,14 @@ public class UserList implements IsWidget {
 	@Override
 	public Widget asWidget() {
 		return this.tablePanel;
+	}
+
+	public void clear() {
+		dataProvider.getList().clear();
+	}
+
+	public void append( JUserInfo info ) {
+		dataProvider.getList().add( info );
 	}
 	
 }

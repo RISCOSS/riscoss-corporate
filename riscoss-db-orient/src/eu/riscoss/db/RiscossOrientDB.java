@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.codehaus.jettison.json.JSONObject;
 
@@ -17,51 +16,19 @@ import com.orientechnologies.orient.core.metadata.security.OToken;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.sql.OCommandSQL;
 import com.orientechnologies.orient.server.token.OrientTokenHandler;
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
 public class RiscossOrientDB implements RiscossDB {
 	
-//	static {
-//		registerGraphFunctions();
-//	}
-//	
-//	private static final OServerParameterConfiguration[] I_PARAMS = new OServerParameterConfiguration[] { 
-//		new OServerParameterConfiguration( OrientTokenHandler.SIGN_KEY_PAR, "any key")
-//	};
-//	
-//	private static void registerGraphFunctions() {
-//		OGraphFunctionFactory graphFunctions = new OGraphFunctionFactory();
-//		Set<String> names = graphFunctions.getFunctionNames();
-//		
-//		for (String name : names) {
-//			System.out.println("ODB graph function found: [" + name + "]");
-//			OSQLEngine.getInstance().registerFunction(name, graphFunctions.createFunction(name)); 
-//			OSQLFunction function = OSQLEngine.getInstance().getFunction(name);
-//			if (function != null) {
-//				// Dummy call, to ensure that the class is loaded
-//				function.getSyntax();
-////				System.out.println("ODB graph function [" + name + "] is registered: [" + function.getSyntax() + "]");
-//			}
-//			else {
-////				System.out.println("ODB graph function [" + name + "] NOT registered!!!");
-//			}
-//		}
-//	}
-	
-//	static Map<String,OrientGraphFactory> factories = new HashMap<String,OrientGraphFactory>();
-//	
-//	private synchronized static OrientGraph acquireFactory( String dbaddress ) {
-//		OrientGraphFactory factory = factories.get( dbaddress );
-//		if( factory == null ) {
-//			factory = new OrientGraphFactory( dbaddress ); //.setupPool(1,10);
-//			factories.put( dbaddress, factory );
-//		}
-//		return factory.getTx();
-//	}
-	
 	GDomDB		dom = null;
+	
+	RiscossOrientDB( OrientBaseGraph graph, String domain ) {
+		
+		dom = new GDomDB( graph, domain );
+		
+	}
 	
 	public RiscossOrientDB( String address, String domain ) {
 		
@@ -735,49 +702,24 @@ public class RiscossOrientDB implements RiscossDB {
 	
 	@Override
 	public void createRole( String name ) {
-		UUID uuid = UUID.randomUUID();
-		execute( "INSERT INTO orole SET name = '" + uuid.toString() + "', mode = 0, localName='" + name + "'" );
+		GAuthDom auth = new GAuthDom( dom );
+		auth.createRole( name );
 	}
 
 	@Override
-	public List<String> listRoles() {
-		List<ODocument> list = dom.querySynch( "SELECT FROM orole" );
-		return new GenericNodeCollection<String>( list, new AttributeProvider<String>() {
-			@Override
-			public String getValue( ODocument doc ) {
-				return doc.field( "name" );
-			}} );
+	public List<String> listRoles( String domain ) {
+		return new GAuthDom( dom ).listRoles();
 	}
 
 	@Override
 	public List<String> listUsers() {
-		List<ODocument> list = dom.querySynch( "SELECT FROM ouser" );
+		String q = "select from ouser where roles in (select from orole where domain.tag='" + dom.getRootName() + "')";
+		List<ODocument> list = dom.querySynch( q );
 		return new GenericNodeCollection<String>( list, new AttributeProvider<String>() {
 			@Override
 			public String getValue( ODocument doc ) {
 				return doc.field( "name" );
 			}} );
-	}
-	
-	public void createUser( String username, String password ) throws Exception {
-		if( password.length() < 5 )
-			throw new Exception( "Password must be at least 5 characters." );
-		
-		if( existsUser( username ) )
-			throw new Exception( "User '" + username + "' already exists" );
-		
-		UUID uuid = UUID.randomUUID();
-		
-		execute( "INSERT INTO ouser " + 
-				"SET name = '" + username + "', " + 
-				"password = '" + password + "', " +
-				"status = 'ACTIVE', " + 
-				"roles = (SELECT FROM ORole WHERE name = 'admin'), " + 
-				"domain = '" + uuid.toString() + "'" );
-		
-		Vertex root = dom.graph.addVertex( GDomDB.ROOT_CLASS, (String)null );
-		root.setProperty( "tag", uuid.toString() );
-		dom.graph.commit();
 	}
 	
 	public void chpwd( String user, String new_pwd ) {
@@ -785,10 +727,6 @@ public class RiscossOrientDB implements RiscossDB {
 				"UPDATE ouser SET password = '" + new_pwd + "' WHERE name = '" + user + "'" );
 	}
 	
-	public void changeRole( String role ) {
-		execute( "UPDATE orole SET inheritedRole = (SELECT FROM orole WHERE name = 'writer') WHERE name = 'appuser'" );
-	}
-
 	public boolean existsUser( String username ) {
 		List<ODocument> list = dom.querySynch( "SELECT FROM ouser WHERE username='" + username + "'" );
 		if( list == null ) return false;
@@ -834,6 +772,100 @@ public class RiscossOrientDB implements RiscossDB {
 		if( id != null )
 			return dom.getAttribute( id, key, "" );
 		return null;
+	}
+
+	@Override
+	public List<String> listUsers( String role ) {
+		List<ODocument> list = dom.querySynch( "SELECT FROM ouser WHERE roles in (SELECT FROM orole WHERE name='" + role + "')" );
+		return new GenericNodeCollection<String>( list, new AttributeProvider<String>() {
+			@Override
+			public String getValue( ODocument doc ) {
+				return doc.field( "name" );
+			}} );
+	}
+
+	@Override
+	public void setUserRole( String user, String abstractRoleName ) {
+		
+		// 1: Find domain-specific role
+		// 2: Remove current role in domain 
+		// 3: Assign the new role
+		
+		// Delete
+		// update ouser remove roles = (select from orole where name='X')
+		
+		String oldSpecificRole = getRoleOfUser( user );
+		
+		if( oldSpecificRole != null )
+			execute( "update ouser remove roles = (select from orole where name='" + oldSpecificRole + "') where name = '" + user + "'" );
+		
+		// Add
+		// update ouser add roles = (select from orole where name='Y')
+		
+		String specificRole = getRoleInCurrentDomain( abstractRoleName );
+		
+		execute( "update ouser add roles = (select from orole where name='" + specificRole + "') where name = '" + user + "'" );
+		
+		// TODO Auto-generated method stub
+		
+	}
+	
+//	private String getRoleOfUser() {
+//		String user = dom.getGraphDatabase().getRawGraph().getUser().getName();
+//		return getRoleOfUser( user );
+//	}
+	
+	private String getRoleOfUser( String user ) {
+		
+		String q = "select from (select expand(roles) from (select from ouser where name='" + user + "')) where domain.tag='" + dom.getRootName() + "'";
+		
+		List<ODocument> list = dom.querySynch( q );
+		if( list == null ) return null;
+		if( list.size() < 1 ) return null;
+		return list.get( 0 ).field( "name" );
+	}
+	
+	private String getRoleInCurrentDomain( String abstractRoleName ) {
+		
+		String q = "SELECT FROM orole WHERE domain.tag='" + dom.getRootName() + "' " + 
+				"and inheritedRole.name='" + abstractRoleName + "'";
+		
+		List<ODocument> list = dom.querySynch( q );
+		if( list == null ) return null;
+		if( list.size() < 1 ) return null;
+		return list.get( 0 ).field( "name" );
+	}
+
+	@Override
+	public String getRole( String username ) {
+		return getRoleOfUser( username );
+	}
+
+	@Override
+	public void addPermissions( String rolename, RiscossDBResource res, String perm ) {
+		GAuthDom auth = new GAuthDom( this.dom );
+		
+//		switch( res ) {
+//		case AnalysisSessions:
+//			dom.create( "/ras" );
+//			break;
+//		case Entities:
+//			dom.create( "/entities" );
+//			break;
+//		case Layers:
+//			dom.create( "/layers" );
+//			break;
+//		case Models:
+//			dom.create( "/models" );
+//			break;
+//		case RiskConfigurations:
+//			dom.create( "/rcs" );
+//			break;
+//		default:
+//			break;
+//		}
+		
+		auth.setPermission( rolename, res.name(), perm );
 	}
 	
 }

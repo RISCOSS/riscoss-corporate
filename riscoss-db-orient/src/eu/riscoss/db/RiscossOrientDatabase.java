@@ -5,14 +5,11 @@ import java.util.Set;
 
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.metadata.security.OToken;
-import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.sql.OSQLEngine;
 import com.orientechnologies.orient.core.sql.functions.OSQLFunction;
-import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
 import com.orientechnologies.orient.graph.sql.functions.OGraphFunctionFactory;
 import com.orientechnologies.orient.server.config.OServerParameterConfiguration;
 import com.orientechnologies.orient.server.token.OrientTokenHandler;
-import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
@@ -43,10 +40,6 @@ public class RiscossOrientDatabase implements RiscossDatabase {
 			if (function != null) {
 				// Dummy call, just to ensure that the class is loaded
 				function.getSyntax();
-//				System.out.println("ODB graph function [" + name + "] is registered: [" + function.getSyntax() + "]");
-			}
-			else {
-//				System.out.println("ODB graph function [" + name + "] NOT registered!!!");
 			}
 		}
 	}
@@ -60,10 +53,13 @@ public class RiscossOrientDatabase implements RiscossDatabase {
 	}
 	
 	
-	OrientBaseGraph graph;
+	GDomContainer container;
+	
 	private String username;
 	
 	public RiscossOrientDatabase( String addr, String username, String password) {
+		
+		OrientBaseGraph graph = null;
 		
 		if( username != null ) {
 			graph = new OrientGraphFactory( addr, username, password ).getNoTx();
@@ -71,6 +67,8 @@ public class RiscossOrientDatabase implements RiscossDatabase {
 		else {
 			graph = new OrientGraphFactory( addr ).getNoTx();
 		}
+		
+		container = new GDomContainer( graph );
 		
 		this.username = username;
 		
@@ -83,21 +81,14 @@ public class RiscossOrientDatabase implements RiscossDatabase {
 		
 		OToken tok = handler.parseWebToken( tokenBytes );
 		handler.validateBinaryToken( tok );
-		this.graph = new OrientGraphNoTx( (ODatabaseDocumentTx)new ODatabaseDocumentTx( addr ).open( tok ) );
-		this.username = graph.getRawGraph().getUser().getName(); //tok.getUserName();
+		OrientBaseGraph graph = new OrientGraphNoTx( (ODatabaseDocumentTx)new ODatabaseDocumentTx( addr ).open( tok ) );
+		this.container = new GDomContainer( graph );
+		this.username = graph.getRawGraph().getUser().getName();
 		
 	}
 	
 	public List<String> listDomains() {
-		try {
-			List<ODocument> list = graph.getRawGraph().query( new OSQLSynchQuery<ODocument>( 
-					"SELECT FROM " + GDomDB.ROOT_CLASS ) );
-			if( list == null ) return null;
-			return new GenericNodeCollection<String>( list, new NameAttributeProvider() );
-		}
-		catch( Exception ex ) {
-			return null;
-		}
+		return container.domList();
 	}
 	
 	public String getUsername() {
@@ -106,33 +97,106 @@ public class RiscossOrientDatabase implements RiscossDatabase {
 	
 	@Override
 	public void close() {
-		this.graph.getRawGraph().close();
-		this.graph = null;
+		container.close();
 	}
 
 	@Override
 	public void createDomain( String domainName ) {
+		container.createDom( domainName );
+	}
+	
+	@Override
+	public String getRole() {
 		
-		Vertex v = getRoot( domainName, 0 );
-		if( v == null ) {
-			v = graph.addVertex( GDomDB.ROOT_CLASS, (String)null );
-			v.setProperty( "tag", domainName );
-			graph.commit();
-		}
+		return container.graph.getRawGraph().getMetadata().getSecurity().getRole( username ).getName();
 		
 	}
 	
-	private Vertex getRoot( String cls, int index ) {
-		try {
-			List<ODocument> list = graph.getRawGraph().query( new OSQLSynchQuery<ODocument>( 
-					"SELECT FROM " + GDomDB.ROOT_CLASS + " WHERE tag='" + cls + "'" ) );
-			if( list == null ) return null;
-			if( !(list.size() > index) ) return null;
-			return graph.getVertex( list.get( index ).getIdentity() );
-		}
-		catch( Exception ex ) {
-			return null;
-		}
+	@Override
+	public void init() {
+		
+		GDomConfig conf = new GDomConfig();
+		
+		conf.setMapping( "layers", "Layers" );
+		conf.setMapping( "entities", "Entity" );
+		conf.setMapping( "models", "Model" );
+		conf.setMapping( "risk-configurations", "RiskConf" );
+		
+		GDomConfig.setGlobalConf( conf );
+		
+//		container.createRole( "Administrator" );
+//		container.createRole( "Modeler" );
+//		container.createRole( "Producer" );
+//		container.createRole( "Consumer" );
+//		container.createRole( "Guest" );
+		
+//		{ // Example for defining a read-only role
+//			ORole visitor = security.createRole( "Guest", ALLOW_MODES.DENY_ALL_BUT );
+//			// BEGIN: copied form OSecurityShared - procedure to create the default "reader" role
+//			visitor.addRule(ORule.ResourceGeneric.DATABASE, null, ORole.PERMISSION_READ);
+//			visitor.addRule(ORule.ResourceGeneric.SCHEMA, null, ORole.PERMISSION_READ);
+//			visitor.addRule(ORule.ResourceGeneric.CLUSTER, OMetadataDefault.CLUSTER_INTERNAL_NAME, ORole.PERMISSION_READ);
+//			visitor.addRule(ORule.ResourceGeneric.CLUSTER, "orole", ORole.PERMISSION_READ);
+//			visitor.addRule(ORule.ResourceGeneric.CLUSTER, "ouser", ORole.PERMISSION_READ);
+//			visitor.addRule(ORule.ResourceGeneric.CLASS, null, ORole.PERMISSION_READ);
+//			visitor.addRule(ORule.ResourceGeneric.CLUSTER, null, ORole.PERMISSION_READ);
+//			visitor.addRule(ORule.ResourceGeneric.COMMAND, null, ORole.PERMISSION_READ);
+//			visitor.addRule(ORule.ResourceGeneric.RECORD_HOOK, null, ORole.PERMISSION_READ);
+//			visitor.addRule(ORule.ResourceGeneric.FUNCTION, null, ORole.PERMISSION_READ);
+//		}
+		
+	}
+	
+	@Override
+	public void setRoleProperty( String roleName, String key, String value ) {
+		container.setRoleProperty(roleName, key, value);
+	}
+	
+	@Override
+	public String getRoleProperty( String roleName, String key, String def ) {
+		return container.getRoleProperty(roleName, key, def);
+	}
+	
+	@Override
+	public List<String> listRoles() {
+		return container.listRoles();
+	}
+	
+	@Override
+	public List<String> listUsers( String from, String max, String pattern ) {
+		return container.listUsers(from, max, pattern);
+	}
+	
+	@Override
+	public List<String> listPublicDomains() {
+		return container.listPublicDomains();
+	}
+
+	@Override
+	public void setPredefinedRole( String domain, String value ) {
+		GAuthDom auth = new GAuthDom( container.getDom( domain ) );
+		auth.setPredefinedRole( value);
+	}
+
+	@Override
+	public String getPredefinedRole( String domain ) {
+		GAuthDom auth = new GAuthDom( container.getDom( domain ) );
+		return auth.getPredefinedRole();
+	}
+
+	@Override
+	public void createRole( String roleName ) {
+		container.createRole( roleName );
+	}
+
+	@Override
+	public List<String> listDomains( String username ) {
+		return container.listDomains( username );
+	}
+
+	@Override
+	public boolean isAdmin() {
+		return "admin".equals( getUsername() );
 	}
 	
 }

@@ -80,22 +80,6 @@ public class RiscossWebApp implements EntryPoint {
 				.addQueryParam( "domain", Cookies.getCookie( CookieNames.DOMAIN_KEY ) );
 				Log.println( "query OLD: " + res.getQuery() );
 				
-//				new Resource( GWT.getHostPageBaseURL() + "api/auth/domains/selected" )
-//				.addQueryParam( "domain", Cookies.getCookie( CookieNames.DOMAIN_KEY ) )
-//				.post().send( new JsonCallback() {
-//					@Override
-//					public void onSuccess( Method method, JSONValue response ) {
-//						Log.println( "Domain check response: " + response );
-//						if( response == null ) showDomainSelectionDialog();
-//						else if( response.isString() == null ) showDomainSelectionDialog();
-//						else showUI( response.isString().stringValue() );
-//					}
-//					@Override
-//					public void onFailure( Method method, Throwable exception ) {
-//						Window.alert( exception.getMessage() );
-//					}
-//				});
-//				Log.println( ">>>" + Cookies.getCookie( CookieNames.DOMAIN_KEY ) );
 				RiscossCall.fromCookies().withDomain(null).auth().fx( "domains/selected" ).arg( "domain", Cookies.getCookie( CookieNames.DOMAIN_KEY ) ).post( new JsonCallback() {
 					@Override
 					public void onSuccess( Method method, JSONValue response ) {
@@ -264,7 +248,7 @@ public class RiscossWebApp implements EntryPoint {
 		MenuBar admin = new MenuBar(true);
 		admin.setAnimationEnabled(true);
 		menu.addItem("Admin", admin);
-		admin.addItem("Users and Roles", new Command() {
+		admin.addItem("Domains and permissions", new Command() {
 			@Override
 			public void execute() {
 				loadPanel( "admin.html" );
@@ -376,8 +360,8 @@ public class RiscossWebApp implements EntryPoint {
 	
 	
 	protected void showDomainSelectionDialog() {
+		RiscossCall.fromCookies().withDomain(null).admin().fx("domains").fx( "/public" ).arg( "username", username ).get( new JsonCallback() {
 		
-		RiscossCall.fromCookies().withDomain(null).auth().fx("domains").list().get( new JsonCallback() {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				DomainSelectionDialog dsDialog = null;

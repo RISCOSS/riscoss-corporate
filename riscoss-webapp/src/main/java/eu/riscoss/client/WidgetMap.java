@@ -24,6 +24,8 @@ package eu.riscoss.client;
 import java.util.HashMap;
 import java.util.Map;
 
+// UNUSED
+
 @SuppressWarnings("unchecked")
 public class WidgetMap {
 	

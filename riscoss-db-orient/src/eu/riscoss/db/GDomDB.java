@@ -1,7 +1,6 @@
 package eu.riscoss.db;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -20,39 +19,24 @@ public class GDomDB {
 	public static final String ROOT_CLASS = "Space";
 	public static final String NODE_CLASS = "Node";
 	
-//	static Map<String,OrientGraphFactory> factories = new HashMap<String,OrientGraphFactory>();
-//	
-//	private synchronized static OrientGraph acquireFactory( String dbaddress ) {
-//		OrientGraphFactory factory = factories.get( dbaddress );
-//		if( factory == null ) {
-//			factory = new OrientGraphFactory( dbaddress ); //.setupPool(1,10);
-//			factories.put( dbaddress, factory );
-//		}
-//		return factory.getTx();
-//	}
-	
 	OrientBaseGraph graph = null;
 	Vertex root;
 	String rootName;
 	
-//	public GDomDB( String dbaddress, String rootName ) {
-//		OrientGraph graph = acquireFactory( dbaddress );
-//		init( graph, rootName );
-//	}
 	
-//	public GDomDB( String dbaddress ) {
-//		this( dbaddress, "Root" );
-//	}
+	GDomConfig conf = GDomConfig.global();
 	
 	public GDomDB( OrientBaseGraph graph, String rootName ) {
 		init( graph, rootName );
 	}
 	
 	private void init( OrientBaseGraph graph, String rootName ) {
+		
 		this.graph = graph;
 		this.rootName = rootName;
+		
 		ensureNodeTypeExistence( graph, ROOT_CLASS );
-		ensureNodeTypeExistence( graph, NODE_CLASS );
+		ensureNodeTypeExistence( graph, rootName + NODE_CLASS );
 		ensureEdgeTypeExistence( graph, CHILDOF_CLASS );
 		ensureEdgeTypeExistence( graph, LINK_CLASS );
 		root = getRoot( rootName, 0 );
@@ -88,6 +72,10 @@ public class GDomDB {
 		}
 	}
 	
+	OrientBaseGraph getGraphDatabase() {
+		return this.graph;
+	}
+	
 	List<ODocument> querySynch( String query ) {
 		try {
 			List<ODocument> docs = graph.getRawGraph().query( 
@@ -101,7 +89,7 @@ public class GDomDB {
 	}
 	
 	public NodeID createVertex( String tag ) {
-		Vertex child = graph.addVertex( NODE_CLASS, (String)null );
+		Vertex child = graph.addVertex( "class:" + rootName + conf.getClass( tag ) + NODE_CLASS );
 		child.setProperty( "tag", tag );
 		child.setProperty( "root", rootName );
 		graph.commit();
@@ -125,18 +113,18 @@ public class GDomDB {
 		}
 	}
 	
-	public Collection<NodeID> listVertices( String tag ) {
-		String q = "select from " + NODE_CLASS + " where tag='" + tag + "' and root='" + this.rootName + "'";
-		try {
-			List<ODocument> docs = graph.getRawGraph().query( 
-					new OSQLSynchQuery<ODocument>( q ) );
-			return new NodeCollection( docs );
-		}
-		catch (Exception ex) {
-			ex.printStackTrace();
-			return new NodeCollection( new ArrayList<ODocument>() );
-		}
-	}
+//	public Collection<NodeID> listVertices( String tag ) {
+//		String q = "select from " + NODE_CLASS + " where tag='" + tag + "' and root='" + this.rootName + "'";
+//		try {
+//			List<ODocument> docs = graph.getRawGraph().query( 
+//					new OSQLSynchQuery<ODocument>( q ) );
+//			return new NodeCollection( docs );
+//		}
+//		catch (Exception ex) {
+//			ex.printStackTrace();
+//			return new NodeCollection( new ArrayList<ODocument>() );
+//		}
+//	}
 	
 	public List<NodeID> listOutEdges( NodeID idFrom, String edgeClass, String label, String targetTag ) {
 		
@@ -253,14 +241,14 @@ public class GDomDB {
 		graph.commit();
 	}
 	
-	void deleteEdge( String tagFrom, String tagTo, String className, String linkName ) {
-		String q = "delete edge " + className + " " + 
-				"from (select from " + NODE_CLASS + " where tag='" + tagFrom + "') " + 
-				"to (select from " + NODE_CLASS + " where tag='" + tagTo + "')";
-		if( linkName != null ) 
-			q += " where name='" + linkName + "'";
-		querySynch( q );
-	}
+//	void deleteEdge( String tagFrom, String tagTo, String className, String linkName ) {
+//		String q = "delete edge " + className + " " + 
+//				"from (select from " + NODE_CLASS + " where tag='" + tagFrom + "') " + 
+//				"to (select from " + NODE_CLASS + " where tag='" + tagTo + "')";
+//		if( linkName != null ) 
+//			q += " where name='" + linkName + "'";
+//		querySynch( q );
+//	}
 	
 	public NodeID getRoot() {
 		return new NodeID( root.getId().toString() );
@@ -481,6 +469,10 @@ public class GDomDB {
 			ex.printStackTrace();
 			return null;
 		}
+	}
+
+	public String getRootName() {
+		return this.rootName;
 	}
 
 }

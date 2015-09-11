@@ -12,6 +12,7 @@ import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Window;
 
+import eu.riscoss.client.Log;
 import eu.riscoss.client.auth.LoginWindow.LoginListener;
 import eu.riscoss.shared.CookieNames;
 
@@ -52,7 +53,7 @@ public class ModAuth implements EntryPoint {
 					
 					@Override
 					public void onSuccess(Method method, JSONValue response) {
-//						Window.alert( "" + response );
+						
 						try {
 							String result = response.isString().stringValue();
 							
@@ -65,21 +66,12 @@ public class ModAuth implements EntryPoint {
 								// One year (365 days) expiration
 								d.setTime( d.getTime() + (1000 * 60 * 60 * 24 * 365) );
 								Cookies.setCookie( CookieNames.TOKEN_KEY, result, d );
+								Log.println( result );
+								Log.println( "" + result.length() );
+								Log.println( Cookies.getCookie( CookieNames.TOKEN_KEY ) );
 //							}
 							
 								onLoginSucceeded( result );
-//								new Resource( GWT.getHostPageBaseURL() + "api/auth/token" ).get().header( "token", Cookies.getCookie( CookieNames.TOKEN_KEY ) ).send( new JsonCallback() {
-//									
-//									@Override
-//									public void onSuccess( Method method, JSONValue response ) {
-//										Window.alert( "Ok" );
-//									}
-//									
-//									@Override
-//									public void onFailure( Method method, Throwable exception ) {
-//										Window.alert( exception.getMessage() );
-//									}
-//								});
 								
 						}
 						catch( Exception ex ) {

@@ -22,6 +22,8 @@
 package eu.riscoss.server;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -31,8 +33,6 @@ import eu.riscoss.db.RiscossOrientDB;
 import eu.riscoss.db.RiscossOrientDatabase;
 
 public class DBConnector {
-	
-	public static final String DEFAULT_DOMAIN = "Public Domain";
 	
 	static String db_addr = null;
 	
@@ -76,7 +76,11 @@ public class DBConnector {
 	 */
 	@Deprecated
 	public static RiscossDB openDB( String domain ) {
-		return new RiscossOrientDB( db_addr, domain );
+		try {
+			return new RiscossOrientDB( db_addr, URLEncoder.encode( domain, "UTF-8" ) );
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException( e );
+		}
 	}
 	
 	/**
@@ -87,7 +91,11 @@ public class DBConnector {
 	 * @return
 	 */
 	public static RiscossDB openDB( String domain, String username, String password ) {
-		return new RiscossOrientDB( db_addr, domain, username, password );
+		try {
+			return new RiscossOrientDB( db_addr, URLEncoder.encode( domain, "UTF-8" ), username, password );
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException( e );
+		}
 	}
 	/**
 	 * Opens the database with a previously stored token (e.g. from a cookie), for normal access with domain and user
@@ -95,8 +103,12 @@ public class DBConnector {
 	 * @return
 	 */
 	public static RiscossDB openDB( String domain, String token ) {
-		System.out.println("domain "+domain+", token "+token);
-		return new RiscossOrientDB( db_addr, domain, Base64.decodeBase64( token ) );
+
+		try {
+			return new RiscossOrientDB( db_addr, URLEncoder.encode( domain, "UTF-8" ), Base64.decodeBase64( token ) );
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException( e );
+		}
 	}
 	
 	public static void closeDB( RiscossDB db ) {
@@ -109,8 +121,9 @@ public class DBConnector {
 		}
 	}
 
-	public static void setDbaddr(String dbaddr) {
-		db_addr=dbaddr;	
+//	public static void setDbaddr(String dbaddr) {
+	public static void initDatabase( String dbaddr ) {
+		db_addr = dbaddr;
 	}
 	
 }

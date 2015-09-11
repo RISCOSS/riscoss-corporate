@@ -381,6 +381,10 @@ public class RiscossCall extends JSONCall{
 			return new Argument( key, value );
 		}
 
-
+//	public RiscossCall withObject( JSONValue value ) {
+//		this.value = value;
+//		return this;
+//	}
+	
 	}
 }
