@@ -100,8 +100,12 @@ public interface RiscossDB {
 	 * User management
 	 */
 	public abstract void createRole( String name );
-	public abstract List<String> listRoles();
-	public abstract void createUser( String username, String password ) throws Exception;
+	public abstract List<String> listRoles( String domain );
+//	public abstract void createUser( String username, String password ) throws Exception;
 	public abstract List<String> listUsers();
+	public abstract List<String> listUsers( String role );
+	public abstract void setUserRole( String user, String role );
+	public abstract String getRole( String username );
+	public abstract void addPermissions( String name, RiscossDBResource res, String perm );
 	
 }

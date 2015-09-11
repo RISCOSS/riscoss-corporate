@@ -15,87 +15,94 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.VerticalPanel;
 
-import eu.riscoss.client.Log;
-import eu.riscoss.client.codec.CodecRoleInfo;
-import eu.riscoss.shared.JRoleInfo;
+import eu.riscoss.client.RiscossCall;
 
 public class AdminModule implements EntryPoint {
 
 	public native void exportJS() /*-{
 	var that = this;
-	$wnd.selectRole = $entry(function(amt) {
-		that.@eu.riscoss.client.admin.AdminModule::setSelectedRole(Ljava/lang/String;)(amt);
+	$wnd.selectDomain = $entry(function(amt) {
+		that.@eu.riscoss.client.admin.AdminModule::setSelectedDomain(Ljava/lang/String;)(amt);
 	});
 }-*/;
 	
-	RoleList roleList;
-	UserList userList;
+	String				selectedDomain = null;
+	
+	DomainList			domainList;
+	
+	DomainPropertyPage	domainPPG;
 	
 	@Override
 	public void onModuleLoad() {
 		
 		exportJS();
 		
-		VerticalPanel vp = new VerticalPanel();
+//		HorizontalPanel vp = new HorizontalPanel();
 		
-		{
+//		{
 			HorizontalPanel toolbar = new HorizontalPanel();
-			toolbar.add( new Button( "New Role", new ClickHandler() {
+			toolbar.add( new Button( "New Domain", new ClickHandler() {
 				@Override
 				public void onClick( ClickEvent event ) {
-					onNewRoleClicked();
+					onNewDomainClicked();
 				}
 			} ) );
 			
-			roleList = new RoleList();
-			
 			DockPanel dock = new DockPanel();
 			dock.add( toolbar,DockPanel.NORTH );
-			dock.add( roleList, DockPanel.CENTER );
 			
-			vp.add( dock );
+			domainList = new DomainList();
+//			domainList.asWidget().setHeight( "100%" );
+			dock.add( domainList, DockPanel.WEST );
 			
-		}
+//			vp.add( dock );
+			
+//		}
 		
-		{
-			HorizontalPanel toolbar = new HorizontalPanel();
-			toolbar.add( new Button( "New User", new ClickHandler() {
-				@Override
-				public void onClick( ClickEvent event ) {
-					onNewUserClicked();
+		domainPPG = new DomainPropertyPage();
+		
+		dock.add( domainPPG, DockPanel.CENTER );
+		
+		dock.setSize( "100%", "100%" );
+		dock.setCellHeight( toolbar, "1%" );
+		dock.setCellWidth( domainPPG, "75%" );
+		
+		RootPanel.get().add( dock );
+		
+		new Resource( GWT.getHostPageBaseURL() + "api/admin/domains/list" )
+		.get().send( new JsonCallback() {
+			@Override
+			public void onSuccess( Method method, JSONValue response ) {
+				if( response == null ) return;
+				if( response.isArray() == null ) return;
+				JSONArray array = response.isArray();
+				for( int i = 0; i < array.size(); i++ ) {
+					String domain = array.get( i ).isString().stringValue();
+					domainList.append( domain );
 				}
-			} ) );
-			
-			userList = new UserList();
-			
-			DockPanel dock = new DockPanel();
-			dock.add( toolbar,DockPanel.NORTH );
-			dock.add( userList, DockPanel.CENTER );
-			
-			vp.add( dock );
-			
-		}
-		
-		vp.setSize( "100%", "100%" );
-		
-		RootPanel.get().add( vp );
-		
-		new Resource( GWT.getHostPageBaseURL() + "api/admin/roles/list" )
-			.get().send( new JsonCallback() {
+			}
+			@Override
+			public void onFailure( Method method, Throwable exception ) {
+				Window.alert( exception.getMessage() );
+			}
+		});
+	}
+	
+	protected void onNewDomainClicked() {
+		String name = Window.prompt( "Domain name:", "" );
+		if( name == null ) return;
+		name = name.trim();
+		if( "".equals( name ) ) return;
+		new Resource( GWT.getHostPageBaseURL() + "api/admin/domains/create" )
+			.addQueryParam( "name", name ).post().
+			header( "token", RiscossCall.getToken() ).
+			send( new JsonCallback() {
 				@Override
 				public void onSuccess( Method method, JSONValue response ) {
-					if( response == null ) return;
-					if( response.isArray() == null ) return;
-					Log.println( "" + response );
-					JSONArray array = response.isArray();
-					CodecRoleInfo codec = GWT.create( CodecRoleInfo.class );
-					for( int i = 0; i < array.size(); i++ ) {
-						JRoleInfo info = codec.decode( array.get( i ) );
-						roleList.append( info );
-					}
+					domainList.append( response.isString().stringValue() );
 				}
+				
 				@Override
 				public void onFailure( Method method, Throwable exception ) {
 					Window.alert( exception.getMessage() );
@@ -103,48 +110,8 @@ public class AdminModule implements EntryPoint {
 			});
 	}
 	
-	protected void onNewUserClicked() {
-		String name = Window.prompt( "User name:", "" );
-		if( name == null ) return;
-		name = name.trim();
-		if( "".equals( name ) ) return;
-		new Resource( GWT.getHostPageBaseURL() + "api/admin/users/create" )
-			.addQueryParam( "name", name ).post().send( new JsonCallback() {
-				@Override
-				public void onSuccess( Method method, JSONValue response ) {
-					CodecRoleInfo codec = GWT.create( CodecRoleInfo.class );
-					JRoleInfo info = codec.decode( response );
-					roleList.append( info );
-				}
-				
-				@Override
-				public void onFailure( Method method, Throwable exception ) {
-					Window.alert( exception.getMessage() );
-				}
-			});
+	public void setSelectedDomain( String domainName ) {
+		this.domainPPG.setSelectedDomain( domainName );
 	}
-
-	protected void onNewRoleClicked() {
-		String name = Window.prompt( "Role name:", "" );
-		if( name == null ) return;
-		name = name.trim();
-		if( "".equals( name ) ) return;
-		new Resource( GWT.getHostPageBaseURL() + "api/admin/roles/create" )
-			.addQueryParam( "name", name ).post().send( new JsonCallback() {
-				@Override
-				public void onSuccess( Method method, JSONValue response ) {
-					CodecRoleInfo codec = GWT.create( CodecRoleInfo.class );
-					JRoleInfo info = codec.decode( response );
-					roleList.append( info );
-				}
-				
-				@Override
-				public void onFailure( Method method, Throwable exception ) {
-					Window.alert( exception.getMessage() );
-				}
-			});
-	}
-
-	public void setSelectedRole( String role ) {}
 	
 }

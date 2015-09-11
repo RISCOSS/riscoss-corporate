@@ -1,153 +1,30 @@
 package eu.riscoss.server;
 
-import java.util.List;
+import eu.riscoss.db.RiscossDatabase;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-
-import eu.riscoss.db.RiscossDB;
-import eu.riscoss.shared.JRoleInfo;
-import eu.riscoss.shared.JUserInfo;
-
-@Path("admin")
 public class SecurityManager {
 	
-	Gson gson = new Gson();
-	
 	private static final SecurityManager instance = new SecurityManager();
-
-	public User getUser( HttpServletRequest req ) {
-		HttpSession session = req.getSession( true );
-		User user = (User)session.getAttribute( "eu.riscoss.session.data" );
-		if( user == null ) {
-			return User.noUser;
-		}
-		return user;
-//		String token = data.token;
-//		String username = data.username;
-//		String password = data.password;
-	}
 	
 	public static SecurityManager get() {
 		return instance;
 	}
 	
-	public boolean canAccess( User user, String requestURI ) {
+	public String getUser( String token ) throws Exception {
 		
-		RiscossDB db = DBConnector.openDB( "" );
-		try {
-//			return db.canAccess( user, requestURI );
-		}
-		finally {
-			DBConnector.closeDB( db );
-		}
-		
-		return true;
-	}
-	
-	@POST @Path("/{domain}/domains/create")
-	public String createDomain( @DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("name") String name ) {
-		return "";
-	}
-	
-	@POST @Path("{domain}/roles/create")
-	public String createRole( @DefaultValue("Playground") @PathParam("domain") String domain, @QueryParam("name") String name ) {
-		
-		RiscossDB db = DBConnector.openDB( domain );
+		RiscossDatabase database = DBConnector.openDatabase( token );
 		
 		try {
-			
-			db.createRole( name );
-			
-			JRoleInfo info = new JRoleInfo( name );
-			
-			return gson.toJson( info );
-			
+			return database.getUsername();
+		}
+		catch( Exception ex ) {
+			throw ex;
 		}
 		finally {
-			if( db != null )
-				DBConnector.closeDB( db );
+			if( database != null )
+				database.close();
 		}
-	}
-	
-	@GET @Path("{domain}/roles/list")
-	public String listRoles( @DefaultValue("Playground") @PathParam("domain") String domain ) {
-		
-		RiscossDB db = DBConnector.openDB( domain );
-		
-		try {
-			
-			JsonArray array = new JsonArray();
-			
-			List<String> roles = db.listRoles();
-			for( String role : roles ) {
-				JRoleInfo info = new JRoleInfo( role );
-				array.add( gson.toJsonTree( info ) );
-			}
-			
-			return array.toString();
-			
-		}
-		finally {
-			if( db != null )
-				DBConnector.closeDB( db );
-		}
-		
-//		return "";
-	}
-	
-	@GET @Path("{domain}/users/list")
-	public String listUsers( @DefaultValue("Playground") @PathParam("domain") String domain ) {
-		
-		RiscossDB db = DBConnector.openDB( domain );
-		
-		try {
-			
-			JsonArray array = new JsonArray();
-			
-			List<String> users = db.listUsers();
-			for( String user : users ) {
-				JUserInfo info = new JUserInfo( user );
-				array.add( gson.toJsonTree( info ) );
-			}
-			
-			return array.toString();
-			
-		}
-		finally {
-			if( db != null )
-				DBConnector.closeDB( db );
-		}
-	}
-	
-	@POST @Path("{domain}/users/create")
-	public void createUser( 
-			@Context HttpServletRequest req,
-			@DefaultValue("Playground") @PathParam("domain") String domain, 
-			@HeaderParam("firstName") String firstName,
-			@HeaderParam("lastName") String lastName,
-			@HeaderParam("username") String username,
-			@HeaderParam("password") String password ) {
 		
 	}
 	
-	public void execute( String cmd ) {
-//		graph.getRawGraph().command(new OCommandSQL(cmd)).execute();
-	}
-	
-	public void createRole2( String name ) {
-		execute( "INSERT INTO orole SET name = '" + name + "', mode = 0" );
-//		execute( "UPDATE orole SET inheritedRole = (SELECT FROM orole WHERE name = 'writer') WHERE name = 'appuser'" );
-	}
 }

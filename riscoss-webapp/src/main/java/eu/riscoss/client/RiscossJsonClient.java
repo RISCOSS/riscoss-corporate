@@ -35,11 +35,9 @@ import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Window;
 
-import eu.riscoss.client.codec.CodecLayerContextualInfo;
 import eu.riscoss.client.ui.WaitWidget;
 import eu.riscoss.shared.CookieNames;
 import eu.riscoss.shared.EAnalysisOption;
-import eu.riscoss.shared.JLayerContextualInfo;
 
 public class RiscossJsonClient {
 	

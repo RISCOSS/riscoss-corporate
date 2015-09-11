@@ -31,7 +31,11 @@ public class LabeledWidget implements IsWidget {
 	HorizontalPanel panel = new HorizontalPanel();
 	
 	public LabeledWidget( String label, Widget w ) {
-		panel.add( new Label( label ) );
+		this( new Label( label ), w );
+	}
+	
+	public LabeledWidget( IsWidget label, Widget w ) {
+		panel.add( label );
 		panel.add( w );
 	}
 	

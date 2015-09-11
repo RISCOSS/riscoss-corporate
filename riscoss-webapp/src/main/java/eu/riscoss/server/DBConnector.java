@@ -22,6 +22,8 @@
 package eu.riscoss.server;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -31,8 +33,6 @@ import eu.riscoss.db.RiscossOrientDB;
 import eu.riscoss.db.RiscossOrientDatabase;
 
 public class DBConnector {
-	
-	public static final String DEFAULT_DOMAIN = "Public Domain";
 	
 	static String db_addr = null;
 	
@@ -60,15 +60,27 @@ public class DBConnector {
 	}
 	
 	public static RiscossDB openDB( String domain ) {
-		return new RiscossOrientDB( db_addr, domain );
+		try {
+			return new RiscossOrientDB( db_addr, URLEncoder.encode( domain, "UTF-8" ) );
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException( e );
+		}
 	}
 	
 	public static RiscossDB openDB( String domain, String username, String password ) {
-		return new RiscossOrientDB( db_addr, domain, username, password );
+		try {
+			return new RiscossOrientDB( db_addr, URLEncoder.encode( domain, "UTF-8" ), username, password );
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException( e );
+		}
 	}
 	
 	public static RiscossDB openDB( String domain, String token ) {
-		return new RiscossOrientDB( db_addr, domain, Base64.decodeBase64( token ) );
+		try {
+			return new RiscossOrientDB( db_addr, URLEncoder.encode( domain, "UTF-8" ), Base64.decodeBase64( token ) );
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException( e );
+		}
 	}
 	
 	public static void closeDB( RiscossDB db ) {
@@ -79,6 +91,10 @@ public class DBConnector {
 		catch( Exception ex ) {
 			ex.printStackTrace();
 		}
+	}
+
+	public static void initDatabase( String dbaddr ) {
+		db_addr = dbaddr;
 	}
 	
 }

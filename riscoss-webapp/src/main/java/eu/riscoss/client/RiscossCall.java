@@ -219,7 +219,7 @@ public class RiscossCall {
 		return this;
 	}
 	
-	private Service service( String name ) {
+	public Service service( String name ) {
 		this.service = name;
 		return new Service();
 	}
@@ -234,6 +234,10 @@ public class RiscossCall {
 	
 	public Service auth() {
 		return service( "auth" );
+	}
+	
+	public Service admin() {
+		return service( "admin" );
 	}
 	
 	public Service entities() {
