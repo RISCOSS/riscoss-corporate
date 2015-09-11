@@ -78,7 +78,7 @@ public class ModelsModule implements EntryPoint {
 
 	private static final String BUTTON_UPDATE_MODEL	= "Upload new model";
 	private static final String BUTTON_UPLOAD_DESC 	= "Upload new documentation";
-	private static final String BUTTON_NEW_MODEL 	= "New...";
+	private static final String BUTTON_NEW_MODEL 	= "UPLOAD MODEL"; // "New...";
 	private static final String BUTTON_CHANGE_NAME 	= "change";
 	
 	DockPanel 			dock = new DockPanel();
@@ -191,7 +191,7 @@ public class ModelsModule implements EntryPoint {
 		title.setStyleName("title");
 		page.add(title);
 		
-		Button uploadModel = new Button("UPLOAD MODEL");
+		Button uploadModel = new Button(BUTTON_NEW_MODEL);
 		uploadModel.setStyleName("button");
 		SingleUploader upload = new SingleUploader(FileInputType.CUSTOM.with(uploadModel));
 		upload.setTitle("Upload new model");
@@ -431,7 +431,7 @@ public class ModelsModule implements EntryPoint {
 			updateUploader.setTitle("Update the model to a new version");
 			updateUploader.setAutoSubmit(true);
 			
-			updateUploader.setServletPath(updateUploader.getServletPath() + "?t=modelupdateblob"+ RiscossJsonClient.getDomain()+"&token="+RiscossCall.getToken());
+			updateUploader.setServletPath(updateUploader.getServletPath() + "?t=modelupdateblob&domain="+ RiscossJsonClient.getDomain()+"&token="+RiscossCall.getToken());
 			updateUploader.add(new Hidden("modelname", jsname));
 				
 			updateUploader.addOnFinishUploadHandler(new OnFinishUploaderHandler() {

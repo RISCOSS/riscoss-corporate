@@ -140,8 +140,7 @@ public class RASPanel implements IsWidget {
 	}
 	
 	protected void onEditMissingValues() {
-		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/session/" + selectedRAS + "/missing-data" )
-			.get().send( new JsonCallback() {
+		RiscossJsonClient.getAnalysisMissingData(selectedRAS, new JsonCallback() {
 				@Override
 				public void onSuccess( Method method, JSONValue response ) {
 					CodecMissingData codec = GWT.create( CodecMissingData.class );

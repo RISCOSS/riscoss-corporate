@@ -10,7 +10,7 @@ import eu.riscoss.client.RiscossCall.Argument;
 public class JSONData {
 
 	protected String domain = null;
-	protected String token = "";
+	protected String token = "-";
 	protected String service = "";
 	protected String fx = "";
 

@@ -39,6 +39,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
+import com.google.gwt.user.client.Window;
 
 import eu.riscoss.dataproviders.RiskData;
 import eu.riscoss.db.RiscossDB;
@@ -238,7 +239,7 @@ public class EntityManager {
 			}
 			json.add("userdata", array);
 
-			System.out.println("Returning: " + json.toString());
+			System.out.println("Returning entity data: " + json.toString());
 			return json.toString();
 		} finally {
 			DBConnector.closeDB(db);
@@ -361,7 +362,7 @@ public class EntityManager {
 					o.add(rdc.getName(), jrdc);
 				}
 			}
-			System.out.println("Returning: " + o.toString());
+			System.out.println("Returning enabled rdcs list: " + o.toString());
 			return o.toString();
 		} finally {
 			DBConnector.closeDB(db);
@@ -450,7 +451,7 @@ public class EntityManager {
 				}
 			}
 			json.addProperty("msg", msg);
-			System.out.println("Returning: " + json.toString());
+			System.out.println("Returning newrun: " + json.toString());
 			return json.toString();
 		} finally {
 			DBConnector.closeDB(db);

@@ -30,6 +30,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
@@ -60,6 +61,7 @@ public class RDCsModule implements EntryPoint {
 		RiscossJsonClient.listRDCs( new JsonCallback() {
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
+				Window.alert("XXXY"+response.toString());
 				loadRDCs( response );
 			}
 			@Override

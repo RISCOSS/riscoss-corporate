@@ -23,6 +23,8 @@ package eu.riscoss.client;
 
 import java.util.List;
 
+import javax.ws.rs.QueryParam;
+
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
 import org.fusesource.restygwt.client.Resource;
@@ -394,42 +396,53 @@ public class RiscossJsonClient {
 
 	}
 	
-	//TODO:analysis     >> not changed <<
+	//TODO:analysis
 	
-	public static void getRiskAnalysisSessionList(JsonCallback cb){
-		RiscossCall.fromCookies().analysis().fx("session").list().get(cb);
+	/**
+	 * 
+	 * @param entity can be empty
+	 * @param rc can be empty
+	 * @param cb
+	 */
+	public static void listRiskAnalysisSessions(String entity, String rc, JsonCallback cb){
+		RiscossCall.fromCookies().analysis().fx("session").list().arg("entity", entity).arg("rc", rc).get(cb);;
 	}
 	
-	public static void creteRiskAnalysisSession(String name, String riskConf, JsonCallback cb){
-		RiscossCall.fromCookies().analysis().fx("session").create(name).arg("rc",riskConf).post(cb);
+	public static void creteRiskAnalysisSession(String name, String riskConf, String target, JsonCallback cb){
+		RiscossCall.fromCookies().analysis().fx("session").create(name).arg("rc",riskConf).arg("target", target).post(cb);
 	}
 	
 	public static void updateSessionData(String riskAnalysisSession, JsonCallback cb){
 		//new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() +
 		//"/session/" + selectedRAS + "/update-data" ).get().send( new JsonCallback() {
-		RiscossCall.fromCookies().analysis().fx("session").fx(riskAnalysisSession).fx("/update-data").get(cb);
+		RiscossCall.fromCookies().analysis().fx("session").fx(riskAnalysisSession).fx("update-data").get(cb);
 	}
 	
 	public static void getAnalysisMissingData(String riskAnalysisSession, JsonCallback cb){
 //		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + getDomain() + "/session/" + riskAnalysisSession + "/missing-data" )
 //		.put().header( "values",  ).send(riskdata, cb ); 
-		RiscossCall.fromCookies().analysis().fx("session").fx(riskAnalysisSession).fx("/missing-data").get( cb );
+		RiscossCall.fromCookies().analysis().fx("session").fx(riskAnalysisSession).fx("missing-data").get( cb );
 	}
 	
 	public static void setAnalysisMissingData(String riskAnalysisSession, JSONValue riskdata, JsonCallback cb){
 //		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + getDomain() + "/session/" + riskAnalysisSession + "/missing-data" )
 //		.put().header( "values",  ).send(riskdata, cb ); 
-		RiscossCall.fromCookies().analysis().fx("session").fx(riskAnalysisSession).fx("/missing-data").post(riskdata, cb);
+		RiscossCall.fromCookies().analysis().fx("session").fx(riskAnalysisSession).fx("missing-data").post(riskdata, cb);
 	}
 
 	public static void getSessionSummary(String riskAnalysisSession, JsonCallback cb){
-		RiscossCall.fromCookies().analysis().fx("session").fx(riskAnalysisSession).fx("/summary").get(cb);
+		RiscossCall.fromCookies().analysis().fx("session").fx(riskAnalysisSession).fx("summary").get(cb);
 	}
 	
 	public static void getSessionResults(String riskAnalysisSession, JsonCallback cb){
-		RiscossCall.fromCookies().analysis().fx("session").fx(riskAnalysisSession).fx("/results").get(cb);
+		RiscossCall.fromCookies().analysis().fx("session").fx(riskAnalysisSession).fx("results").get(cb);
 	}
 	
+	/**
+	 * analysis().fx("session").fx(riskAnalysisSession).delete()
+	 * @param riskAnalysisSession
+	 * @param cb
+	 */
 	public static void deleteRiskAnalysisSession(String riskAnalysisSession, JsonCallback cb){
 		RiscossCall.fromCookies().analysis().fx("session").fx(riskAnalysisSession).delete().delete(cb);
 	}

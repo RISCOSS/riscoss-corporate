@@ -116,7 +116,7 @@ public class RASSelectionPanel implements IsWidget {
 	}
 	
 	protected void deleteRAS( JRASInfo info ) {
-		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/session/" + info.getId() + "/delete" ).delete().send( new JsonCallbackWrapper<JRASInfo>( info ) {
+		RiscossJsonClient.deleteRiskAnalysisSession(info.getId(), new JsonCallbackWrapper<JRASInfo>( info ) {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				
@@ -151,11 +151,10 @@ public class RASSelectionPanel implements IsWidget {
 		if( name == null ) return;
 		name = name.trim();
 		if( "".equals( name ) ) return;
-		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/session/new" )
-			.addQueryParam( "target", selectedEntity )
-			.addQueryParam( "rc", selectedRC )
-			.addQueryParam( "name", name )
-			.post().send( new JsonCallback() {
+		
+//		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/session/new" )
+//			.addQueryParam( "target", selectedEntity ).addQueryParam( "rc", selectedRC ).addQueryParam( "name", name )
+		RiscossJsonClient.creteRiskAnalysisSession(name, selectedRC, selectedEntity, new JsonCallback() {
 				@Override
 				public void onFailure( Method method, Throwable exception ) {
 					Window.alert( exception.getMessage() );
@@ -180,11 +179,9 @@ public class RASSelectionPanel implements IsWidget {
 		this.selectedRC = rc;
 		
 		dataProvider.getList().clear();
-		
-		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/session/list")
-			.addQueryParam( "entity", entity )
-			.addQueryParam( "rc", rc )
-			.get().send( new JsonCallback() {
+//		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/session/list")
+//			.addQueryParam( "entity", entity ).addQueryParam( "rc", rc )
+			RiscossJsonClient.listRiskAnalysisSessions( entity, rc, new JsonCallback() {
 			public void onSuccess(Method method, JSONValue response) {
 				if( response == null ) return;
 				if( response.isObject() == null ) return;

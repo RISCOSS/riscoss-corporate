@@ -111,7 +111,7 @@ public class RASModule implements EntryPoint {
 //		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/session/list")
 //			.get().send( new JsonCallback() 
 		
-		RiscossJsonClient.getRiskAnalysisSessionList( new JsonCallback(){
+		RiscossJsonClient.listRiskAnalysisSessions("", "", new JsonCallback(){
 			public void onSuccess(Method method, JSONValue response) {
 				if( response == null ) return;
 				if( response.isObject() == null ) return;

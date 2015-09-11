@@ -169,7 +169,6 @@ public class UploadServiceImpl extends UploadAction {
 			
 			String domain = request.getParameter("domain");
 			String token = request.getParameter("token");
-
 			RiscossDB db = DBConnector.openDB( domain, token );
 			
 			String modelName = null;
@@ -193,6 +192,7 @@ public class UploadServiceImpl extends UploadAction {
 						filename = RiscossUtil.sanitize(filename);
 						modelName = RiscossUtil.sanitize(modelName);
 						//store description for the model. Overwrites an existing description
+						
 						db.updateModel(modelName, filename, item.getString());
 						
 						response = filename + " uploaded.";

@@ -179,13 +179,14 @@ public class RDCConfigurationPage implements IsWidget {
 		return dock;
 	}
 
-	public String getSelectedEntity() {
-		return this.entity;
-	}
-	
-	public void saveRDCs( JsonCallback cb ) {
-		RiscossJsonClient.saveRDCs( getJson(), entity, cb );
-	}
+	//never used?!
+//	public String getSelectedEntity() {
+//		return this.entity;
+//	}
+	//never used?!	
+//	public void saveRDCs( JsonCallback cb ) {
+//		RiscossJsonClient.saveRDCs( getJson(), entity, cb );
+//	}
 	
 	public JSONObject getJson() {
 		for( String key : RDCConfigurationPage.this.rdcMap.keySet() ) {
