@@ -1,8 +1,9 @@
-.settings/
-.classpath
-.project
+**.settings/
+**.classpath
+**.project
 **.launch
-.class
+**.class
+**.nocache.js
 classes/
 bin/
 maven-status
