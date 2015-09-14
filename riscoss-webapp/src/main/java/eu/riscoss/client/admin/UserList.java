@@ -13,6 +13,8 @@ import com.google.gwt.view.client.ListDataProvider;
 import eu.riscoss.client.ui.LinkHtml;
 import eu.riscoss.shared.JUserInfo;
 
+//never used (only in unused RolePropertyPage!!)
+@Deprecated
 public class UserList implements IsWidget {
 	
 	CellTable<JUserInfo>			table;

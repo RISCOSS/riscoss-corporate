@@ -24,6 +24,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.Log;
+import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.ui.LinkHtml;
 
 public class DomainsModule implements EntryPoint {
@@ -84,8 +85,7 @@ public class DomainsModule implements EntryPoint {
 		
 		RootPanel.get().add( vp );
 		
-		new Resource( GWT.getHostPageBaseURL() + "api/admin/domains/list" )
-			.get().send( new JsonCallback() {
+		RiscossJsonClient.listDomainsForUser("", new JsonCallback() { //check if correct!
 				@Override
 				public void onSuccess( Method method, JSONValue response ) {
 					if( response == null ) return;

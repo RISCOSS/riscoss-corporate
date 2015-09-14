@@ -503,4 +503,37 @@ public class RiscossJsonClient {
 //		.addQueryParam( "name", name )
 //		.get().send( cb );
 //	}
+	
+	//TODO: admin
+	public static void createDomain( String name, JsonCallback cb ) {
+		RiscossCall.fromToken(getToken()).admin().fx("domains").create(name).post( cb );
+		//new Resource( GWT.getHostPageBaseURL() + "api/admin/domains/create" )
+	}	
+	
+	public static void listDomainsForUser( String username, JsonCallback cb ) {
+		RiscossCall.fromToken(getToken()).admin().fx("domains").list().arg("username", username).get( cb );
+	}
+	
+	public static void selectDomain(String domain, JsonCallback cb ) {
+		RiscossCall.fromToken(getToken()).admin().item(domain).fx("domains").fx( "selected" ).post( cb );
+		//RiscossCall.fromCookies().withDomain(null).admin().fx( "domains/selected" ).arg( "domain", Cookies.getCookie( CookieNames.DOMAIN_KEY ) ).post(
+	}
+	
+	public static void getDomainInfo( String domainname, JsonCallback cb ) {
+		RiscossCall.fromCookies().withDomain(domainname).admin().fx("info").get( cb );
+	}
+	
+	public static void getDomainUsers( String domainname, JsonCallback cb ) {
+		RiscossCall.fromCookies().withDomain(domainname).admin().fx("users").list().get( cb );
+	}
+	
+	public static void setDomainUserRole( String domainname, String user, String role, JsonCallback cb ) {
+		RiscossCall.fromCookies().withDomain(domainname).admin().fx("users").fx(user).fx("set").arg("role", role).post( cb );
+	}
+	
+	public static void listUsers( JsonCallback cb ) {
+		RiscossCall.fromToken(getToken()).admin().fx("users").list().get( cb );
+	}
+	
+	
 }

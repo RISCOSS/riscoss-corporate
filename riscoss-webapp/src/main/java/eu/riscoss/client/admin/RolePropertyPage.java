@@ -23,9 +23,13 @@ import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import eu.riscoss.client.Log;
+import eu.riscoss.client.RiscossCall;
+import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecUserInfo;
 import eu.riscoss.shared.JUserInfo;
 
+//never used!!
+@Deprecated
 public class RolePropertyPage implements IsWidget {
 	
 	SimplePanel panel = new SimplePanel();
@@ -33,6 +37,7 @@ public class RolePropertyPage implements IsWidget {
 	TabPanel	tabPanel = new TabPanel();
 	
 	UserList	userList;
+	
 	
 	public RolePropertyPage() {
 		HorizontalPanel toolbar = new HorizontalPanel();
@@ -61,8 +66,7 @@ public class RolePropertyPage implements IsWidget {
 		public List<String> selectRoles() {
 			
 			// TODO: load the list of users
-			new Resource( GWT.getHostPageBaseURL() + "api/admin/users/list" )
-			.get().send( new JsonCallback() {
+			RiscossJsonClient.listUsers( new JsonCallback() {
 				@Override
 				public void onSuccess( Method method, JSONValue response ) {
 					if( response == null ) return;
@@ -102,30 +106,30 @@ public class RolePropertyPage implements IsWidget {
 		return this.panel;
 	}
 
-	public void setSelectedRole( String domainName, String roleName ) {
-		
-//		this.selectedDomain = domainName;
-		new Resource( GWT.getHostPageBaseURL() + "api/admin/" + domainName + "/roles/" + roleName + "/users/list" )
-		.get().send( new JsonCallback() {
-			@Override
-			public void onSuccess( Method method, JSONValue response ) {
-				if( response == null ) return;
-				if( response.isArray() == null ) return;
-				Log.println( "" + response );
-				JSONArray array = response.isArray();
-				CodecUserInfo codec = GWT.create( CodecUserInfo.class );
-				userList.clear();
-				for( int i = 0; i < array.size(); i++ ) {
-					JUserInfo info = codec.decode( array.get( i ) );
-					userList.append( info );
-				}
-			}
-			@Override
-			public void onFailure( Method method, Throwable exception ) {
-				Window.alert( exception.getMessage() );
-			}
-		});
-		
-	}
+	//unused?!!
+//	public void setSelectedRole( String domainName, String roleName ) {
+//		
+////		this.selectedDomain = domainName;
+//		RiscossCall.fromCookies().withDomain(domainName).admin().fx("roles").fx(roleName).fx("users").list().get( new JsonCallback() {
+//			@Override
+//			public void onSuccess( Method method, JSONValue response ) {
+//				if( response == null ) return;
+//				if( response.isArray() == null ) return;
+//				Log.println( "" + response );
+//				JSONArray array = response.isArray();
+//				CodecUserInfo codec = GWT.create( CodecUserInfo.class );
+//				userList.clear();
+//				for( int i = 0; i < array.size(); i++ ) {
+//					JUserInfo info = codec.decode( array.get( i ) );
+//					userList.append( info );
+//				}
+//			}
+//			@Override
+//			public void onFailure( Method method, Throwable exception ) {
+//				Window.alert( exception.getMessage() );
+//			}
+//		});
+//		
+//	}
 	
 }

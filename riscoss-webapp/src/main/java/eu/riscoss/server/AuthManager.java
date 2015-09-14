@@ -161,89 +161,91 @@ public class AuthManager {
 		
 	}
 	
-	@GET @Path("/domains/list")
-	@Deprecated
-	public String getAvailableDomains(  @Context HttpServletRequest req ) {
-		
-		JsonArray array = new JsonArray();
-		
-		String initString = req.getServletContext().getInitParameter( "eu.riscoss.param.domains.list" );
-		
-		if( initString != null ) {
-			String[] tokens = initString.split( "[,]" );
-			for( String tok : tokens ) {
-				array.add( new JsonPrimitive( tok ) );
-			}
-		}
-		
-		return array.toString();
-	}
-	
-	@POST @Path("/domains/selected")
-	public String setSessionSelectedDomain( 
-			@Context HttpServletRequest req, 
-			@HeaderParam("token") String token,
-			@QueryParam("domain") String domain ) {
-		
-		if( domain == null ) return null;
-		
-		RiscossDatabase db = null;
-		
-		try {
-			db = DBConnector.openDatabase( token );
-			
-			if( db.isAdmin() ) 
-				return new JsonPrimitive( domain ).toString();
-			
-			String username = db.getUsername();
-			
-			Collection<String> domains = AdminManager.listAvailableUserDomains( token, username );
-			
-			for( String d : domains ) {
-				if( d.equals( domain ) ) {
-					
-					RiscossDB domaindb = DBConnector.openDB( domain );
-					
-					String rolename = domaindb.getRole( username );
-					
-					if( rolename == null ) {
-						domaindb.setUserRole( username, db.getPredefinedRole( domain ) );
-					}
-					
-					domaindb.close();
-					
-					return new JsonPrimitive( domain ).toString();
-				}
-			}
-			
-			throw new RuntimeException( "Invalid domain" );
-		}
-		finally {
-			if( db != null )
-				db.close();
-		}
-		
+//	@GET @Path("/domains/list")
+//	@Deprecated
+//	public String getAvailableDomains(  @Context HttpServletRequest req ) {
+//		
+//		JsonArray array = new JsonArray();
+//		
+//		//note: this parameter is also read in eu.riscoss.server.ServletWrapper
 //		String initString = req.getServletContext().getInitParameter( "eu.riscoss.param.domains.list" );
-//		if( initString == null ) {
-//			// If not domains configured, proceed
-//			return new JsonPrimitive( DBConnector.DEFAULT_DOMAIN ).toString();
+//		
+//		if( initString != null ) {
+//			String[] tokens = initString.split( "[,]" );
+//			for( String tok : tokens ) {
+//				//tok = tok.replace(' ', '_');
+//				array.add( new JsonPrimitive( tok ) );
+//			}
 //		}
 //		
-//		if( domain == null ) {
-//			return null;
+//		return array.toString();
+//	}
+//	
+//	@POST @Path("/domains/selected")
+//	public String setSessionSelectedDomain( 
+//			@Context HttpServletRequest req, 
+//			@HeaderParam("token") String token,
+//			@QueryParam("domain") String domain ) {
+//		
+//		if( domain == null ) return null;
+//		
+//		RiscossDatabase db = null;
+//		
+//		try {
+//			db = DBConnector.openDatabase( token );
+//			
+//			if( db.isAdmin() ) 
+//				return new JsonPrimitive( domain ).toString();
+//			
+//			String username = db.getUsername();
+//			
+//			Collection<String> domains = AdminManager.listAvailableUserDomains( token, username );
+//			
+//			for( String d : domains ) {
+//				if( d.equals( domain ) ) {
+//					
+//					RiscossDB domaindb = DBConnector.openDB( domain );
+//					
+//					String rolename = domaindb.getRole( username );
+//					
+//					if( rolename == null ) {
+//						domaindb.setUserRole( username, db.getPredefinedRole( domain ) );
+//					}
+//					
+//					domaindb.close();
+//					
+//					return new JsonPrimitive( domain ).toString();
+//				}
+//			}
+//			
+//			throw new RuntimeException( "Invalid domain" );
+//		}
+//		finally {
+//			if( db != null )
+//				db.close();
 //		}
 //		
-//		String[] tokens = initString.split( "[,]" );
-//		for( String tok : tokens ) {
-//			if( tok.equals( domain ) ) return new JsonPrimitive( domain ).toString();
-//		}
-//		
-////		req.getSession( true ).setAttribute( "domain", domain );
-////		DBConnector.setThreadLocalValue( CookieNames.DOMAIN_KEY, domain );
-//		
-//		throw new RuntimeException( "Invalid domain" );
-//		
-////		return new JsonPrimitive("Invalid domain").toString();
-	}
-	
+////		String initString = req.getServletContext().getInitParameter( "eu.riscoss.param.domains.list" );
+////		if( initString == null ) {
+////			// If not domains configured, proceed
+////			return new JsonPrimitive( DBConnector.DEFAULT_DOMAIN ).toString();
+////		}
+////		
+////		if( domain == null ) {
+////			return null;
+////		}
+////		
+////		String[] tokens = initString.split( "[,]" );
+////		for( String tok : tokens ) {
+////			if( tok.equals( domain ) ) return new JsonPrimitive( domain ).toString();
+////		}
+////		
+//////		req.getSession( true ).setAttribute( "domain", domain );
+//////		DBConnector.setThreadLocalValue( CookieNames.DOMAIN_KEY, domain );
+////		
+////		throw new RuntimeException( "Invalid domain" );
+////		
+//////		return new JsonPrimitive("Invalid domain").toString();
+//	}
+//	
 }

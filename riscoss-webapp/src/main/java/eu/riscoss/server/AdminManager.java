@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -14,6 +15,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -84,7 +86,7 @@ public class AdminManager {
 		
 		if( token.length() > 1 ) {
 			RiscossDatabase db = null;
-			if( !"".equals( username ) ) try {
+			if( !username.equals("") ) try {
 				db = DBConnector.openDatabase( token );
 				
 				if( db.getUsername().equals( username ) ) {
@@ -114,7 +116,7 @@ public class AdminManager {
 		try {
 			db = DBConnector.openDatabase( token );
 			db.createDomain( name );
-			RiscossDB domainDB = DBConnector.openDB( name );
+			RiscossDB domainDB = DBConnector.openDB( name, token );
 			for( KnownRoles r : KnownRoles.values() ) {
 				domainDB.createRole( r.name() );
 				for( Pair<DBResource,String> perm : r.permissions() ) {
@@ -130,7 +132,7 @@ public class AdminManager {
 		}
 	}
 	
-	@POST @Path("{domain}/roles/create")
+	@POST @Path("/{domain}/roles/create")
 	public String createRole( 
 			@HeaderParam("token") String token,
 			@DefaultValue("Playground") @PathParam("domain") String domain, 
@@ -154,7 +156,7 @@ public class AdminManager {
 		}
 	}
 	
-	@GET @Path("{domain}/roles/list")
+	@GET @Path("/{domain}/roles/list")
 	public String listRoles( 
 			@HeaderParam("token") String token,
 			@DefaultValue("Playground") @PathParam("domain") String domain ) {
@@ -220,7 +222,7 @@ public class AdminManager {
 		return "";
 	}
 	
-	@DELETE @Path("users/{user}/delete")
+	@DELETE @Path("/users/{user}/delete")
 	public void deleteUser(
 			@HeaderParam("token") String token,
 			@PathParam("user") String username
@@ -365,11 +367,11 @@ public class AdminManager {
 		
 	}
 	
-	@PUT @Path("/{domain}/default-role")
+	@POST @Path("/{domain}/default-role")
 	public void setPredefinedRole( 
 			@HeaderParam("token") String token,
 			@PathParam("domain") String domain,
-			@QueryParam("value") String value ) {
+			@QueryParam("role") String value ) {
 		
 		RiscossDatabase db = null;
 		
@@ -384,6 +386,72 @@ public class AdminManager {
 			if( db != null )
 				db.close();
 		}
+	}
+	
+	@POST @Path("/{domain}/domains/selected")
+	public String setSessionSelectedDomain( @PathParam("domain") String domain,
+			//@Context HttpServletRequest req, 
+			@HeaderParam("token") String token) {
+		
+		if( domain == null ) return null;
+		
+		RiscossDatabase db = null;
+		
+		try {
+			db = DBConnector.openDatabase( token );
+			
+			if( db.isAdmin() ) 
+				return new JsonPrimitive( domain ).toString();
+			
+			String username = db.getUsername();
+			
+			Collection<String> domains = AdminManager.listAvailableUserDomains( token, username );
+			
+			for( String d : domains ) {
+				if( d.equals( domain ) ) {
+					
+					RiscossDB domaindb = DBConnector.openDB( domain, token );
+					
+					String rolename = domaindb.getRole( username );
+					
+					if( rolename == null ) {
+						domaindb.setUserRole( username, db.getPredefinedRole( domain ) );
+					}
+					
+					domaindb.close();
+					
+					return new JsonPrimitive( domain ).toString();
+				}
+			}
+			
+			throw new RuntimeException( "Invalid domain" );
+		}
+		finally {
+			if( db != null )
+				db.close();
+		}
+		
+//		String initString = req.getServletContext().getInitParameter( "eu.riscoss.param.domains.list" );
+//		if( initString == null ) {
+//			// If not domains configured, proceed
+//			return new JsonPrimitive( DBConnector.DEFAULT_DOMAIN ).toString();
+//		}
+//		
+//		if( domain == null ) {
+//			return null;
+//		}
+//		
+//		String[] tokens = initString.split( "[,]" );
+//		for( String tok : tokens ) {
+//			if( tok.equals( domain ) ) return new JsonPrimitive( domain ).toString();
+//		}
+//		
+////		req.getSession( true ).setAttribute( "domain", domain );
+////		DBConnector.setThreadLocalValue( CookieNames.DOMAIN_KEY, domain );
+//		
+//		throw new RuntimeException( "Invalid domain" );
+//		
+////		return new JsonPrimitive("Invalid domain").toString();
 	}
 	
 }

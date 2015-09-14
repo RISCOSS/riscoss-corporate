@@ -17,6 +17,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 
 import eu.riscoss.client.RiscossCall;
+import eu.riscoss.client.RiscossJsonClient;
 
 public class AdminModule implements EntryPoint {
 
@@ -70,8 +71,7 @@ public class AdminModule implements EntryPoint {
 		
 		RootPanel.get().add( dock );
 		
-		new Resource( GWT.getHostPageBaseURL() + "api/admin/domains/list" )
-		.get().send( new JsonCallback() {
+		RiscossJsonClient.listDomainsForUser("", new JsonCallback() {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				if( response == null ) return;
@@ -91,13 +91,9 @@ public class AdminModule implements EntryPoint {
 	
 	protected void onNewDomainClicked() {
 		String name = Window.prompt( "Domain name:", "" );
-		if( name == null ) return;
-		name = name.trim();
-		if( "".equals( name ) ) return;
-		new Resource( GWT.getHostPageBaseURL() + "api/admin/domains/create" )
-			.addQueryParam( "name", name ).post().
-			header( "token", RiscossCall.getToken() ).
-			send( new JsonCallback() {
+		if( name == null || name.trim().equals("") ) 
+			return;
+		RiscossJsonClient.createDomain(name,  new JsonCallback() {
 				@Override
 				public void onSuccess( Method method, JSONValue response ) {
 					domainList.append( response.isString().stringValue() );

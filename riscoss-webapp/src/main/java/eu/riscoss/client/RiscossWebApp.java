@@ -76,11 +76,12 @@ public class RiscossWebApp implements EntryPoint {
 					username = "";
 				Log.println( "username: " + username );
 				
-				Resource res = new Resource( GWT.getHostPageBaseURL() + "api/auth/domains/selected" )
-				.addQueryParam( "domain", Cookies.getCookie( CookieNames.DOMAIN_KEY ) );
-				Log.println( "query OLD: " + res.getQuery() );
+//				Resource res = new Resource( GWT.getHostPageBaseURL() + "api/auth/domains/selected" )
+//				.addQueryParam( "domain", Cookies.getCookie( CookieNames.DOMAIN_KEY ) );
+//				Log.println( "query OLD: " + res.getQuery() );
 				
-				RiscossCall.fromCookies().withDomain(null).auth().fx( "domains/selected" ).arg( "domain", Cookies.getCookie( CookieNames.DOMAIN_KEY ) ).post( new JsonCallback() {
+				//RiscossCall.fromCookies().withDomain(null).admin().fx( "domains/selected" ).arg( "domain", Cookies.getCookie( CookieNames.DOMAIN_KEY ) ).post( 
+				RiscossJsonClient.selectDomain( RiscossCall.getDomain(), new JsonCallback() {
 					@Override
 					public void onSuccess( Method method, JSONValue response ) {
 						Log.println( "Domain check response: " + response );
@@ -304,8 +305,8 @@ public class RiscossWebApp implements EntryPoint {
 		
 		protected void selectDomain( String value ) {
 			dialog.hide();
-//			Log.println( "> " + value );
-			RiscossCall.fromCookies().withDomain(null).auth().fx( "domains/selected" ).arg( "domain", value ).post( new JsonCallback() {
+
+			RiscossJsonClient.selectDomain(value, new JsonCallback() {
 				@Override
 				public void onSuccess( Method method, JSONValue response ) {
 					if( response == null ) return;
@@ -360,7 +361,7 @@ public class RiscossWebApp implements EntryPoint {
 	
 	
 	protected void showDomainSelectionDialog() {
-		RiscossCall.fromCookies().withDomain(null).admin().fx("domains").fx( "/public" ).arg( "username", username ).get( new JsonCallback() {
+		RiscossCall.fromCookies().withDomain(null).admin().fx("domains").fx( "public" ).arg( "username", username ).get( new JsonCallback() {
 		
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {

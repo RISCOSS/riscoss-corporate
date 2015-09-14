@@ -26,6 +26,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import eu.riscoss.client.Log;
 import eu.riscoss.client.RiscossCall;
+import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecDomainInfo;
 import eu.riscoss.client.codec.CodecUserInfo;
 import eu.riscoss.client.riskanalysis.KeyValueGrid;
@@ -79,8 +80,7 @@ public class DomainPropertyPage implements IsWidget {
 			dialog.center();
 			
 			// TODO: load the list of users
-			new Resource( GWT.getHostPageBaseURL() + "api/admin/users/list" )
-			.get().header( "token", RiscossCall.getToken() ).send( new JsonCallback() {
+			RiscossJsonClient.listUsers(new JsonCallback() {
 				@Override
 				public void onSuccess( Method method, JSONValue response ) {
 					if( response == null ) return;
@@ -140,9 +140,8 @@ public class DomainPropertyPage implements IsWidget {
 		roleBox.addChangeHandler( new ChangeHandler() {
 			@Override
 			public void onChange( ChangeEvent event ) {
-				new Resource( GWT.getHostPageBaseURL() + "api/admin/" + selectedDomain + "/default-role" )
-				.addQueryParam( "value", roleBox.getItemText( roleBox.getSelectedIndex() ) )
-				.put().header( "token", RiscossCall.getToken() ).send( new JsonCallback() {
+				RiscossCall.fromCookies().withDomain(selectedDomain).admin().fx("default-role")
+				.arg("role", roleBox.getItemText( roleBox.getSelectedIndex() ) ).post( new JsonCallback() {
 					@Override
 					public void onSuccess( Method method, JSONValue response ) {}
 					@Override
@@ -171,8 +170,7 @@ public class DomainPropertyPage implements IsWidget {
 		
 		this.selectedDomain = domainName;
 		
-		new Resource( GWT.getHostPageBaseURL() + "api/admin/" + domainName + "/info" )
-		.get().header( "token", RiscossCall.getToken() ).send( new JsonCallback() {
+		RiscossJsonClient.getDomainInfo(domainName, new JsonCallback() {
 			@Override
 			public void onFailure( Method method, Throwable exception ) {
 				Window.alert( exception.getMessage() );
@@ -192,8 +190,8 @@ public class DomainPropertyPage implements IsWidget {
 						}
 					}
 				}
-				new Resource( GWT.getHostPageBaseURL() + "api/admin/" + info.name + "/users/list" )
-				.get().header( "token", RiscossCall.getToken() ).send( new JsonCallback() {
+				
+				RiscossJsonClient.getDomainUsers(info.name, new JsonCallback() {
 					@Override
 					public void onSuccess( Method method, JSONValue response ) {
 						if( response == null ) return;
@@ -227,10 +225,7 @@ public class DomainPropertyPage implements IsWidget {
 	void importUser( String user ) {
 		
 		if( user == null ) return;
-		
-		new Resource( GWT.getHostPageBaseURL() + "api/admin/" + selectedDomain + "/users/" + user + "/set" )
-		.addQueryParam( "role", KnownRoles.Guest.name() )
-		.post().header( "token", RiscossCall.getToken() ).send( new JsonCallback() {
+		RiscossJsonClient.setDomainUserRole(selectedDomain, user, KnownRoles.Guest.name(), new JsonCallback() {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				CodecUserInfo codec = GWT.create( JUserInfo.class );

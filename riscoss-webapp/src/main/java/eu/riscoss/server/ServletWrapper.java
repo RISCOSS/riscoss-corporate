@@ -123,6 +123,7 @@ public class ServletWrapper extends ServletContainer {
 			if( initString != null ) {
 				String[] tokens = initString.split( "[,]" );
 				for( String tok : tokens ) {
+					//tok = tok.replace(' ', '_');
 					db.createDomain( tok );
 				}
 			}
