@@ -27,9 +27,13 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import eu.riscoss.db.RiscossDB;
 import eu.riscoss.db.RiscossDBResource;
 import eu.riscoss.db.RiscossDatabase;
+import eu.riscoss.db.SiteManager;
 import eu.riscoss.shared.DBResource;
 import eu.riscoss.shared.JDomainInfo;
 import eu.riscoss.shared.JRoleInfo;
+import eu.riscoss.shared.JSiteMap;
+import eu.riscoss.shared.JSiteMap.JSitePage;
+import eu.riscoss.shared.JSiteMap.JSiteSection;
 import eu.riscoss.shared.JUserInfo;
 import eu.riscoss.shared.KnownRoles;
 import eu.riscoss.shared.Pair;
@@ -39,6 +43,57 @@ public class AdminManager {
 	
 	Gson gson = new Gson();
 	
+	int counter = 0;
+	
+	@GET @Path("/{domain}/sitemap")
+	public String getSitemap( @HeaderParam("token") String token, @PathParam("domain") String domain ) {
+		
+		RiscossDatabase db = null;
+		
+		try {
+			db = DBConnector.openDatabase( token );
+			
+			JSiteMap sitemap = new JSiteMap();
+			
+			sitemap.domain = domain;
+			
+			SiteManager sm = db.getSiteManager();
+			
+			sitemap.main = loadSection( "", "", sm, domain );
+			
+			return new Gson().toJson( sitemap );
+		}
+		finally {
+			if( db != null )
+				db.close();
+		}
+	}
+	
+	private JSiteSection loadSection( String sectionPath, String sectionName, SiteManager sm, String domain ) {
+		
+		counter++;
+		if( counter > 3 ) {
+			counter--;
+			return new JSiteSection();
+		}
+		
+		JSiteSection section = new JSiteSection( sectionName );
+		
+		for( String pagename : sm.listPages( sectionPath + "/" + sectionName ) ) {
+			String url = sm.getUrl( sectionPath + "/" + sectionName + "/" + pagename );
+			if( !sm.isAllowed( sectionPath + "/" + sectionName + "/" + pagename, domain ) ) continue;
+			section.add( new JSitePage( pagename, url ) );
+		}
+		
+		for( String sect : sm.listSections( sectionPath + "/" + sectionName ) ) {
+			section.add( loadSection( sectionPath + "/" + sectionName, sect, sm, domain ) );
+		}
+		
+		counter--;
+		
+		return section;
+	}
+
 	@GET @Path("/roles/list")
 	public String listRoles() {
 		

@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.orientechnologies.orient.core.metadata.OMetadataDefault;
 import com.orientechnologies.orient.core.metadata.security.ORole;
 import com.orientechnologies.orient.core.metadata.security.ORule.ResourceGeneric;
-import com.orientechnologies.orient.core.metadata.security.ORule;
 import com.orientechnologies.orient.core.metadata.security.OSecurity;
 import com.orientechnologies.orient.core.metadata.security.OSecurityRole;
 import com.orientechnologies.orient.core.metadata.security.OSecurityRole.ALLOW_MODES;
@@ -44,7 +42,7 @@ public class GDomContainer {
 	private Vertex getRoot( String cls ) {
 		try {
 			List<ODocument> list = graph.getRawGraph().query( new OSQLSynchQuery<ODocument>( 
-					"SELECT FROM " + GDomDB.ROOT_CLASS + " WHERE tag='" + cls + "'" ) );
+					"SELECT FROM " + GDomConfig.global().getRootClass() + " WHERE tag='" + cls + "'" ) );
 			if( list == null ) return null;
 			if( !(list.size() > 0) ) return null;
 			return graph.getVertex( list.get( 0 ).getIdentity() );
@@ -94,14 +92,14 @@ public class GDomContainer {
 		Vertex v = getRoot( domainName );
 		
 		if( v == null ) {
-			v = graph.addVertex( GDomDB.ROOT_CLASS, (String)null );
+			v = graph.addVertex( GDomConfig.global().getRootClass(), (String)null );
 			v.setProperty( "tag", domainName );
 			graph.commit();
 		}
 		
 	}
 	public List<String> domList() {
-		List<ODocument> list = query( "SELECT FROM " + GDomDB.ROOT_CLASS );
+		List<ODocument> list = query( "SELECT FROM " + GDomConfig.global().getRootClass() );
 		return new GenericNodeCollection<String>( list, new NameAttributeProvider() );
 	}
 	
@@ -159,7 +157,7 @@ public class GDomContainer {
 		for( OSecurityRole role : roles ) {
 			if( role.hasRule( ResourceGeneric.BYPASS_RESTRICTED, null ) ) {
 				return new GenericNodeCollection<String>( 
-						query( "select from " + GDomDB.ROOT_CLASS ), new NameAttributeProvider() );
+						query( "select from " + GDomConfig.global().getRootClass() ), new NameAttributeProvider() );
 			}
 		}
 		

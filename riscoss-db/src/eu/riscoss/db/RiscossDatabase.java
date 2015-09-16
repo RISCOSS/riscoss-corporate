@@ -34,5 +34,7 @@ public interface RiscossDatabase {
 	public List<String> listDomains( String username );
 
 	public boolean isAdmin();
+
+	public SiteManager getSiteManager();
 	
 }

@@ -50,6 +50,8 @@ import eu.riscoss.shared.EChunkType;
 import eu.riscoss.shared.JChunkItem;
 import eu.riscoss.shared.JChunkList;
 import eu.riscoss.shared.JChunkValue;
+import eu.riscoss.shared.RiscossUtil;
+import gwtupload.server.exceptions.UploadActionException;
 
 
 @Path("models")
@@ -493,6 +495,33 @@ public class ModelManager {
 		finally {
 			DBConnector.closeDB( db );
 		}
+	}
+	
+	@POST @Path("/{domain}/{model}/upload")
+	public void uploadModel(
+			@HeaderParam("token") String token, @PathParam("domain") String domain, @PathParam("model") String modelname, String content
+			) {
+		
+		RiscossDB db = DBConnector.openDB( domain, token );
+
+				try {
+					//attention:filename sanitation is not directly notified to the user
+					modelname = RiscossUtil.sanitize(modelname);
+					
+					for (String storedmodel : db.getModelList()) {
+						if (storedmodel.equals(modelname)){
+							return;
+//							throw new RuntimeException(
+//									"A model with this name was already uploaded. Please update this model on the model's properties page, change its name or delete it." );
+						}
+					}
+					db.storeModel( content, modelname );
+
+				} catch (Exception e) {
+					throw new UploadActionException(e);
+				}
+
+		DBConnector.closeDB( db );
 	}
 	
 	@POST @Path("/{domain}/{model}/rename")

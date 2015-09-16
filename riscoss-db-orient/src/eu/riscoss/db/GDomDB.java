@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.orientechnologies.orient.core.record.impl.ODocument;
+import com.orientechnologies.orient.core.sql.OCommandSQL;
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
@@ -16,7 +17,7 @@ public class GDomDB {
 	public static final String CHILDOF_CLASS = "ChildOf";
 	public static final String LINK_CLASS = "Link";
 	
-	public static final String ROOT_CLASS = "Space";
+//	public static final String ROOT_CLASS = "Space";
 	public static final String NODE_CLASS = "Node";
 	
 	OrientBaseGraph graph = null;
@@ -30,18 +31,23 @@ public class GDomDB {
 		init( graph, rootName );
 	}
 	
+	public GDomDB( GDomConfig conf, OrientBaseGraph graph, String rootName ) {
+		this.conf = conf;
+		init( graph, rootName );
+	}
+	
 	private void init( OrientBaseGraph graph, String rootName ) {
 		
 		this.graph = graph;
 		this.rootName = rootName;
 		
-		ensureNodeTypeExistence( graph, ROOT_CLASS );
+		ensureNodeTypeExistence( graph, conf.getRootClass() );
 		ensureNodeTypeExistence( graph, rootName + NODE_CLASS );
 		ensureEdgeTypeExistence( graph, CHILDOF_CLASS );
 		ensureEdgeTypeExistence( graph, LINK_CLASS );
 		root = getRoot( rootName, 0 );
 		if( root == null ) {
-			root = graph.addVertex( ROOT_CLASS, (String)null );
+			root = graph.addVertex( conf.getRootClass(), (String)null );
 			root.setProperty( "tag", rootName );
 			graph.commit();
 		}
@@ -62,7 +68,7 @@ public class GDomDB {
 	private Vertex getRoot( String cls, int index ) {
 		try {
 			List<ODocument> list = graph.getRawGraph().query( new OSQLSynchQuery<ODocument>( 
-					"SELECT FROM " + ROOT_CLASS + " WHERE tag='" + cls + "'" ) );
+					"SELECT FROM " + conf.getRootClass() + " WHERE tag='" + cls + "'" ) );
 			if( list == null ) return null;
 			if( !(list.size() > index) ) return null;
 			return graph.getVertex( list.get( index ).getIdentity() );
@@ -88,8 +94,16 @@ public class GDomDB {
 		}
 	}
 	
+	public void execute( String cmd ) {
+		graph.getRawGraph().command(new OCommandSQL(cmd)).execute();
+	}
+	
+	public String getClassName( String tag ) {
+		return rootName + conf.getClass( tag ) + NODE_CLASS;
+	}
+	
 	public NodeID createVertex( String tag ) {
-		Vertex child = graph.addVertex( "class:" + rootName + conf.getClass( tag ) + NODE_CLASS );
+		Vertex child = graph.addVertex( "class:" + getClassName( tag ) );
 		child.setProperty( "tag", tag );
 		child.setProperty( "root", rootName );
 		graph.commit();

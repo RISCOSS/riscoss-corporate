@@ -45,11 +45,25 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+import eu.riscoss.client.codec.CodecSiteMap;
 import eu.riscoss.client.ui.ClickWrapper;
 import eu.riscoss.client.ui.FramePanel;
 import eu.riscoss.shared.CookieNames;
+import eu.riscoss.shared.JSiteMap;
+import eu.riscoss.shared.JSiteMap.JSitePage;
+import eu.riscoss.shared.JSiteMap.JSiteSection;
 
 public class RiscossWebApp implements EntryPoint {
+	
+	abstract class MenuCommand implements Command {
+		private String url;
+		public MenuCommand( String url ) {
+			this.url = url;
+		}
+		public String getUrl() {
+			return this.url;
+		}
+	}
 	
 	VerticalPanel	main;
 	
@@ -87,7 +101,7 @@ public class RiscossWebApp implements EntryPoint {
 						Log.println( "Domain check response: " + response );
 						if( response == null ) showDomainSelectionDialog();
 						else if( response.isString() == null ) showDomainSelectionDialog();
-						else showUI( response.isString().stringValue() );
+						else loadSitemap();;
 					}
 					@Override
 					public void onFailure( Method method, Throwable exception ) {
@@ -119,30 +133,34 @@ public class RiscossWebApp implements EntryPoint {
 //		});
 	}
 	
-	void showUI() {
-		showUI( "" );
+	void loadSitemap() {
+		RiscossCall.fromCookies().admin().fx( "sitemap" ).get( new JsonCallback() {
+			@Override
+			public void onSuccess( Method method, JSONValue response ) {
+				CodecSiteMap codec = GWT.create( CodecSiteMap.class );
+				JSiteMap sitemap = codec.decode( response );
+				showUI( sitemap );
+			}
+			@Override
+			public void onFailure( Method method, Throwable exception ) {
+				Window.alert( exception.getMessage() );
+			}
+		});
 	}
 	
-	void showUI( String domain ) {
+	void showUI( JSiteMap sitemap) {
 		
-		Log.println( "Loading UI for domain " + domain );
+		Log.println( "Loading UI for domain " + sitemap.domain );
 		
 		MenuBar menu = new MenuBar();
 		menu.setWidth(" 100% ");
 		menu.setAnimationEnabled(true);
 		menu.setStyleName("mainMenu");
 		
-//		menu.addItem("Select Domain (" + domain + ")", new Command() {
-//			@Override
-//			public void execute() {
-//				showDomainSelectionDialog();
-//			}
-//		});
-		
 		MenuBar account = new MenuBar(true);
 		account.setStyleName("subMenu");
 		account.setAnimationEnabled(true);
-		menu.addItem( username + " (" + domain + ")", account);
+		menu.addItem( username + " (" + sitemap.domain + ")", account);
 		account.addItem("Change domain", new Command() {
 			@Override
 			public void execute() {
@@ -158,103 +176,106 @@ public class RiscossWebApp implements EntryPoint {
 			}
 		});
 		
-		MenuBar configure = new MenuBar(true);
-		configure.setStyleName("subMenu");
-		configure.setAnimationEnabled(true);
-		menu.addItem("Configure", configure);
-		configure.addItem("Layers", new Command() {
-			@Override
-			public void execute() {
-				loadPanel( "layers.html" );
+		for( JSiteSection subsection : sitemap.getRoot().subsections() ) {
+			if( subsection.pages().size() < 1 ) continue;
+			MenuBar submenu = new MenuBar(true);
+			submenu.setStyleName("subMenu");
+			submenu.setAnimationEnabled(true);
+			menu.addItem( subsection.getLabel(), submenu);
+			for( JSitePage page : subsection.pages() ) {
+				submenu.addItem( page.getLabel(), new MenuCommand( page.getUrl() ) {
+					@Override
+					public void execute() {
+						loadPanel( getUrl() );
+					}
+				});
 			}
-		});
-		configure.addItem("Entities", new Command() {
-			@Override
-			public void execute() {
-				loadPanel( "entities.html" );
-			}
-		});
-		configure.addItem("Models", new Command() {
-			@Override
-			public void execute() {
-				loadPanel( "models.html" );
-			}
-		});
-		configure.addItem("Risk Configurations", new Command() {
-			@Override
-			public void execute() {
-				loadPanel( "riskconfs.html" );
-			}
-		});
+		}
 		
-		MenuBar run = new MenuBar(true);
-		run.setStyleName("subMenu");
-		run.setAnimationEnabled(true);
-		menu.addItem("Run", run);
-		run.addItem("One-layer Analysis", new Command() {
-			@Override
-			public void execute() {
-				loadPanel( "analysis.html" );
-			}
-		});
-		run.addItem("Multi-layer Analysis", new Command() {
-			@Override
-			public void execute() {
-				loadPanel( "riskanalysis.html" );
-			}
-		});
-		run.addItem("What-If Analysis", new Command() {
-			@Override
-			public void execute() {
-				loadPanel( "whatifanalysis.html" );
-			}
-		});
-		run.addItem("AHP Session", new Command() {
-			@Override
-			public void execute() {
-				loadPanel( "rma.html" );
-			}
-		});
-		
-		MenuBar browse = new MenuBar(true);
-		browse.setStyleName("subMenu");
-		browse.setAnimationEnabled(true);
-		menu.addItem("Browse", browse);
-		browse.addItem("Risk Data Repository", new Command() {
-			@Override
-			public void execute() {
-				loadPanel( "rdr.html" );
-			}
-		});
-		browse.addItem("Risk Analysis Sessions", new Command() {
-			@Override
-			public void execute() {
-				loadPanel( "ras.html" );
-			}
-		});
-		
-//		MenuBar account = new MenuBar(true);
-//		account.setStyleName("subMenu");
-//		account.setAnimationEnabled(true);
-//		menu.addItem( "Account", account);
-//		account.addItem("Logout", new Command() {
+//		MenuBar configure = new MenuBar(true);
+//		configure.setStyleName("subMenu");
+//		configure.setAnimationEnabled(true);
+//		menu.addItem("Configure", configure);
+//		configure.addItem("Layers", new Command() {
 //			@Override
 //			public void execute() {
-//				Cookies.removeCookie( CookieNames.TOKEN_KEY );
-//				Cookies.removeCookie( CookieNames.DOMAIN_KEY );
-//				Window.Location.reload();
+//				loadPanel( "layers.html" );
+//			}
+//		});
+//		configure.addItem("Entities", new Command() {
+//			@Override
+//			public void execute() {
+//				loadPanel( "entities.html" );
+//			}
+//		});
+//		configure.addItem("Models", new Command() {
+//			@Override
+//			public void execute() {
+//				loadPanel( "models.html" );
+//			}
+//		});
+//		configure.addItem("Risk Configurations", new Command() {
+//			@Override
+//			public void execute() {
+//				loadPanel( "riskconfs.html" );
 //			}
 //		});
 		
-		MenuBar admin = new MenuBar(true);
-		admin.setAnimationEnabled(true);
-		menu.addItem("Admin", admin);
-		admin.addItem("Domains and permissions", new Command() {
-			@Override
-			public void execute() {
-				loadPanel( "admin.html" );
-			}
-		});
+//		MenuBar run = new MenuBar(true);
+//		run.setStyleName("subMenu");
+//		run.setAnimationEnabled(true);
+//		menu.addItem("Run", run);
+//		run.addItem("One-layer Analysis", new Command() {
+//			@Override
+//			public void execute() {
+//				loadPanel( "analysis.html" );
+//			}
+//		});
+//		run.addItem("Multi-layer Analysis", new Command() {
+//			@Override
+//			public void execute() {
+//				loadPanel( "riskanalysis.html" );
+//			}
+//		});
+//		run.addItem("What-If Analysis", new Command() {
+//			@Override
+//			public void execute() {
+//				loadPanel( "whatifanalysis.html" );
+//			}
+//		});
+//		run.addItem("AHP Session", new Command() {
+//			@Override
+//			public void execute() {
+//				loadPanel( "rma.html" );
+//			}
+//		});
+		
+//		MenuBar browse = new MenuBar(true);
+//		browse.setStyleName("subMenu");
+//		browse.setAnimationEnabled(true);
+//		menu.addItem("Browse", browse);
+//		browse.addItem("Risk Data Repository", new Command() {
+//			@Override
+//			public void execute() {
+//				loadPanel( "rdr.html" );
+//			}
+//		});
+//		browse.addItem("Risk Analysis Sessions", new Command() {
+//			@Override
+//			public void execute() {
+//				loadPanel( "ras.html" );
+//			}
+//		});
+		
+//		MenuBar admin = new MenuBar(true);
+//		admin.setAnimationEnabled(true);
+//		menu.addItem("Admin", admin);
+//		admin.addItem("Domains and permissions", new Command() {
+//			@Override
+//			public void execute() {
+//				loadPanel( "admin.html" );
+//			}
+//		});
 		
 		
 		

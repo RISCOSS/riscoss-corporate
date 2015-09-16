@@ -35,17 +35,14 @@ import javax.servlet.ServletResponse;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.reflections.Reflections;
 
-import com.google.gson.Gson;
-
 import eu.riscoss.db.RiscossDB;
 import eu.riscoss.db.RiscossDBResource;
 import eu.riscoss.db.RiscossDatabase;
+import eu.riscoss.db.SiteManager;
 import eu.riscoss.rdc.RDC;
 import eu.riscoss.rdc.RDCFactory;
 import eu.riscoss.rdc.RDCRunner;
 import eu.riscoss.shared.DBResource;
-import eu.riscoss.shared.JPageInfo;
-import eu.riscoss.shared.JSiteMap;
 import eu.riscoss.shared.KnownRoles;
 import eu.riscoss.shared.Pair;
 
@@ -112,11 +109,38 @@ public class ServletWrapper extends ServletContainer {
 				db.createRole( r.name() );
 			}
 			
-			Gson gson = new Gson();
-			
-			JSiteMap sitemap = new JSiteMap();
-			
-			sitemap.add( new JPageInfo( "Users and Roles", "admin.html", gson.toJson( sitemap ) ) );
+			{
+				SiteManager sm = db.getSiteManager();
+				
+				sm.init();
+				
+				for( KnownRoles r : KnownRoles.values() ) {
+					sm.createRole( r.name() );
+				}
+				
+				sm.createPage( "/", "RISCOSS Web App", "index.jsp", new String[] { KnownRoles.Administrator.name() } );
+//				sm.createPage( "/index.jsp", "RISCOSS Web App", "index.jsp", new String[] { KnownRoles.Administrator.name() } );
+				
+				sm.createSection( "/Configure" );
+				sm.createPage( "/Configure", "Layers", "layers.jsp", new String[] { KnownRoles.Administrator.name() } );
+				sm.createPage( "/Configure", "Entities", "entities.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Producer.name(), KnownRoles.Modeler.name() } );
+				sm.createPage( "/Configure", "Models", "models.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Modeler.name() } );
+				sm.createPage( "/Configure", "Risk Configurations", "riskconfs.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Modeler.name() } );
+				
+				sm.createSection( "/Run" );
+				sm.createPage( "/Run", "One-layer Analysis", "analysis.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
+				sm.createPage( "/Run", "Multi-layer Analysis", "riskanalysis.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
+				sm.createPage( "/Run", "What-if Analysis", "whatifanalysis.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
+				sm.createPage( "/Run", "AHP Session Analysis", "rma.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
+				
+				sm.createSection( "/Browse" );
+				sm.createPage( "/Browse", "Risk Data Repository", "rdr.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
+				sm.createPage( "/Browse", "Risk Analysis Sessions", "ras.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
+				
+				sm.createSection( "/Admin" );
+				sm.createPage( "/Admin", "Users and Roles", "admin.jsp", new String[] { KnownRoles.Administrator.name() } );
+			}
+				
 			
 			db.setRoleProperty( "Guest", "allowedPages", "" );
 			
@@ -158,6 +182,21 @@ public class ServletWrapper extends ServletContainer {
 		}
 		
 	}
+	
+//	void storeSiteSection( String parentSection, JSiteSection section, SiteManager sm ) {
+//		
+//		sm.createSection( parentSection, section.getLabel() );
+//		
+//		for( JSitePage page : section.pages() ) {
+//			sm.createPage( parentSection, page.getLabel(), page.getUrl(), page.getRoles() );
+//		}
+//		
+//		for( JSiteSection subsection : section.subsections() ) {
+//			
+//			storeSiteSection( parentSection + "/" + section.getLabel(), subsection, sm );
+//			
+//		}
+//	}
 	
 	public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
 		

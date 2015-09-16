@@ -21,6 +21,8 @@
 
 package eu.riscoss.server;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.DELETE;
@@ -28,12 +30,12 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -46,6 +48,8 @@ import eu.riscoss.db.RiscossDB;
 import eu.riscoss.rdc.RDC;
 import eu.riscoss.rdc.RDCFactory;
 import eu.riscoss.rdc.RDCParameter;
+import eu.riscoss.shared.JEntityData;
+import eu.riscoss.shared.JRiskNativeData;
 import eu.riscoss.shared.RiscossUtil;
 
 @Path("entities")
@@ -191,8 +195,7 @@ public class EntityManager {
 		}
 	}
 
-	@GET
-	@Path("/{domain}/{entity}/data")
+	@GET @Path("/{domain}/{entity}/data")
 	public String getEntityData(@DefaultValue("Playground") @PathParam("domain") String domain,
 			@PathParam("entity") String entity,
 			@DefaultValue("") @HeaderParam("token") String token ) {
@@ -241,6 +244,66 @@ public class EntityManager {
 
 			System.out.println("Returning entity data: " + json.toString());
 			return json.toString();
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
+
+	@GET @Path("/{domain}/{entity}/data_new")
+	public String getEntityData_new(@DefaultValue("Playground") @PathParam("domain") String domain,
+			@PathParam("entity") String entity,
+			@DefaultValue("") @HeaderParam("token") String token ) {
+		RiscossDB db = DBConnector.openDB(domain, token);
+		try {
+			
+			Gson gson = new Gson();
+			
+			JEntityData data = new JEntityData();
+			
+			data.name = entity;
+			data.layer = db.layerOf( entity );
+
+			{
+				List<String> list = new ArrayList<>();
+				for (String e : db.getParents(entity)) {
+					list.add( e );
+				}
+				data.parents = list;
+			}
+
+			{
+				List<String> list = new ArrayList<>();
+				for (String e : db.getChildren(entity)) {
+					list.add( e );
+				}
+				data.children = list;
+			}
+
+			{
+				List<String> list = new ArrayList<>();
+				for (RDC rdc : RDCFactory.get().listRDCs()) {
+					String rdcName = rdc.getName();
+					if (db.isRDCEnabled(entity, rdcName)) {
+						list.add( rdcName );
+					}
+				}
+				data.rdcs = list;
+			}
+			
+			{
+				List<JRiskNativeData> list = new ArrayList<>();
+				for (String id : db.listUserData(entity)) {
+					JRiskNativeData rd = gson.fromJson( db.readRiskData(entity, id), JRiskNativeData.class );
+					list.add( rd );
+				}
+				data.userdata = list;
+			}
+			
+			String json = gson.toJson( data );
+			
+			System.out.println("Returning: " + json );
+			
+			return json;
 		} finally {
 			DBConnector.closeDB(db);
 		}

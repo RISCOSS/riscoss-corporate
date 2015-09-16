@@ -5,7 +5,6 @@ import java.util.Date;
 
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
-import org.fusesource.restygwt.client.Resource;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -33,7 +32,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DateBox;
 
 import eu.riscoss.client.JsonCallbackWrapper;
-import eu.riscoss.client.RiscossCall;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecLayerContextualInfo;
 import eu.riscoss.shared.JLayerContextualInfo;
@@ -129,8 +127,13 @@ public class LayerPropertyPage implements IsWidget {
 			}
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
-				CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
-				info = codec.decode( response );
+				if( response != null ) {
+					CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
+					info = codec.decode( response );
+				}
+				else {
+					info = new JLayerContextualInfo();
+				}
 				loadProperties();	
 			}
 		});

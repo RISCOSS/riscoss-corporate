@@ -1,11 +1,21 @@
+<%@page import="eu.riscoss.db.*"%>
+<%@page import="eu.riscoss.server.*"%>
+<%@ page import="eu.riscoss.shared.*" %>
+
 <!doctype html>
 
+<%
+	PageManager pg = new PageManager( request );
+ %>
+		
 <html style="height:100%">
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <link type="text/css" rel="stylesheet" href="RiscossWebApp.css">
     <title>RISCOSS Web App</title>
-    <script type="text/javascript" language="javascript" src="admin/admin.nocache.js"></script>
+    <% if( pg.isAccessAllowed() ) { %> 
+    	<script type="text/javascript" language="javascript" src="<%= pg.getJS() %>"></script>
+    <% } %>
   </head>
 
   <body style="height:100%">
@@ -19,5 +29,8 @@
       </div>
     </noscript>
 
+    <% if( !pg.isAccessAllowed() ) { %> Unauthorized access. <% } %>
+    
   </body>
 </html>
+
