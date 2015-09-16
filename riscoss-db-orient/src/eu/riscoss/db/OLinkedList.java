@@ -96,18 +96,6 @@ public class OLinkedList {
 				setTopLayer( id );
 			}
 		}
-		
-//		System.out.println(
-//				dom.children( this.rootPath ).size() );
-//		for( NodeID lid : dom.children( this.rootPath ) ) {
-//			List<NodeID> list = dom.listOutEdges( lid, GDomDB.LINK_CLASS, "next", null );
-//			if( list == null ) {
-//				System.out.println( "null" );
-//			}
-//			else {
-//				System.out.println( list.size() );
-//			}
-//		}
 	}
 	
 	public void setNextLayer( NodeID layer, NodeID next ) {

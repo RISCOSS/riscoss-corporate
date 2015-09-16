@@ -124,12 +124,6 @@ public class RiscossOrientDatabase implements RiscossDatabase {
 		
 		GDomConfig.setGlobalConf( conf );
 		
-//		container.createRole( "Administrator" );
-//		container.createRole( "Modeler" );
-//		container.createRole( "Producer" );
-//		container.createRole( "Consumer" );
-//		container.createRole( "Guest" );
-		
 //		{ // Example for defining a read-only role
 //			ORole visitor = security.createRole( "Guest", ALLOW_MODES.DENY_ALL_BUT );
 //			// BEGIN: copied form OSecurityShared - procedure to create the default "reader" role
@@ -197,6 +191,11 @@ public class RiscossOrientDatabase implements RiscossDatabase {
 	@Override
 	public boolean isAdmin() {
 		return "admin".equals( getUsername() );
+	}
+
+	@Override
+	public SiteManager getSiteManager() {
+		return new RiscossOrientSiteManager( container.graph );
 	}
 	
 }

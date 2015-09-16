@@ -3,9 +3,12 @@ package eu.riscoss.db;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import com.orientechnologies.orient.core.id.ORecordId;
 import com.orientechnologies.orient.core.metadata.OMetadataDefault;
 import com.orientechnologies.orient.core.metadata.security.ORole;
 import com.orientechnologies.orient.core.metadata.security.ORule;
@@ -204,8 +207,53 @@ public class GAuthDom {
 			}} );
 	}
 	
-	public void setPermission( String rolename, String res, String perm ) {
+	/**
+	 * Sets the permission of a 'local' role - e.g., Administrator-DomainX, Guest-DomainX, etc.
+	 * @param rolename
+	 * @param res
+	 * @param perm
+	 */
+	public void setPermission( String rolename, String className, String perm ) {
 		rolename = localRole( rolename );
+		
+		ORole role = dom.graph.getRawGraph().getMetadata().getSecurity().getRole( rolename );
+		
+		if( role == null ) return;
+		
+		Set<Integer> pset = new HashSet<Integer>();
+		pset.addAll( mapPermission( perm ) );
+		if( pset.contains( ORole.PERMISSION_READ ) )
+			role.addRule( ResourceGeneric.CLASS, className, ORole.PERMISSION_READ );
+		else
+			role.revoke( ResourceGeneric.CLASS, className, ORole.PERMISSION_READ );
+		
+		if( pset.contains( ORole.PERMISSION_CREATE | ORole.PERMISSION_UPDATE | ORole.PERMISSION_DELETE ) )
+			role.addRule( ResourceGeneric.CLASS, className, ORole.PERMISSION_CREATE | ORole.PERMISSION_UPDATE | ORole.PERMISSION_DELETE );
+		else
+			role.revoke( ResourceGeneric.CLASS, className, ORole.PERMISSION_CREATE | ORole.PERMISSION_UPDATE | ORole.PERMISSION_DELETE );
+		
+		role.save();
+	}
+	
+	private Collection<Integer> mapPermission( String perm ) {
+		ArrayList<Integer> list = new ArrayList<>();
+		if( perm == null ) return list;
+		for (int i = 0, n = perm.length(); i < n; i++) {
+		    char c = perm.charAt(i);
+		    Integer val = map.get( String.valueOf( c ) );
+		    if( val != null )
+		    	list.add( val );
+		}
+		return list;
+	}
+	
+	/**
+	 * Sets the permission of a 'global' role - e.g., Administrator, Guest, etc.
+	 * @param rolename
+	 * @param res
+	 * @param perm
+	 */
+	public void setGlobalPermission( String rolename, String res, String perm ) {
 		
 		ORole role = dom.graph.getRawGraph().getMetadata().getSecurity().getRole( rolename );
 		
@@ -217,17 +265,20 @@ public class GAuthDom {
 		
 		role.save();
 	}
-
-	private Collection<Integer> mapPermission( String perm ) {
-		ArrayList<Integer> list = new ArrayList<>();
-		if( perm == null ) return list;
-		for (int i = 0, n = perm.length(); i < n; i++) {
-		    char c = perm.charAt(i);
-		    Integer val = map.get( String.valueOf( c ) );
-		    if( val != null )
-		    	list.add( val );
+	
+	public void setGlobalNodePermission( String rolename, String path, String perm ) {
+		
+		NodeID id = dom.getVertex( path );
+		
+		if( id == null ) return;
+		
+		ODocument doc = dom.graph.getRawGraph().load( new ORecordId( id.toString() ) ).getRecord();
+		
+		for( int p : mapPermission( perm ) ) {
+			if( p == ORole.PERMISSION_READ ) {
+				dom.graph.getRawGraph().getMetadata().getSecurity().allowRole( doc, OSecurity.ALLOW_READ_FIELD, rolename );
+			}
 		}
-		return list;
 	}
 	
 }

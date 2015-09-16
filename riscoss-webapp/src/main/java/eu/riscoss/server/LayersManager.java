@@ -52,8 +52,6 @@ public class LayersManager {
 			@DefaultValue("Playground") @PathParam("domain") String domain,
 			@DefaultValue("") @HeaderParam("token") String token ) {
 		
-		System.out.println( "Received token: " + token );
-		
 		JsonArray a = new JsonArray();
 		
 		RiscossDB db = DBConnector.openDB( domain, token );
@@ -133,44 +131,6 @@ public class LayersManager {
 		
 	}
 	
-//	@GET @Path( "{domain}/ci" )
-//	public String getContextualInfo( 
-//			@DefaultValue("Playground") @PathParam("domain") String domain, 
-//			@DefaultValue("") @HeaderParam("token") String token, 
-//			@QueryParam("layer") String layer ) {
-//		
-//		RiscossDB db = DBConnector.openDB( domain, token );
-//		try {
-//			String json = db.getLayerData( layer, "ci" );
-//			if( json == null ) {
-//				JLayerContextualInfo info = new JLayerContextualInfo();
-//				json = gson.toJson( info );
-//			}
-//			return json;
-//		}
-//		finally {
-//			DBConnector.closeDB( db );
-//		}
-//		
-//	}
-//	
-//	@PUT @Path( "{domain}/ci" )
-//	public void setContextualInfo( 
-//			@DefaultValue("Playground") @PathParam("domain") String domain,
-//			@DefaultValue("") @HeaderParam("token") String token, 
-//			@QueryParam("layer") String layer, 
-//			@HeaderParam("info") String json ) {
-//		
-//		RiscossDB db = DBConnector.openDB( domain, token );
-//		try {
-//			db.setLayerData( layer, "ci", json );
-//		}
-//		finally {
-//			DBConnector.closeDB( db );
-//		}
-//		
-//	}
-	
 	@GET @Path( "{domain}/{layer}/ci" )
 	public String getContextualInfo( 
 			@DefaultValue("Playground") @PathParam("domain") String domain, 
@@ -208,26 +168,6 @@ public class LayersManager {
 		}
 		
 	}
-	
-//	@POST
-//	@Path("{domain}/edit")
-//	@Deprecated  
-//	public void editLayerOld( 
-//			@DefaultValue("Playground") @PathParam("domain") String domain,
-//			@DefaultValue("") @HeaderParam("token") String token, 
-//			@QueryParam("name") String name, 
-//			@QueryParam("newname") String newName ) {
-//		
-//		System.out.println("Name change request: "+name+" to "+newName+".");
-//		
-//		RiscossDB db = DBConnector.openDB( domain, token );
-//		try {
-//			db.renameLayer( name, newName );
-//		}
-//		finally {
-//			DBConnector.closeDB( db );
-//		}
-//	}
 	
 	@PUT @Path("{domain}/{layer}/rename")
 	public void editLayer( 

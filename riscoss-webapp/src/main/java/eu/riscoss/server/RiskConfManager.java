@@ -31,17 +31,19 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
 import eu.riscoss.db.RiscossDB;
+import eu.riscoss.shared.JRiskConfiguration;
+import eu.riscoss.shared.JRiskConfigurationLayerInfo;
 import eu.riscoss.shared.RiscossUtil;
 
 @Path("rcs")
@@ -135,6 +137,50 @@ public class RiskConfManager {
 		}
 	}
 	
+	/**
+	 * For a risk configuration name, returns json with list of *models* associated, and layers with their models
+	 * 
+	 * This version uses the JRiskConfiguration class, instead of raw JSON
+	 * 
+	 * @param domain
+	 * @param name
+	 * @return
+	 */
+	@GET @Path("/{domain}/{rc}/get_new")
+	public String getContentNew( @DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, @PathParam("rc") String name ) {
+		
+		JRiskConfiguration jrc = new JRiskConfiguration();
+		
+		RiscossDB db = DBConnector.openDB( domain, token );
+		try {
+			jrc.name = name;
+			jrc.type = "layered";
+			{
+				for( String modelName : db.getModelsFromRiskCfg( name, null ) ) {
+					jrc.models.add( modelName );
+				}
+			}
+			{
+				Map<String,ArrayList<String>> map = db.getRCModels( name );
+				for( String layer : db.layerNames() ) {
+					JRiskConfigurationLayerInfo jlayer = new JRiskConfigurationLayerInfo();
+					jlayer.name = layer;
+					ArrayList<String> models = map.get( layer );
+					if( models == null ) models = new ArrayList<String>();
+					for( String model : models ) {
+						jlayer.models.add( model );
+					}
+					jrc.layers.add( jlayer );
+				}
+			}
+			return new Gson().toJson( jrc );
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
+	}
+	
 	@POST @Path("/{domain}/{rc}/store")
 	public void setContent( @DefaultValue("Playground") @PathParam("domain") String domain,
 			@DefaultValue("") @HeaderParam("token") String token, 
@@ -167,6 +213,54 @@ public class RiskConfManager {
 					map.put( layer, models );
 				}
 				db.setRCModels( name, map );
+			}
+			catch( Exception ex ) {
+				ex.printStackTrace();
+			}
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
+	}
+	
+	@POST @Path("/{domain}/{rc}/store_new")
+	public void setContentNew( @DefaultValue("Playground") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token, 
+			@PathParam("rc") String name, String riskConfigs ) {
+		
+		JRiskConfiguration rc = new Gson().fromJson( riskConfigs, JRiskConfiguration.class ); // (JsonObject)new JsonParser().parse( riskConfigs );
+		RiscossDB db = DBConnector.openDB( domain, token );
+		try {
+			try {
+				db.setModelsFromRiskCfg( name, rc.models );
+				
+//				List<String> list = new ArrayList<String>();
+//				JsonArray array = json.get( "models" ).getAsJsonArray();
+//				for( int i = 0; i < array.size(); i++ ) {
+//					list.add( array.get( i ).getAsJsonObject().get( "name" ).getAsString() );
+//				}
+//				db.setModelsFromRiskCfg( name, list );
+			}
+			catch( Exception ex ) {}
+			try {
+				Map<String,ArrayList<String>> map = new HashMap<String,ArrayList<String>>();
+				for( JRiskConfigurationLayerInfo rcli : rc.layers ) {
+					map.put( rcli.name, rcli.models );
+				}
+				db.setRCModels( name, map );
+//				Map<String,ArrayList<String>> map = new HashMap<String,ArrayList<String>>();
+//				JsonArray jlayers = json.get( "layers" ).getAsJsonArray();
+//				for( int i = 0; i < jlayers.size(); i++ ) {
+//					JsonObject jlayer = jlayers.get( i ).getAsJsonObject();
+//					String layer = jlayer.get( "name" ).getAsString();
+//					JsonArray jmodels = jlayer.get( "models" ).getAsJsonArray();
+//					ArrayList<String> models = new ArrayList<String>();
+//					for( int m = 0; m < jmodels.size(); m++ ) {
+//						models.add( jmodels.get( m ).getAsString() );
+//					}
+//					map.put( layer, models );
+//				}
+//				db.setRCModels( name, map );
 			}
 			catch( Exception ex ) {
 				ex.printStackTrace();

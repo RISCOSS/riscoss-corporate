@@ -179,7 +179,8 @@ public class DomPath implements Iterable<DomPath.PathPart>
 		
 		for( String s : p )
 		{
-			append( new PathPart( s, false ) );
+			if( s.length() > 0 )
+				append( new PathPart( s, false ) );
 		}
 	}
 

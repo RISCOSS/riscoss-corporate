@@ -457,8 +457,10 @@ public class RiscossOrientDB implements RiscossDB {
 	public List<String> getParents( String entity ) {
 		NodeID eid = getEntity( entity );
 		List<String> list = new ArrayList<String>();
-		for( NodeID id : dom.listInEdges( eid, GDomDB.LINK_CLASS, "owned-entity" ) ) {
-			list.add( getName( id ) );
+		if( eid != null ) {
+			for( NodeID id : dom.listInEdges( eid, GDomDB.LINK_CLASS, "owned-entity" ) ) {
+				list.add( getName( id ) );
+			}
 		}
 		return list;
 	}
@@ -466,6 +468,7 @@ public class RiscossOrientDB implements RiscossDB {
 	@Override
 	public List<String> getChildren( String entity ) {
 		NodeID eid = getEntity( entity );
+		if( eid == null ) return new ArrayList<>();
 		return dom.listOutEdgeNames( eid, GDomDB.LINK_CLASS, "owned-entity", null, null );
 	}
 	

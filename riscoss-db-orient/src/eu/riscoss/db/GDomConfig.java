@@ -5,6 +5,8 @@ import java.util.Map;
 
 public class GDomConfig {
 	
+	public static final String ROOT_CLASS = "Space";
+	
 	private static GDomConfig global = new GDomConfig();
 	
 	public static GDomConfig global() {
@@ -25,6 +27,10 @@ public class GDomConfig {
 
 	public void setMapping( String tag, String classname ) {
 		mapping.put( tag, classname );
+	}
+	
+	public String getRootClass() {
+		return ROOT_CLASS;
 	}
 	
 }
