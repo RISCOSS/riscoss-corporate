@@ -1,14 +1,40 @@
 /* Incremental changes from CellTable.css */ 
 .cellTableCell {
-	font-size: 16px !important;
+	font-size: 14px !important;
 	color: #FF8000 !important;
 }
 
 .cellTableHeader {
-	font-size: 18px !important;
-	border-bottom: 2px solid #4D9244 !important;
+	font-size: 14px !important;
+	border-bottom: 1px solid #4D9244 !important;
+	color: #636B75 !important;
+	text-decoration: none !important;
+	text-shadow: 0;
+}
+
+.cellTableOddRow {
+	background-color: #ffffff !important;
+}
+
+.cellTableSelectedRowCell {
+	border: 0px !important;
+}
+
+.cellTableOddRow {
+	border: 0px !important;
+}
+
+.cellTableCell {
+	border: 0px !important;
+	border-bottom: 1px solid #E6E6E6 !important;
 }
 
 .cellTableHoveredRowCell {
-	
+	background-color: #F6FFD0 !important;
+	border: 0px;
+}
+
+.cellTableSelectedRow {
+	background-color: #F6FFD0 !important;
+	border: 0px !important;
 }

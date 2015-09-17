@@ -59,6 +59,7 @@ public class EntityBox implements IsWidget {
 	class EntityDialog {
 		
 		DialogBox dialog = new DialogBox();
+		DockPanel dock;
 		
 		ArrayList<String> selection = new ArrayList<String>();
 		
@@ -95,7 +96,7 @@ public class EntityBox implements IsWidget {
 						});
 						grid.setWidget( i, 0, chk );
 					}
-					DockPanel dock = new DockPanel();
+					dock = new DockPanel();
 					dock.add( grid, DockPanel.CENTER );
 					dock.add( new Button( "Ok", new ClickHandler() {
 						@Override
@@ -111,6 +112,10 @@ public class EntityBox implements IsWidget {
 					dialog.add( dock );
 					dialog.show();
 				} } );
+		}
+		
+		public DockPanel getDock() {
+			return dock;
 		}
 	}
 	
@@ -135,6 +140,7 @@ public class EntityBox implements IsWidget {
 	}
 	
 	FlowPanel panel = new FlowPanel();
+	DockPanel d = new DockPanel();
 	
 	Map<String,EntityLabel> map = new HashMap<String,EntityLabel>();
 	
@@ -151,6 +157,7 @@ public class EntityBox implements IsWidget {
 			}
 		});
 		panel.add( plus );
+		panel.add( d );
 	}
 	
 	public void addListener( Listener l ) {
@@ -158,7 +165,9 @@ public class EntityBox implements IsWidget {
 	}
 	
 	protected void onPlusButtonClicked() {
-		new EntityDialog().show();
+		EntityDialog e = new EntityDialog();
+		e.show();
+		d = e.getDock();
 	}
 
 	public String getSelectedEntity() {

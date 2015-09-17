@@ -23,7 +23,11 @@ package eu.riscoss.client.riskconfs;
 
 import java.util.List;
 
+import org.fusesource.restygwt.client.JsonCallback;
+import org.fusesource.restygwt.client.Method;
+
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -32,6 +36,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
 import eu.riscoss.client.CallbackWrapper;
+import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.ui.ClickWrapper;
 import eu.riscoss.client.ui.TreeWidget;
 
@@ -51,6 +56,17 @@ public class ModelList implements IsWidget {
 	public void init( List<String> layers ) {
 		
 		root.clear();
+		
+		RiscossJsonClient.listModels(new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				// TODO Auto-generated method stub
+			}
+		});
 		
 		for( int i = 0; i < layers.size(); i++ ) {
 			//		RCModelPack.AnalysisPhase packLayer = pack.getLayer( i );

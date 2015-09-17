@@ -3,6 +3,7 @@ package eu.riscoss.client.layers;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
@@ -19,6 +20,9 @@ import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
+import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.user.cellview.client.CellTable.Resources;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -32,9 +36,13 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DateBox;
 import com.google.gwt.user.datepicker.client.DatePicker;
+import com.google.gwt.view.client.SelectionChangeEvent;
+import com.google.gwt.view.client.SingleSelectionModel;
+import com.google.gwt.view.client.SelectionChangeEvent.Handler;
 
 import eu.riscoss.client.EntityInfo;
 import eu.riscoss.client.JsonCallbackWrapper;
@@ -43,6 +51,7 @@ import eu.riscoss.client.JsonUtil;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecLayerContextualInfo;
 import eu.riscoss.client.entities.EntityPropertyPage;
+import eu.riscoss.client.entities.TableResources;
 import eu.riscoss.shared.JLayerContextualInfo;
 import eu.riscoss.shared.JLayerContextualInfoElement;
 
@@ -53,6 +62,8 @@ public class LayerPropertyPage implements IsWidget {
 	SimplePanel 		panel 			= new SimplePanel();
 	SimplePanel			ciPanel			= new SimplePanel();
 	HorizontalPanel		hPanel 			= new HorizontalPanel();
+	VerticalPanel		vPanel			= new VerticalPanel();
+	HorizontalPanel		cInfoPanel		= new HorizontalPanel();
 	SimplePanel			ciItemPanel 	= new SimplePanel();
 	Grid				ciList			= new Grid(3,1);
 	Grid				newElement;
@@ -77,23 +88,31 @@ public class LayerPropertyPage implements IsWidget {
 	TextBox				max 			= new TextBox();
 	FlexTable			enumeration 	= new FlexTable();
 	ArrayList<String>	elements;
+	FlexTable			list;
 	int 				count;
 	
 	ListBox				lBox;
 	
+	CellTable<String>	table = new CellTable<String>(15, (Resources) GWT.create(TableResources.class));
+	
 	JLayerContextualInfo	info;
+	JLayerContextualInfoElement 	jElement;
 	
 	public LayerPropertyPage() {
 		
-		tab.add( panel , "Properties");
+		//tab.add( panel , "Properties");
 		tab.add( ciPanel , "Contextual Information");
 		tab.selectTab(0);
 		tab.setSize( "100%", "100%" );
 		tab.setVisible(false);
 		
-		integerItem.add(new Label("Min"));
+		Label minL = new Label("Min");
+		minL.setStyleName("bold2");
+		integerItem.add(minL);
 		integerItem.add(min);
-		integerItem.add(new Label("Max"));
+		Label maxL = new Label("Max");
+		maxL.setStyleName("bold2");
+		integerItem.add(maxL);
 		integerItem.add(max);
 		
 		
@@ -109,6 +128,10 @@ public class LayerPropertyPage implements IsWidget {
 	
 	public void setParent( String parent ) {
 		this.parent = parent;
+	}
+	
+	public String getParent( ) {
+		return this.parent;
 	}
 	
 	public void setSelectedLayer( String layer ) {
@@ -312,9 +335,9 @@ public class LayerPropertyPage implements IsWidget {
 			}
 			
 		});
-		//this.add.setStyleName("button");
+		this.add.setStyleName("deleteButton");
 		
-		newElement = new Grid(3,1);
+		newElement = new Grid(4,1);
 		
 		HorizontalPanel hPanel = new HorizontalPanel();
 		lBox = new ListBox();
@@ -363,15 +386,21 @@ public class LayerPropertyPage implements IsWidget {
 					tb = new TextBox();
 					tb.setWidth("30px");
 					g.setWidget(0, 1, tb);
-					g.setWidget(0, 2, new Label("hh"));
+					Label hh = new Label("hh");
+					hh.setStyleName("bold2");
+					g.setWidget(0, 2, hh);
 					tb = new TextBox();
 					tb.setWidth("30px");
 					g.setWidget(0, 3, tb);
-					g.setWidget(0, 4, new Label("mm"));
+					Label mm = new Label("mm");
+					mm.setStyleName("bold2");
+					g.setWidget(0, 4, mm);
 					tb = new TextBox();
 					tb.setWidth("30px");
 					g.setWidget(0, 5, tb);
-					g.setWidget(0, 6, new Label("ss"));
+					Label ss = new Label("ss");
+					ss.setStyleName("bold2");
+					g.setWidget(0, 6, ss);
 					
 					defvalue.setWidget(g);
 					ciItemPanel.setWidget(null);
@@ -385,7 +414,8 @@ public class LayerPropertyPage implements IsWidget {
 					
 					HorizontalPanel buttons = new HorizontalPanel();
 					buttons.setSpacing(5);
-					Button addEnum = new Button("Add");
+					Button addEnum = new Button("+");
+					addEnum.setStyleName("deleteButton");
 					addEnum.addClickHandler(new ClickHandler() {
 
 						@Override
@@ -398,7 +428,8 @@ public class LayerPropertyPage implements IsWidget {
 						}
 						
 					});
-					Button deleteLastEnum = new Button("Remove");
+					Button deleteLastEnum = new Button("-");
+					deleteLastEnum.setStyleName("deleteButton");
 					deleteLastEnum.addClickHandler(new ClickHandler() {
 
 						@Override
@@ -426,18 +457,26 @@ public class LayerPropertyPage implements IsWidget {
 		name.setWidth("100px");
 		description.setWidth("315px");
 		
-		hPanel.add(new Label("Type"));
+		Label type = new Label("Type");
+		type.setStyleName("bold2");
+		hPanel.add(type);
 		hPanel.add(lBox);
-		hPanel.add(new Label("ID"));
+		Label idL = new Label("ID");
+		idL.setStyleName("bold2");
+		hPanel.add(idL);
 		hPanel.add(id);
-		hPanel.add(new Label("Name"));
+		Label nameTag = new Label("Name");
+		nameTag.setStyleName("bold2");
+		hPanel.add(nameTag);
 		hPanel.add(name);
 		
 		newElement.setWidget(0, 0, hPanel);
 		
 		HorizontalPanel hPanel2 = new HorizontalPanel();
 		
-		hPanel2.add(new Label("Description"));
+		Label descriptionL = new Label("Description");
+		descriptionL.setStyleName("bold2");
+		hPanel2.add(descriptionL);
 		hPanel2.add(description);
 		newElement.setWidget(1, 0, hPanel2);
 		
@@ -445,42 +484,22 @@ public class LayerPropertyPage implements IsWidget {
 		TextBox tb2 = new TextBox();
 		tb2.setWidth("40px");
 		defvalue.setWidget(tb2);
-		hPanel3.add(new Label("Default value"));
+		Label defvalTag = new Label("Default value");
+		defvalTag.setStyleName("bold2");
+		hPanel3.add(defvalTag);
 		hPanel3.add(defvalue);
 		ciItemPanel.setWidget(integerItem);
 		hPanel3.add(ciItemPanel);
-		hPanel3.add(this.add);
-		Button cancel = new Button("Cancel");
-		cancel.addClickHandler(new ClickHandler() {
-
-			@Override
-			public void onClick(ClickEvent arg0) {
-				ciList.setWidget(0, 0, newElemButton);
-			}
-			
-		});
-		//cancel.setStyleName("button");
-		hPanel3.add(cancel);
 		newElement.setWidget(2, 0, hPanel3);
+		newElement.setWidget(3, 0, this.add);
+		
+		ciList.setWidget(0, 0, newElement);
 		
 		hPanel.setSpacing(5);
 		hPanel2.setSpacing(5);
 		hPanel3.setSpacing(5);
 		
 		//ciList.setWidget(0, 0, newElement);
-		
-		newElemButton = new Button("ADD NEW ELEMENT...");
-		newElemButton.setStyleName("button");
-		newElemButton.addClickHandler(new ClickHandler() {
-
-			@Override
-			public void onClick(ClickEvent arg0) {
-				ciList.setWidget(0, 0, newElement);
-			}
-			
-		});
-		//newElemButton.setStyleName("button");
-		ciList.setWidget(0, 0, newElemButton);
 		
 		ciList.setWidget(1, 0, null);
 		
@@ -492,13 +511,42 @@ public class LayerPropertyPage implements IsWidget {
 	
 	public void reloadData() {
 		
-		FlexTable list = new FlexTable();
+		List<String> cInfo = new ArrayList<>();
+		for (int i = 0; i < info.getSize(); ++i) {
+			cInfo.add(info.getContextualInfoElement(i).getName());
+		}
+		
+		table = new CellTable<String>(15, (Resources) GWT.create(TableResources.class));
+		TextColumn<String> t = new TextColumn<String>() {
+			@Override
+			public String getValue(String arg0) {
+				return arg0;
+			}
+		};
+		
+		final SingleSelectionModel<String> selectionModel = new SingleSelectionModel<String>();
+	    table.setSelectionModel(selectionModel);
+	    selectionModel.addSelectionChangeHandler(new Handler() {
+			@Override
+			public void onSelectionChange(SelectionChangeEvent arg0) {
+				contextualInfoPanel(selectionModel.getSelectedObject());
+			}
+	    });
+		
+		table.addColumn(t, "Contextual Information");
+		
+		table.setRowData(0, cInfo);
+		table.setStyleName("table");
+		table.setWidth("100%");
+		
+		list = new FlexTable();
 		list.setStyleName("contextInfoTable");
 		list.insertRow(0);
 		list.insertCell(0, 0);
 		list.insertCell(0, 1);
 		list.insertCell(0, 2);
 		list.insertCell(0, 3);
+		list.insertCell(0, 4);
 		
 		Label id = new Label("ID");
 		Label name = new Label("Name");
@@ -548,6 +596,7 @@ public class LayerPropertyPage implements IsWidget {
 			list.setWidget(count+1, 2, new Label(jElement.getType()));
 			list.setWidget(count+1, 3, new Label(jElement.getDescription()));
 			list.insertCell(count+1, 4);
+			list.insertCell(count+1, 5);
 			Button delete = new Button("X");
 			delete.setStyleName("deleteButton");
 			delete.addClickHandler(new ClickHandler() {
@@ -619,9 +668,145 @@ public class LayerPropertyPage implements IsWidget {
 				
 			});
 			list.setWidget(count+1, 4, delete);
+			
+			Button edit = new Button("edit");
+			edit.setStyleName("deleteButton");
+			edit.addClickHandler(new ClickHandler() {
+				int i = count;
+				JLayerContextualInfoElement jElement = info.getContextualInfoElement(i);
+				@Override
+				public void onClick(ClickEvent arg0) {
+					
+				}
+			});
+			list.setWidget(count+1, 5, edit);
 		}
 		
-		ciList.setWidget(2, 0, list);
+		//ciList.setWidget(2, 0, list);
+		table.setWidth("300px");
+		cInfoPanel = new HorizontalPanel();
+		cInfoPanel.add(table);
+		ciList.setWidget(2, 0, cInfoPanel);
+		
+	}
+	
+	private void contextualInfoPanel(String contextualInfo) {
+		jElement = null;
+		for (int i = 0; i < info.getSize(); ++i) {
+			if (info.getContextualInfoElement(i).getName().equals(contextualInfo)) {
+				count = i;
+				jElement = info.getContextualInfoElement(i);
+			}
+		}
+		cInfoPanel.remove(vPanel);
+		vPanel = new VerticalPanel();
+		
+		Label title = new Label(jElement.getName());
+		title.setStyleName("smallTitle");
+		vPanel.add(title);
+		
+		Button delete = new Button("Delete");
+		delete.setStyleName("deleteButton");
+		delete.addClickHandler(new ClickHandler() {
+			
+			String idEnt = jElement.getId();
+			int i = count;
+			@Override
+			public void onClick(ClickEvent arg0) {
+				String url = "api/entities/list/" + layer; 
+				
+				Resource resource = new Resource( GWT.getHostPageBaseURL() + url );
+				
+				resource.get().send( new JsonCallback() {
+					
+					public void onSuccess(Method method, JSONValue response) {
+						if( response.isArray() != null ) {
+							
+							for( int k = 0; k < response.isArray().size(); k++ ) {
+								
+								JSONObject ent = (JSONObject)response.isArray().get( k );
+								String entity = ent.get( "name" ).isString().stringValue();
+								
+								JSONObject o = new JSONObject();
+								o.put( "id", new JSONString( idEnt ) );
+								o.put( "target", new JSONString( entity ) );
+								JSONArray array = new JSONArray();
+								array.set( 0, o );
+								RiscossJsonClient.postRiskData( array,  new JsonCallbackWrapper<String>( idEnt ) {
+									@Override
+									public void onSuccess( Method method, JSONValue response ) {
+										
+									}
+									@Override
+									public void onFailure( Method method, Throwable exception ) {
+										Window.alert( exception.getMessage() );
+									}
+								});
+							}
+							
+						}
+					}
+					
+					public void onFailure(Method method, Throwable exception) {
+						Window.alert( exception.getMessage() );
+					}
+					
+				});
+				
+				info.deleteContextualInfoElement(i);
+				RiscossJsonClient.setLayerContextualInfo(layer, info, new JsonCallback() {
+
+					@Override
+					public void onFailure(Method method,
+							Throwable exception) {
+						Window.alert( exception.getMessage());
+					}
+
+					@Override
+					public void onSuccess(Method method,
+							JSONValue response) {
+						reloadData();
+					}
+					
+				});	
+			}
+		});
+		vPanel.add(delete);
+		
+		Grid g = new Grid(5,2);
+		
+		Label idL = new Label("ID");
+		idL.setStyleName("bold");
+		g.setWidget(0, 0, idL);
+		g.setWidget(0, 1, new Label(jElement.getId()));
+		
+		Label nameL = new Label("Name");
+		nameL.setStyleName("bold");
+		g.setWidget(1, 0, nameL);
+		g.setWidget(1, 1, new Label(jElement.getName()));
+		
+		Label typeL = new Label("Type");
+		typeL.setStyleName("bold");
+		g.setWidget(2, 0, typeL);
+		g.setWidget(2, 1, new Label(jElement.getType()));
+		
+		Label descriptionL = new Label("Description");
+		descriptionL.setStyleName("bold");
+		g.setWidget(3, 0, descriptionL);
+		g.setWidget(3, 1, new Label(jElement.getDescription()));
+		
+		Label defvalL = new Label("Default value");
+		defvalL.setStyleName("bold");
+		g.setWidget(4, 0, defvalL);
+		String s = jElement.getDefval();
+		String[] split = s.split(";");
+		g.setWidget(4, 1, new Label(split[0]));
+		
+		vPanel.add(g);
+		vPanel.setStyleName("rightPanelLayer");
+		
+		cInfoPanel.add(vPanel);
+		
 		
 	}
 	
