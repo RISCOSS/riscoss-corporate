@@ -429,7 +429,7 @@ public class ModelsModule implements EntryPoint {
 			
 			Anchor fAnchor = new Anchor("Download model:\n"+json.get("modelfilename"), GWT.getHostPageBaseURL() + 
 					"models/download?domain=" + RiscossJsonClient.getDomain() + "&name="+ name+"&type=model&token="+RiscossCall.getToken());
-			grid.setWidget( 1, 0, fAnchor);
+			grid.setWidget( 0, 0, fAnchor);
 
 			//grid.setWidget( 1, 0, new Label("Model filename: \n"+json.get("modelfilename").isString().stringValue()));
 			

@@ -523,7 +523,11 @@ public class LayerPropertyPage implements IsWidget {
 		
 		table.addColumn(t, "Contextual Information");
 		
-		table.setRowData(0, cInfo);
+		if (cInfo.size() > 0) table.setRowData(0, cInfo);
+		else {
+			cInfo.add("");
+			table.setRowData(0, cInfo);
+		}
 		table.setStyleName("table");
 		table.setWidth("100%");
 		

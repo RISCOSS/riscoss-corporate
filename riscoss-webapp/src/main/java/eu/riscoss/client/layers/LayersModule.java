@@ -490,8 +490,9 @@ public class LayersModule implements EntryPoint {
 		delete.addClickHandler(new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
-							Window.alert("Attention: entities associated to this layer cannot be re-associated to another layer and need to be deleted manually!");
-							RiscossJsonClient.deleteLayer(selectedLayer, new JsonCallback() {
+							Boolean b = Window.confirm("Attention: entities associated to this layer cannot be re-associated to another layer and need to be deleted manually!");
+							if (b) {
+								RiscossJsonClient.deleteLayer(selectedLayer, new JsonCallback() {
 								@Override
 								public void onFailure(Method method,Throwable exception) {
 									Window.alert( exception.getMessage() );
@@ -500,6 +501,7 @@ public class LayersModule implements EntryPoint {
 								public void onSuccess(Method method,JSONValue response) {
 									Window.Location.reload();
 								}} );
+							}
 						}
 					} ) ;
 		delete.setStyleName("button");
