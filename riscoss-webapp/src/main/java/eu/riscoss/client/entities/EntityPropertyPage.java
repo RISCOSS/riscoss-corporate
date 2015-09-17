@@ -21,11 +21,9 @@
 
 package eu.riscoss.client.entities;
 
-import java.util.Date;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-
-import javax.swing.SpinnerModel;
 
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
@@ -47,6 +45,7 @@ import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -65,7 +64,6 @@ import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.report.RiskAnalysisReport;
 import eu.riscoss.client.ui.CustomizableForm;
 import eu.riscoss.client.ui.CustomizableForm.CustomField;
-import eu.riscoss.client.ui.EntityBox;
 
 public class EntityPropertyPage implements IsWidget {
 	
@@ -76,7 +74,7 @@ public class EntityPropertyPage implements IsWidget {
 		RDCConfigurationPage ppg = new RDCConfigurationPage();
 		
 		RDCConfDialog() {
-			dock.add( new Button( "Done", new ClickHandler() {
+			Button done = new Button( "Done", new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
 					JSONObject json = ppg.getJson();
@@ -99,115 +97,11 @@ public class EntityPropertyPage implements IsWidget {
 						public void onFailure(Method method, Throwable exception) {
 							Window.alert( exception.getMessage() );
 						}} );
-				}} ), DockPanel.NORTH );
-			dock.add( ppg.asWidget(), DockPanel.CENTER );
-			dialog.setWidget( dock );
-		}
-		
-		public void show(String entity) {
-			ppg.setSelectedEntity( entity );
-			dialog.show();
-		}
-		
-	}
-	
-	TabPanel			tab				= new TabPanel();
-	SimplePanel			summaryPanel	= new SimplePanel();
-	SimplePanel			ciPanel			= new SimplePanel();
-	SimplePanel			rasPanel		= new SimplePanel();
-	CustomizableForm	userForm 		= new CustomizableForm();
-	FlexTable			tb;
-	
-	Anchor				rdcAnchor;
-	
-	private String		entity;
-	
-	RDCConfDialog		confDialog;
-	
-	String[]			contextualInfo;
-	ArrayList<String>	extraInfoList;
-	boolean				rasLoaded		= false;
-	
-	public EntityPropertyPage() {
-		tab.add( summaryPanel, "Properties" );
-		tab.add( ciPanel, "Contextual Information" );
-		tab.add( rasPanel, "RAS" );
-		tab.selectTab( 0 );
-		tab.setSize( "100%", "100%" );
-		tab.addSelectionHandler( new SelectionHandler<Integer>() {
-			@Override
-			public void onSelection( SelectionEvent<Integer> event ) {
-				if( rasLoaded == true ) return;
-				RiscossJsonClient.getRASResults( entity, new JsonCallback() {
-					@Override
-					public void onFailure( Method method, Throwable exception ) {
-						Window.alert( exception.getMessage() );
-					}
-					@Override
-					public void onSuccess( Method method, JSONValue response ) {
-						loadRAS( response );
-					}} );
-			}
-		});
-	}
-	
-	@Override
-	public Widget asWidget() {
-		return this.tab;
-	}
-	
-	public void setSelectedEntity( String entity ) {
-		
-		if( summaryPanel.getWidget() != null ) {
-			summaryPanel.getWidget().removeFromParent();
-		}
-		if( ciPanel.getWidget() != null ) {
-			ciPanel.getWidget().removeFromParent();
-		}
-		
-		this.entity = entity;
-		extraInfoList = new ArrayList<>();
-		
-		if( this.entity == null ) return;
-		
-		RiscossJsonClient.getEntityData( entity, new JsonCallback() {
-			@Override
-			public void onFailure(Method method, Throwable exception) {
-				Window.alert( exception.getMessage() );
-			}
-			@Override
-			public void onSuccess(Method method, JSONValue response) {
-				loadProperties( response );
-			}} );
-	}
-
-	protected void loadProperties( JSONValue response ) {
-		rasLoaded = false;
-		JsonEntitySummary info = new JsonEntitySummary( response );
-		VerticalPanel v = new VerticalPanel();
-		{
-			Grid grid = new Grid( 5, 2 );
-			grid.setWidget( 0, 0, new Label( "Name:" ) );
-			grid.setWidget( 0, 1, new Label( info.getEntityName() ) );
-			grid.setWidget( 1, 0, new Label( "Layer:" ) );
-			grid.setWidget( 1, 1, new Label( info.getLayer() ) );
-			Label lbl = new Label( "Data collectors:" );
-			grid.setWidget( 2, 0, lbl );
-			VerticalPanel vp = new VerticalPanel();
-			String str = info.getRDCString() + " ... ";
-			rdcAnchor = new Anchor( str );
-			rdcAnchor.addClickHandler( new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					if( confDialog == null ) {
-						confDialog = new RDCConfDialog();
-					}
-					confDialog.show( EntityPropertyPage.this.entity );
-				}
-			});
-			vp.add( rdcAnchor );
-			Anchor a = new Anchor( "Run now" );
-			a.addClickHandler( new ClickHandler() {
+				}} );
+			done.setStyleName("button");
+			Button run = new Button( "Run now" );
+			run.setStyleName("button");
+			run.addClickHandler( new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
 					RiscossJsonClient.runRDCs( EntityPropertyPage.this.entity, new JsonCallback() {
@@ -241,42 +135,231 @@ public class EntityPropertyPage implements IsWidget {
 					});
 				}
 			});
-			vp.add( a );
-			grid.setWidget( 2, 1, vp );
+			dock.add(run , DockPanel.NORTH);
+			dock.add( ppg.asWidget(), DockPanel.CENTER );
+			dock.add(done, DockPanel.SOUTH);
+			dialog.setWidget( dock );
+		}
+		
+		public void show(String entity) {
+			ppg.setSelectedEntity( entity );
+			dialog.show();
+		}
+		
+		public void setEntity(String entity) {
+			ppg.setSelectedEntity(entity);
+		}
+		
+		public DockPanel getDock() {
+			return dock;
+		}
+		
+	}
+	
+	TabPanel			tab				= new TabPanel();
+	SimplePanel			summaryPanel	= new SimplePanel();
+	SimplePanel			ciPanel			= new SimplePanel();
+	SimplePanel			rasPanel		= new SimplePanel();
+	SimplePanel			dataCollectors 	= new SimplePanel();
+	CustomizableForm	userForm 		= new CustomizableForm();
+	FlexTable			tb;
+	
+	String				layer;
+	
+	Anchor				rdcAnchor;
+	
+	private String		entity;
+	
+	RDCConfDialog		confDialog;
+	ArrayList<String>	entitiesList;
+	ArrayList<String>	parentList;
+	ArrayList<String>	childrenList;
+	
+	String[]			contextualInfo;
+	ArrayList<String>	extraInfoList;
+	boolean				rasLoaded		= false;
+	EntitiesModule		module;
+	
+	public EntityPropertyPage(EntitiesModule m) {
+		this.module = m;
+		tab.add( summaryPanel, "Properties" );
+		tab.add( ciPanel, "Contextual Information" );
+		tab.add( dataCollectors, "Data Collectors");
+		tab.add( rasPanel, "RAS" );
+		tab.selectTab( 0 );
+		tab.setSize( "100%", "100%" );
+		tab.addSelectionHandler( new SelectionHandler<Integer>() {
+			@Override
+			public void onSelection( SelectionEvent<Integer> event ) {
+				if( rasLoaded == true ) return;
+				RiscossJsonClient.getRASResults( entity, new JsonCallback() {
+					@Override
+					public void onFailure( Method method, Throwable exception ) {
+						Window.alert( exception.getMessage() );
+					}
+					@Override
+					public void onSuccess( Method method, JSONValue response ) {
+						loadRAS( response );
+					}} );
+			}
+		});
+		
+		RiscossJsonClient.listEntities(new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				entitiesList = new ArrayList<>();
+				for (int i = 0; i < response.isArray().size(); ++i) {
+					entitiesList.add(response.isArray().get(i).isObject().get("name").isString().stringValue());
+				}
+			}
+		});
+		
+	}
+	
+	@Override
+	public Widget asWidget() {
+		return this.tab;
+	}
+	
+	public void setSelectedEntity( String entity ) {
+		
+		if( summaryPanel.getWidget() != null ) {
+			summaryPanel.getWidget().removeFromParent();
+		}
+		if( ciPanel.getWidget() != null ) {
+			ciPanel.getWidget().removeFromParent();
+		}
+		
+		this.entity = entity;
+		extraInfoList = new ArrayList<>();
+		
+		if( this.entity == null ) return;
+		
+		RiscossJsonClient.getEntityData( entity, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert( exception.getMessage() );
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				loadProperties( response );
+			}} );
+	}
+	
+	public String getLayer() {
+		return layer;
+	}
+
+	protected void loadProperties( JSONValue response ) {
+		rasLoaded = false;
+		JsonEntitySummary info = new JsonEntitySummary( response );
+		
+		layer = info.getLayer();
+		
+		parentList = new ArrayList<>();
+		childrenList = new ArrayList<>();
+		
+		for (int i = 0; i < info.getParentList().size(); ++i) {
+			parentList.add(info.getParentList().get(i).isString().stringValue());
+		}
+		for (int i = 0; i < info.getChildrenList().size(); ++i) {
+			childrenList.add(info.getChildrenList().get(i).isString().stringValue());
+		}
+		
+		VerticalPanel v = new VerticalPanel();
+		{
+			Grid grid = new Grid( 1, 2 );
+			Grid grid2 = new Grid( 1, 2 );
 			
-			grid.setWidget( 3, 0, new Label( "Owned by:" ) );
+			confDialog = new RDCConfDialog();
+			confDialog.setEntity(this.entity);
+			dataCollectors.setWidget(confDialog.getDock());
+			
+			
+			grid.setWidget( 0, 0, new Label( "Owned by:" ) );
 			{
-				EntityBox ebox = new EntityBox();
-				JSONArray parents = info.getParentList();
-				for( int i = 0; i < parents.size(); i++ ) {
-					String p = parents.get( i ).isString().stringValue();
-					ebox.add( p );
-				}
-				ebox.addListener( new EntityBox.Listener() {
-					@Override
-					public void entitySelected( List<String> entities ) {
-						onParentEntitySelected( entities );
+				Grid g = new Grid(entitiesList.size(), 1);
+				for (int i = 0; i < entitiesList.size(); ++i) {
+					CheckBox cb = new CheckBox(entitiesList.get(i));
+					cb.setName(entitiesList.get(i));
+					cb.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							CheckBox chk = (CheckBox)event.getSource();
+							boolean value = chk.getValue();
+							if( value == true ) {
+								parentList.add( chk.getName() );
+							}
+							else {
+								parentList.remove( chk.getName() );
+							}
+						}
+					});
+					if (parentList.contains(entitiesList.get(i))) {
+						cb.setChecked(true);
 					}
-				});;
-				grid.setWidget( 3, 1, ebox );
+					g.setWidget(i, 0, cb);
+				}
+				grid.setWidget(0, 1, g);
 			}
 			{
-				grid.setWidget( 4, 0, new Label( "Owns:" ) );
-				EntityBox cbox = new EntityBox();
-				JSONArray children = info.getChildrenList();
-				for( int i = 0; i < children.size(); i++ ) {
-					String p = children.get( i ).isString().stringValue();
-					cbox.add( p );
-				}
-				cbox.addListener( new EntityBox.Listener() {
-					@Override
-					public void entitySelected( List<String> entities ) {
-						onChildEntitySelected( entities );
+				grid2.setWidget( 0, 0, new Label( "Owns:" ) );
+				Grid g = new Grid(entitiesList.size(), 1);
+				for (int i = 0; i < entitiesList.size(); ++i) {
+					CheckBox cb = new CheckBox(entitiesList.get(i));
+					cb.setName(entitiesList.get(i));
+					cb.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							CheckBox chk = (CheckBox)event.getSource();
+							boolean value = chk.getValue();
+							if( value == true ) {
+								childrenList.add( chk.getName() );
+							}
+							else {
+								childrenList.remove( chk.getName() );
+							}
+						}
+					});
+					if (childrenList.contains(entitiesList.get(i))) {
+						cb.setChecked(true);
 					}
-				});
-				grid.setWidget( 4, 1, cbox );
+					g.setWidget(i, 0, cb);
+				}
+				grid2.setWidget(0, 1, g);
 			}
-			v.add( grid );
+			HorizontalPanel hPanel = new HorizontalPanel();
+			hPanel.add(grid);
+			hPanel.add(grid2);
+			v.add( hPanel );
+			Button upload = new Button("Upload parents");
+			upload.setStyleName("button");
+			upload.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					RiscossJsonClient.setParents(entity, parentList, new JsonCallback() {
+						@Override
+						public void onFailure(Method method, Throwable exception) {
+						}
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							RiscossJsonClient.setChildren(entity, childrenList, new JsonCallback() {
+								@Override
+								public void onFailure(Method method, Throwable exception) {
+								}
+								@Override
+								public void onSuccess(Method method, JSONValue response) {
+									if (module != null) module.reloadData();
+								}
+							});
+						}
+					});
+				}
+			});
+			v.add(upload);
 			grid.setWidth( "100%" );
 			v.setWidth( "100%" );
 			grid.getColumnFormatter().setWidth( 0, "20%" );
@@ -486,7 +569,7 @@ public class EntityPropertyPage implements IsWidget {
 			}
 			
 		});
-		vPanel.add(save);
+		//vPanel.add(save);
 		ciPanel.setWidget( vPanel );
 	}
 
@@ -530,7 +613,6 @@ public class EntityPropertyPage implements IsWidget {
 
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
-				// TODO Auto-generated method stub
 				
 			}} );
 	}

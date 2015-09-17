@@ -65,13 +65,7 @@ public class RCPropertyPage implements IsWidget {
 	public RCPropertyPage( SimpleRiskCconf rc ) {
 		
 		VerticalPanel p = new VerticalPanel();
-		HorizontalPanel h = new HorizontalPanel();
-		h.add( new Label( "Name: " ) );
-		txt = new TextBox();
-		txt.setText( rc.getName() );
-		txt.setWidth( "100%" );
-		h.add( txt );
-		p.add( h );
+		
 		p.add( new Label( "Models per layer:" ) );
 		
 //		Grid grid = new Grid();

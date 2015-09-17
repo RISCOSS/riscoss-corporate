@@ -37,7 +37,8 @@ A:hover
 }
 
 body {
-	background-color:#F2F2F2;
+	color: #636B75 !important;
+	font-size: 14px !important;
 }
 
 /** Most GWT widgets already have a style name defined */
@@ -58,18 +59,6 @@ body {
   margin: 15px 6px 6px;
 }
 
-.gwt-Tree .gwt-TreeItem {
-  padding: 1px 0px;
-  margin: 0px;
-  white-space: nowrap;
-  cursor: hand;
-  cursor: pointer;
-}
-
-.gwt-Tree .gwt-TreeItem-selected {
-  background: #ebeff9;
-}
-
 .glass-panel {
     background-color: black;
     opacity: 0.7;
@@ -82,14 +71,9 @@ body {
     bottom: 0px;
 }
 
-.logo {
-	margin-left:14px !important;
-}
-
 .mainMenu {
 	background-color: #7EAC30 !important;
 	width: 100% !important;
-	font-weight: bold !important;
 }
 	.mainMenu .gwt-MenuItem { 
       	background-color: #7EAC30; 
@@ -117,17 +101,32 @@ body {
    }
 }
 
-.root {
-	background-color: #E6E6E6 !important;
+.tag {
+	font-size: 14px !important;
+	color: #636B75 !important;
 }
+
+.font {
+	font-size: 14px !important;
+}
+
 
 .margin {
 	background-color: #F2F2F2 !important;
 	padding: 20px !important;
 }
 
+.margin-top {
+	margin-top: 16px !important;
+}
+
 .main {
 	background-color: #E6E6E6 !important;
+}
+
+.mainWindow {
+	background-color: #E6E6E6 !important;
+	margin: 20px !important;
 }
 
 .background {
@@ -136,18 +135,48 @@ body {
 
 .gwt-TabPanelBottom {
 	border: 0px solid #ffffff !important;
-	border-top: 3px solid #4D9244 !important;
-	border-bottom: 3px solid #4D9244 !important;
+	border-top: 1px solid #4D9244 !important;
+	border-bottom: 1px solid #4D9244 !important;
 }
 
 .gwt-TabBarItem {
-	padding: 8px !important;
+	padding: 4px !important;
 	background-color: #D8F6CE !important;
 	font-size: 14px !important;
+	color: #636B75 !important;
 }
 
 .gwt-TabBarItem-selected {
 	background-color: #4D9244 !important;
+	color: #F3F3F3 !important;
+}
+
+.gwt-TextBox {
+	color: #636B75 !important;
+}
+
+.gwt-ListBox {
+	color: #636B75 !important;
+}
+
+
+.tree {
+	font-size: 14px !important;
+	border-bottom: 1px solid #E6E6E6 !important;
+	margin: 2px 0px !important;
+}
+
+
+.gwt-TreeItem {
+	color: #FF8000 !important;
+	font-size: 14px !important;
+	border-bottom: 1px solid #E6E6E6 !important;
+	margin: 0px !important;
+	width: 100% !important;
+}
+
+.gwt-Tree .gwt-TreeItem-selected {
+	background-color: #F6FFD0 !important;
 }
 
 .version {
@@ -155,14 +184,7 @@ body {
 	color: #4D9244 !important;
 	font-weight: bold !important;
 	margin-bottom: 8px !important;
-	margin-left: 16px !important;
-}
-
-.greentag {
-	font-size: 16px !important;
-	font-weight: bold !important;
-	margin-left: 8px !important;
-	color: #4D9244 !important;
+	margin-left: 10px !important;
 }
 
 .mainViewPage {
@@ -185,16 +207,41 @@ body {
 	font-size: 32px !important;
 	margin: 20px 20px 8px 20px !important;
 	border-bottom: 1px solid #E6E6E6 !important;
+	color: #000000 !important;
+}
+
+.bold {
+	font-size: 14px !important;
+	font-weight: bold !important;
+	margin-right: 16px !important;
+}
+
+.bold2 {
+	font-size: 14px !important;
+	font-weight: bold !important;
 }
 
 .subtitle {
 	font-size: 26px !important;
 	margin-top: 28px !important;
-	padding-bottom: 20px !important;
+	color: #000000 !important;
+	border-bottom: 1px dotted #E6E6E6 !important;
+}
+
+.smallTitle {
+	font-size: 20px !important;
+	color: #000000 !important;
+	border-bottom: 1px dotted #E6E6E6 !important;
+	margin-bottom: 10px !important;
+}
+
+.properties {
+	margin-top: 14px !important;
+	margin-bottom: 16px !important;
 }
 
 .text {
-	font-size: 16px !important;
+	font-size: 14px !important;
 	padding-right: 15px !important;
 }
 
@@ -204,8 +251,8 @@ body {
 	font-weight: bold !important;
 	text-align: center !important;
 	margin-right: 20px !important;
-	padding: 5px !important;
-	margin-bottom: 24px !important;
+	padding: 3px !important;
+	margin-bottom: 18px !important;
 }
 
 .deleteButton {
@@ -242,7 +289,7 @@ body {
 
 .layerListElement {
 	color: #FF8000 !important;
-	font-size: 16px !important;
+	font-size: 14px !important;
 	margin-top: 6px !important;
 	border-bottom: 1px solid #E6E6E6 !important;
 }
@@ -284,20 +331,17 @@ body {
 .gridRisk {
 	margin: 16px !important;
 	margin-left: 26px !important;
-	font-size: 16px !important;
+	font-size: 14px !important;
 }
 
-.tag {
-	font-size: 16px !important;
-	margin: 8px !important;
-}
+
 
 .list {
-	font-size: 16px !important;
+	font-size: 14px !important;
 }
 
 .tagSelected {
-	font-size: 16px !important;
+	font-size: 14px !important;
 	margin: 8px !important;
 	margin-left: 14px !important;
 	font-weight: bold !important;

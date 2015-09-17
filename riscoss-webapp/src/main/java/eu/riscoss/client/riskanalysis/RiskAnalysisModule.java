@@ -55,8 +55,6 @@ import eu.riscoss.client.ui.LinkHtml;
 
 public class RiskAnalysisModule implements EntryPoint {
 
-	DockPanel dock;
-
 	CellTable<EntityInfo> entityTable;
 	CellTable<ModelInfo> modelTable;
 
@@ -121,14 +119,6 @@ public class RiskAnalysisModule implements EntryPoint {
 		grid.setWidget( 2, 1, btn );
 		grid.setStyleName("gridRisk");
 		
-		dock = new DockPanel();
-
-		dock.setSize( "100%", "100%" );
-
-		dock.add( grid, DockPanel.SOUTH );
-		dock.add( entityTable, DockPanel.WEST );
-		dock.add( modelTable, DockPanel.EAST );
-		
 		mainView.setStyleName("mainViewLayer");
 		mainView.setWidth("100%");
 		page.setWidth("100%");
@@ -145,7 +135,6 @@ public class RiskAnalysisModule implements EntryPoint {
 		
 		page.add(grid);
 		
-		//RootPanel.get().add( dock );
 		RootPanel.get().add(page);
 		
 		loadEntities();

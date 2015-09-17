@@ -43,6 +43,7 @@ import com.google.gwt.user.cellview.client.CellTable.Resources;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -71,8 +72,6 @@ public class RiskConfsModule implements EntryPoint {
 		String name;
 	}
 	
-	DockPanel dock = new DockPanel();
-	
 	CellTable<RCInfo>			table;
 	ListDataProvider<RCInfo>	dataProvider;
 	
@@ -86,6 +85,8 @@ public class RiskConfsModule implements EntryPoint {
 	
 	RCPropertyPage 		ppg;
 	
+	Grid				grid;
+	
 	JSONValue			riskconfsList;
 	JSONObject			currentRC = null;
 	String				selectedRC = null;
@@ -97,7 +98,7 @@ public class RiskConfsModule implements EntryPoint {
 	 * @see eu.riscoss.client.ActivablePanel#getWidget()
 	 */
 	public Widget getWidget() {
-		return dock;
+		return page;
 	}
 	
 	private <C> Column<RCInfo, C> addColumn(Cell<C> cell,final GetValue<C> getter, FieldUpdater<RCInfo, C> fieldUpdater) {
@@ -137,18 +138,7 @@ public class RiskConfsModule implements EntryPoint {
 			public SafeHtml getValue(RCInfo object) {
 				return new LinkHtml( object.name, "javascript:selectRC(\"" + object.name + "\")" ); };
 		}, "Risk Configuration");
-		Column<RCInfo,String> c = new Column<RCInfo,String>(new ButtonCell() ) {
-			@Override
-			public String getValue(RCInfo object) {
-				return "Delete";
-			}};c.setFieldUpdater(new FieldUpdater<RCInfo, String>() {
-				@Override
-				public void update(int index, RCInfo object, String value) {
-					deleteRC( object );
-				}
-			});
-			table.addColumn( c, "");
-			
+			table.setWidth("100%");
 			dataProvider = new ListDataProvider<RCInfo>();
 			dataProvider.addDataDisplay(table);
 			
@@ -173,25 +163,14 @@ public class RiskConfsModule implements EntryPoint {
 			
 			rightPanel2 = new SimplePanel();
 			
-			dock.add( new Button("Add", new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					onAddNew();
-				}
-			}), DockPanel.NORTH );
-			
 			SimplePager pager = new SimplePager();
 		    pager.setDisplay( table );
 		    
 			VerticalPanel tablePanel = new VerticalPanel();
 			tablePanel.add( table );
 			tablePanel.add( pager );
-			
-			dock.setSize( "100%", "100%" );
-			dock.add( tablePanel, DockPanel.CENTER );
-			dock.add( rightPanel2, DockPanel.EAST );
-			dock.setCellWidth( tablePanel, "40%" );
-			dock.setCellHeight( rightPanel2, "100%" );
+			tablePanel.setWidth("100%");
+	
 			rightPanel2.setSize( "100%", "100%" );
 			table.setWidth( "100%" );
 			
@@ -216,12 +195,12 @@ public class RiskConfsModule implements EntryPoint {
 			data.add(riskConfName);
 			leftPanel.add(data);
 			
-			Button newRisk = new Button("NEW CONFIGURATION");
+			Button newRisk = new Button("New configuration");
 			newRisk.setStyleName("button");
 			newRisk.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent arg0) {
-					String name = riskConfName.getText();
+					String name = riskConfName.getText().trim();
 					for(int i=0; i< riskconfsList.isArray().size(); i++){
 						JSONObject o = (JSONObject)riskconfsList.isArray().get(i);
 						if (name.equals(o.get( "name" ).isString().stringValue())){
@@ -248,8 +227,10 @@ public class RiskConfsModule implements EntryPoint {
 						public void onSuccess(Method method, JSONValue response) {
 							dataProvider.getList().add( new RCInfo( 
 									response.isObject().get( "name" ).isString().stringValue() ) );
-							Window.Location.reload();
+							//Window.Location.reload();
 						}} );
+					onRCSelected(name);
+					riskConfName.setText("");
 				}
 			});
 			leftPanel.add(newRisk);
@@ -260,8 +241,7 @@ public class RiskConfsModule implements EntryPoint {
 			mainView.add(rightPanel);
 			page.add(mainView);
 			page.setWidth("100%");
-			
-			//RootPanel.get().add( dock );
+
 			RootPanel.get().add( page );
 	}
 	
@@ -281,7 +261,8 @@ public class RiskConfsModule implements EntryPoint {
 	}
 	
 	protected void onAddNew() {
-		String name = Window.prompt( "Name:", "" );
+		//String name = Window.prompt( "Name:", "" );
+		String name = riskConfName.getText().trim();
 		if( name == null || "".equals( name ) ) 
 			return;
 		
@@ -361,20 +342,66 @@ public class RiskConfsModule implements EntryPoint {
 	}
 	
 	public void onRCSelected( String item ) {
-		selectedRC = item;
+		
 		rightPanel2.clear();
 		if( item == null ) return;
 		if( "".equals( item ) ) return;
 		
-		RiscossJsonClient.getRCContent( item, new JsonCallback() {
+		selectedRC = item;
+		
+		mainView.remove(rightPanel);
+		rightPanel = new VerticalPanel();
+		rightPanel.setStyleName("rightPanelLayer");
+		rightPanel.setWidth("90%");
+		
+		Label title = new Label(selectedRC);
+		title.setStyleName("subtitle");
+		rightPanel.add(title);
+		
+		grid = new Grid(1,2);
+		grid.setStyleName("properties");
+		
+		Label nameL = new Label("Name");
+		nameL.setStyleName("bold");
+		grid.setWidget(0,0,nameL);
+		
+		Label nameLy = new Label(selectedRC);
+		nameLy.setStyleName("tag");
+		grid.setWidget(0, 1, nameLy);
+		
+		rightPanel.add(grid);
+		
+		RiscossJsonClient.getRCContent( selectedRC, new JsonCallback() {
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
-				/*if( rightPanel2.getWidget() != null ) {
-					rightPanel2.getWidget().removeFromParent();
-				}*/
 				
 				ppg = new RCPropertyPage( new SimpleRiskCconf( response ) );
+				HorizontalPanel buttons = new HorizontalPanel();
+				Button delete = new Button("DELETE");
+				delete.setStyleName("button");
+				delete.addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent arg0) {
+						RiscossJsonClient.deleteRC( selectedRC, new JsonCallback() {
+							@Override
+							public void onFailure( Method method, Throwable exception ) {
+								Window.alert( exception.getMessage() );
+							}
 
+							@Override
+							public void onSuccess( Method method, JSONValue response ) {
+								onRCSelected( null );
+								Window.Location.reload();
+							}} );	
+					}
+				});
+				buttons.add(delete);
+				
+				rightPanel.add(buttons);
+				
+				rightPanel.add( ppg.asWidget() );
+				
+				mainView.add(rightPanel);
 			}
 			@Override
 			public void onFailure(Method method, Throwable exception) {
@@ -382,53 +409,7 @@ public class RiskConfsModule implements EntryPoint {
 			}
 		});
 		
-		selectedRC = item;
-		mainView.remove(rightPanel);
-		rightPanel = new VerticalPanel();
-		rightPanel.setStyleName("rightPanelLayer");
-		rightPanel.setWidth("90%");
 		
-		Label riskName = new Label(selectedRC);
-		riskName.setStyleName("subtitle");
-		rightPanel.add(riskName);
-		
-		HorizontalPanel buttons = new HorizontalPanel();
-		Button delete = new Button("DELETE");
-		delete.setStyleName("button");
-		delete.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent arg0) {
-				RiscossJsonClient.deleteRC( selectedRC, new JsonCallback() {
-					@Override
-					public void onFailure( Method method, Throwable exception ) {
-						Window.alert( exception.getMessage() );
-					}
-
-					@Override
-					public void onSuccess( Method method, JSONValue response ) {
-						onRCSelected( null );
-						Window.Location.reload();
-					}} );	
-			}
-		});
-		buttons.add(delete);
-		
-		Button save = new Button("SAVE");
-		save.setStyleName("button");
-		save.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent arg0) {
-				String newName = ppg.getName();
-				
-				//TODO: rename risk configuration
-			}
-		});
-		buttons.add(save);
-		rightPanel.add(buttons);
-		
-		rightPanel.add( ppg.asWidget() );
-		
-		mainView.add(rightPanel);
 	}
 	
 }

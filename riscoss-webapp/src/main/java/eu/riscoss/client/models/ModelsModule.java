@@ -52,6 +52,7 @@ import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextArea;
@@ -81,11 +82,19 @@ public class ModelsModule implements EntryPoint {
 	private static final String BUTTON_NEW_MODEL 	= "UPLOAD MODEL"; // "New...";
 	private static final String BUTTON_CHANGE_NAME 	= "change";
 	
-	DockPanel 			dock = new DockPanel();
 	VerticalPanel		page = new VerticalPanel();
 	HorizontalPanel		mainView = new HorizontalPanel();
 	VerticalPanel		leftPanel = new VerticalPanel();
 	VerticalPanel		rightPanel = new VerticalPanel();
+	VerticalPanel		tablePanel = new VerticalPanel();
+	
+	Grid				grid;
+	TextBox				tb = new TextBox();
+	Button				editName;
+	Button				saveEditName;
+	Button				cancelEditName;
+	
+	String				selectedModel;
 	
 	JSONValue			modelsList;
 
@@ -93,18 +102,6 @@ public class ModelsModule implements EntryPoint {
 	ListDataProvider<ModelInfo> dataProvider;
 	// private FlowPanel panelImages = new FlowPanel();
 	SimplePanel rightPanel2 = new SimplePanel();
-
-	public ModelsModule() {
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see eu.riscoss.client.ActivablePanel#getWidget()
-	 */
-	public Widget getWidget() {
-		return dock;
-	}
 
 	public void onModuleLoad() {
 
@@ -130,20 +127,6 @@ public class ModelsModule implements EntryPoint {
 			};
 		}, "Model");
 
-		Column<ModelInfo, String> c = new Column<ModelInfo, String>(new ButtonCell()) {
-			@Override
-			public String getValue(ModelInfo object) {
-				return "Delete";
-			}
-		};
-		c.setFieldUpdater(new FieldUpdater<ModelInfo, String>() {
-			@Override
-			public void update(int index, ModelInfo object, String value) {
-				deleteModel(object);
-			}
-		});
-		table.addColumn(c, "");
-
 		dataProvider = new ListDataProvider<ModelInfo>();
 		dataProvider.addDataDisplay(table);
 
@@ -167,19 +150,12 @@ public class ModelsModule implements EntryPoint {
 		SimplePager pager = new SimplePager();
 		pager.setDisplay(table);
 
-		VerticalPanel tablePanel = new VerticalPanel();
+		tablePanel = new VerticalPanel();
 		tablePanel.add(table);
-		tablePanel.add(pager);
-		
-		
-		dock.add(tablePanel, DockPanel.CENTER);
-		dock.add(rightPanel2, DockPanel.EAST);
-
-		dock.setCellWidth(tablePanel, "40%");
-		dock.setCellHeight(rightPanel2, "100%");
 		table.setWidth("100%");
-
-		dock.setSize("100%", "100%");
+		tablePanel.add(pager);
+		tablePanel.setWidth("100%");
+		table.setWidth("100%");
 		
 		mainView.setStyleName("mainViewLayer");
 		mainView.setWidth("100%");
@@ -190,8 +166,9 @@ public class ModelsModule implements EntryPoint {
 		Label title = new Label("Model management");
 		title.setStyleName("title");
 		page.add(title);
-		
-		Button uploadModel = new Button(BUTTON_NEW_MODEL);
+
+		Button uploadModel = new Button("Upload model");
+
 		uploadModel.setStyleName("button");
 		SingleUploader upload = new SingleUploader(FileInputType.CUSTOM.with(uploadModel));
 		upload.setTitle("Upload new model");
@@ -228,7 +205,8 @@ public class ModelsModule implements EntryPoint {
 					dataProvider.getList().add(new ModelInfo(name));
 				else
 					Window.alert("Error: " + response );
-			
+
+				setSelectedModel(name);
 			}
 		});
 		leftPanel.add(upload);
@@ -240,7 +218,6 @@ public class ModelsModule implements EntryPoint {
 		page.add(mainView);
 		page.setWidth("100%");
 
-		//RootPanel.get().add(dock);
 		RootPanel.get().add(page);
 	}
 
@@ -333,14 +310,8 @@ public class ModelsModule implements EntryPoint {
 
 		void showEditDialog(JSONObject json) {
 			
-			Grid grid = new Grid(3, 3);
-			grid.setWidget(0, 0, new Label("Name:"));
-			//Label txt = new Label();
-			txt = new TextBox();
-			//txt.setReadOnly(true);
+			Grid grid = new Grid(2, 3);
 			String jsname = json.get("name").isString().stringValue();
-			txt.setText(jsname);
-			grid.setWidget(0, 1, txt);
 			
 			Button changer = new MyNameButton(jsname, BUTTON_CHANGE_NAME, new ClickHandler() {
 				public void onClick(ClickEvent event) {
@@ -367,8 +338,6 @@ public class ModelsModule implements EntryPoint {
 				}
 			});
 			
-			grid.setWidget( 0, 2, changer);
-			
 //			grid.setWidget(1, 0, new Label("Description:"));
 //			txt = new TextBox();
 //			txt.setReadOnly(true);
@@ -382,14 +351,18 @@ public class ModelsModule implements EntryPoint {
 						
 			if (descfilename==null || descfilename.equals("")){
 				Label descfLabel = new Label("No documentation uploaded.");
-				grid.setWidget( 2, 0, descfLabel);
+				grid.setWidget( 1, 0, descfLabel);
 			} else {
+
 				Anchor descfAnchor = new Anchor("Download documentation:\n"+descfilename, GWT.getHostPageBaseURL() +  "models/download?domain=" + RiscossJsonClient.getDomain() + 
 						"&name="+ name+"&type=desc&token="+RiscossCall.getToken());
 				grid.setWidget( 2, 0, descfAnchor);
+
 			}
 			
-			SingleUploader docuUploader = new SingleUploader(FileInputType.CUSTOM.with(new Button(BUTTON_UPLOAD_DESC))); 
+			Button uploadDesc = new Button(BUTTON_UPLOAD_DESC);
+			uploadDesc.setStyleName("button");
+			SingleUploader docuUploader = new SingleUploader(FileInputType.CUSTOM.with(uploadDesc)); 
 			docuUploader.setTitle("Upload model documentation");
 			docuUploader.setAutoSubmit(true);
 			
@@ -413,7 +386,7 @@ public class ModelsModule implements EntryPoint {
 				}
 			});
 			
-			grid.setWidget( 2, 1, docuUploader);
+			grid.setWidget( 1, 1, docuUploader);
 			
 			//Downloader/////////done in Anchor now!
 			
@@ -427,7 +400,9 @@ public class ModelsModule implements EntryPoint {
 			//grid.setWidget( 1, 2, docuDownloader);
 			
 			//Model Update Uploader///////////
-			SingleUploader updateUploader = new SingleUploader(FileInputType.CUSTOM.with(new Button(BUTTON_UPDATE_MODEL)));
+			Button updateModel = new Button(BUTTON_UPDATE_MODEL);
+			updateModel.setStyleName("button");
+			SingleUploader updateUploader = new SingleUploader(FileInputType.CUSTOM.with(updateModel));
 			updateUploader.setTitle("Update the model to a new version");
 			updateUploader.setAutoSubmit(true);
 			
@@ -452,13 +427,13 @@ public class ModelsModule implements EntryPoint {
 			});
 			
 			
-			
 			Anchor fAnchor = new Anchor("Download model:\n"+json.get("modelfilename"), GWT.getHostPageBaseURL() + 
 					"models/download?domain=" + RiscossJsonClient.getDomain() + "&name="+ name+"&type=model&token="+RiscossCall.getToken());
 			grid.setWidget( 1, 0, fAnchor);
+
 			//grid.setWidget( 1, 0, new Label("Model filename: \n"+json.get("modelfilename").isString().stringValue()));
 			
-			grid.setWidget( 1, 1, updateUploader);
+			grid.setWidget( 0, 1, updateUploader);
 			
 			
 			////////////////////////////////////
@@ -565,8 +540,9 @@ public class ModelsModule implements EntryPoint {
 			return panel;
 		}
 	}
-
+	
 	public void setSelectedModel(String name) {
+		selectedModel = name;
 		if (rightPanel2.getWidget() != null) {
 			rightPanel2.getWidget().removeFromParent();
 		}
@@ -579,29 +555,88 @@ public class ModelsModule implements EntryPoint {
 		rightPanel.setStyleName("rightPanelLayer");
 		rightPanel.setWidth("90%");
 		
-		Label modelName = new Label(name);
-		modelName.setStyleName("subtitle");
-		rightPanel.add(modelName);
+		Label title = new Label(name);
+		title.setStyleName("subtitle");
+		rightPanel.add(title);
+		
+		grid = new Grid(1,2);
+		grid.setStyleName("properties");
+		
+		Label nameL = new Label("Name");
+		nameL.setStyleName("bold");
+		grid.setWidget(0,0,nameL);
+		
+		Label nameLy = new Label(name);
+		nameLy.setStyleName("tag");
+		grid.setWidget(0, 1, nameLy);
+		
+		rightPanel.add(grid);
 		
 		HorizontalPanel buttons = new HorizontalPanel();
-		Button delete = new Button("DELETE");
+		Button delete = new Button("Delete");
 		delete.setStyleName("button");
 		delete.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent arg0) {
-				// TODO Auto-generated method stub
+				RiscossJsonClient.deleteModel(selectedModel, new JsonCallback() {
+					@Override
+					public void onFailure(Method method, Throwable exception) {
+						Window.alert(exception.getMessage());
+					}
+
+					@Override
+					public void onSuccess(Method method, JSONValue response) {
+						//dataProvider.getList().remove(getValue());
+						mainView.remove(rightPanel);
+						table = new CellTable<ModelInfo>(15, (Resources) GWT.create(TableResources.class));
+
+						table.addColumn(new Column<ModelInfo, SafeHtml>(new SafeHtmlCell()) {
+							@Override
+							public SafeHtml getValue(ModelInfo object) {
+								return new LinkHtml(object.getName(), "javascript:editModel(\"" + object.getName() + "\")");
+							};
+						}, "Model");
+
+						dataProvider = new ListDataProvider<ModelInfo>();
+						dataProvider.addDataDisplay(table);
+						
+						Resource resource = new Resource(GWT.getHostPageBaseURL() + "api/models/list");
+
+						resource.get().send(new JsonCallback() {
+
+							public void onSuccess(Method method, JSONValue response) {
+								GWT.log(response.toString());
+								if (response.isArray() != null) {
+									for (int i = 0; i < response.isArray().size(); i++) {
+										JSONObject o = (JSONObject) response.isArray().get(i);
+										dataProvider.getList().add(new ModelInfo(o.get("name").isString().stringValue()));
+									}
+								}
+							}
+
+							public void onFailure(Method method, Throwable exception) {
+								Window.alert(exception.getMessage());
+							}
+						});
+						
+						SimplePager pager = new SimplePager();
+						pager.setDisplay(table);
+
+						leftPanel.remove(tablePanel);
+						
+						tablePanel = new VerticalPanel();
+						tablePanel.add(table);
+						tablePanel.add(pager);
+						
+						leftPanel.add(tablePanel);
+						
+						
+					}
+				});
 			}
 		});
 		buttons.add(delete);
-		Button save = new Button("SAVE");
-		save.setStyleName("button");
-		save.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent arg0) {
-				// TODO Auto-generated method stub
-			}
-		});
-		buttons.add(save);
+		
 		rightPanel.add(buttons);
 		
 		EditModelDialog panel2 = new EditModelDialog();

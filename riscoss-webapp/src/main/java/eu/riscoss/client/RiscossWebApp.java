@@ -132,6 +132,7 @@ public class RiscossWebApp implements EntryPoint {
 		
 		MenuBar menu = new MenuBar();
 		menu.setWidth(" 100% ");
+		menu.setAutoOpen(true);
 		menu.setAnimationEnabled(true);
 		menu.setStyleName("mainMenu");
 		
@@ -170,12 +171,39 @@ public class RiscossWebApp implements EntryPoint {
 			}
 		}
 		
+		MenuBar helpUs = new MenuBar(true);
+		helpUs.setStyleName("subMenu");
+		helpUs.setAnimationEnabled(true);
+		menu.addItem("Help us", helpUs);
+		helpUs.addItem("User feedback", new Command() {
+			@Override
+			public void execute() {
+				Window.open( "http://limesurvey.merit.unu.edu/index.php/97378/lang-en", "_self", ""); 
+			}
+		});
+		helpUs.addItem("Expert feedback", new Command() {
+			@Override
+			public void execute() {
+				Window.open( "http://limesurvey.merit.unu.edu/index.php/53944/lang-en", "_self", ""); 
+			}
+		});
+		
+		/*MenuBar admin = new MenuBar(true);
+		 * admin.setAnimationEnabled(true);
+		 * menu.addItem("Admin", admin);
+		 * admin.addItem("Users and Roles", new Command() {
+		 * 	@Override
+		 * 	public void execute() {
+		 * 		loadPanel( "admin.html" );
+		 * 	}
+		 *});
+		 */
+		
 		VerticalPanel north = new VerticalPanel();
-		Image logo = new Image( "logo3.png" );
-		logo.setStyleName("logo");
+		Image logo = new Image( "http://riscossplatform.ow2.org/riscoss/wiki/wiki1/download/ColorThemes/RISCOSS_2/logo_riscoss_DSP.png" );
 		north.add( logo );
 		north.setHeight("5%"); // any value here seems to resolve the firefox problem of showing only a small frame on the right side
-		Label version = new Label("v1.5.0");
+		Label version = new Label("v0.2.1");
 		version.setStyleName("version");
 		north.add(version);
 		north.add( menu );
