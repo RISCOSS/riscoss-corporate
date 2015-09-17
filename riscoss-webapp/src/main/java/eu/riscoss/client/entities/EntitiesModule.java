@@ -103,8 +103,6 @@ public class EntitiesModule implements EntryPoint {
 	
 	public void onModuleLoad() {
 		
-		
-		
 		exportJS();
 		
 		String layer = Window.Location.getParameter( "layer" );
@@ -190,20 +188,6 @@ public class EntitiesModule implements EntryPoint {
 
 		ppg = new EntityPropertyPage(this);
 		
-		HorizontalPanel hpanel = new HorizontalPanel();
-		Button a = new Button( "NEW ENTITY" );
-		a.addClickHandler( new ClickWrapper<String>( layer ) {
-			@Override
-			public void onClick(ClickEvent event) {
-				new CreateEntityDialog( getValue() ).show();
-			}
-		});
-		a.setStyleName("button");
-		
-		hpanel.add( a );
-		hpanel.setWidth( "100%" );
-		
-		//RootPanel.get().add( dock );
 		page.setWidth("100%");
 		//leftPanel.add(tablePanel);
 		entitiesTree.asWidget().setWidth("100%");
@@ -215,7 +199,7 @@ public class EntitiesModule implements EntryPoint {
 		
 		RootPanel.get().add( page );
 		
-		RiscossJsonClient.listEntities(layer, new JsonCallback() {
+		RiscossJsonClient.listEntities( new JsonCallback() {
 			
 			public void onSuccess(Method method, JSONValue response) {
 				if( response.isArray() != null ) {
@@ -390,115 +374,6 @@ public class EntitiesModule implements EntryPoint {
 		mainView.add(rightPanel);
 	}
 	
-	class CreateEntityDialog {
-		
-		String layer;
-
-		/**
-		 * Note: ensure that the layer is valid before calling this constructor!
-		 * @param layer
-		 */
-		CreateEntityDialog( String layer ) {
-			this.layer = layer;
-		}
-		
-		String getChosenName() {
-			String s = RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
-			txt.setText(s);
-			return s;
-		}
-		
-		/**
-		 * 
-		 * @return null if no layer available
-		 */
-		String getChosenLayer() {
-			if( layer != null ) 
-				return layer;
-			return layersBox.getSelectedLayer(); 
-		}
-		
-		String getChosenParent() {
-			return entityBox.getSelectedEntity();
-		}
-		
-		DialogBox dialog = new DialogBox( true );
-		
-		TextBox			txt;
-		LayersComboBox	layersBox;
-		EntityBox		entityBox;
-		
-		public void show() {
-			if( layer == null )
-				layersBox = new LayersComboBox().preloaded();
-//			layersBox.setSelectedLayer( layer );
-			entityBox = new EntityBox();
-			
-			Grid grid = new Grid( 4, 2 );
-			txt = new TextBox();
-			grid.setWidget( 0, 0, new Label( "Name:" ) );
-			grid.setWidget( 0, 1, txt );
-			
-			grid.setWidget( 1, 0, new Label( "Layer:" ) );
-			if( layer == null )
-				grid.setWidget( 1, 1, layersBox );
-			else
-				grid.setWidget( 1, 1, new Label( layer ) );
-			
-			grid.setWidget( 2, 0, new Label( "Parent entity:" ) );
-			
-			grid.setWidget( 3, 0, new Button( "Ok", new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					if (getChosenLayer()==null||getChosenLayer().equals("")){
-						Window.alert("No Layer selected. Please create and/or select one first.");
-					} else {
-
-					RiscossJsonClient.createEntity( getChosenName(), getChosenLayer(), getChosenParent(), new JsonCallback() {
-						@Override
-						public void onFailure(Method method, Throwable exception) {
-							Window.alert( exception.getMessage() );
-						}
-						@Override
-						public void onSuccess(Method method, JSONValue response) {
-							newEntity = response.isObject().get( "name" ).isString().stringValue();
-							EntityInfo info = new EntityInfo( newEntity );
-							
-							
-							info.setLayer( JsonUtil.getValue( response, "layer", "" ) );
-							
-							dialog.hide();
-							RiscossJsonClient.getLayerContextualInfo(layer, new JsonCallback() {
-								@Override
-								public void onFailure(Method method, Throwable exception) {
-									Window.alert( exception.getMessage() );
-								}
-								@Override
-								public void onSuccess(Method method, JSONValue response) {
-									CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
-									JLayerContextualInfo jLayerContextualInfo = codec.decode( response );
-									updateContextualInfo(jLayerContextualInfo);
-								}
-							});
-							
-						}} );
-					}
-				}
-			}) );
-			
-			grid.setWidget( 3, 1, new Button( "Cancel", new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					//Window.Location.reload();
-					dialog.hide();
-				}
-			} )) ;
-			
-			dialog.setWidget( grid );
-			dialog.show();
-		}
-	}
-	
 	public void reloadData() {
 		entitiesTree.clear();
 		generateTree();
@@ -516,22 +391,7 @@ public class EntitiesModule implements EntryPoint {
 					entityName.setText("");
 					newEntity = response.isObject().get( "name" ).isString().stringValue();
 					
-					Anchor a = new Anchor(newEntity  + " (" + response.isObject().get("layer").isString().stringValue() + ")");
-					a.setWidth("100%");
-					a.setStyleName("font");
-					a.addClickHandler(new ClickHandler() {
-						String name = nextEntityName;
-						@Override
-						public void onClick(ClickEvent event) {
-							setSelectedEntity(name);
-						}
-					});
-					HorizontalPanel cPanel = new HorizontalPanel();
-					cPanel.setStyleName("tree");
-					cPanel.setWidth("100%");
-					cPanel.add(a);
-					TreeWidget c = new TreeWidget(cPanel);
-					entitiesTree.addChild(c);
+					reloadData();
 					
 					EntityInfo info = new EntityInfo( newEntity );
 					

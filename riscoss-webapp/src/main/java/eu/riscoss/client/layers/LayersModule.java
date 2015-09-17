@@ -182,63 +182,6 @@ public class LayersModule implements EntryPoint {
 			}
 		} );
 		
-//		RiscossJsonClient.listLayers( new JsonCallback() {
-//			
-//			public void onSuccess(Method method, JSONValue response) {
-//				if( response.isArray() != null ) {
-//					TreeWidget parent = tree;
-//					tree.asWidget().setWidth( "100%" );
-//					for (int i = 0; i < response.isArray().size(); i++) {
-//						JSONObject o = (JSONObject) response.isArray().get(i);
-//						parentName.addItem(o.get("name").isString().stringValue());
-//						if (i > 0) 
-//							nextParent = ((JSONObject) response.isArray().get(i - 1)).get("name").isString().stringValue();
-//						else 
-//							nextParent = "[top]";
-//						HorizontalPanel p = new HorizontalPanel();
-//						p.setStyleName("layerListElement");
-//
-//						Anchor anchor = new Anchor(o.get("name").isString().stringValue());
-//						anchor.setStyleName("layerListElement");
-//						anchor.addClickHandler(new ClickWrapper<String>(o.get("name").isString().stringValue()) {
-//							String parent = nextParent;
-//
-//							@Override
-//							public void onClick(ClickEvent event) {
-//								bottom.setUrl("entities.html?layer=" + getValue());
-//								ppg.setParent(parent);
-//								//ppg.setSelectedLayer(getValue());
-//								selectedLayer = getValue();
-//								newEntity.setEnabled(true);
-//								loadRightPanel();
-//							}
-//						});
-//
-//						p.add( anchor );
-//						
-//						p.setWidth( "100%" );
-//						
-//						TreeWidget lw = new TreeWidget( p );
-//						parent.addChild( lw );
-//						parent = lw;
-//					}
-////					Anchor anchor = new Anchor( "[none]" );
-////					anchor.addClickHandler( new ClickHandler() {
-////						@Override
-////						public void onClick(ClickEvent event) {
-////							bottom.setUrl( "entities.html?layer=-" );
-////						}
-////					});
-////					TreeWidget lw = new TreeWidget( anchor );
-////					parent.addChild( lw );
-//				}
-//			}
-//			
-//			public void onFailure(Method method, Throwable exception) {
-//				Window.alert( exception.getMessage() );
-//			}
-//		});
-		
 		Label title = new Label("Layer management");
 		title.setStyleName("title");
 		page.add(title);

@@ -273,6 +273,11 @@ public class LayerPropertyPage implements IsWidget {
 					}
 					@Override
 					public void onSuccess( Method method, JSONValue response ) {
+						name.setText("");
+						id.setText("");
+						description.setText("");
+						min.setText("");
+						max.setText("");
 						reloadData();
 					}
 					
@@ -705,11 +710,6 @@ public class LayerPropertyPage implements IsWidget {
 			int i = count;
 			@Override
 			public void onClick(ClickEvent arg0) {
-				String url = "api/entities/list/" + layer; 
-				
-				/*Resource resource = new Resource( GWT.getHostPageBaseURL() + url );
-				
-				resource.get().send( new JsonCallback() {*/
 					
 				RiscossJsonClient.listEntities(layer, new JsonCallback() {
 					public void onSuccess(Method method, JSONValue response) {
