@@ -187,18 +187,7 @@ public class RiscossWebApp implements EntryPoint {
 				Window.open( "http://limesurvey.merit.unu.edu/index.php/53944/lang-en", "_self", ""); 
 			}
 		});
-		
-		/*MenuBar admin = new MenuBar(true);
-		 * admin.setAnimationEnabled(true);
-		 * menu.addItem("Admin", admin);
-		 * admin.addItem("Users and Roles", new Command() {
-		 * 	@Override
-		 * 	public void execute() {
-		 * 		loadPanel( "admin.html" );
-		 * 	}
-		 *});
-		 */
-		
+
 		VerticalPanel north = new VerticalPanel();
 		Image logo = new Image( "http://riscossplatform.ow2.org/riscoss/wiki/wiki1/download/ColorThemes/RISCOSS_2/logo_riscoss_DSP.png" );
 		north.add( logo );
@@ -248,23 +237,6 @@ public class RiscossWebApp implements EntryPoint {
 					Window.alert( exception.getMessage() );
 				}
 			} );
-			
-//			new Resource( GWT.getHostPageBaseURL() + "api/auth/domains/selected" )
-//			.addQueryParam( "domain", value )
-//			.post().send( new JsonCallback() {
-//				@Override
-//				public void onSuccess( Method method, JSONValue response ) {
-//					if( response == null ) return;
-//					if( response.isString() == null ) return;
-//					Log.println( "Domain set to " + response.isString().stringValue() );
-//					Cookies.setCookie( CookieNames.DOMAIN_KEY, response.isString().stringValue() );
-//					Window.Location.reload();
-//				}
-//				@Override
-//				public void onFailure( Method method, Throwable exception ) {
-//					Window.alert( exception.getMessage() );
-//				}
-//			});
 		}
 		
 		public void show() {
@@ -342,12 +314,10 @@ public class RiscossWebApp implements EntryPoint {
 		}
 		
 		currentPanel = new FramePanel( url );
-		//currentPanel.getWidget().setHeight("100%");
 		currentPanel.getWidget().setStyleName("main");
 		
 		if( currentPanel != null ) {
 			RootPanel.get().add( currentPanel.getWidget());
-			//			currentPanel.getWidget().getParent().setHeight( "100%" );
 			currentPanel.activate();
 		}
 	}

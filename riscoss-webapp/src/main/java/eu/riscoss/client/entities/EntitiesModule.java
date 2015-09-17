@@ -105,7 +105,6 @@ public class EntitiesModule implements EntryPoint {
 		
 		exportJS();
 		
-		String layer = Window.Location.getParameter( "layer" );
 		RiscossJsonClient.listLayers(new JsonCallback() {
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
