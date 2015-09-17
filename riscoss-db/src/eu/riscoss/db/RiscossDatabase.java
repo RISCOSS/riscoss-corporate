@@ -36,5 +36,7 @@ public interface RiscossDatabase {
 	public boolean isAdmin();
 
 	public SiteManager getSiteManager();
+
+	public boolean existsDomain( String domain );
 	
 }

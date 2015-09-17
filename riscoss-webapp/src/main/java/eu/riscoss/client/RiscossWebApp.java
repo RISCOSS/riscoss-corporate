@@ -23,7 +23,6 @@ package eu.riscoss.client;
 
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
-import org.fusesource.restygwt.client.Resource;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -90,18 +89,13 @@ public class RiscossWebApp implements EntryPoint {
 					username = "";
 				Log.println( "username: " + username );
 				
-//				Resource res = new Resource( GWT.getHostPageBaseURL() + "api/auth/domains/selected" )
-//				.addQueryParam( "domain", Cookies.getCookie( CookieNames.DOMAIN_KEY ) );
-//				Log.println( "query OLD: " + res.getQuery() );
-				
-				//RiscossCall.fromCookies().withDomain(null).admin().fx( "domains/selected" ).arg( "domain", Cookies.getCookie( CookieNames.DOMAIN_KEY ) ).post( 
 				RiscossJsonClient.selectDomain( RiscossCall.getDomain(), new JsonCallback() {
 					@Override
 					public void onSuccess( Method method, JSONValue response ) {
 						Log.println( "Domain check response: " + response );
 						if( response == null ) showDomainSelectionDialog();
 						else if( response.isString() == null ) showDomainSelectionDialog();
-						else loadSitemap();;
+						else loadSitemap();
 					}
 					@Override
 					public void onFailure( Method method, Throwable exception ) {
@@ -115,22 +109,6 @@ public class RiscossWebApp implements EntryPoint {
 				Window.alert( exception.getMessage() );
 			}
 		});
-		
-//		new Resource( GWT.getHostPageBaseURL() + "api/domains/selected" )
-//		.addQueryParam( "domain", domain )
-//		.post().send( new JsonCallback() {
-//			@Override
-//			public void onSuccess( Method method, JSONValue response ) {
-//				Log.println( "Domain check response: " + response );
-//				if( response == null ) showDomainSelectionDialog();
-//				else if( response.isString() == null ) showDomainSelectionDialog();
-//				else showUI( response.isString().stringValue() );
-//			}
-//			@Override
-//			public void onFailure( Method method, Throwable exception ) {
-//				Window.alert( exception.getMessage() );
-//			}
-//		});
 	}
 	
 	void loadSitemap() {
@@ -192,93 +170,6 @@ public class RiscossWebApp implements EntryPoint {
 			}
 		}
 		
-//		MenuBar configure = new MenuBar(true);
-//		configure.setStyleName("subMenu");
-//		configure.setAnimationEnabled(true);
-//		menu.addItem("Configure", configure);
-//		configure.addItem("Layers", new Command() {
-//			@Override
-//			public void execute() {
-//				loadPanel( "layers.html" );
-//			}
-//		});
-//		configure.addItem("Entities", new Command() {
-//			@Override
-//			public void execute() {
-//				loadPanel( "entities.html" );
-//			}
-//		});
-//		configure.addItem("Models", new Command() {
-//			@Override
-//			public void execute() {
-//				loadPanel( "models.html" );
-//			}
-//		});
-//		configure.addItem("Risk Configurations", new Command() {
-//			@Override
-//			public void execute() {
-//				loadPanel( "riskconfs.html" );
-//			}
-//		});
-		
-//		MenuBar run = new MenuBar(true);
-//		run.setStyleName("subMenu");
-//		run.setAnimationEnabled(true);
-//		menu.addItem("Run", run);
-//		run.addItem("One-layer Analysis", new Command() {
-//			@Override
-//			public void execute() {
-//				loadPanel( "analysis.html" );
-//			}
-//		});
-//		run.addItem("Multi-layer Analysis", new Command() {
-//			@Override
-//			public void execute() {
-//				loadPanel( "riskanalysis.html" );
-//			}
-//		});
-//		run.addItem("What-If Analysis", new Command() {
-//			@Override
-//			public void execute() {
-//				loadPanel( "whatifanalysis.html" );
-//			}
-//		});
-//		run.addItem("AHP Session", new Command() {
-//			@Override
-//			public void execute() {
-//				loadPanel( "rma.html" );
-//			}
-//		});
-		
-//		MenuBar browse = new MenuBar(true);
-//		browse.setStyleName("subMenu");
-//		browse.setAnimationEnabled(true);
-//		menu.addItem("Browse", browse);
-//		browse.addItem("Risk Data Repository", new Command() {
-//			@Override
-//			public void execute() {
-//				loadPanel( "rdr.html" );
-//			}
-//		});
-//		browse.addItem("Risk Analysis Sessions", new Command() {
-//			@Override
-//			public void execute() {
-//				loadPanel( "ras.html" );
-//			}
-//		});
-		
-//		MenuBar admin = new MenuBar(true);
-//		admin.setAnimationEnabled(true);
-//		menu.addItem("Admin", admin);
-//		admin.addItem("Domains and permissions", new Command() {
-//			@Override
-//			public void execute() {
-//				loadPanel( "admin.html" );
-//			}
-//		});
-		
-		
-		
 		VerticalPanel north = new VerticalPanel();
 		Image logo = new Image( "logo3.png" );
 		logo.setStyleName("logo");
@@ -290,19 +181,7 @@ public class RiscossWebApp implements EntryPoint {
 		north.add( menu );
 		north.setWidth("100%");
 		
-		/*background = new SimplePanel();
-		background.setWidth("95%");
-		background.setHeight("95%");
-		background.setStyleName("background");
-		
-		margin = new SimplePanel();
-		margin.setWidth("100%");
-		margin.setHeight("100%");
-		margin.setStyleName("margin");
-		margin.setWidget(background);*/
-		
 		RootPanel.get().add( north );
-		//RootPanel.get().add( margin );
 		RootPanel.get().setStyleName("root");
 		
 	}
@@ -401,23 +280,6 @@ public class RiscossWebApp implements EntryPoint {
 			}
 		} );
 		
-		//		new Resource( GWT.getHostPageBaseURL() + "api/domains/predefined/list" ).get().send( new JsonCallback() {
-		//			@Override
-		//			public void onSuccess( Method method, JSONValue response ) {
-		//				DomainSelectionDialog dsDialog = null;
-		//				if( dsDialog == null ) {
-		//					dsDialog = new DomainSelectionDialog();
-		//				}
-		//				for( int i = 0; i < response.isArray().size(); i++ ) {
-		//					dsDialog.addDomainOption( response.isArray().get( i ).isString().stringValue() );
-		//				}
-		//				dsDialog.show();
-		//			}
-		//			@Override
-		//			public void onFailure( Method method, Throwable exception ) {
-		//				Window.alert( exception.getMessage() );
-		//			}
-		//		});
 	}
 	
 	class OutlineLabel extends Anchor {

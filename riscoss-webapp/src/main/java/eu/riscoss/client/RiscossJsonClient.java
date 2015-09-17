@@ -23,8 +23,6 @@ package eu.riscoss.client;
 
 import java.util.List;
 
-import javax.ws.rs.QueryParam;
-
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
 import org.fusesource.restygwt.client.Resource;
@@ -511,7 +509,10 @@ public class RiscossJsonClient {
 	}	
 	
 	public static void listDomainsForUser( String username, JsonCallback cb ) {
-		RiscossCall.fromToken(getToken()).admin().fx("domains").list().arg("username", username).get( cb );
+		if( username != null )
+			RiscossCall.fromToken(getToken()).admin().fx("domains/public").arg("username", username).get( cb );
+		else
+			RiscossCall.fromToken(getToken()).admin().fx("domains/public").get( cb );
 	}
 	
 	public static void selectDomain(String domain, JsonCallback cb ) {

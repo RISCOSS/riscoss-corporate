@@ -5,17 +5,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -114,54 +111,51 @@ public class AdminManager {
 		}
 	}
 	
-	@GET @Path("/domains/list")
-	public String listDomains(
-			@DefaultValue("") @HeaderParam("token") String token,
-			@DefaultValue("") @QueryParam("username") String username ) {
-		
-		Set<String> set = new HashSet<>();
-//		JsonArray array = new JsonArray();
-		{
-			RiscossDatabase db = null;
-			
-			try {
-				db = DBConnector.openDatabase( null, null );
-				
-				for( String domain : db.listDomains() ) {
-					if( domain != null )
-						set.add( domain );
-//						array.add( new JsonPrimitive( domain ) );
-				}
-			}
-			finally {
-				if( db != null )
-					db.close();
-			}
-		}
-		
-		if( token.length() > 1 ) {
-			RiscossDatabase db = null;
-			if( !username.equals("") ) try {
-				db = DBConnector.openDatabase( token );
-				
-				if( db.getUsername().equals( username ) ) {
-					for( String domain : db.listDomains( username ) ) {
-						if( domain != null )
-							set.add( domain );
-//							array.add( new JsonPrimitive( domain ) );
-					}
-				}
-			}
-			finally {
-				if( db != null )
-					db.close();
-			}
-		}
-		
-		return gson.toJson( set ).toString();
-//		return array.toString();
-		
-	}
+//	@GET @Path("/domains/list")
+//	public String listDomains(
+//			@DefaultValue("") @HeaderParam("token") String token,
+//			@DefaultValue("") @QueryParam("username") String username ) {
+//		
+//		Set<String> set = new HashSet<>();
+//		{
+//			RiscossDatabase db = null;
+//			
+//			try {
+//				db = DBConnector.openDatabase( token );
+//				
+//				for( String domain : db.listDomains() ) {
+//					if( domain != null )
+//						set.add( domain );
+//				}
+//			}
+//			finally {
+//				if( db != null )
+//					db.close();
+//			}
+//		}
+//		
+////		if( token.length() > 1 ) {
+////			RiscossDatabase db = null;
+////			if( !username.equals("") ) try {
+////				db = DBConnector.openDatabase( token );
+////				
+////				if( db.getUsername().equals( username ) ) {
+////					for( String domain : db.listDomains( username ) ) {
+////						if( domain != null )
+////							set.add( domain );
+//////							array.add( new JsonPrimitive( domain ) );
+////					}
+////				}
+////			}
+////			finally {
+////				if( db != null )
+////					db.close();
+////			}
+////		}
+//		
+//		return gson.toJson( set ).toString();
+//		
+//	}
 	
 	@POST @Path("/domains/create")
 	public String createDomain( @HeaderParam("token") String token, @QueryParam("name") String name ) {
@@ -372,9 +366,17 @@ public class AdminManager {
 //		return "";
 	}
 	
+	/**
+	 * Returns the list of domains available to a specific user
+	 * i.e., the list of public domains, plus the list of domain which have been granted to the user by an admin
+	 * 
+	 * @param token
+	 * @param username
+	 * @return
+	 */
 	@GET @Path("/domains/public")
 	public String listAvailableDomains(
-			@HeaderParam("token") String token, @DefaultValue("") @QueryParam("username") String username ) {
+			@HeaderParam("token") String token, @QueryParam("username") String username ) {
 		
 		return gson.toJson( listAvailableUserDomains(token, username ) ).toString();
 		
@@ -388,6 +390,8 @@ public class AdminManager {
 			
 			try {
 				db = DBConnector.openDatabase( null, null );
+				
+				if( username == null ) username = db.getUsername();
 				
 				for( String domain : db.listPublicDomains() ) {
 					if( domain != null )
@@ -443,10 +447,30 @@ public class AdminManager {
 		}
 	}
 	
+	@POST @Path("/{domain}/users/{user}/role")
+	public void setUserRole(
+			@HeaderParam("token") String token,
+			@PathParam("domain") String domain,
+			@PathParam("user") String user,
+			@QueryParam("role") String role
+			) {
+		
+		RiscossDB domaindb = null;
+		
+		try {
+			
+			domaindb = DBConnector.openDB( domain, token );
+			
+			domaindb.setUserRole( user, role );
+		}
+		finally {
+			if( domaindb != null )
+				domaindb.close();
+		}
+	}
+	
 	@POST @Path("/{domain}/domains/selected")
-	public String setSessionSelectedDomain( @PathParam("domain") String domain,
-			//@Context HttpServletRequest req, 
-			@HeaderParam("token") String token) {
+	public String setSessionSelectedDomain( @PathParam("domain") String domain, @HeaderParam("token") String token) {
 		
 		if( domain == null ) return null;
 		
@@ -455,8 +479,12 @@ public class AdminManager {
 		try {
 			db = DBConnector.openDatabase( token );
 			
-			if( db.isAdmin() ) 
-				return new JsonPrimitive( domain ).toString();
+			if( db.isAdmin() ) {
+				if( db.existsDomain( domain ) )
+					return new JsonPrimitive( domain ).toString();
+				else
+					return null;
+			}
 			
 			String username = db.getUsername();
 			
@@ -479,7 +507,7 @@ public class AdminManager {
 				}
 			}
 			
-			throw new RuntimeException( "Invalid domain" );
+			return null;
 		}
 		finally {
 			if( db != null )

@@ -167,5 +167,15 @@ public class GDomContainer {
 		
 		return new GenericNodeCollection<String>( list, new NameAttributeProvider() );
 	}
+
+	public boolean containsDomain( String domain ) {
+		
+		List<ODocument> docs = query( "select from Space where tag = '" + domain + "'" );
+		
+		if( docs == null ) return false;
+		if( docs.size() < 1 ) return false;
+		
+		return true;
+	}
 	
 }

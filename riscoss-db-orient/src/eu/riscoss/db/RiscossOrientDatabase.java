@@ -190,12 +190,18 @@ public class RiscossOrientDatabase implements RiscossDatabase {
 
 	@Override
 	public boolean isAdmin() {
+		// FIXME: should check actual DB permissions rather that hardcoded username
 		return "admin".equals( getUsername() );
 	}
 
 	@Override
 	public SiteManager getSiteManager() {
 		return new RiscossOrientSiteManager( container.graph );
+	}
+
+	@Override
+	public boolean existsDomain( String domain ) {
+		return container.containsDomain( domain );
 	}
 	
 }

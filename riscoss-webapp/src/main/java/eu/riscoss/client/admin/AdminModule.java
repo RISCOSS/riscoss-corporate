@@ -71,7 +71,7 @@ public class AdminModule implements EntryPoint {
 		
 		RootPanel.get().add( dock );
 		
-		RiscossJsonClient.listDomainsForUser("", new JsonCallback() {
+		RiscossJsonClient.listDomainsForUser( null, new JsonCallback() {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				if( response == null ) return;

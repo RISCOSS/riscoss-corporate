@@ -105,30 +105,30 @@ public class AuthManager {
 		}
 	}
 	
-	@GET @Path("sitemap")
-	public String sitemap( @HeaderParam("token") String token ) {
-		
-		RiscossDatabase db = null;
-		
-		try {
-			
-			db = DBConnector.openDatabase( token );
-			
-			String role = db.getRole();
-			
-			String json = db.getRoleProperty( role, "allowedPages", null );
-			
-			if( json != null )
-				return json.toString();
-			else
-				return new JsonPrimitive( "" ).toString();
-			
-		}
-		finally {
-			if( db != null )
-				db.close();
-		}
-	}
+//	@GET @Path("sitemap")
+//	public String sitemap( @HeaderParam("token") String token ) {
+//		
+//		RiscossDatabase db = null;
+//		
+//		try {
+//			
+//			db = DBConnector.openDatabase( token );
+//			
+//			String role = db.getRole();
+//			
+//			String json = db.getRoleProperty( role, "allowedPages", null );
+//			
+//			if( json != null )
+//				return json.toString();
+//			else
+//				return new JsonPrimitive( "" ).toString();
+//			
+//		}
+//		finally {
+//			if( db != null )
+//				db.close();
+//		}
+//	}
 	
 	String getStringToken( OrientBaseGraph graph ) {
 		OSecurityUser original = graph.getRawGraph().getUser();
