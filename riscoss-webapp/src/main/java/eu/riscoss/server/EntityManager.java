@@ -523,13 +523,21 @@ public class EntityManager {
 	@GET @Path("/{domain}/search") public String search(
 			@HeaderParam("token") String token, @PathParam("domain") String domain, @QueryParam("q") String query ) {
 		
+		JsonArray a = new JsonArray();
+		
 		RiscossDB db = DBConnector.openDB(domain, token);
 		try {
 			Collection<String> list = db.findEntities( query, 10 );
-			return new Gson().toJson( list );
+			for (String name : list) {
+				JsonObject o = new JsonObject();
+				o.addProperty("name", name);
+				o.addProperty("layer", db.layerOf(name));
+				a.add(o);
+			}
 		} finally {
 			DBConnector.closeDB(db);
 		}
+		return a.toString();
 	}
 	
 }
