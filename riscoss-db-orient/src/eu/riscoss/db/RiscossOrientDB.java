@@ -847,28 +847,14 @@ public class RiscossOrientDB implements RiscossDB {
 	@Override
 	public void addPermissions( String rolename, RiscossDBResource res, String perm ) {
 		GAuthDom auth = new GAuthDom( this.dom );
-		
-//		switch( res ) {
-//		case AnalysisSessions:
-//			dom.create( "/ras" );
-//			break;
-//		case Entities:
-//			dom.create( "/entities" );
-//			break;
-//		case Layers:
-//			dom.create( "/layers" );
-//			break;
-//		case Models:
-//			dom.create( "/models" );
-//			break;
-//		case RiskConfigurations:
-//			dom.create( "/rcs" );
-//			break;
-//		default:
-//			break;
-//		}
-		
 		auth.setPermission( rolename, res.name(), perm );
+	}
+
+	@Override
+	public Collection<String> findEntities( String query, int max ) {
+		
+		NodeID id = dom.get( "/entities" );
+		return dom.listOutEdgeNames( id, GDomDB.CHILDOF_CLASS, null, null, "in.tag like '%" + query + "%' limit " + max );
 	}
 	
 }

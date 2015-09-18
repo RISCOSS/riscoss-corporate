@@ -513,28 +513,6 @@ public class AdminManager {
 			if( db != null )
 				db.close();
 		}
-		
-//		String initString = req.getServletContext().getInitParameter( "eu.riscoss.param.domains.list" );
-//		if( initString == null ) {
-//			// If not domains configured, proceed
-//			return new JsonPrimitive( DBConnector.DEFAULT_DOMAIN ).toString();
-//		}
-//		
-//		if( domain == null ) {
-//			return null;
-//		}
-//		
-//		String[] tokens = initString.split( "[,]" );
-//		for( String tok : tokens ) {
-//			if( tok.equals( domain ) ) return new JsonPrimitive( domain ).toString();
-//		}
-//		
-////		req.getSession( true ).setAttribute( "domain", domain );
-////		DBConnector.setThreadLocalValue( CookieNames.DOMAIN_KEY, domain );
-//		
-//		throw new RuntimeException( "Invalid domain" );
-//		
-////		return new JsonPrimitive("Invalid domain").toString();
 	}
 	
 }

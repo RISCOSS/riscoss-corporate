@@ -22,6 +22,7 @@
 package eu.riscoss.server;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -41,7 +42,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
-import com.google.gwt.user.client.Window;
 
 import eu.riscoss.dataproviders.RiskData;
 import eu.riscoss.db.RiscossDB;
@@ -90,9 +90,6 @@ public class EntityManager {
 	public String list(@DefaultValue("Playground") @PathParam("domain") String domain,
 			@PathParam("layer") String layer, @DefaultValue("") @HeaderParam("token") String token) {
 
-//		if (layer == ""){
-//			return list(domain, token);
-//		}
 		//TODO: check if layer exists!
 		JsonArray a = new JsonArray();
 
@@ -149,39 +146,6 @@ public class EntityManager {
 		}
 	}
 
-//	@POST
-//	@Path("/{domain}/create")
-//	@Produces("application/json")
-//	@Deprecated
-//	public String createEntity(@DefaultValue("Playground") @PathParam("domain") String domain,
-//			@HeaderParam("info") String str, @DefaultValue("") @HeaderParam("token") String token ) {
-//		RiscossDB db = DBConnector.openDB(domain, token);
-//		try {
-//			JsonObject json = (JsonObject) new JsonParser().parse(str);
-//			String name = json.get("name").getAsString();
-//			String layer = json.get("layer").getAsString();
-//			// attention:filename sanitation is not directly notified to the
-//			// user
-//			name = RiscossUtil.sanitize(name);
-//			db.addEntity(name, layer);
-//			JsonArray a = json.get("parents").getAsJsonArray();
-//			for (int i = 0; i < a.size(); i++) {
-//				String parent = a.get(i).getAsString();
-//				db.assignEntity(name, parent);
-//			}
-//			JsonObject ret = new JsonObject();
-//			ret.addProperty("name", name);
-//			ret.addProperty("layer", "layer");
-//			System.out.println(ret.toString());
-//			return ret.toString();
-//		} catch (Exception ex) {
-//			ex.printStackTrace();
-//			return "";
-//		} finally {
-//			DBConnector.closeDB(db);
-//		}
-//	}
-	
 	@DELETE
 	@Path("/{domain}/{entity}/delete")
 	public void deleteEntity(@DefaultValue("Playground") @PathParam("domain") String domain,
@@ -555,5 +519,17 @@ public class EntityManager {
 			DBConnector.closeDB(db);
 		}
 	}
-
+	
+	@GET @Path("/{domain}/search") public String search(
+			@HeaderParam("token") String token, @PathParam("domain") String domain, @QueryParam("q") String query ) {
+		
+		RiscossDB db = DBConnector.openDB(domain, token);
+		try {
+			Collection<String> list = db.findEntities( query, 10 );
+			return new Gson().toJson( list );
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
+	
 }

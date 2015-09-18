@@ -2,19 +2,14 @@ package eu.riscoss.server;
 
 
 import java.io.File;
-import java.util.Collection;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 
 import org.apache.commons.codec.binary.Base64;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonPrimitive;
 import com.orientechnologies.orient.core.metadata.security.ORole;
 import com.orientechnologies.orient.core.metadata.security.OSecurity;
@@ -26,7 +21,6 @@ import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
-import eu.riscoss.db.RiscossDB;
 import eu.riscoss.db.RiscossDatabase;
 import eu.riscoss.shared.KnownRoles;
 
@@ -104,31 +98,6 @@ public class AuthManager {
 				graph.getRawGraph().close();
 		}
 	}
-	
-//	@GET @Path("sitemap")
-//	public String sitemap( @HeaderParam("token") String token ) {
-//		
-//		RiscossDatabase db = null;
-//		
-//		try {
-//			
-//			db = DBConnector.openDatabase( token );
-//			
-//			String role = db.getRole();
-//			
-//			String json = db.getRoleProperty( role, "allowedPages", null );
-//			
-//			if( json != null )
-//				return json.toString();
-//			else
-//				return new JsonPrimitive( "" ).toString();
-//			
-//		}
-//		finally {
-//			if( db != null )
-//				db.close();
-//		}
-//	}
 	
 	String getStringToken( OrientBaseGraph graph ) {
 		OSecurityUser original = graph.getRawGraph().getUser();

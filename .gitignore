@@ -4,7 +4,7 @@
 **.launch
 **.class
 **.nocache.js
-**.pom.properties
+**/pom.properties
 classes/
 bin/
 maven-status

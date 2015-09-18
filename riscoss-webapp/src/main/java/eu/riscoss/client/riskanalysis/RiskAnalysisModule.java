@@ -23,7 +23,6 @@ package eu.riscoss.client.riskanalysis;
 
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
-import org.fusesource.restygwt.client.Resource;
 
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.core.client.EntryPoint;
@@ -35,11 +34,10 @@ import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.CellTable.Resources;
+import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -185,7 +183,7 @@ public class RiskAnalysisModule implements EntryPoint {
 		
 		String pagename = Window.Location.getPath().substring( 0, Window.Location.getPath().lastIndexOf( "/" ) );
 		
-		pagename += "/report.html";
+		pagename += "/report.jsp";
 		
 		UrlBuilder ub = Window.Location.createUrlBuilder();
 		
