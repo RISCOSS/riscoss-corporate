@@ -521,13 +521,19 @@ public class EntityManager {
 	}
 	
 	@GET @Path("/{domain}/search") public String search(
-			@HeaderParam("token") String token, @PathParam("domain") String domain, @QueryParam("q") String query ) {
+			@HeaderParam("token") String token, @PathParam("domain") String domain, 
+			@QueryParam("q") String query, @DefaultValue("") @QueryParam("max") String strMax, @DefaultValue("") @QueryParam("layer") String layer
+			) {
+		
+		int max = -1;
+		
+		try { max = Integer.parseInt( strMax ); } catch( Exception ex ) {}
 		
 		JsonArray a = new JsonArray();
 		
-		RiscossDB db = DBConnector.openDB(domain, token);
+		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
-			Collection<String> list = db.findEntities( query, 10 );
+			Collection<String> list = db.findEntities( layer, query, max );
 			for (String name : list) {
 				JsonObject o = new JsonObject();
 				o.addProperty("name", name);

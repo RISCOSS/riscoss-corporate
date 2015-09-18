@@ -851,10 +851,17 @@ public class RiscossOrientDB implements RiscossDB {
 	}
 
 	@Override
-	public Collection<String> findEntities( String query, int max ) {
-		
+	public Collection<String> findEntities( String layer, String query, int max ) {
+		if( layer == null ) layer = "";
+		if( !"".equals( layer ) ) {
+			NodeID lid = dom.get( "/layers/" + layer );
+			if( lid != null ) {
+				return dom.listOutEdgeNames( lid, GDomDB.LINK_CLASS, "contains", null, "in.tag like '%" + query + "%'" + (max > 0 ? " limit " + max : "") );
+			}
+		}
 		NodeID id = dom.get( "/entities" );
-		return dom.listOutEdgeNames( id, GDomDB.CHILDOF_CLASS, null, null, "in.tag like '%" + query + "%' limit " + max );
+		return dom.listOutEdgeNames( id, GDomDB.CHILDOF_CLASS, null, null, "in.tag like '%" + query + "%'" + (max > 0 ? " limit " + max : "") );
+		
 	}
 	
 }
