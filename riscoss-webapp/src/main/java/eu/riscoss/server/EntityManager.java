@@ -108,6 +108,43 @@ public class EntityManager {
 		return a.toString();
 
 	}
+	
+	@GET 
+	@Path("/{domain}/search") 
+	public String search(@DefaultValue("Playground") @PathParam("domain") String domain, @HeaderParam("token") String token,
+			@DefaultValue("") @QueryParam("query") String query ) {
+		return search(domain, token, "", query, "0");
+		
+	}
+	
+	@GET 
+	@Path("/{domain}/{layer}/search") 
+	public String search(@DefaultValue("Playground") @PathParam("domain") String domain, @HeaderParam("token") String token,
+			@DefaultValue("") @PathParam("layer") String layer, 
+			@DefaultValue("") @QueryParam("query") String query, 
+			@DefaultValue("0") @QueryParam("max") String strMax    //not used for now in client
+		) {
+		
+		int max = -1;
+		
+		try { max = Integer.parseInt( strMax ); } catch( Exception ex ) {}
+		
+		JsonArray a = new JsonArray();
+		
+		RiscossDB db = DBConnector.openDB( domain, token );
+		try {
+			Collection<String> list = db.findEntities( layer, query, max );
+			for (String name : list) {
+				JsonObject o = new JsonObject();
+				o.addProperty("name", name);
+				o.addProperty("layer", db.layerOf(name));
+				a.add(o);
+			}
+		} finally {
+			DBConnector.closeDB(db);
+		}
+		return a.toString();
+	}
 
 
 	@POST
@@ -518,32 +555,6 @@ public class EntityManager {
 		} finally {
 			DBConnector.closeDB(db);
 		}
-	}
-	
-	@GET @Path("/{domain}/search") public String search(
-			@HeaderParam("token") String token, @PathParam("domain") String domain, 
-			@QueryParam("q") String query, @DefaultValue("") @QueryParam("max") String strMax, @DefaultValue("") @QueryParam("layer") String layer
-			) {
-		
-		int max = -1;
-		
-		try { max = Integer.parseInt( strMax ); } catch( Exception ex ) {}
-		
-		JsonArray a = new JsonArray();
-		
-		RiscossDB db = DBConnector.openDB( domain, token );
-		try {
-			Collection<String> list = db.findEntities( layer, query, max );
-			for (String name : list) {
-				JsonObject o = new JsonObject();
-				o.addProperty("name", name);
-				o.addProperty("layer", db.layerOf(name));
-				a.add(o);
-			}
-		} finally {
-			DBConnector.closeDB(db);
-		}
-		return a.toString();
 	}
 	
 }

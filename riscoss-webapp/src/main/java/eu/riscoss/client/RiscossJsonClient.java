@@ -136,7 +136,29 @@ public class RiscossJsonClient {
 			RiscossCall.fromCookies().entities().item(layer).list().get( cb );
 		//new Resource( GWT.getHostPageBaseURL() + "api/entities/" + getDomain() + "/list" ).get().send( cb );
 	}
-		
+
+	/**
+	 * Like ListEntities, with filtering on "query" and layer
+	 * @param layer  can be ""
+	 * @param query (piece of) entity name
+	 * @param cb
+	 */
+	public static void searchEntities( String query, String layer, String max, JsonCallback cb ) {
+		RiscossCall.fromCookies().entities().item(layer).fx("search").arg("query", query).arg("max", max).get( cb );
+	}
+	
+	/**
+	 * Like ListEntities, with filtering on "query"
+	 * @param query (piece of) entity name
+	 * @param filterlayer 
+	 * @param cb
+	 */
+	public static void searchEntities( String query, String filterlayer, JsonCallback cb ) {
+		if (filterlayer.equals("") || filterlayer.equals("all"))
+			RiscossCall.fromCookies().entities().fx("search").arg("query", query).get( cb );
+		else
+			searchEntities(query, filterlayer, "", cb);
+	}
 	
 	public static void deleteEntity( String entity, JsonCallback cb ) {
 		RiscossCall.fromCookies().entities().item(entity).delete().delete( cb );

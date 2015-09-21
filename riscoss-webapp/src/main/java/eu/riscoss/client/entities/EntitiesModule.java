@@ -29,8 +29,16 @@ import org.fusesource.restygwt.client.Method;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
@@ -50,6 +58,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import eu.riscoss.client.EntityInfo;
 import eu.riscoss.client.JsonEntitySummary;
 import eu.riscoss.client.JsonUtil;
+import eu.riscoss.client.Log;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecLayerContextualInfo;
 import eu.riscoss.client.layers.LayersComboBox;
@@ -68,25 +77,31 @@ public class EntitiesModule implements EntryPoint {
 	VerticalPanel					page = new VerticalPanel();
 	HorizontalPanel					mainView = new HorizontalPanel();
 	VerticalPanel					leftPanel = new VerticalPanel();
-	VerticalPanel					rightPanel2 = new VerticalPanel();
+	//VerticalPanel					rightPanel2 = new VerticalPanel();
 	HorizontalPanel					space = new HorizontalPanel();
 	
 	Grid							grid;
-	TextBox							tb = new TextBox();
-	ListBox							newLayer;
+	//TextBox							tb = new TextBox();
+	//ListBox							newLayer;
 	
 	String							selectedEntity;
 	String							selectedLayer;
 	String 							newEntity;
 	String 							nextEntityName;
 	
-	List<JsonEntitySummary> 		entityList = new ArrayList<>();
+	//List<JsonEntitySummary> 		entityList = new ArrayList<>();
 	
 	TextBox							entityName = new TextBox();
-	ListBox							layerName = new ListBox();
+	TextBox							entityFilterQuery = new TextBox();
+	String 							entityQueryString = "";
+	ListBox 						layerList2 = new ListBox(); //used for filtering
+	String							filterLayer = "";
+	
+	ListBox							layerList = new ListBox();
+	
 	Button							newEntityButton;
 	
-	ArrayList<JSONObject>			entities = new ArrayList<>();
+	//ArrayList<JSONObject>			entities = new ArrayList<>();
 	
 	TreeWidget						entitiesTree = new TreeWidget();
 	TreeWidget						root = new TreeWidget();
@@ -110,7 +125,8 @@ public class EntitiesModule implements EntryPoint {
 			public void onSuccess(Method method, JSONValue response) {
 				for( int i = 0; i < response.isArray().size(); i++ ) {
 					JSONObject o = (JSONObject)response.isArray().get( i );
-					layerName.addItem( o.get( "name" ).isString().stringValue() );
+					layerList.addItem( o.get( "name" ).isString().stringValue() );
+					layerList2.addItem( o.get( "name" ).isString().stringValue() );
 				}
 			}
 
@@ -142,8 +158,8 @@ public class EntitiesModule implements EntryPoint {
 		Label parent = new Label("Layer");
 		parent.setStyleName("bold");
 		layerData.add(parent);
-		layerName.setStyleName("parentNameField");
-		layerData.add(layerName);
+		layerList.setStyleName("parentNameField");
+		layerData.add(layerList);
 		leftPanel.add(layerData);
 		
 		HorizontalPanel buttons = new HorizontalPanel();
@@ -190,30 +206,71 @@ public class EntitiesModule implements EntryPoint {
 		page.setWidth("100%");
 		//leftPanel.add(tablePanel);
 		entitiesTree.asWidget().setWidth("100%");
-		generateTree();
+		
+		// entity filtering /////////////
+		HorizontalPanel filterPanel = new HorizontalPanel();
+		leftPanel.add(filterPanel);
+		Label filterlabel = new Label("Filter entities: ");
+		filterlabel.setStyleName("bold");
+		filterPanel.add(filterlabel);
+		
+		entityFilterQuery.setWidth("120px");
+		entityFilterQuery.setStyleName("layerNameField");
+		filterPanel.add(entityFilterQuery);
+		
+		entityFilterQuery.addKeyUpHandler(new KeyUpHandler() {
+			
+			@Override
+			public void onKeyUp(KeyUpEvent event) {
+				if (entityFilterQuery.getText() != null){
+					String tmp = RiscossUtil.sanitize(entityFilterQuery.getText());
+					if (!tmp.equals(entityQueryString)) {
+						entityQueryString = tmp;
+						reloadData();
+					}
+				}
+			}
+		});
+		
+		Label layerLabel =  new Label("Layer: ");
+		layerLabel.setStyleName("bold");
+		filterPanel.add(layerLabel);
+		
+		layerList2.addItem("all"); //"all" is considered as "" in the RiscossJsonClient method
+		filterPanel.add(layerList2);
+		layerList2.addChangeHandler(new ChangeHandler() {
+			
+			@Override
+			public void onChange(ChangeEvent event) {
+				filterLayer = layerList2.getItemText(layerList2.getSelectedIndex());
+				reloadData();
+			}
+		});
+		
+		generateTree("", ""); //entityQueryString, filterLayer);
 		//leftPanel.add(entitiesTree.asWidget());
 		mainView.add(leftPanel);
 		mainView.add(rightPanel);
 		page.add(mainView);
 		
 		RootPanel.get().add( page );
-		
-		RiscossJsonClient.listEntities( new JsonCallback() {
-			
-			public void onSuccess(Method method, JSONValue response) {
-				if( response.isArray() != null ) {
-					for( int i = 0; i < response.isArray().size(); i++ ) {
-						JSONObject o = (JSONObject)response.isArray().get( i );
-						EntityInfo info = new EntityInfo( o.get( "name" ).isString().stringValue() );
-						info.setLayer( JsonUtil.getValue( o, "layer", "" ) );
-					}
-				}
-			}
-			
-			public void onFailure(Method method, Throwable exception) {
-				Window.alert( exception.getMessage() );
-			}
-		});
+//		//????????????when is this executed????
+//		RiscossJsonClient.listEntities( new JsonCallback() {
+//		//RiscossJsonClient.searchEntities( "E", new JsonCallback() {
+//			public void onSuccess(Method method, JSONValue response) {
+//				if( response.isArray() != null ) {
+//					for( int i = 0; i < response.isArray().size(); i++ ) {
+//						JSONObject o = (JSONObject)response.isArray().get( i );
+//						EntityInfo info = new EntityInfo( o.get( "name" ).isString().stringValue() );
+//						info.setLayer( JsonUtil.getValue( o, "layer", "" ) );
+//					}
+//				}
+//			}
+//			
+//			public void onFailure(Method method, Throwable exception) {
+//				Window.alert( exception.getMessage() );
+//			}
+//		});
 	}
 	
 	private void appendChilds(TreeWidget rootEnt, JSONArray children) {
@@ -251,8 +308,9 @@ public class EntitiesModule implements EntryPoint {
 		}
 	}
 	
-	private void generateTree() {
-		RiscossJsonClient.listEntities(new JsonCallback() {
+	private void generateTree(String query, String filterlayer) {
+		//RiscossJsonClient.listEntities(new JsonCallback() {
+		RiscossJsonClient.searchEntities( query, filterlayer, new JsonCallback() {
 			@Override
 			public void onFailure(Method method, Throwable exception) {
 				Window.alert(exception.getMessage());
@@ -375,12 +433,12 @@ public class EntitiesModule implements EntryPoint {
 	
 	public void reloadData() {
 		entitiesTree.clear();
-		generateTree();
+		generateTree(entityQueryString, filterLayer);
 	}
 	
 	protected void createEntity() {
 			
-			RiscossJsonClient.createEntity( entityName.getText(), layerName.getItemText(layerName.getSelectedIndex()),"", new JsonCallback() {
+			RiscossJsonClient.createEntity( entityName.getText(), layerList.getItemText(layerList.getSelectedIndex()),"", new JsonCallback() {
 				@Override
 				public void onFailure(Method method, Throwable exception) {
 					Window.alert( exception.getMessage() );
@@ -396,7 +454,7 @@ public class EntitiesModule implements EntryPoint {
 					
 					info.setLayer( JsonUtil.getValue( response, "layer", "" ) );
 
-					RiscossJsonClient.getLayerContextualInfo(layerName.getItemText(layerName.getSelectedIndex()), new JsonCallback() {
+					RiscossJsonClient.getLayerContextualInfo(layerList.getItemText(layerList.getSelectedIndex()), new JsonCallback() {
 						@Override
 						public void onFailure(Method method, Throwable exception) {
 							Window.alert( exception.getMessage() );
