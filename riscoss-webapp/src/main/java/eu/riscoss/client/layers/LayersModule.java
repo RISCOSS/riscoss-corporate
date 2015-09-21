@@ -36,6 +36,7 @@ import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.cellview.client.CellTable;
@@ -61,11 +62,13 @@ import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.ui.ClickWrapper;
 import eu.riscoss.client.ui.FramePanel;
 import eu.riscoss.client.ui.LabeledWidget;
+import eu.riscoss.client.codec.CodecLayerContextualInfo;
 import eu.riscoss.client.entities.EntityPropertyPage;
 import eu.riscoss.client.entities.TableResources;
 import eu.riscoss.client.ui.ClickWrapper;
 import eu.riscoss.client.ui.FramePanel;
 import eu.riscoss.client.ui.TreeWidget;
+import eu.riscoss.shared.JLayerContextualInfo;
 import eu.riscoss.shared.RiscossUtil;
 
 public class LayersModule implements EntryPoint {
@@ -249,6 +252,7 @@ public class LayersModule implements EntryPoint {
 							@Override
 							public void onSuccess(Method method, JSONValue response) {
 								//Window.Location.reload();
+								parentName.addItem(selectedLayer);
 								layerName.setText("");
 								reloadPage();
 							}} );
@@ -520,6 +524,18 @@ public class LayersModule implements EntryPoint {
 									JSONValue response) {
 								selectedEntity = entityName.getText().trim();
 								entityName.setText("");
+								RiscossJsonClient.getLayerContextualInfo(selectedLayer, new JsonCallback() {
+									@Override
+									public void onFailure(Method method, Throwable exception) {
+										Window.alert( exception.getMessage() );
+									}
+									@Override
+									public void onSuccess(Method method, JSONValue response) {
+										CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
+										JLayerContextualInfo jLayerContextualInfo = codec.decode( response );
+										updateContextualInfo(jLayerContextualInfo);
+									}
+								});
 								reloadEntityInfo();
 								RiscossJsonClient.listEntities(new JsonCallback() {
 									@Override
@@ -546,6 +562,34 @@ public class LayersModule implements EntryPoint {
 				mainView.add(rightPanel);
 			}
 		});
+	}
+	
+	protected void updateContextualInfo( JLayerContextualInfo contextualInfo ) {
+		int k;
+		JSONArray array = new JSONArray();
+		for (k = 0; k < contextualInfo.getSize(); k++) {
+			JSONObject o = new JSONObject();
+			o.put( "id", new JSONString( contextualInfo.getContextualInfoElement(k).getId() ) );
+			o.put( "target", new JSONString( selectedEntity ) );
+			String value = contextualInfo.getContextualInfoElement(k).getDefval();
+			for (int i = 0; i < contextualInfo.getContextualInfoElement(k).getInfo().size(); ++i) {
+				value+=";"+contextualInfo.getContextualInfoElement(k).getInfo().get(i);
+			}
+			o.put( "value", new JSONString( value ) );
+			o.put( "type", new JSONString( "custom" ) );
+			o.put( "datatype", new JSONString( contextualInfo.getContextualInfoElement(k).getType()));
+			o.put( "origin", new JSONString( "user" ) );
+			array.set( k, o );
+		}
+		RiscossJsonClient.postRiskData( array, new JsonCallback() {
+			@Override
+			public void onFailure( Method method, Throwable exception ) {
+				Window.alert( exception.getMessage() );
+			}
+			@Override
+			public void onSuccess( Method method, JSONValue response ) {
+				//								Window.alert( "Ok" );
+			}} );
 	}
 	
 	private void reloadEntityTable(JSONValue response) {

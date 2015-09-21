@@ -132,7 +132,6 @@ public class RiscossWebApp implements EntryPoint {
 		
 		MenuBar menu = new MenuBar();
 		menu.setWidth(" 100% ");
-		menu.setAutoOpen(true);
 		menu.setAnimationEnabled(true);
 		menu.setStyleName("mainMenu");
 		
