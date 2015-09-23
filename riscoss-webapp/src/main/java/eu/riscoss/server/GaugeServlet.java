@@ -59,7 +59,7 @@ public class GaugeServlet extends HttpServlet {
 	 */
 	protected void doGet( HttpServletRequest req, HttpServletResponse resp ) {
 
-		System.out.println( "GaugeServlet" );
+//		System.out.println( "GaugeServlet" );
 
 		Params params = new Params( req.getQueryString() );
 
@@ -100,7 +100,7 @@ public class GaugeServlet extends HttpServlet {
 				// ensures that the distribution sum is 1
 				flatten( dist, -1 );
 				
-				BufferedImage img = new DistributionGauge( dist, 100, 100, null );
+				BufferedImage img = new HorizontalDistributionGauge( dist, 100, 100, null );
 				ImageIO.write( img, "png", out );
 				out.close();
 			} catch (IOException e) {

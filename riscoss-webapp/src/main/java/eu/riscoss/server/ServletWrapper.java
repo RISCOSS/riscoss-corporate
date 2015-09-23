@@ -119,7 +119,6 @@ public class ServletWrapper extends ServletContainer {
 				}
 				
 				sm.createPage( "/", "RISCOSS Web App", "index.jsp", new String[] { KnownRoles.Administrator.name() } );
-//				sm.createPage( "/index.jsp", "RISCOSS Web App", "index.jsp", new String[] { KnownRoles.Administrator.name() } );
 				
 				sm.createSection( "/Configure" );
 				sm.createPage( "/Configure", "Layers", "layers.jsp", new String[] { KnownRoles.Administrator.name() } );
@@ -132,6 +131,8 @@ public class ServletWrapper extends ServletContainer {
 				sm.createPage( "/Run", "Multi-layer Analysis", "riskanalysis.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
 				sm.createPage( "/Run", "What-if Analysis", "whatifanalysis.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
 				sm.createPage( "/Run", "AHP Session Analysis", "rma.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
+//				sm.createPage( "/Run", "CBRank Analysis", "analysis.jsp?type=cbrank", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
+//				sm.createPage( "/Run", "Genetic Algorithm Analysis", "analysis.jsp?type=ga", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
 				
 				sm.createSection( "/Browse" );
 				sm.createPage( "/Browse", "Risk Data Repository", "rdr.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
@@ -140,7 +141,7 @@ public class ServletWrapper extends ServletContainer {
 				sm.createSection( "/Admin" );
 				sm.createPage( "/Admin", "Users and Roles", "admin.jsp", new String[] { KnownRoles.Administrator.name() } );
 			}
-				
+			
 			
 			db.setRoleProperty( "Guest", "allowedPages", "" );
 			

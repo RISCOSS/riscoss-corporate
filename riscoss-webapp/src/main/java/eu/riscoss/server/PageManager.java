@@ -95,11 +95,19 @@ public class PageManager {
 	
 	public String getJS() {
 		
-		String mod = request.getParameter( "page" );
-		
-		if( mod == null ) mod = "RiscossWebApp";
+		String mod = getParameter( "page", "RiscossWebApp" );
 		
 		return mod + "/" + mod + ".nocache.js";
+		
+	}
+	
+	public String getParameter( String name, String def ) {
+		
+		String mod = request.getParameter( name );
+		
+		if( mod == null ) mod = def;
+		
+		return mod;
 	}
 	
 }
