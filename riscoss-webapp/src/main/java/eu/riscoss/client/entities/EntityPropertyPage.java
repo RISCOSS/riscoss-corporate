@@ -72,9 +72,11 @@ public class EntityPropertyPage implements IsWidget {
 		DialogBox dialog = new DialogBox( false, true );
 		DockPanel dock = new DockPanel();
 		RDCConfigurationPage ppg = new RDCConfigurationPage();
+		String RDCEntity;
 		
 		RDCConfDialog() {
-			Button done = new Button( "Done", new ClickHandler() {
+			Button done = new Button( "Done");
+			done.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
 					JSONObject json = ppg.getJson();
@@ -86,12 +88,10 @@ public class EntityPropertyPage implements IsWidget {
 							sep = ", ";
 						}
 					}
-					rdcAnchor.setText( str + " ... " );
-					
-					RiscossJsonClient.saveRDCs( json, entity, new JsonCallback() {
+					RiscossJsonClient.saveRDCs( json, RDCEntity, new JsonCallback() {
 						@Override
 						public void onSuccess(Method method, JSONValue response) {
-							dialog.hide();
+							Window.alert("Risk Data Collectors saved");
 						}
 						@Override
 						public void onFailure(Method method, Throwable exception) {
@@ -145,13 +145,14 @@ public class EntityPropertyPage implements IsWidget {
 			ppg.setSelectedEntity( entity );
 			dialog.show();
 		}
-		
-		public void setEntity(String entity) {
-			ppg.setSelectedEntity(entity);
-		}
-		
+
 		public DockPanel getDock() {
 			return dock;
+		}
+		
+		public void setSelectedEntity(String entity) {
+			RDCEntity = entity;
+			ppg.setSelectedEntity(entity);
 		}
 		
 	}
@@ -257,6 +258,9 @@ public class EntityPropertyPage implements IsWidget {
 		rasLoaded = false;
 		JsonEntitySummary info = new JsonEntitySummary( response );
 		
+		confDialog = new RDCConfDialog();
+		confDialog.setSelectedEntity(entity);
+		
 		layer = info.getLayer();
 		
 		parentList = new ArrayList<>();
@@ -273,10 +277,6 @@ public class EntityPropertyPage implements IsWidget {
 		{
 			Grid grid = new Grid( 1, 2 );
 			Grid grid2 = new Grid( 1, 2 );
-			
-			confDialog = new RDCConfDialog();
-			confDialog.setEntity(this.entity);
-			dataCollectors.setWidget(confDialog.getDock());
 			
 			
 			grid.setWidget( 0, 0, new Label( "Owned by:" ) );
@@ -570,6 +570,7 @@ public class EntityPropertyPage implements IsWidget {
 			
 		});
 		//vPanel.add(save);
+		dataCollectors.setWidget(confDialog.getDock());
 		ciPanel.setWidget( vPanel );
 	}
 
