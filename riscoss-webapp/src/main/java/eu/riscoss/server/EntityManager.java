@@ -320,6 +320,10 @@ public class EntityManager {
 		RiscossDB db = DBConnector.openDB(domain, token);
 		try {
 			JsonObject json = (JsonObject) new JsonParser().parse(parents);
+			List<String> old_parents = db.getParents( entity );
+			for( String old_parent : old_parents ) {
+				db.removeEntity( entity, old_parent );
+			}
 			JsonArray a = json.get("list").getAsJsonArray();
 			for (int i = 0; i < a.size(); i++) {
 				String parent = a.get(i).getAsString();
