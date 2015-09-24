@@ -255,6 +255,13 @@ body {
 	margin-bottom: 18px !important;
 }
 
+.Button {
+	background-color:  #4D9244 !important;
+	color: #F3F3F3 !important;
+	font-weight: bold !important;
+	margin-left: 12px !important;
+}
+
 .deleteButton {
 	background-color:  #4D9244 !important;
 	color: #F3F3F3 !important;
@@ -277,6 +284,10 @@ body {
 	margin-right: 20px !important;
 	padding: 5px !important;
 	margin-top: 18px !important;
+}
+
+.marginTopBottom {
+	margin: 6px 0 !important;
 }
 
 .layerNameField {

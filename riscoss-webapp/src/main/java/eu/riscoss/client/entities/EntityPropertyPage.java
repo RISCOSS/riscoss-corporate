@@ -28,6 +28,7 @@ import java.util.List;
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -37,6 +38,9 @@ import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
+import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.CellTable.Resources;
+import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
@@ -55,6 +59,9 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DateBox;
+import com.google.gwt.view.client.SelectionChangeEvent;
+import com.google.gwt.view.client.SingleSelectionModel;
+import com.google.gwt.view.client.SelectionChangeEvent.Handler;
 
 import eu.riscoss.client.JsonCallbackWrapper;
 import eu.riscoss.client.JsonEntitySummary;
@@ -254,6 +261,19 @@ public class EntityPropertyPage implements IsWidget {
 		return layer;
 	}
 
+	
+	VerticalPanel parents;
+	VerticalPanel children;
+	ListBox parentsListbox = new ListBox();
+	ListBox childrenListbox = new ListBox();
+	TextColumn<String> t;
+	TextColumn<String> t2;
+	Button deleteParent;
+	Button deleteChildren;
+	CellTable<String> parentsTable;
+	CellTable<String> childrenTable;
+	
+	
 	protected void loadProperties( JSONValue response ) {
 		rasLoaded = false;
 		JsonEntitySummary info = new JsonEntitySummary( response );
@@ -265,6 +285,8 @@ public class EntityPropertyPage implements IsWidget {
 		
 		parentList = new ArrayList<>();
 		childrenList = new ArrayList<>();
+		parentsListbox = new ListBox();
+		childrenListbox = new ListBox();
 		
 		for (int i = 0; i < info.getParentList().size(); ++i) {
 			parentList.add(info.getParentList().get(i).isString().stringValue());
@@ -274,96 +296,192 @@ public class EntityPropertyPage implements IsWidget {
 		}
 		
 		VerticalPanel v = new VerticalPanel();
-		{
-			Grid grid = new Grid( 1, 2 );
-			Grid grid2 = new Grid( 1, 2 );
-			
-			
-			grid.setWidget( 0, 0, new Label( "Owned by:" ) );
-			{
-				Grid g = new Grid(entitiesList.size(), 1);
-				for (int i = 0; i < entitiesList.size(); ++i) {
-					CheckBox cb = new CheckBox(entitiesList.get(i));
-					cb.setName(entitiesList.get(i));
-					cb.addClickHandler(new ClickHandler() {
-						@Override
-						public void onClick(ClickEvent event) {
-							CheckBox chk = (CheckBox)event.getSource();
-							boolean value = chk.getValue();
-							if( value == true ) {
-								parentList.add( chk.getName() );
-							}
-							else {
-								parentList.remove( chk.getName() );
-							}
-						}
-					});
-					if (parentList.contains(entitiesList.get(i))) {
-						cb.setChecked(true);
-					}
-					g.setWidget(i, 0, cb);
-				}
-				grid.setWidget(0, 1, g);
-			}
-			{
-				grid2.setWidget( 0, 0, new Label( "Owns:" ) );
-				Grid g = new Grid(entitiesList.size(), 1);
-				for (int i = 0; i < entitiesList.size(); ++i) {
-					CheckBox cb = new CheckBox(entitiesList.get(i));
-					cb.setName(entitiesList.get(i));
-					cb.addClickHandler(new ClickHandler() {
-						@Override
-						public void onClick(ClickEvent event) {
-							CheckBox chk = (CheckBox)event.getSource();
-							boolean value = chk.getValue();
-							if( value == true ) {
-								childrenList.add( chk.getName() );
-							}
-							else {
-								childrenList.remove( chk.getName() );
-							}
-						}
-					});
-					if (childrenList.contains(entitiesList.get(i))) {
-						cb.setChecked(true);
-					}
-					g.setWidget(i, 0, cb);
-				}
-				grid2.setWidget(0, 1, g);
-			}
+		v.setWidth("100%");
+		{	
 			HorizontalPanel hPanel = new HorizontalPanel();
-			hPanel.add(grid);
-			hPanel.add(grid2);
-			v.add( hPanel );
-			Button upload = new Button("Upload parents");
-			upload.setStyleName("button");
-			upload.addClickHandler(new ClickHandler() {
+			hPanel.setWidth("100%");
+			parents = new VerticalPanel();
+			children = new VerticalPanel();
+			
+			HorizontalPanel data = new HorizontalPanel();
+			
+			Label l = new Label("Parent");
+			l.setStyleName("bold");
+			data.add(l);
+			for (int i = 0; i < entitiesList.size(); ++i) {
+				if (!entitiesList.get(i).equals(entity)) {
+					parentsListbox.addItem(entitiesList.get(i));
+					childrenListbox.addItem(entitiesList.get(i));
+				}
+			}
+			data.add(parentsListbox);
+			Button b = new Button("Add parent", new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
+					String newParent = parentsListbox.getItemText(parentsListbox.getSelectedIndex());
+					if (parentList.contains(newParent)) {
+						Window.alert("The selected entity is already a parent");
+						return;
+					}
+					parentList.add(newParent);
 					RiscossJsonClient.setParents(entity, parentList, new JsonCallback() {
 						@Override
 						public void onFailure(Method method, Throwable exception) {
+							Window.alert(exception.getMessage());
 						}
 						@Override
 						public void onSuccess(Method method, JSONValue response) {
-							RiscossJsonClient.setChildren(entity, childrenList, new JsonCallback() {
-								@Override
-								public void onFailure(Method method, Throwable exception) {
-								}
-								@Override
-								public void onSuccess(Method method, JSONValue response) {
-									if (module != null) module.reloadData();
-								}
-							});
+							module.reloadData();
+							parentsTable.setRowData(0, parentList);
 						}
 					});
 				}
 			});
-			v.add(upload);
-			grid.setWidth( "100%" );
-			v.setWidth( "100%" );
-			grid.getColumnFormatter().setWidth( 0, "20%" );
-			grid.getColumnFormatter().setWidth( 1, "80%" );
+			b.setStyleName("Button");
+			data.add(b);
+			data.setStyleName("marginTopBottom");
+			parents.add(data);
+			
+			parentsTable = new CellTable<String>(15, (Resources) GWT.create(TableResources.class));
+			parentsTable.setWidth("100%");
+			t = new TextColumn<String>() {
+				@Override
+				public String getValue(String arg0) {
+					return arg0;
+				}
+			};
+			deleteParent = new Button("Delete parent");
+			deleteParent.setStyleName("deleteButton");
+			final SingleSelectionModel<String> selectionModel = new SingleSelectionModel<String>();
+		    parentsTable.setSelectionModel(selectionModel);
+		    selectionModel.addSelectionChangeHandler(new Handler() {
+				@Override
+				public void onSelectionChange(SelectionChangeEvent arg0) {
+					parents.remove(deleteParent);
+					deleteParent.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							parentList.remove(selectionModel.getSelectedObject());
+							RiscossJsonClient.setParents(entity, parentList, new JsonCallback() {
+								@Override
+								public void onFailure(Method method,
+										Throwable exception) {
+								}
+								@Override
+								public void onSuccess(Method method,
+										JSONValue response) {
+									module.reloadData();
+									setSelectedEntity(entity);
+								}
+							});
+						}
+					});
+					parents.add(deleteParent);
+				}
+		    });
+			
+			parentsTable.addColumn(t, "Parents");
+			
+			if (parentList.size() > 0) parentsTable.setRowData(0, parentList);
+			else {
+				parentList.add("");
+				parentsTable.setRowData(0, parentList);
+				parentList.remove(0);
+			}
+			parentsTable.setStyleName("table");
+			parents.add(parentsTable);
+			
+			HorizontalPanel data2 = new HorizontalPanel();
+			
+			Label l2 = new Label("Children");
+			l2.setStyleName("bold");
+			data2.add(l2);
+			data2.add(childrenListbox);
+			Button b2 = new Button("Add children", new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					String newChildren = childrenListbox.getItemText(childrenListbox.getSelectedIndex());
+					if (childrenList.contains(newChildren)) {
+						Window.alert("The selected entity is already a children");
+						return;
+					}
+					childrenList.add(newChildren);
+					RiscossJsonClient.setChildren(entity, childrenList, new JsonCallback() {
+						@Override
+						public void onFailure(Method method, Throwable exception) {
+							Window.alert(exception.getMessage());
+						}
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							module.reloadData();
+							childrenTable.setRowData(0, childrenList);
+						}
+					});
+				}
+			});
+			b2.setStyleName("Button");
+			data2.add(b2);
+			data2.setStyleName("marginTopBottom");
+			children.add(data2);
+			
+			childrenTable = new CellTable<String>(15, (Resources) GWT.create(TableResources.class));
+			childrenTable.setWidth("100%");
+			t2 = new TextColumn<String>() {
+				@Override
+				public String getValue(String arg0) {
+					return arg0;
+				}
+			};
+			deleteChildren = new Button("Delete children");
+			deleteChildren.setStyleName("deleteButton");
+			final SingleSelectionModel<String> selectionModel2 = new SingleSelectionModel<String>();
+		    childrenTable.setSelectionModel(selectionModel2);
+		    selectionModel2.addSelectionChangeHandler(new Handler() {
+				@Override
+				public void onSelectionChange(SelectionChangeEvent arg0) {
+					children.remove(deleteChildren);
+					deleteChildren.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							childrenList.remove(selectionModel2.getSelectedObject());
+							RiscossJsonClient.setChildren(entity, childrenList, new JsonCallback() {
+								@Override
+								public void onFailure(Method method,
+										Throwable exception) {
+								}
+								@Override
+								public void onSuccess(Method method,
+										JSONValue response) {
+									module.reloadData();
+									setSelectedEntity(entity);
+								}
+							});
+						}
+					});
+					children.add(deleteChildren);
+				}
+		    });
+			
+			childrenTable.addColumn(t, "Children");
+			
+			if (childrenList.size() > 0) childrenTable.setRowData(0, childrenList);
+			else {
+				childrenList.add("");
+				childrenTable.setRowData(0, childrenList);
+				childrenList.remove(0);
+			}
+			childrenTable.setStyleName("table");
+			children.add(childrenTable);
+			
+			hPanel.setWidth("100%");
+			hPanel.add(parents);
+			HorizontalPanel h = new HorizontalPanel();
+			h.setWidth("100px");
+			hPanel.add(h);
+			hPanel.add(children);
+			v.add(hPanel);
+			
+			
 		}
 		
 		tb = new FlexTable();

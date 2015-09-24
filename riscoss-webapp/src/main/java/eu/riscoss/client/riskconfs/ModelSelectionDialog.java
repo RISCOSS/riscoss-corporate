@@ -38,6 +38,7 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 
 import eu.riscoss.client.Callback;
 import eu.riscoss.client.JsonModelList;
@@ -88,14 +89,27 @@ public class ModelSelectionDialog {
 					}
 					DockPanel dock = new DockPanel();
 					dock.add( grid, DockPanel.CENTER );
-					dock.add( new Button( "Ok", new ClickHandler() {
+					Button ok = new Button( "Ok", new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
 							dialog.hide();
 							if( callback != null ) {
 								callback.onDone( new ArrayList<String>( selection ) );
 							}
-						}} ), DockPanel.SOUTH );
+						}
+					});
+					Button cancel = new Button ("Cancel", new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							dialog.hide();
+						}
+					});
+					ok.setStyleName("deleteButton");
+					cancel.setStyleName("deleteButton");
+					HorizontalPanel buttons = new HorizontalPanel();
+					buttons.add(ok);
+					buttons.add(cancel);
+					dock.add( buttons , DockPanel.SOUTH );
 					dialog.add( dock );
 					dialog.getElement().getStyle().setZIndex( Integer.MAX_VALUE );
 					dialog.show();

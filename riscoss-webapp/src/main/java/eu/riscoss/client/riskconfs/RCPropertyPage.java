@@ -68,22 +68,6 @@ public class RCPropertyPage implements IsWidget {
 		
 		p.add( new Label( "Models per layer:" ) );
 		
-//		Grid grid = new Grid();
-//		JSONArray array = 
-//				response.isObject().get( "models" ).isArray();
-//		grid.resize( array.size(), 2 );
-//		for( int i = 0; i < array.size(); i++ ) {
-//			grid.setWidget( i, 0, new Label( 
-//					array.get( i ).isObject().get( "model" ).isString().stringValue() ) );
-//		}
-//		p.add( grid );
-//		p.add( new Button( "Change", new ClickHandler() {
-//			@Override
-//			public void onClick(ClickEvent event) {
-//				NewModelDialog dialog = new NewModelDialog();
-//				dialog.show( currentRC.get( "name" ).isString().stringValue() );
-//			}} ) );
-		
 		p.add( mlist );
 		
 		try {
