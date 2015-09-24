@@ -272,6 +272,7 @@ public class EntityPropertyPage implements IsWidget {
 	Button deleteChildren;
 	CellTable<String> parentsTable;
 	CellTable<String> childrenTable;
+	FlexTable custom;
 	
 	
 	protected void loadProperties( JSONValue response ) {
@@ -486,8 +487,10 @@ public class EntityPropertyPage implements IsWidget {
 		
 		tb = new FlexTable();
 		userForm = new CustomizableForm();
+		custom = new FlexTable();
 		
 		int row = 0;
+		int rowC = 0;
 		
 		for( int i = 0; i < info.getUserData().size(); i++ ) {
 			JsonRiskDataList.RiskDataItem item = info.getUserData().get( i );
@@ -510,20 +513,17 @@ public class EntityPropertyPage implements IsWidget {
 				tb.insertRow(row);
 				tb.insertCell(row, 0);
 				tb.insertCell(row, 1);
-				tb.insertCell(row, 2);
 				tb.setWidget(row, 0, new Label(item.getId()));
-				tb.setWidget(row, 1, new Label(item.getDataType()));
 				
 				if (item.getDataType().equals("Integer")) {
 					TextBox t = new TextBox();
 					t.setText(contextualInfo[0]);
-					
-					tb.setWidget(row, 2, t);
+					tb.setWidget(row, 1, t);
 				}
 				else if (item.getDataType().equals("Boolean")) {
 					CheckBox c = new CheckBox();
 					if (Integer.parseInt(contextualInfo[0]) == 1) c.setChecked(true);
-					tb.setWidget(row, 2, c);
+					tb.setWidget(row, 1, c);
 				}
 				else if (item.getDataType().equals("Date")) {
 					DateTimeFormat dateFormat = DateTimeFormat.getLongDateFormat();
@@ -562,7 +562,7 @@ public class EntityPropertyPage implements IsWidget {
 					g.setWidget(0, 5, t);
 					g.setWidget(0, 6, new Label("ss"));
 					
-					tb.setWidget(row, 2, g);
+					tb.setWidget(row, 1, g);
 				}
 				else {
 					ListBox lb = new ListBox();
@@ -571,7 +571,7 @@ public class EntityPropertyPage implements IsWidget {
 					}
 					lb.setSelectedIndex(Integer.parseInt(contextualInfo[0]));
 					
-					tb.setWidget(row, 2, lb);
+					tb.setWidget(row, 1, lb);
 				}
 				++row;
 			}
@@ -629,10 +629,12 @@ public class EntityPropertyPage implements IsWidget {
 		});
 		summaryPanel.setWidget( v );
 		VerticalPanel vPanel = new VerticalPanel();
+		Label t = new Label("Layer contextual information");
+		t.setStyleName("smallTitle2");
+		vPanel.add(t);
 		vPanel.add(tb);
-		vPanel.add(userForm);
-		Button save = new Button("SAVE");
-		save.setStyleName("button2");
+		Button save = new Button("Save");
+		save.setStyleName("deleteButton2");
 		save.addClickHandler(new ClickHandler() {
 
 			@Override
@@ -687,7 +689,11 @@ public class EntityPropertyPage implements IsWidget {
 			}
 			
 		});
-		//vPanel.add(save);
+		vPanel.add(save);
+		Label t2 = new Label("Custom contextual information");
+		t2.setStyleName("smallTitle2");
+		vPanel.add(t2);
+		vPanel.add(userForm);
 		dataCollectors.setWidget(confDialog.getDock());
 		ciPanel.setWidget( vPanel );
 	}

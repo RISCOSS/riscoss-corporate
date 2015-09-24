@@ -945,10 +945,31 @@ public class LayerPropertyPage implements IsWidget {
 			g.setWidget(3, 1, dfval);
 		}
 		else {
+			newDefValList = new ListBox();
 			for (int i = 0; i < jElement.getInfo().size(); ++i) {
 				newDefValList.addItem(jElement.getInfo().get(i));
 			}
 			newDefValList.setSelectedIndex(Integer.parseInt(s));
+			newDefValList.addChangeHandler(new ChangeHandler() {
+				int elem = count;
+				@Override
+				public void onChange(ChangeEvent event) {
+					info.getContextualInfoElement(elem).setDefval(String.valueOf(newDefValList.getSelectedIndex()));
+					CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
+					JSONValue json = codec.encode( info );
+					element = elem;
+					RiscossJsonClient.setLayerContextualInfo(layer, json, new JsonCallback() {
+						@Override
+						public void onFailure(Method method, Throwable exception) {
+						}
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							reloadData();
+							contextualInfoPanel(info.getContextualInfoElement(element).getId());
+						}
+					});
+				}
+			});
 			g.setWidget(3, 1, newDefValList);
 		}
 		
