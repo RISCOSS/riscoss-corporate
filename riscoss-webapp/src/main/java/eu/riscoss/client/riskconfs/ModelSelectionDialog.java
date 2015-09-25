@@ -159,7 +159,10 @@ public class ModelSelectionDialog {
 								}
 							}
 						});
-						if (l.contains(info.getName())) chk.setChecked(true);
+						if (l.contains(info.getName())) {
+							chk.setChecked(true);
+							selection.add(chk.getName());
+						}
 						grid.setWidget( i, 0, chk );
 					}
 					DockPanel dock = new DockPanel();
