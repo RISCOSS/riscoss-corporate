@@ -15,6 +15,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
@@ -843,9 +845,9 @@ public class LayerPropertyPage implements IsWidget {
 			});
 			newMax.setText(jElement.getInfo().get(1));
 			newMax.addKeyPressHandler(new KeyPressHandler() {
+				int elem = count;
 				@Override
 				public void onKeyPress(KeyPressEvent event) {
-					int elem = count;
 					if (KeyCodes.KEY_ENTER == event.getNativeEvent().getKeyCode()) {
 						String s = newMax.getText();
 						if (s == null || s.equals("") ) 
@@ -929,15 +931,105 @@ public class LayerPropertyPage implements IsWidget {
 			int day = Integer.parseInt(date[2]);
 			Date d = new Date(year, month, day);
 			newDate.setValue(d);
+			newDate.getDatePicker().addValueChangeHandler(new ValueChangeHandler<Date>() {
+				int elem = count;
+				@Override
+				public void onValueChange(ValueChangeEvent<Date> event) {
+					String s = getDate();
+					info.getContextualInfoElement(elem).setDefval(s);
+					CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
+					JSONValue json = codec.encode( info );
+					element = elem;
+					RiscossJsonClient.setLayerContextualInfo(layer, json, new JsonCallback() {
+						@Override
+						public void onFailure(Method method, Throwable exception) {
+						}
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							reloadData();
+							contextualInfoPanel(info.getContextualInfoElement(element).getId());
+						}
+					});
+				}
+			});
 			
 			HorizontalPanel timePanel = new HorizontalPanel();
 			newHour.setText(String.valueOf(time[0]));
+			newHour.addKeyPressHandler(new KeyPressHandler() {
+				int elem = count;
+				@Override
+				public void onKeyPress(KeyPressEvent event) {
+					if (KeyCodes.KEY_ENTER == event.getNativeEvent().getKeyCode()) {
+						String s = getDate();
+						info.getContextualInfoElement(elem).setDefval(s);
+						CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
+						JSONValue json = codec.encode( info );
+						element = elem;
+						RiscossJsonClient.setLayerContextualInfo(layer, json, new JsonCallback() {
+							@Override
+							public void onFailure(Method method, Throwable exception) {
+							}
+							@Override
+							public void onSuccess(Method method, JSONValue response) {
+								reloadData();
+								contextualInfoPanel(info.getContextualInfoElement(element).getId());
+							}
+						});
+					}
+				}
+			});
 			timePanel.add(newHour);
 			timePanel.add(new Label("hh"));
 			newMinute.setText(String.valueOf(time[1]));
+			newMinute.addKeyPressHandler(new KeyPressHandler() {
+				int elem = count;
+				@Override
+				public void onKeyPress(KeyPressEvent event) {
+					if (KeyCodes.KEY_ENTER == event.getNativeEvent().getKeyCode()) {
+						String s = getDate();
+						info.getContextualInfoElement(elem).setDefval(s);
+						CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
+						JSONValue json = codec.encode( info );
+						element = elem;
+						RiscossJsonClient.setLayerContextualInfo(layer, json, new JsonCallback() {
+							@Override
+							public void onFailure(Method method, Throwable exception) {
+							}
+							@Override
+							public void onSuccess(Method method, JSONValue response) {
+								reloadData();
+								contextualInfoPanel(info.getContextualInfoElement(element).getId());
+							}
+						});
+					}
+				}
+			});
 			timePanel.add(newMinute);
 			timePanel.add(new Label("mm"));
 			newSecond.setText(String.valueOf(time[2]));
+			newSecond.addKeyPressHandler(new KeyPressHandler() {
+				int elem = count;
+				@Override
+				public void onKeyPress(KeyPressEvent event) {
+					if (KeyCodes.KEY_ENTER == event.getNativeEvent().getKeyCode()) {
+						String s = getDate();
+						info.getContextualInfoElement(elem).setDefval(s);
+						CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
+						JSONValue json = codec.encode( info );
+						element = elem;
+						RiscossJsonClient.setLayerContextualInfo(layer, json, new JsonCallback() {
+							@Override
+							public void onFailure(Method method, Throwable exception) {
+							}
+							@Override
+							public void onSuccess(Method method, JSONValue response) {
+								reloadData();
+								contextualInfoPanel(info.getContextualInfoElement(element).getId());
+							}
+						});
+					}
+				}
+			});
 			timePanel.add(newSecond);
 			timePanel.add(new Label("ss"));
 			
@@ -977,6 +1069,20 @@ public class LayerPropertyPage implements IsWidget {
 		vPanel.setStyleName("rightPanelLayer");
 		
 		cInfoPanel.add(vPanel);
+	}
+	
+	public String getDate() {
+		//TODO use another date management, GWT gives many problems with this one! quick fix developed
+		Date d = newDate.getValue();
+		int y = d.getYear() + 1900;
+		int m = d.getMonth() + 1;
+		if (m == 13) {
+			m = 1;
+			++y;
+		}
+		String s = y + "-" + m + "-" + d.getDate() + ":" + newHour.getText() + "-" +
+				newMinute.getText() + "-" + newSecond.getText();
+		return s;
 	}
 	
 }
