@@ -235,6 +235,13 @@ body {
 	margin-bottom: 10px !important;
 }
 
+.smallTitle2 {
+	font-size: 16px !important;
+	color: #000000 !important;
+	border-bottom: 1px dotted #E6E6E6 !important;
+	margin-bottom: 10px !important;
+}
+
 .properties {
 	margin-top: 14px !important;
 	margin-bottom: 16px !important;
@@ -266,6 +273,13 @@ body {
 	background-color:  #4D9244 !important;
 	color: #F3F3F3 !important;
 	font-weight: bold !important;
+}
+
+.deleteButton2 {
+	background-color:  #4D9244 !important;
+	color: #F3F3F3 !important;
+	font-weight: bold !important;
+	margin: 6px 0 !important;
 }
 
 .cellbutton.gwt-Button {

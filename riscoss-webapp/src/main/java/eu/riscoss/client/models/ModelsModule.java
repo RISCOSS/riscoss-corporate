@@ -32,6 +32,9 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
@@ -537,6 +540,8 @@ public class ModelsModule implements EntryPoint {
 		}
 	}
 	
+	TextBox nameM;
+	
 	public void setSelectedModel(String name) {
 		selectedModel = name;
 		if (rightPanel2.getWidget() != null) {
@@ -565,6 +570,36 @@ public class ModelsModule implements EntryPoint {
 		Label nameLy = new Label(name);
 		nameLy.setStyleName("tag");
 		grid.setWidget(0, 1, nameLy);
+		
+		nameM = new TextBox();
+		nameM.setWidth("250px");
+		nameM.setText(name);
+		nameM.addKeyPressHandler(new KeyPressHandler() {
+			@Override
+			public void onKeyPress(KeyPressEvent event) {
+				if (KeyCodes.KEY_ENTER == event.getNativeEvent().getKeyCode()) {
+					
+					String name = nameM.getText().trim();
+	
+					RiscossJsonClient.changeModelName(selectedModel, name, new JsonCallback() {
+						@Override
+						public void onFailure(Method method, Throwable exception) {
+							//Window.alert(exception.getMessage());
+							Window.alert("Name already existing. Nothing changed. "); 
+						}
+
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							Window.Location.reload();
+//							dataProvider.getList().add(new ModelInfo(txt.getText()));
+//							dataProvider.getList().remove(name);
+//							dataProvider.refresh();
+						}
+					});
+				}
+			}
+		});
+		grid.setWidget(0, 1, nameM);
 		
 		rightPanel.add(grid);
 		
