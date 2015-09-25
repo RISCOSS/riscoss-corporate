@@ -521,17 +521,20 @@ public class EntityPropertyPage implements IsWidget {
 				tb.insertRow(row);
 				tb.insertCell(row, 0);
 				tb.insertCell(row, 1);
+				tb.insertCell(row, 2);
 				tb.setWidget(row, 0, new Label(item.getId()));
 				
 				if (item.getDataType().equals("Integer")) {
 					TextBox t = new TextBox();
 					t.setText(contextualInfo[0]);
-					tb.setWidget(row, 1, t);
+					tb.setWidget(row, 2, t);
+					tb.setWidget(row, 1, new Label("Integer"));
 				}
 				else if (item.getDataType().equals("Boolean")) {
 					CheckBox c = new CheckBox();
 					if (Integer.parseInt(contextualInfo[0]) == 1) c.setChecked(true);
-					tb.setWidget(row, 1, c);
+					tb.setWidget(row, 2, c);
+					tb.setWidget(row, 1, new Label("Boolean"));
 				}
 				else if (item.getDataType().equals("Date")) {
 					DateTimeFormat dateFormat = DateTimeFormat.getLongDateFormat();
@@ -570,7 +573,8 @@ public class EntityPropertyPage implements IsWidget {
 					g.setWidget(0, 5, t);
 					g.setWidget(0, 6, new Label("ss"));
 					
-					tb.setWidget(row, 1, g);
+					tb.setWidget(row, 2, g);
+					tb.setWidget(row, 1, new Label("Date"));
 				}
 				else {
 					ListBox lb = new ListBox();
@@ -579,7 +583,8 @@ public class EntityPropertyPage implements IsWidget {
 					}
 					lb.setSelectedIndex(Integer.parseInt(contextualInfo[0]));
 					
-					tb.setWidget(row, 1, lb);
+					tb.setWidget(row, 2, lb);
+					tb.setWidget(row, 1, new Label("List"));
 				}
 				++row;
 			}
