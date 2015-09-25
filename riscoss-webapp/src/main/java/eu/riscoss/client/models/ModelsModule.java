@@ -312,36 +312,6 @@ public class ModelsModule implements EntryPoint {
 			Grid grid = new Grid(2, 3);
 			String jsname = json.get("name").isString().stringValue();
 			
-			Button changer = new MyNameButton(jsname, BUTTON_CHANGE_NAME, new ClickHandler() {
-				public void onClick(ClickEvent event) {
-					
-					if (name.equals(txt.getText()))
-						return;// if the name was not changed, simply don't care about the button click.
-					
-					
-					RiscossJsonClient.changeModelName(name, txt.getText(), new JsonCallback() {
-						@Override
-						public void onFailure(Method method, Throwable exception) {
-							//Window.alert(exception.getMessage());
-							Window.alert("Name already existing. Nothing changed. "); 
-						}
-
-						@Override
-						public void onSuccess(Method method, JSONValue response) {
-							Window.Location.reload();
-//							dataProvider.getList().add(new ModelInfo(txt.getText()));
-//							dataProvider.getList().remove(name);
-//							dataProvider.refresh();
-						}
-					});
-				}
-			});
-			
-//			grid.setWidget(1, 0, new Label("Description:"));
-//			txt = new TextBox();
-//			txt.setReadOnly(true);
-//			grid.setWidget(1, 1, txt);
-			
 			//Uploader///////////
 			
 			String descfilename = json.get("modeldescfilename").isString().stringValue();
@@ -566,10 +536,6 @@ public class ModelsModule implements EntryPoint {
 		Label nameL = new Label("Name");
 		nameL.setStyleName("bold");
 		grid.setWidget(0,0,nameL);
-		
-		Label nameLy = new Label(name);
-		nameLy.setStyleName("tag");
-		grid.setWidget(0, 1, nameLy);
 		
 		nameM = new TextBox();
 		nameM.setWidth("250px");
