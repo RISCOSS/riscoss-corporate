@@ -324,6 +324,10 @@ public class EntityPropertyPage implements IsWidget {
 						Window.alert("The selected entity is already a parent");
 						return;
 					}
+					if (childrenList.contains(newParent)) {
+						Window.alert("The selected entity is already a children. An entity can not be parent and child of the same entity.");
+						return;
+					}
 					parentList.add(newParent);
 					RiscossJsonClient.setParents(entity, parentList, new JsonCallback() {
 						@Override
@@ -404,6 +408,10 @@ public class EntityPropertyPage implements IsWidget {
 					String newChildren = childrenListbox.getItemText(childrenListbox.getSelectedIndex());
 					if (childrenList.contains(newChildren)) {
 						Window.alert("The selected entity is already a children");
+						return;
+					}
+					if (parentList.contains(newChildren)) {
+						Window.alert("The selected entity is already a children. An entity can not be parent and child of the same entity.");
 						return;
 					}
 					childrenList.add(newChildren);
