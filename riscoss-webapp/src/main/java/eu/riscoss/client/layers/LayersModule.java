@@ -534,9 +534,9 @@ public class LayersModule implements EntryPoint {
 										CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
 										JLayerContextualInfo jLayerContextualInfo = codec.decode( response );
 										updateContextualInfo(jLayerContextualInfo);
+										reloadEntityInfo();
 									}
 								});
-								reloadEntityInfo();
 								RiscossJsonClient.listEntities(new JsonCallback() {
 									@Override
 									public void onFailure(Method method,

@@ -352,7 +352,7 @@ public class ModelsModule implements EntryPoint {
 
 				Anchor descfAnchor = new Anchor("Download documentation:\n"+descfilename, GWT.getHostPageBaseURL() +  "models/download?domain=" + RiscossJsonClient.getDomain() + 
 						"&name="+ name+"&type=desc&token="+RiscossCall.getToken());
-				grid.setWidget( 2, 0, descfAnchor);
+				grid.setWidget( 1, 0, descfAnchor);
 
 			}
 			

@@ -77,20 +77,15 @@ public class EntitiesModule implements EntryPoint {
 	VerticalPanel					page = new VerticalPanel();
 	HorizontalPanel					mainView = new HorizontalPanel();
 	VerticalPanel					leftPanel = new VerticalPanel();
-	//VerticalPanel					rightPanel2 = new VerticalPanel();
 	HorizontalPanel					space = new HorizontalPanel();
 	
 	Grid							grid;
-	//TextBox							tb = new TextBox();
-	//ListBox							newLayer;
 	
 	String							selectedEntity;
 	String							selectedLayer;
 	String 							newEntity;
 	String 							nextEntityName;
-	
-	//List<JsonEntitySummary> 		entityList = new ArrayList<>();
-	
+		
 	TextBox							entityName = new TextBox();
 	TextBox							entityFilterQuery = new TextBox();
 	String 							entityQueryString = "";
@@ -100,9 +95,7 @@ public class EntitiesModule implements EntryPoint {
 	ListBox							layerList = new ListBox();
 	
 	Button							newEntityButton;
-	
-	//ArrayList<JSONObject>			entities = new ArrayList<>();
-	
+		
 	TreeWidget						entitiesTree = new TreeWidget();
 	TreeWidget						root = new TreeWidget();
 	
@@ -448,8 +441,6 @@ public class EntitiesModule implements EntryPoint {
 					entityName.setText("");
 					newEntity = response.isObject().get( "name" ).isString().stringValue();
 					
-					reloadData();
-					
 					EntityInfo info = new EntityInfo( newEntity );
 					
 					info.setLayer( JsonUtil.getValue( response, "layer", "" ) );
@@ -464,10 +455,9 @@ public class EntitiesModule implements EntryPoint {
 							CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
 							JLayerContextualInfo jLayerContextualInfo = codec.decode( response );
 							updateContextualInfo(jLayerContextualInfo);
+							reloadData();
 						}
 					});
-					
-					setSelectedEntity(newEntity);
 					
 				}} );
 		}
@@ -496,7 +486,7 @@ public class EntitiesModule implements EntryPoint {
 			}
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
-				//								Window.alert( "Ok" );
+				setSelectedEntity(newEntity);
 			}} );
 	}
 	
