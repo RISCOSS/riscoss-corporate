@@ -116,6 +116,7 @@ public class RCPropertyPage implements IsWidget {
 		}
 		
 		this.rc = rc;
+		mlist.setRC(rc);
 	}
 	
 }

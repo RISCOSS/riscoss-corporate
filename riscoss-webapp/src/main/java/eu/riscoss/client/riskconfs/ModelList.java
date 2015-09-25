@@ -37,6 +37,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import eu.riscoss.client.CallbackWrapper;
 import eu.riscoss.client.RiscossJsonClient;
+import eu.riscoss.client.SimpleRiskCconf;
 import eu.riscoss.client.ui.ClickWrapper;
 import eu.riscoss.client.ui.TreeWidget;
 
@@ -48,6 +49,8 @@ public class ModelList implements IsWidget {
 	
 	TreeWidget root = new TreeWidget();
 	Listener listener;
+	SimpleRiskCconf rc;
+	String layer;
 	
 	public ModelList( Listener l ) {
 		this.listener = l;
@@ -73,11 +76,13 @@ public class ModelList implements IsWidget {
 			HorizontalPanel hp = new HorizontalPanel();
 			Anchor anchor = new Anchor( layers.get( i ) );
 			hp.add( anchor );
+			layer = layers.get(i);
 			anchor.addClickHandler( new ClickWrapper<String>( layers.get( i ) ) {
+				String s = layer;
 				@Override
 				public void onClick( ClickEvent event ) {
 					ModelSelectionDialog dialog = new ModelSelectionDialog();
-					dialog.show( new CallbackWrapper<List<String>,String>( getValue() ) {
+					dialog.show(s, rc, new CallbackWrapper<List<String>,String>( getValue() ) {
 						@Override
 						public void onDone( List<String> pack ) {
 							setModels( getValue(), pack );
@@ -110,6 +115,10 @@ public class ModelList implements IsWidget {
 	@Override
 	public Widget asWidget() {
 		return root.asWidget();
+	}
+	
+	public void setRC(SimpleRiskCconf rconf) {
+		this.rc = rconf;
 	}
 	
 }
