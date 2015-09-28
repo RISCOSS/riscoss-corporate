@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>riscoss-webapp</groupId>
 	<artifactId>riscoss-webapp-container</artifactId>
-	<version>0.0.6-SNAPSHOT</version>
+	<version>0.3.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>RISCOSS Web App - Parent POM</name>

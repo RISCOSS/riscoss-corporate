@@ -169,7 +169,7 @@ public class LayersManager {
 		
 	}
 	
-	@PUT @Path("{domain}/{layer}/rename")
+	@POST @Path("{domain}/{layer}/rename")
 	public void editLayer( 
 			@DefaultValue("Playground") @PathParam("domain") String domain,
 			@DefaultValue("") @HeaderParam("token") String token, 
