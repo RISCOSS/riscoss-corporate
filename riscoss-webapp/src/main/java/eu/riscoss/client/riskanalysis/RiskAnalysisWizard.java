@@ -201,69 +201,11 @@ public class RiskAnalysisWizard implements EntryPoint {
 			});
 			remove.setStyleName("deleteButton");
 			
-			/*wizard.addPanel( "Select Entity", entitySelectionPanel );
-			wizard.addPanel( "Select Risk Configuration", rcSelectionPanel );
-			wizard.addPanel( "Select Risk Session", rasSelectionPanel );
-			wizard.addPanel( "Risk Analysis Session", rasPanel );
-			
-			wizard.addPanelSelectionListener( "Select Risk Configuration", new Wizard.PanelSelectionListener() {
-				@Override
-				public void onPanelSelected() {
-					rcSelectionPanel.loadRCs( entitySelectionPanel.getSelectedEntity() );
-				}
-			} );
-			wizard.addPanelSelectionListener( "Select Risk Session", new Wizard.PanelSelectionListener() {
-				@Override
-				public void onPanelSelected() {
-					rasSelectionPanel.loadRASList( entitySelectionPanel.getSelectedEntity(), rcSelectionPanel.getSelectedRC() );
-				}
-			} );
-			wizard.addPanelSelectionListener( "Risk Analysis Session", new Wizard.PanelSelectionListener() {
-				@Override
-				public void onPanelSelected() {
-					rasPanel.loadRAS( rasSelectionPanel.getSelectedRAS() );
-				}
-			} );
-			wizard.asWidget().setStyleName("wizard");
-			wizard.asWidget().setWidth("100%");
-			leftPanel.add(wizard);
-			leftPanel.setWidth("100%");
-			mainView.add(leftPanel);
-			
-			page.add(mainView);
-			RootPanel.get().add(page);*/
-			
 		}
 		catch( Exception ex ) {
 			
 			Window.alert( ex.getMessage() );
 		}
-//		Button button = new Button( "Back" );
-//		button.addClickHandler( new ClickHandler() {
-//			@Override
-//			public void onClick( ClickEvent event ) {
-//				wizard.setSelectedIndex( wizard.getSelectedIndex() -1 );
-//			}
-//		});
-//		bottomPanel.add( button );
-//		button = new Button( "Next" );
-//		button.addClickHandler( new ClickHandler() {
-//			@Override
-//			public void onClick( ClickEvent event ) {
-//				wizard.setSelectedIndex( wizard.getSelectedIndex() +1 );
-//			}
-//		});
-//		bottomPanel.add( button );
-//		bottomPanel.setCellHorizontalAlignment( button, HorizontalPanel.ALIGN_RIGHT );
-		
-//		dock.add( bottomPanel, DockPanel.SOUTH );
-//		dock.add( wizard, DockPanel.CENTER );
-		
-//		entitySelectionPanel.loadEntities();
-		
-//		RootPanel.get().add( dock );
-		
-//		wizard.setSelectedIndex( 0 );
 	}
 	
 	private void appendChilds(TreeWidget rootEnt, JSONArray children) {

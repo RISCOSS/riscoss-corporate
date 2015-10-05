@@ -95,6 +95,7 @@ public class EntitiesModule implements EntryPoint {
 	ListBox							layerList = new ListBox();
 	
 	Button							newEntityButton;
+	Button							save;
 		
 	TreeWidget						entitiesTree = new TreeWidget();
 	TreeWidget						root = new TreeWidget();
@@ -247,23 +248,7 @@ public class EntitiesModule implements EntryPoint {
 		page.add(mainView);
 		
 		RootPanel.get().add( page );
-//		//????????????when is this executed????
-//		RiscossJsonClient.listEntities( new JsonCallback() {
-//		//RiscossJsonClient.searchEntities( "E", new JsonCallback() {
-//			public void onSuccess(Method method, JSONValue response) {
-//				if( response.isArray() != null ) {
-//					for( int i = 0; i < response.isArray().size(); i++ ) {
-//						JSONObject o = (JSONObject)response.isArray().get( i );
-//						EntityInfo info = new EntityInfo( o.get( "name" ).isString().stringValue() );
-//						info.setLayer( JsonUtil.getValue( o, "layer", "" ) );
-//					}
-//				}
-//			}
-//			
-//			public void onFailure(Method method, Throwable exception) {
-//				Window.alert( exception.getMessage() );
-//			}
-//		});
+
 	}
 	
 	private void appendChilds(TreeWidget rootEnt, JSONArray children) {
@@ -418,6 +403,9 @@ public class EntitiesModule implements EntryPoint {
 					} ) ;
 		delete.setStyleName("button");
 		buttons.add(delete);
+		Button save = ppg.getSaveButton();
+		save.setStyleName("button");
+		//buttons.add(save);
 		rightPanel.add(buttons);
 		
 		rightPanel.add(ppg);
