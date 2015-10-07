@@ -92,6 +92,7 @@ public class RiskAnalysisWizard implements EntryPoint {
 //	Wizard					wizard = new Wizard();
 	
 	String					idRerun;
+	String 					newId;
 	
 	public void onModuleLoad() {
 		
@@ -155,7 +156,8 @@ public class RiskAnalysisWizard implements EntryPoint {
 						@Override
 						public void onSuccess( Method method, JSONValue response ) {
 							JsonRiskAnalysis ras =  new JsonRiskAnalysis( response );
-							RiscossJsonClient.rerunRiskAnalysisSession(ras.getID(), "", new JsonCallback() {
+							newId = ras.getID();
+							RiscossJsonClient.rerunRiskAnalysisSession(newId, "", new JsonCallback() {
 								@Override
 								public void onFailure(Method method,
 										Throwable exception) {
@@ -164,11 +166,26 @@ public class RiskAnalysisWizard implements EntryPoint {
 								@Override
 								public void onSuccess(Method method,
 										JSONValue response) {
-									newName.setText("");
+									
 									generateRiskTree();
 									g.setWidget(2, 0, null);
 									g.setWidget(2, 1, null);
 									g.setWidget(2, 2, null);
+
+									selectedRiskSession = newName.getText().trim();
+									newName.setText("");
+									mainView.clear();
+									top.remove(g);
+									vPanel = new VerticalPanel();
+									vPanel.setStyleName("leftPanelLayer");
+									rasPanel = new RASPanel();
+									rasPanel.loadRAS(newId);
+									HorizontalPanel h = new HorizontalPanel();
+									h.add(back);
+									h.add(remove);
+									vPanel.add(h);
+									vPanel.add(rasPanel);
+									mainView.add(vPanel);
 								}
 							});
 						}} );
