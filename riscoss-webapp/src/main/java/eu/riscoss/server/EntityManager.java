@@ -55,8 +55,7 @@ import eu.riscoss.shared.RiscossUtil;
 @Path("entities")
 public class EntityManager {
 
-	@GET
-	@Path("/{domain}/list")
+	@GET @Path("/{domain}/list")
 	public String list(@DefaultValue("Playground") @PathParam("domain") String domain,
 			@DefaultValue("") @HeaderParam("token") String token ) {
 
@@ -85,8 +84,7 @@ public class EntityManager {
 	 * @param token
 	 * @return
 	 */
-	@GET
-	@Path("/{domain}/{layer}/list")
+	@GET @Path("/{domain}/{layer}/list")
 	public String list(@DefaultValue("Playground") @PathParam("domain") String domain,
 			@PathParam("layer") String layer, @DefaultValue("") @HeaderParam("token") String token) {
 
@@ -109,16 +107,14 @@ public class EntityManager {
 
 	}
 	
-	@GET 
-	@Path("/{domain}/search") 
+	@GET @Path("/{domain}/search") 
 	public String search(@DefaultValue("Playground") @PathParam("domain") String domain, @HeaderParam("token") String token,
 			@DefaultValue("") @QueryParam("query") String query ) {
 		return search(domain, token, "", query, "0");
 		
 	}
 	
-	@GET 
-	@Path("/{domain}/{layer}/search") 
+	@GET @Path("/{domain}/{layer}/search") 
 	public String search(@DefaultValue("Playground") @PathParam("domain") String domain, @HeaderParam("token") String token,
 			@DefaultValue("") @PathParam("layer") String layer, 
 			@DefaultValue("") @QueryParam("query") String query, 
@@ -147,8 +143,7 @@ public class EntityManager {
 	}
 
 
-	@POST
-	@Path("/{domain}/create")
+	@POST @Path("/{domain}/create")
 	@Produces("application/json")
 	//TODO: remove parent. Extra call for adding parents.
 	public String createEntity(@DefaultValue("Playground") @PathParam("domain") String domain,
@@ -183,8 +178,7 @@ public class EntityManager {
 		}
 	}
 
-	@DELETE
-	@Path("/{domain}/{entity}/delete")
+	@DELETE @Path("/{domain}/{entity}/delete")
 	public void deleteEntity(@DefaultValue("Playground") @PathParam("domain") String domain,
 			@PathParam("entity") String entity,
 			@DefaultValue("") @HeaderParam("token") String token ) {
@@ -250,6 +244,7 @@ public class EntityManager {
 		}
 	}
 
+	//currently not used!
 	@GET @Path("/{domain}/{entity}/data_new")
 	public String getEntityData_new(@DefaultValue("Playground") @PathParam("domain") String domain,
 			@PathParam("entity") String entity,
@@ -310,10 +305,8 @@ public class EntityManager {
 		}
 	}
 
-	@POST
-	@Path("/{domain}/{entity}/parents")
+	@POST @Path("/{domain}/{entity}/parents")
 	@Produces("application/json")
-	//TODO: put "entities" to body
 	public void setParents(@DefaultValue("Playground") @PathParam("domain") String domain,
 			@PathParam("entity") String entity, String parents, //@HeaderParam("json") 
  			@DefaultValue("") @HeaderParam("token") String token ) {
@@ -334,8 +327,7 @@ public class EntityManager {
 		}
 	}
 	
-	@GET
-	@Path("/{domain}/{entity}/parents")
+	@GET @Path("/{domain}/{entity}/parents")
 	@Produces("application/json")
 	/**
 	 * Returns a list of parents. 
@@ -361,8 +353,7 @@ public class EntityManager {
 		}
 	}
 
-	@POST
-	@Path("/{domain}/{entity}/children")
+	@POST @Path("/{domain}/{entity}/children")
 	@Produces("application/json")
 	public void setChildren(@DefaultValue("Playground") @PathParam("domain") String domain,
 			@PathParam("entity") String entity, String children, //@HeaderParam("json")
@@ -384,10 +375,15 @@ public class EntityManager {
 		}
 	}
 
-	@GET
-	@Path("/{domain}/{entity}/hierarchy")
+	/**
+	 * returns direct parents and children of an entity (not the whole hierarchy)
+	 * @param domain
+	 * @param entity
+	 * @param token
+	 * @return
+	 */
+	@GET	@Path("/{domain}/{entity}/hierarchy")
 	@Produces("application/json")
-	//TODO: put str to body
 	public String getHierarchyInfo(@DefaultValue("Playground") @PathParam("domain") String domain,
 			@PathParam("entity") String entity,
 			@DefaultValue("") @HeaderParam("token") String token) {
@@ -412,8 +408,7 @@ public class EntityManager {
 	
 	
 
-	@GET
-	@Path("/{domain}/{entity}/rdcs/list")
+	@GET	@Path("/{domain}/{entity}/rdcs/list")
 	public String listRDCs(@DefaultValue("Playground") @PathParam("domain") String domain,
 			@PathParam("entity") String entityName,
 			@DefaultValue("") @HeaderParam("token") String token ) {
@@ -441,8 +436,7 @@ public class EntityManager {
 		}
 	}
 
-	@POST
-	@Path("/{domain}/{entity}/rdcs/store")
+	@POST	@Path("/{domain}/{entity}/rdcs/store")
 	public void setRDCs(@DefaultValue("Playground") @PathParam("domain") String domain,
 			@PathParam("entity") String entityName, 
 			@DefaultValue("") @HeaderParam("token") String token,
@@ -479,8 +473,7 @@ public class EntityManager {
 		}
 	}
 	
-	@GET
-	@Path("/{domain}/{entity}/rdcs/newrun")
+	@GET	@Path("/{domain}/{entity}/rdcs/newrun")
 	@Produces("application/json")
 	public String runRDCS(@DefaultValue("Playground") @PathParam("domain") String domain,
 			@PathParam("entity") String entityName,
@@ -531,8 +524,7 @@ public class EntityManager {
 	}
 
 	
-	@GET
-	@Path("/{domain}/{entity}/rd")
+	@GET 	@Path("/{domain}/{entity}/rd")
 	public String getRiskData(@DefaultValue("Playground") @PathParam("domain") String domain,
 			@PathParam("entity") String entity,
 			@DefaultValue("") @HeaderParam("token") String token ) {
@@ -551,8 +543,7 @@ public class EntityManager {
 		}
 	}
 
-	@GET
-	@Path("/{domain}/{entity}/ras")
+	@GET	@Path("/{domain}/{entity}/ras")
 	@Produces("application/json")
 	public String getRAD(@DefaultValue("Playground") @PathParam("domain") String domain,
 			@PathParam("entity") String entity,

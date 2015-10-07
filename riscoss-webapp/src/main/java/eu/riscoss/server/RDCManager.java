@@ -32,7 +32,7 @@ import eu.riscoss.rdc.RDCFactory;
 import eu.riscoss.rdc.RDCParameter;
 
 /**
- * Risk Data Coellectors
+ * Risk Data Collectors
  * @author morandini
  *
  */
