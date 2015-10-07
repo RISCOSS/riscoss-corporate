@@ -247,8 +247,21 @@ public class EntitiesModule implements EntryPoint {
 		mainView.add(rightPanel);
 		page.add(mainView);
 		
+		save = new Button("Save");
+		save.setStyleName("button");
+		save.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				saveEntityData();	
+			}
+		});
+		
 		RootPanel.get().add( page );
 
+	}
+	
+	public void saveEntityData() {
+		ppg.saveEntityData();
 	}
 	
 	private void appendChilds(TreeWidget rootEnt, JSONArray children) {
@@ -403,9 +416,7 @@ public class EntitiesModule implements EntryPoint {
 					} ) ;
 		delete.setStyleName("button");
 		buttons.add(delete);
-		Button save = ppg.getSaveButton();
-		save.setStyleName("button");
-		//buttons.add(save);
+		buttons.add(save);
 		rightPanel.add(buttons);
 		
 		rightPanel.add(ppg);

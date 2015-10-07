@@ -60,8 +60,8 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DateBox;
 import com.google.gwt.view.client.SelectionChangeEvent;
-import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.gwt.view.client.SelectionChangeEvent.Handler;
+import com.google.gwt.view.client.SingleSelectionModel;
 
 import eu.riscoss.client.JsonCallbackWrapper;
 import eu.riscoss.client.JsonEntitySummary;
@@ -106,6 +106,28 @@ public class EntityPropertyPage implements IsWidget {
 			dock.add(run , DockPanel.NORTH);
 			dock.add( ppg.asWidget(), DockPanel.CENTER );
 			dialog.setWidget( dock );
+		}
+		
+		public void save() {
+			JSONObject json = ppg.getJson();
+			String str = "";
+			String sep = "";
+			for( String key : json.keySet() ) {
+				if( json.get( key ).isObject().get( "enabled" ).isBoolean().booleanValue() == true ) {
+					str += sep + key;
+					sep = ", ";
+				}
+			}
+			RiscossJsonClient.saveRDCs( json, RDCEntity, new JsonCallback() {
+				@Override
+				public void onFailure(Method method, Throwable exception) {
+					Window.alert(exception.getMessage());
+				}
+				@Override
+				public void onSuccess(Method method, JSONValue response) {
+
+				}
+			});
 		}
 		
 		private void saveAndRunRDC(JSONObject json) {
@@ -279,8 +301,6 @@ public class EntityPropertyPage implements IsWidget {
 	CellTable<String> childrenTable;
 	FlexTable custom;
 	
-	Button save;
-	
 	
 	protected void loadProperties( JSONValue response ) {
 		rasLoaded = false;
@@ -336,17 +356,7 @@ public class EntityPropertyPage implements IsWidget {
 						return;
 					}
 					parentList.add(newParent);
-					RiscossJsonClient.setParents(entity, parentList, new JsonCallback() {
-						@Override
-						public void onFailure(Method method, Throwable exception) {
-							Window.alert(exception.getMessage());
-						}
-						@Override
-						public void onSuccess(Method method, JSONValue response) {
-							module.reloadData();
-							parentsTable.setRowData(0, parentList);
-						}
-					});
+					parentsTable.setRowData(0, parentList);
 				}
 			});
 			b.setStyleName("Button");
@@ -374,18 +384,26 @@ public class EntityPropertyPage implements IsWidget {
 						@Override
 						public void onClick(ClickEvent event) {
 							parentList.remove(selectionModel.getSelectedObject());
-							RiscossJsonClient.setParents(entity, parentList, new JsonCallback() {
+							parents.remove(parentsTable);
+							parentsTable = new CellTable<String>(15, (Resources) GWT.create(TableResources.class));
+							parentsTable.setWidth("100%");
+							 parentsTable.setSelectionModel(selectionModel);
+							t = new TextColumn<String>() {
 								@Override
-								public void onFailure(Method method,
-										Throwable exception) {
+								public String getValue(String arg0) {
+									return arg0;
 								}
-								@Override
-								public void onSuccess(Method method,
-										JSONValue response) {
-									module.reloadData();
-									setSelectedEntity(entity);
-								}
-							});
+							};
+							parentsTable.addColumn(t, "Parents");
+							if (parentList.size() > 0) parentsTable.setRowData(0, parentList);
+							else {
+								parentList.add("");
+								parentsTable.setRowData(0, parentList);
+								parentList.remove(0);
+							}
+							parentsTable.setStyleName("table");
+							parents.remove(deleteParent);
+							parents.add(parentsTable);
 						}
 					});
 					parents.add(deleteParent);
@@ -422,17 +440,8 @@ public class EntityPropertyPage implements IsWidget {
 						return;
 					}
 					childrenList.add(newChildren);
-					RiscossJsonClient.setChildren(entity, childrenList, new JsonCallback() {
-						@Override
-						public void onFailure(Method method, Throwable exception) {
-							Window.alert(exception.getMessage());
-						}
-						@Override
-						public void onSuccess(Method method, JSONValue response) {
-							module.reloadData();
-							childrenTable.setRowData(0, childrenList);
-						}
-					});
+					childrenTable.setRowData(0, childrenList);
+					
 				}
 			});
 			b2.setStyleName("Button");
@@ -460,18 +469,26 @@ public class EntityPropertyPage implements IsWidget {
 						@Override
 						public void onClick(ClickEvent event) {
 							childrenList.remove(selectionModel2.getSelectedObject());
-							RiscossJsonClient.setChildren(entity, childrenList, new JsonCallback() {
+							children.remove(childrenTable);
+							childrenTable = new CellTable<String>(15, (Resources) GWT.create(TableResources.class));
+							childrenTable.setWidth("100%");
+							childrenTable.setSelectionModel(selectionModel2);
+							t2 = new TextColumn<String>() {
 								@Override
-								public void onFailure(Method method,
-										Throwable exception) {
+								public String getValue(String arg0) {
+									return arg0;
 								}
-								@Override
-								public void onSuccess(Method method,
-										JSONValue response) {
-									module.reloadData();
-									setSelectedEntity(entity);
-								}
-							});
+							};
+							childrenTable.addColumn(t, "Children");
+							if (childrenList.size() > 0) childrenTable.setRowData(0, childrenList);
+							else {
+								childrenList.add("");
+								childrenTable.setRowData(0, childrenList);
+								childrenList.remove(0);
+							}
+							childrenTable.setStyleName("table");
+							children.remove(deleteChildren);
+							children.add(childrenTable);
 						}
 					});
 					children.add(deleteChildren);
@@ -654,63 +671,6 @@ public class EntityPropertyPage implements IsWidget {
 		t.setStyleName("smallTitle2");
 		vPanel.add(t);
 		vPanel.add(tb);
-		save = new Button("Save");
-		save.setStyleName("deleteButton");
-		save.addClickHandler(new ClickHandler() {
-
-			@Override
-			public void onClick(ClickEvent arg0) {
-				for (int i = 0; i < tb.getRowCount(); ++i) {
-					JSONObject o = new JSONObject();
-					o.put( "id", new JSONString( ((Label)tb.getWidget(i, 0)).getText() ) );
-					o.put( "target", new JSONString( EntityPropertyPage.this.entity ) );
-					String datatype = ((Label)tb.getWidget(i, 1)).getText();
-					String value = "";
-					if (datatype.equals("Integer")) {
-						value += ((TextBox) tb.getWidget(i, 2)).getText();
-						value += extraInfoList.get(i);
-					}
-					else if (datatype.equals("Boolean")) {
-						if (((CheckBox) tb.getWidget(i, 2)).isChecked()) value += "1";
-						else value += "0";
-					}
-					else if (datatype.equals("Date")) {
-						int hour = Integer.parseInt(((TextBox) ((Grid) tb.getWidget(i, 2)).getWidget(0, 1)).getText());
-						int minute = Integer.parseInt(((TextBox) ((Grid) tb.getWidget(i, 2)).getWidget(0, 3)).getText());
-						int second = Integer.parseInt(((TextBox) ((Grid) tb.getWidget(i, 2)).getWidget(0, 5)).getText());
-						Date date = ((DateBox) ((Grid) tb.getWidget(i,2)).getWidget(0, 0)).getValue();
-						date.setHours(hour);
-						date.setMinutes(minute);
-						date.setSeconds(second);
-						
-						DateTimeFormat fmt = DateTimeFormat.getFormat("yyyy-MM-dd:HH-mm-ss");
-					    value += fmt.format(date);
-					}
-					else {
-						value += ((ListBox) tb.getWidget(i, 2)).getSelectedIndex();
-						value += extraInfoList.get(i);
-					}
-					o.put( "value", new JSONString( value ) );
-					o.put( "datatype", new JSONString ( datatype ) );
-					o.put( "type", new JSONString( "custom" ) );
-					o.put( "origin", new JSONString( "user" ) );
-					JSONArray array = new JSONArray();
-					array.set( 0, o );
-					RiscossJsonClient.postRiskData( array, new JsonCallback() {
-						@Override
-						public void onFailure( Method method, Throwable exception ) {
-							Window.alert( exception.getMessage() );
-						}
-						@Override
-						public void onSuccess( Method method, JSONValue response ) {
-							//								Window.alert( "Ok" );
-						}} );
-				}
-				Window.alert("Entity data successfully saved");
-			}
-			
-		});
-		vPanel.add(save);
 		Label t2 = new Label("Custom contextual information");
 		t2.setStyleName("smallTitle2");
 		vPanel.add(t2);
@@ -724,8 +684,88 @@ public class EntityPropertyPage implements IsWidget {
 		newRasPanel.setWidget(loadRASWidget());
 	}
 	
-	public Button getSaveButton() {
-		return save;
+	public void saveEntityData() {
+		saveContextualInfo();
+		saveParentyInfo();
+		saveDataCollectors();
+		module.reloadData();
+		Window.alert("Entity data successfully saved");
+	}
+	
+	private void saveDataCollectors() {
+		confDialog.save();
+	}
+	
+	private void saveParentyInfo() {
+		RiscossJsonClient.setChildren(entity, childrenList, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				
+			}
+		});
+		RiscossJsonClient.setParents(entity, parentList, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				
+			}
+		});
+	}
+	
+	private void saveContextualInfo() {
+		for (int i = 0; i < tb.getRowCount(); ++i) {
+			JSONObject o = new JSONObject();
+			o.put( "id", new JSONString( ((Label)tb.getWidget(i, 0)).getText() ) );
+			o.put( "target", new JSONString( EntityPropertyPage.this.entity ) );
+			String datatype = ((Label)tb.getWidget(i, 1)).getText();
+			String value = "";
+			if (datatype.equals("Integer")) {
+				value += ((TextBox) tb.getWidget(i, 2)).getText();
+				value += extraInfoList.get(i);
+			}
+			else if (datatype.equals("Boolean")) {
+				if (((CheckBox) tb.getWidget(i, 2)).isChecked()) value += "1";
+				else value += "0";
+			}
+			else if (datatype.equals("Date")) {
+				int hour = Integer.parseInt(((TextBox) ((Grid) tb.getWidget(i, 2)).getWidget(0, 1)).getText());
+				int minute = Integer.parseInt(((TextBox) ((Grid) tb.getWidget(i, 2)).getWidget(0, 3)).getText());
+				int second = Integer.parseInt(((TextBox) ((Grid) tb.getWidget(i, 2)).getWidget(0, 5)).getText());
+				Date date = ((DateBox) ((Grid) tb.getWidget(i,2)).getWidget(0, 0)).getValue();
+				date.setHours(hour);
+				date.setMinutes(minute);
+				date.setSeconds(second);
+				
+				DateTimeFormat fmt = DateTimeFormat.getFormat("yyyy-MM-dd:HH-mm-ss");
+			    value += fmt.format(date);
+			}
+			else {
+				value += ((ListBox) tb.getWidget(i, 2)).getSelectedIndex();
+				value += extraInfoList.get(i);
+			}
+			o.put( "value", new JSONString( value ) );
+			o.put( "datatype", new JSONString ( datatype ) );
+			o.put( "type", new JSONString( "custom" ) );
+			o.put( "origin", new JSONString( "user" ) );
+			JSONArray array = new JSONArray();
+			array.set( 0, o );
+			RiscossJsonClient.postRiskData( array, new JsonCallback() {
+				@Override
+				public void onFailure( Method method, Throwable exception ) {
+					Window.alert( exception.getMessage() );
+				}
+				@Override
+				public void onSuccess( Method method, JSONValue response ) {
+					//								Window.alert( "Ok" );
+				}} );
+		}
 	}
 	
 	private Widget loadRASWidget() {
