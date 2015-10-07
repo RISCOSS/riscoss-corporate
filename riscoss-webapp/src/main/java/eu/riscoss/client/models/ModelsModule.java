@@ -89,9 +89,7 @@ public class ModelsModule implements EntryPoint {
 	
 	Grid				grid;
 	TextBox				tb = new TextBox();
-	Button				editName;
-	Button				saveEditName;
-	Button				cancelEditName;
+	Button				save;
 	
 	String				selectedModel;
 	
@@ -216,8 +214,43 @@ public class ModelsModule implements EntryPoint {
 		mainView.add(rightPanel);
 		page.add(mainView);
 		page.setWidth("100%");
+		
+		save = new Button("Save");
+		save.setStyleName("button");
+		save.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				saveModelData();
+			}
+		});
 
 		RootPanel.get().add(page);
+	}
+	
+	private void saveModelData() {
+		//panel.saveModelData();
+		saveModelName();
+	}
+	
+	private void saveModelName() {
+		String name = nameM.getText().trim();
+		
+		RiscossJsonClient.changeModelName(selectedModel, name, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				//Window.alert(exception.getMessage());
+				Window.alert("Name already existing. Nothing changed. "); 
+			}
+
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				Window.alert("Name successfully changed");
+				Window.Location.reload();
+//				dataProvider.getList().add(new ModelInfo(txt.getText()));
+//				dataProvider.getList().remove(name);
+//				dataProvider.refresh();
+			}
+		});
 	}
 
 	protected void deleteModel(ModelInfo info) {
@@ -305,6 +338,10 @@ public class ModelsModule implements EntryPoint {
 					Window.alert(exception.getMessage());
 				}
 			});
+		}
+		
+		public void saveModelData() {
+			
 		}
 
 		void showEditDialog(JSONObject json) {
@@ -511,13 +548,14 @@ public class ModelsModule implements EntryPoint {
 	}
 	
 	TextBox nameM;
+	EditModelDialog panel;
 	
 	public void setSelectedModel(String name) {
 		selectedModel = name;
 		if (rightPanel2.getWidget() != null) {
 			rightPanel2.getWidget().removeFromParent();
 		}
-		EditModelDialog panel = new EditModelDialog();
+		panel = new EditModelDialog();
 		rightPanel2.setWidget(panel);
 		panel.editModel(name);
 		
@@ -540,31 +578,6 @@ public class ModelsModule implements EntryPoint {
 		nameM = new TextBox();
 		nameM.setWidth("250px");
 		nameM.setText(name);
-		nameM.addKeyPressHandler(new KeyPressHandler() {
-			@Override
-			public void onKeyPress(KeyPressEvent event) {
-				if (KeyCodes.KEY_ENTER == event.getNativeEvent().getKeyCode()) {
-					
-					String name = nameM.getText().trim();
-	
-					RiscossJsonClient.changeModelName(selectedModel, name, new JsonCallback() {
-						@Override
-						public void onFailure(Method method, Throwable exception) {
-							//Window.alert(exception.getMessage());
-							Window.alert("Name already existing. Nothing changed. "); 
-						}
-
-						@Override
-						public void onSuccess(Method method, JSONValue response) {
-							Window.Location.reload();
-//							dataProvider.getList().add(new ModelInfo(txt.getText()));
-//							dataProvider.getList().remove(name);
-//							dataProvider.refresh();
-						}
-					});
-				}
-			}
-		});
 		grid.setWidget(0, 1, nameM);
 		
 		rightPanel.add(grid);
@@ -631,6 +644,7 @@ public class ModelsModule implements EntryPoint {
 			}
 		});
 		buttons.add(delete);
+		buttons.add(save);
 		
 		rightPanel.add(buttons);
 		
