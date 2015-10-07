@@ -27,6 +27,8 @@ import org.fusesource.restygwt.client.Method;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
@@ -58,6 +60,8 @@ public class RDCConfigurationPage implements IsWidget {
 	
 	String		entity = null;
 	
+	Boolean 	changedData = false;
+	
 	public RDCConfigurationPage() {
 		
 		dock.setSize( "100%", "100%" );
@@ -67,6 +71,14 @@ public class RDCConfigurationPage implements IsWidget {
 		HorizontalPanel hpanel = new HorizontalPanel();
 		
 		dock.add( hpanel, DockPanel.NORTH );
+	}
+	
+	public Boolean changedData() {
+		return changedData;
+	}
+	
+	public void setChangedData() {
+		changedData = false;
 	}
 	
 	public void runRDCs() {
@@ -134,6 +146,7 @@ public class RDCConfigurationPage implements IsWidget {
 				@Override
 				public void onClick(ClickEvent event) {
 					enabledMap.enableRDC( getValue(), ((CheckBox) event.getSource()).getValue() );
+					changedData = true;
 				}
 			});
 			grid.setWidget( num, 1, chk );
@@ -149,6 +162,12 @@ public class RDCConfigurationPage implements IsWidget {
 				TextBox txt = new TextBox();
 				txt.setName( "txt:" + key + ":" + par.get( "name" ).isString().stringValue() );
 				txt.getElement().setId( "txt:" + key + ":" + par.get( "name" ).isString().stringValue() );
+				txt.addValueChangeHandler(new ValueChangeHandler<String>() {
+					@Override
+					public void onValueChange(ValueChangeEvent<String> event) {
+						changedData = true;	
+					}
+				});
 				if( enabledMap.isEnabled( key ) )
 					txt.setText( enabledMap.get( key, par.get( "name" ).isString().stringValue(), "" ) );
 				else {

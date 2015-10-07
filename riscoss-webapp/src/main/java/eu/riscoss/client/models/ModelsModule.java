@@ -35,6 +35,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
@@ -94,6 +96,8 @@ public class ModelsModule implements EntryPoint {
 	String				selectedModel;
 	
 	JSONValue			modelsList;
+	
+	Boolean				changedData = false;
 
 	CellTable<ModelInfo> table;
 	ListDataProvider<ModelInfo> dataProvider;
@@ -229,7 +233,14 @@ public class ModelsModule implements EntryPoint {
 	
 	private void saveModelData() {
 		//panel.saveModelData();
-		saveModelName();
+		if (changedData) {
+			saveModelName();
+			Window.alert("Data successfully saved");
+			changedData = false;
+		}
+		else {
+			Window.alert("No changes detected");
+		}
 	}
 	
 	private void saveModelName() {
@@ -244,7 +255,6 @@ public class ModelsModule implements EntryPoint {
 
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
-				Window.alert("Name successfully changed");
 				Window.Location.reload();
 //				dataProvider.getList().add(new ModelInfo(txt.getText()));
 //				dataProvider.getList().remove(name);
@@ -578,6 +588,12 @@ public class ModelsModule implements EntryPoint {
 		nameM = new TextBox();
 		nameM.setWidth("250px");
 		nameM.setText(name);
+		nameM.addValueChangeHandler(new ValueChangeHandler<String>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<String> event) {
+				changedData = true;
+			}
+		});
 		grid.setWidget(0, 1, nameM);
 		
 		rightPanel.add(grid);

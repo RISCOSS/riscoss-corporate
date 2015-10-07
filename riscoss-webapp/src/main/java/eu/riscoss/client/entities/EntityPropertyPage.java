@@ -29,10 +29,14 @@ import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
@@ -110,6 +114,14 @@ public class EntityPropertyPage implements IsWidget {
 			dock.add(run , DockPanel.NORTH);
 			dock.add( ppg.asWidget(), DockPanel.CENTER );
 			dialog.setWidget( dock );
+		}
+		
+		public Boolean changedData() {
+			return ppg.changedData();
+		}
+		
+		public void setChangedData() {
+			ppg.setChangedData();
 		}
 		
 		public void save() {
@@ -218,6 +230,8 @@ public class EntityPropertyPage implements IsWidget {
 	EntitiesModule		module;
 	
 	Button				backRAS;
+	
+	Boolean				changedData = false;
 	
 	public EntityPropertyPage(EntitiesModule m) {
 		this.module = m;
@@ -375,6 +389,7 @@ public class EntityPropertyPage implements IsWidget {
 					}
 					parentList.add(newParent);
 					parentsTable.setRowData(0, parentList);
+					changedData = true;
 				}
 			});
 			b.setStyleName("Button");
@@ -422,6 +437,7 @@ public class EntityPropertyPage implements IsWidget {
 							parentsTable.setStyleName("table");
 							parents.remove(deleteParent);
 							parents.add(parentsTable);
+							changedData = true;
 						}
 					});
 					parents.add(deleteParent);
@@ -459,7 +475,7 @@ public class EntityPropertyPage implements IsWidget {
 					}
 					childrenList.add(newChildren);
 					childrenTable.setRowData(0, childrenList);
-					
+					changedData = true;
 				}
 			});
 			b2.setStyleName("Button");
@@ -507,6 +523,7 @@ public class EntityPropertyPage implements IsWidget {
 							childrenTable.setStyleName("table");
 							children.remove(deleteChildren);
 							children.add(childrenTable);
+							changedData = true;
 						}
 					});
 					children.add(deleteChildren);
@@ -583,12 +600,25 @@ public class EntityPropertyPage implements IsWidget {
 				if (item.getDataType().equals("Integer")) {
 					TextBox t = new TextBox();
 					t.setText(contextualInfo[0]);
+					t.addValueChangeHandler(new ValueChangeHandler<String>() {
+						@Override
+						public void onValueChange(ValueChangeEvent<String> event) {
+							changedData = true;	
+						}
+					});
 					tb.setWidget(row, 1, t);
 					types.add("Integer");
 				}
 				else if (item.getDataType().equals("Boolean")) {
 					CheckBox c = new CheckBox();
 					if (Integer.parseInt(contextualInfo[0]) == 1) c.setChecked(true);
+					c.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+						@Override
+						public void onValueChange(
+								ValueChangeEvent<Boolean> event) {
+							changedData = true;							
+						}
+					});
 					tb.setWidget(row, 1, c);
 					types.add("Boolean");
 				}
@@ -597,6 +627,12 @@ public class EntityPropertyPage implements IsWidget {
 				    DateBox dateBox = new DateBox();
 				    dateBox.setFormat(new DateBox.DefaultFormat(dateFormat));
 				    dateBox.getDatePicker().setYearArrowsVisible(true);
+				    dateBox.addValueChangeHandler(new ValueChangeHandler<Date>() {
+						@Override
+						public void onValueChange(ValueChangeEvent<Date> event) {
+							changedData = true;
+						}
+				    });
 				    
 				    Grid g = new Grid(1,7);
 				    
@@ -616,17 +652,35 @@ public class EntityPropertyPage implements IsWidget {
 					TextBox t = new TextBox();
 					t.setWidth("30px");
 					t.setText(String.valueOf(time[0]));
+					t.addValueChangeHandler(new ValueChangeHandler<String>() {
+						@Override
+						public void onValueChange(ValueChangeEvent<String> event) {
+							changedData = true;
+						}
+					});
 					g.setWidget(0, 1, t);
 					g.setWidget(0, 2, new Label("hh"));
-					t = new TextBox();
-					t.setWidth("30px");
-					t.setText(String.valueOf(time[1]));
-					g.setWidget(0, 3, t);
+					TextBox t2 = new TextBox();
+					t2.setWidth("30px");
+					t2.setText(String.valueOf(time[1]));
+					t2.addValueChangeHandler(new ValueChangeHandler<String>() {
+						@Override
+						public void onValueChange(ValueChangeEvent<String> event) {
+							changedData = true;	
+						}
+					});
+					g.setWidget(0, 3, t2);
 					g.setWidget(0, 4, new Label("mm"));
-					t = new TextBox();
-					t.setWidth("30px");
-					t.setText(String.valueOf(time[2]));
-					g.setWidget(0, 5, t);
+					TextBox t3 = new TextBox();
+					t3.setWidth("30px");
+					t3.setText(String.valueOf(time[2]));
+					t3.addValueChangeHandler(new ValueChangeHandler<String>() {
+						@Override
+						public void onValueChange(ValueChangeEvent<String> event) {
+							changedData = true;	
+						}
+					});
+					g.setWidget(0, 5, t3);
 					g.setWidget(0, 6, new Label("ss"));
 					
 					tb.setWidget(row, 1, g);
@@ -638,6 +692,12 @@ public class EntityPropertyPage implements IsWidget {
 						lb.addItem(contextualInfo[k]);
 					}
 					lb.setSelectedIndex(Integer.parseInt(contextualInfo[0]));
+					lb.addChangeHandler(new ChangeHandler() {
+						@Override
+						public void onChange(ChangeEvent event) {
+							changedData = true;
+						}
+					});
 					
 					tb.setWidget(row, 1, lb);
 					types.add("List");
@@ -711,11 +771,18 @@ public class EntityPropertyPage implements IsWidget {
 	}
 	
 	public void saveEntityData() {
-		saveContextualInfo();
-		saveParentyInfo();
-		saveDataCollectors();
-		module.reloadData();
-		Window.alert("Entity data successfully saved");
+		if (changedData || confDialog.changedData()) {
+			saveContextualInfo();
+			saveParentyInfo();
+			saveDataCollectors();
+			module.reloadData();
+			Window.alert("Entity data successfully saved");
+			changedData = false;
+			confDialog.setChangedData();
+		}
+		else {
+			Window.alert("No changes detected");
+		}
 	}
 	
 	private void saveDataCollectors() {
@@ -753,18 +820,18 @@ public class EntityPropertyPage implements IsWidget {
 			String datatype = types.get(i);
 			String value = "";
 			if (datatype.equals("Integer")) {
-				value += ((TextBox) tb.getWidget(i, 2)).getText();
+				value += ((TextBox) tb.getWidget(i, 1)).getText();
 				value += extraInfoList.get(i);
 			}
 			else if (datatype.equals("Boolean")) {
-				if (((CheckBox) tb.getWidget(i, 2)).isChecked()) value += "1";
+				if (((CheckBox) tb.getWidget(i, 1)).isChecked()) value += "1";
 				else value += "0";
 			}
 			else if (datatype.equals("Date")) {
-				int hour = Integer.parseInt(((TextBox) ((Grid) tb.getWidget(i, 2)).getWidget(0, 1)).getText());
-				int minute = Integer.parseInt(((TextBox) ((Grid) tb.getWidget(i, 2)).getWidget(0, 3)).getText());
-				int second = Integer.parseInt(((TextBox) ((Grid) tb.getWidget(i, 2)).getWidget(0, 5)).getText());
-				Date date = ((DateBox) ((Grid) tb.getWidget(i,2)).getWidget(0, 0)).getValue();
+				int hour = Integer.parseInt(((TextBox) ((Grid) tb.getWidget(i, 1)).getWidget(0, 1)).getText());
+				int minute = Integer.parseInt(((TextBox) ((Grid) tb.getWidget(i, 1)).getWidget(0, 3)).getText());
+				int second = Integer.parseInt(((TextBox) ((Grid) tb.getWidget(i, 1)).getWidget(0, 5)).getText());
+				Date date = ((DateBox) ((Grid) tb.getWidget(i,1)).getWidget(0, 0)).getValue();
 				date.setHours(hour);
 				date.setMinutes(minute);
 				date.setSeconds(second);
@@ -773,7 +840,7 @@ public class EntityPropertyPage implements IsWidget {
 			    value += fmt.format(date);
 			}
 			else {
-				value += ((ListBox) tb.getWidget(i, 2)).getSelectedIndex();
+				value += ((ListBox) tb.getWidget(i, 1)).getSelectedIndex();
 				value += extraInfoList.get(i);
 			}
 			o.put( "value", new JSONString( value ) );
