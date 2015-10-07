@@ -643,8 +643,8 @@ public class ModelsModule implements EntryPoint {
 				});
 			}
 		});
-		buttons.add(delete);
 		buttons.add(save);
+		buttons.add(delete);
 		
 		rightPanel.add(buttons);
 		

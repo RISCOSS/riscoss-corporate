@@ -415,8 +415,8 @@ public class EntitiesModule implements EntryPoint {
 						}
 					} ) ;
 		delete.setStyleName("button");
-		buttons.add(delete);
 		buttons.add(save);
+		buttons.add(delete);
 		rightPanel.add(buttons);
 		
 		rightPanel.add(ppg);

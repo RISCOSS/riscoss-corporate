@@ -157,7 +157,7 @@ public class ReportModule implements EntryPoint {
 	}
 
 	protected void showResults( JSONObject object ) {
-		
+		page.clear();
 		if( dock != null ) {
 			while( dock.getWidgetCount() > 0 ) {
 				dock.remove( dock.getWidget( 0 ) );
