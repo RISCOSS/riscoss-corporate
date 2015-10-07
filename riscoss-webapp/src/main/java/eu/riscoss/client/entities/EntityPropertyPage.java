@@ -307,6 +307,7 @@ public class EntityPropertyPage implements IsWidget {
 	
 	VerticalPanel parents;
 	VerticalPanel children;
+	VerticalPanel v;
 	ListBox parentsListbox = new ListBox();
 	ListBox childrenListbox = new ListBox();
 	TextColumn<String> t;
@@ -316,11 +317,12 @@ public class EntityPropertyPage implements IsWidget {
 	CellTable<String> parentsTable;
 	CellTable<String> childrenTable;
 	FlexTable custom;
+	JsonEntitySummary info;
 	
 	
 	protected void loadProperties( JSONValue response ) {
 		rasLoaded = false;
-		JsonEntitySummary info = new JsonEntitySummary( response );
+		info = new JsonEntitySummary( response );
 		
 		confDialog = new RDCConfDialog();
 		confDialog.setSelectedEntity(entity);
@@ -339,7 +341,7 @@ public class EntityPropertyPage implements IsWidget {
 			childrenList.add(info.getChildrenList().get(i).isString().stringValue());
 		}
 		
-		VerticalPanel v = new VerticalPanel();
+		v = new VerticalPanel();
 		v.setWidth("100%");
 		{	
 			HorizontalPanel hPanel = new HorizontalPanel();
@@ -534,9 +536,21 @@ public class EntityPropertyPage implements IsWidget {
 			
 		}
 		
+		loadContextualInfoData();
+		
+		entityDataBox = new EntityDataBox();
+		entityDataBox.setSelectedEntity(entity);
+		rdr.setWidget(entityDataBox);
+		loadRASWidget();
+	}
+	
+	List<String> types;
+	
+	private void loadContextualInfoData() {
 		tb = new FlexTable();
 		userForm = new CustomizableForm();
 		custom = new FlexTable();
+		types = new ArrayList<>();
 		
 		int row = 0;
 		int rowC = 0;
@@ -562,20 +576,21 @@ public class EntityPropertyPage implements IsWidget {
 				tb.insertRow(row);
 				tb.insertCell(row, 0);
 				tb.insertCell(row, 1);
-				tb.insertCell(row, 2);
-				tb.setWidget(row, 0, new Label(item.getId()));
+				Label id = new Label(item.getId());
+				id.setStyleName("bold");
+				tb.setWidget(row, 0, id);
 				
 				if (item.getDataType().equals("Integer")) {
 					TextBox t = new TextBox();
 					t.setText(contextualInfo[0]);
-					tb.setWidget(row, 2, t);
-					tb.setWidget(row, 1, new Label("Integer"));
+					tb.setWidget(row, 1, t);
+					types.add("Integer");
 				}
 				else if (item.getDataType().equals("Boolean")) {
 					CheckBox c = new CheckBox();
 					if (Integer.parseInt(contextualInfo[0]) == 1) c.setChecked(true);
-					tb.setWidget(row, 2, c);
-					tb.setWidget(row, 1, new Label("Boolean"));
+					tb.setWidget(row, 1, c);
+					types.add("Boolean");
 				}
 				else if (item.getDataType().equals("Date")) {
 					DateTimeFormat dateFormat = DateTimeFormat.getLongDateFormat();
@@ -614,8 +629,8 @@ public class EntityPropertyPage implements IsWidget {
 					g.setWidget(0, 5, t);
 					g.setWidget(0, 6, new Label("ss"));
 					
-					tb.setWidget(row, 2, g);
-					tb.setWidget(row, 1, new Label("Date"));
+					tb.setWidget(row, 1, g);
+					types.add("Date");
 				}
 				else {
 					ListBox lb = new ListBox();
@@ -624,8 +639,8 @@ public class EntityPropertyPage implements IsWidget {
 					}
 					lb.setSelectedIndex(Integer.parseInt(contextualInfo[0]));
 					
-					tb.setWidget(row, 2, lb);
-					tb.setWidget(row, 1, new Label("List"));
+					tb.setWidget(row, 1, lb);
+					types.add("List");
 				}
 				++row;
 			}
@@ -693,11 +708,6 @@ public class EntityPropertyPage implements IsWidget {
 		vPanel.add(userForm);
 		dataCollectors.setWidget(confDialog.getDock());
 		ciPanel.setWidget( vPanel );
-		
-		entityDataBox = new EntityDataBox();
-		entityDataBox.setSelectedEntity(entity);
-		rdr.setWidget(entityDataBox);
-		loadRASWidget();
 	}
 	
 	public void saveEntityData() {
@@ -740,7 +750,7 @@ public class EntityPropertyPage implements IsWidget {
 			JSONObject o = new JSONObject();
 			o.put( "id", new JSONString( ((Label)tb.getWidget(i, 0)).getText() ) );
 			o.put( "target", new JSONString( EntityPropertyPage.this.entity ) );
-			String datatype = ((Label)tb.getWidget(i, 1)).getText();
+			String datatype = types.get(i);
 			String value = "";
 			if (datatype.equals("Integer")) {
 				value += ((TextBox) tb.getWidget(i, 2)).getText();
