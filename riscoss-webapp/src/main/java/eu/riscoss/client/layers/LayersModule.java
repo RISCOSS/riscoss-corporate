@@ -97,6 +97,7 @@ public class LayersModule implements EntryPoint {
 	VerticalPanel		rightPanel = new VerticalPanel();
 	Button 				newEntity = new Button();
 	Button				newLayer = new Button();
+	Button				save;
 	
 	List<String>		entities;
 	
@@ -284,7 +285,20 @@ public class LayersModule implements EntryPoint {
 		//page.add(mainViewEntity);
 		page.setWidth("100%");
 		
+		save = new Button("Save");
+		save.setStyleName("button");
+		save.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				saveLayerData();
+			}
+		});
+		
 		RootPanel.get().add( page );
+	}
+	
+	private void saveLayerData() {
+		
 	}
 	
 	private void reloadPage() {

@@ -236,7 +236,20 @@ public class RiskConfsModule implements EntryPoint {
 			page.add(mainView);
 			page.setWidth("100%");
 
+			save = new Button("Save");
+			save.setStyleName("button");
+			save.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					saveRiskConfData();
+				}
+			});
+			
 			RootPanel.get().add( page );
+	}
+	
+	private void saveRiskConfData() {
+		//TODO save info
 	}
 	
 	protected void deleteRC(RCInfo object) {
@@ -335,6 +348,8 @@ public class RiskConfsModule implements EntryPoint {
 			}} );
 	}
 	
+	Button save;
+	
 	public void onRCSelected( String item ) {
 		
 		rightPanel2.clear();
@@ -371,7 +386,7 @@ public class RiskConfsModule implements EntryPoint {
 				
 				ppg = new RCPropertyPage( new SimpleRiskCconf( response ) );
 				HorizontalPanel buttons = new HorizontalPanel();
-				Button delete = new Button("DELETE");
+				Button delete = new Button("Delete");
 				delete.setStyleName("button");
 				delete.addClickHandler(new ClickHandler() {
 					@Override
@@ -389,6 +404,7 @@ public class RiskConfsModule implements EntryPoint {
 							}} );	
 					}
 				});
+				buttons.add(save);
 				buttons.add(delete);
 				
 				rightPanel.add(buttons);
