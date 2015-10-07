@@ -31,6 +31,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
@@ -56,7 +57,7 @@ public class RASPanel implements IsWidget {
 	public Widget asWidget() {
 		return panel;
 	}
-	
+		
 	public void loadRAS( String selectedRAS ) {
 		this.selectedRAS = selectedRAS;
 		RiscossJsonClient.getSessionSummary( selectedRAS, new JsonCallback() {
@@ -77,12 +78,28 @@ public class RASPanel implements IsWidget {
 			panel.getWidget().removeFromParent();
 		}
 		
-		KeyValueGrid grid = new KeyValueGrid();
+		Grid grid = new Grid(7,2);
 		
-		grid.add( "Name:", new Label( ras.getName() ) );
-		grid.add( "ID:", new Label( ras.getID() ) );
-		grid.add( "Risk configuration:", new Label( ras.getRC() ) );
-		grid.add( "Target entity:", new Label( ras.getTarget() ) );
+		Label nL = new Label("Name");
+		nL.setStyleName("bold");
+		grid.setWidget(0, 0, nL);
+		grid.setWidget(0, 1, new Label(ras.getName()));
+		
+		Label idL = new Label("ID");
+		idL.setStyleName("bold");
+		grid.setWidget(1, 0, idL);
+		grid.setWidget(1, 1, new Label(ras.getID()));
+		
+		Label rcL = new Label("Risk configuration");
+		rcL.setStyleName("bold");
+		grid.setWidget(2, 0, rcL);
+		grid.setWidget(2, 1, new Label(ras.getRC()));
+		
+		Label eL = new Label("Target entity");
+		eL.setStyleName("bold");
+		grid.setWidget(3, 0, eL);
+		grid.setWidget(3, 1, new Label(ras.getTarget()));
+
 //		grid.add( "Last execution:", new Label( ras.getDate() ) );
 //		grid.add( "Action:", new RadioButton( "action", "Run" ) );
 		{
@@ -101,11 +118,15 @@ public class RASPanel implements IsWidget {
 				}
 			} ) );
 			hp.setWidth( "100%" );
-			grid.add( "Indicators:", hp );
+			
+			Label nI = new Label("Indicators");
+			nI.setStyleName("bold");
+			grid.setWidget(4, 0, nI);
+			grid.setWidget(4, 1, hp);
 		}
 		{
 			HorizontalPanel hp = new HorizontalPanel();
-			hp.add( new Label( "Last execution: " + ras.getDate() ) );
+			hp.add( new Label( "Last execution: " + ras.getDate()) );
 			hp.add( new Button( "Run now", new ClickHandler() {
 				@Override
 				public void onClick( ClickEvent event ) {
@@ -113,10 +134,17 @@ public class RASPanel implements IsWidget {
 				}
 			} ) );
 			hp.setWidth( "100%" );
-			grid.add( "Analysis:", hp );
+			
+			Label aL = new Label("Analysis");
+			aL.setStyleName("bold");
+			grid.setWidget(5, 0, aL);
+			grid.setWidget(5, 1, hp);
 		}
 		
-		grid.add( "Last report", report.asWidget() );
+		Label lrL = new Label("Last report");
+		lrL.setStyleName("bold");
+		grid.setWidget(6, 0, lrL);
+		grid.setWidget(6, 1, report.asWidget());
 		
 		panel.setWidget( grid );
 		
@@ -175,6 +203,16 @@ public class RASPanel implements IsWidget {
 			public void onSuccess( Method method, JSONValue response ) {
 //				Window.alert( "" + response );
 				try {
+					RiscossJsonClient.getSessionSummary( selectedRAS, new JsonCallback() {
+						@Override
+						public void onSuccess( Method method, JSONValue response ) {
+							loadRASSummary( new JsonRiskAnalysis( response ) );
+						}
+						@Override
+						public void onFailure( Method method, Throwable exception ) {
+							Window.alert( exception.getMessage() );
+						}
+					});
 					report.showResults( response.isObject().get( "results" ).isArray() );
 				}
 				catch( Exception ex ) {

@@ -285,8 +285,7 @@ public class ModelManager {
 	 * @param models a list of models (JsonArray)
 	 * @return
 	 */
-	@POST
-	@Path("/{domain}/chunks")
+	@POST 	@Path("/{domain}/chunks")
 	//used in the whatifanalysis, and in the ModelsModule (for showing the content)
 	//returns various info, but not the types.
 	public String getModelChunks( @DefaultValue("Playground") @PathParam("domain") String domain,

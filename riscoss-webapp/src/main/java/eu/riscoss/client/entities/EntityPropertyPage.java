@@ -68,6 +68,7 @@ import eu.riscoss.client.JsonEntitySummary;
 import eu.riscoss.client.JsonRiskDataList;
 import eu.riscoss.client.Log;
 import eu.riscoss.client.RiscossJsonClient;
+import eu.riscoss.client.rdr.EntityDataBox;
 import eu.riscoss.client.report.RiskAnalysisReport;
 import eu.riscoss.client.ui.CustomizableForm;
 import eu.riscoss.client.ui.CustomizableForm.CustomField;
@@ -82,35 +83,35 @@ public class EntityPropertyPage implements IsWidget {
 		String RDCEntity;
 		
 		RDCConfDialog() {
-			Button done = new Button( "Done");
-			done.addClickHandler(new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					JSONObject json = ppg.getJson();
-					String str = "";
-					String sep = "";
-					for( String key : json.keySet() ) {
-						if( json.get( key ).isObject().get( "enabled" ).isBoolean().booleanValue() == true ) {
-							str += sep + key;
-							sep = ", ";
-						}
-					}
-					RiscossJsonClient.saveRDCs( json, RDCEntity, new JsonCallback() {
-						@Override
-						public void onSuccess(Method method, JSONValue response) {
-							Window.alert("Risk Data Collectors saved");
-						}
-						@Override
-						public void onFailure(Method method, Throwable exception) {
-							Window.alert( exception.getMessage() );
-						}} );
-				}} );
-			done.setStyleName("button");
 			Button run = new Button( "Run now" );
 			run.setStyleName("button");
 			run.addClickHandler( new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
+					Boolean b = Window.confirm("Data collectors will be saved. Do you want to continue?");
+					if (b) {
+						JSONObject json = ppg.getJson();
+						String str = "";
+						String sep = "";
+						for( String key : json.keySet() ) {
+							if( json.get( key ).isObject().get( "enabled" ).isBoolean().booleanValue() == true ) {
+								str += sep + key;
+								sep = ", ";
+							}
+						}
+						saveAndRunRDC(json);
+					}
+				}
+			});
+			dock.add(run , DockPanel.NORTH);
+			dock.add( ppg.asWidget(), DockPanel.CENTER );
+			dialog.setWidget( dock );
+		}
+		
+		private void saveAndRunRDC(JSONObject json) {
+			RiscossJsonClient.saveRDCs( json, RDCEntity, new JsonCallback() {
+				@Override
+				public void onSuccess(Method method, JSONValue response) {
 					RiscossJsonClient.runRDCs( EntityPropertyPage.this.entity, new JsonCallback() {
 						@Override
 						public void onSuccess(Method method, JSONValue response) {
@@ -141,11 +142,10 @@ public class EntityPropertyPage implements IsWidget {
 						}
 					});
 				}
-			});
-			dock.add(run , DockPanel.NORTH);
-			dock.add( ppg.asWidget(), DockPanel.CENTER );
-			dock.add(done, DockPanel.SOUTH);
-			dialog.setWidget( dock );
+				@Override
+				public void onFailure(Method method, Throwable exception) {
+					Window.alert( exception.getMessage() );
+				}} );
 		}
 		
 		public void show(String entity) {
@@ -168,7 +168,9 @@ public class EntityPropertyPage implements IsWidget {
 	SimplePanel			summaryPanel	= new SimplePanel();
 	SimplePanel			ciPanel			= new SimplePanel();
 	SimplePanel			rasPanel		= new SimplePanel();
+	SimplePanel			newRasPanel		= new SimplePanel();
 	SimplePanel			dataCollectors 	= new SimplePanel();
+	SimplePanel			rdr				= new SimplePanel();
 	CustomizableForm	userForm 		= new CustomizableForm();
 	FlexTable			tb;
 	
@@ -179,6 +181,7 @@ public class EntityPropertyPage implements IsWidget {
 	private String		entity;
 	
 	RDCConfDialog		confDialog;
+	EntityDataBox		entityDataBox;
 	ArrayList<String>	entitiesList;
 	ArrayList<String>	parentList;
 	ArrayList<String>	childrenList;
@@ -194,6 +197,8 @@ public class EntityPropertyPage implements IsWidget {
 		tab.add( ciPanel, "Contextual Information" );
 		tab.add( dataCollectors, "Data Collectors");
 		tab.add( rasPanel, "RAS" );
+		//tab.add( newRasPanel, "RAS(*)" );
+		tab.add( rdr, "RDR");
 		tab.selectTab( 0 );
 		tab.setSize( "100%", "100%" );
 		tab.addSelectionHandler( new SelectionHandler<Integer>() {
@@ -273,6 +278,8 @@ public class EntityPropertyPage implements IsWidget {
 	CellTable<String> parentsTable;
 	CellTable<String> childrenTable;
 	FlexTable custom;
+	
+	Button save;
 	
 	
 	protected void loadProperties( JSONValue response ) {
@@ -491,6 +498,7 @@ public class EntityPropertyPage implements IsWidget {
 			v.add(hPanel);
 			
 			
+			
 		}
 		
 		tb = new FlexTable();
@@ -646,8 +654,8 @@ public class EntityPropertyPage implements IsWidget {
 		t.setStyleName("smallTitle2");
 		vPanel.add(t);
 		vPanel.add(tb);
-		Button save = new Button("Save");
-		save.setStyleName("deleteButton2");
+		save = new Button("Save");
+		save.setStyleName("deleteButton");
 		save.addClickHandler(new ClickHandler() {
 
 			@Override
@@ -698,7 +706,7 @@ public class EntityPropertyPage implements IsWidget {
 							//								Window.alert( "Ok" );
 						}} );
 				}
-				
+				Window.alert("Entity data successfully saved");
 			}
 			
 		});
@@ -709,6 +717,20 @@ public class EntityPropertyPage implements IsWidget {
 		vPanel.add(userForm);
 		dataCollectors.setWidget(confDialog.getDock());
 		ciPanel.setWidget( vPanel );
+		
+		entityDataBox = new EntityDataBox();
+		entityDataBox.setSelectedEntity(entity);
+		rdr.setWidget(entityDataBox);
+		newRasPanel.setWidget(loadRASWidget());
+	}
+	
+	public Button getSaveButton() {
+		return save;
+	}
+	
+	private Widget loadRASWidget() {
+		//TODO new RAS panel
+		return null;
 	}
 
 	protected void loadRAS( JSONValue response ) {

@@ -110,6 +110,10 @@ body {
 	font-size: 14px !important;
 }
 
+.rdcTitle {
+	background-color: #D0F5A9 !important;
+	font-weight: bold !important;
+}
 
 .margin {
 	background-color: #F2F2F2 !important;
@@ -357,13 +361,12 @@ body {
 .gridRisk {
 	margin: 16px !important;
 	margin-left: 26px !important;
-	font-size: 14px !important;
+	font-size: 16px !important;
 }
-
-
 
 .list {
 	font-size: 14px !important;
+	background-color: #fffff !important;
 }
 
 .tagSelected {

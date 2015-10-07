@@ -89,7 +89,7 @@ public class RiskConfManager {
 	}
 	
 	/**
-	 * For a risk configuration name, returns json with list of *models* associated, and layers with their models,    
+	 * For a risk configuration name, returns json with list of *models* associated, and layers with their entities,    
 	 * @param domain
 	 * @param name
 	 * @return
@@ -138,7 +138,7 @@ public class RiskConfManager {
 	}
 	
 	/**
-	 * For a risk configuration name, returns json with list of *models* associated, and layers with their models
+	 * For a risk configuration name, returns json with list of *models* associated, and layers with their entities
 	 * 
 	 * This version uses the JRiskConfiguration class, instead of raw JSON
 	 * 
@@ -302,141 +302,5 @@ public class RiskConfManager {
 			DBConnector.closeDB( db );
 		}
 	}
-	
-	// Outdated; was used for RC-based what-if analysis
-//	@GET
-//	@Path("/rc/chunks")
-//	public String getChunks( @QueryParam("rc") String rc ) {
-//		
-//		RiscossDB db = DBConnector.openDB();
-//		try {
-//			
-//			JsonObject ret = new JsonObject();
-//			
-//			for( String modelName : db.getModelsFromRiskCfg( rc ) ) {
-//				
-//				String blob = db.getModelBlob( modelName );
-//				
-//				if( blob != null ) {
-//					
-//					RiskAnalysisEngine rae = ReasoningLibrary.get().createRiskAnalysisEngine();
-//					rae.loadModel( blob );
-//					
-//					JsonArray a = new JsonArray();
-//					
-//					for( Chunk c : rae.queryModel( ModelSlice.INPUT_DATA ) ) {
-//						JsonObject o = new JsonObject();
-//						o.addProperty( "id", c.getId() );
-//						o.addProperty( "label", getProperty( rae, c, FieldType.LABEL, c.getId() ) );
-//						o.addProperty( "description", getProperty( rae, c, FieldType.DESCRIPTION, "" ) );
-//						o.addProperty( "datatype", 
-//								rae.getField( c, FieldType.INPUT_VALUE ).getDataType().name() );
-//						switch( rae.getField( c, FieldType.INPUT_VALUE ).getDataType() ) {
-//						case DISTRIBUTION: {
-//							o.addProperty( "min", "0" );
-//							o.addProperty( "max", "1" );
-//							Distribution d = rae.getField( c, FieldType.INPUT_VALUE ).getValue();
-//							o.add( "value", toJson( d ) );
-//						}
-//						break;
-//						case EVIDENCE: {
-//							Evidence e = rae.getField( c, FieldType.INPUT_VALUE ).getValue();
-//							o.add( "value", toJson( e ) );
-//						}
-//						break;
-//						case INTEGER: {
-//							int min = 0;
-//							if( rae.getField( c, FieldType.MIN ).getDataType() != DataType.NaN )
-//								min = rae.getField( c, FieldType.MIN ).getValue();
-//							int max = 100;
-//							if( rae.getField( c, FieldType.MAX ).getDataType() != DataType.NaN )
-//								max = rae.getField( c, FieldType.MAX ).getValue();
-//							o.addProperty( "min", "" + min );
-//							o.addProperty( "max", "" + max );
-//							//						range.setStep( "1" );
-//							o.addProperty( "value", (int)rae.getField( c, FieldType.INPUT_VALUE ).getValue() );
-//						}
-//						break;
-//						case NaN:
-//							break;
-//						case REAL: {
-//							double min = 0;
-//							if( rae.getField( c, FieldType.MIN ).getDataType() != DataType.NaN )
-//								min = rae.getField( c, FieldType.MIN ).getValue();
-//							double max = 1;
-//							if( rae.getField( c, FieldType.MAX ).getDataType() != DataType.NaN )
-//								max = rae.getField( c, FieldType.MAX ).getValue();
-//							o.addProperty( "min", "" + min );
-//							o.addProperty( "max", "" + max );
-//							o.addProperty( "value", (double)rae.getField( c, FieldType.INPUT_VALUE ).getValue() );
-//						}
-//						break;
-//						case STRING:
-//							break;
-//						default:
-//							break;
-//						}
-//						a.add( o );
-//					}
-//					
-//					ret.add( "inputs", a );
-//					
-//					a = new JsonArray();
-//					
-//					for( Chunk c : rae.queryModel( ModelSlice.OUTPUT_DATA ) ) {
-//						JsonObject o = new JsonObject();
-//						o.addProperty( "id", c.getId() );
-//						String label = c.getId();
-//						Field f = rae.getField( c, FieldType.LABEL );
-//						if( f != null ) {
-//							label = f.getValue();
-//						}
-//						o.addProperty( "label", label );
-//						f = rae.getField( c, FieldType.DESCRIPTION );
-//						if( f == null ) {
-//							o.addProperty( "description", "" );
-//						}
-//						else {
-//							o.addProperty( "description", (String)f.getValue() );
-//						}
-//						a.add( o );
-//					}
-//					
-//					ret.add( "outputs", a );
-//				}
-//				
-//				System.out.println( ret.toString() );
-//				
-//				return ret.toString();
-//			}
-//		}
-//		finally {
-//			DBConnector.closeDB( db );
-//		}
-//		
-//		return "";
-//	}
-//	
-//	private String getProperty( RiskAnalysisEngine rae, Chunk chunk, FieldType ft, String def ) {
-//		Field f = rae.getField( chunk, ft );
-//		if( f == null ) return def;
-//		if( f.getValue() == null ) return def;
-//		return f.getValue().toString();
-//	}
-//	
-//	private JsonElement toJson(Evidence e) {
-//		JsonObject o = new JsonObject();
-//		o.addProperty( "p", e.getPositive() );
-//		o.addProperty( "e", e.getNegative() );
-//		return o;
-//	}
-//	
-//	private JsonElement toJson(Distribution d) {
-//		JsonArray a = new JsonArray();
-//		for( double val : d.getValues() ) {
-//			a.add( new JsonPrimitive( "" + val ) );
-//		}
-//		return a;
-//	}
 
 }

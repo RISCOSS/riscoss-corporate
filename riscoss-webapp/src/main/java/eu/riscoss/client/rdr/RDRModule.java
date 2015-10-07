@@ -21,6 +21,9 @@
 
 package eu.riscoss.client.rdr;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
 import org.fusesource.restygwt.client.Resource;
@@ -28,11 +31,16 @@ import org.fusesource.restygwt.client.Resource;
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.CellList;
+import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.user.cellview.client.CellTable.Resources;
 import com.google.gwt.user.cellview.client.HasKeyboardPagingPolicy.KeyboardPagingPolicy;
 import com.google.gwt.user.cellview.client.HasKeyboardSelectionPolicy.KeyboardSelectionPolicy;
 import com.google.gwt.user.client.Window;
@@ -44,9 +52,11 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
+import com.google.gwt.view.client.SelectionChangeEvent.Handler;
 
 import eu.riscoss.client.EntityInfo;
 import eu.riscoss.client.RiscossJsonClient;
+import eu.riscoss.client.entities.TableResources;
 
 class ContactCell extends AbstractCell<EntityInfo> {
 
@@ -72,93 +82,93 @@ public class RDRModule implements EntryPoint {
 
 	DockPanel						dock = new DockPanel();
 
-	ListDataProvider<EntityInfo>	dataProvider;
+	List<String>					listEntities;
 
-	CellList<EntityInfo>			cellList;
+	CellTable<String>				cellList;
 	
-	VerticalPanel		page = new VerticalPanel();
-	HorizontalPanel		mainView = new HorizontalPanel();
-	VerticalPanel		leftPanel = new VerticalPanel();
-	VerticalPanel		rightPanel = new VerticalPanel();
+	VerticalPanel					page = new VerticalPanel();
+	HorizontalPanel					mainView = new HorizontalPanel();
+	VerticalPanel					leftPanel = new VerticalPanel();
+	VerticalPanel					rightPanel = new VerticalPanel();
 
 	EntityDataBox					ppg = null;
 
 	public RDRModule() {
+		
 	}
 
 	public void onModuleLoad() {
-
-		String layer = Window.Location.getParameter( "layer" );
-
-		ContactCell contactCell = new ContactCell(null); //images.contact());
-		cellList = new CellList<EntityInfo>(contactCell);
-		cellList.setStyleName("list");
-		cellList.setPageSize(30);
-		cellList.setKeyboardPagingPolicy(KeyboardPagingPolicy.INCREASE_RANGE);
-		cellList.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.BOUND_TO_SELECTION);
-
-		final SingleSelectionModel<EntityInfo> selectionModel = 
-				new SingleSelectionModel<EntityInfo>();
-		cellList.setSelectionModel(selectionModel);
-		selectionModel.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
-			public void onSelectionChange(SelectionChangeEvent event) {
-				ppg.setSelectedEntity( selectionModel.getSelectedObject().getName() );
-			}
-		});
-
-		dataProvider = new ListDataProvider<EntityInfo>();
-		dataProvider.addDataDisplay(cellList);
-		ppg = new EntityDataBox();
 		
-		dock.setWidth( "100%" );
-		dock.add(cellList,DockPanel.CENTER);
-		dock.add( ppg.asWidget(), DockPanel.EAST );
-		dock.setCellWidth( ppg.asWidget(), "60%" );
-		
-		mainView.setStyleName("mainViewLayer");
-		//mainView.setWidth("100%");
-		leftPanel.setStyleName("leftPanelLayer");
-		leftPanel.setWidth("400px");
-		//leftPanel.setHeight("100%");
-		rightPanel.setStyleName("rightPanelLayer");
-		page.setWidth("100%");
-		
-		Label title = new Label("Risk Data Repository");
-		title.setStyleName("title");
-		page.add(title);
-		
-		leftPanel.add(cellList);
-		rightPanel.add(ppg);
-		rightPanel.setWidth("90%");
-		mainView.add(leftPanel);
-		mainView.add(rightPanel);
-		
-		page.add(mainView);
-
-		RootPanel.get().add( page );
-		//RootPanel.get().add( dock );
-//		String url = ( layer != null ?
-//				"api/entities/" + RiscossJsonClient.getDomain() + "/list/" + layer :
-//				"api/entities/" + RiscossJsonClient.getDomain() + "/list" );
-
-		RiscossJsonClient.listEntities(layer, new JsonCallback() {
-			public void onSuccess(Method method, JSONValue response) {
-				if( response.isArray() != null ) {
-					for( int i = 0; i < response.isArray().size(); i++ ) {
-						JSONObject o = (JSONObject)response.isArray().get( i );
-						insertEntityIntoTable(
-								o.get( "name" ).isString().stringValue() );
-					}
-				}
-			}
-
+		RiscossJsonClient.listEntities(new JsonCallback() {
+			@Override
 			public void onFailure(Method method, Throwable exception) {
-				Window.alert( exception.getMessage() );
+				// TODO Auto-generated method stub
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				listEntities = new ArrayList<>();
+				for (int i = 0; i < response.isArray().size(); ++i) {
+					listEntities.add(response.isArray().get(i).isObject().get("name").isString().stringValue());
+				}
+
+				cellList = new CellTable<String>(15, (Resources) GWT.create(TableResources.class));
+				cellList.setStyleName("list");
+				cellList.setPageSize(30);
+				cellList.setKeyboardPagingPolicy(KeyboardPagingPolicy.INCREASE_RANGE);
+				cellList.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.BOUND_TO_SELECTION);
+
+				final SingleSelectionModel<String> selectionModel = new SingleSelectionModel<String>();
+			    cellList.setSelectionModel(selectionModel);
+			    selectionModel.addSelectionChangeHandler(new Handler() {
+					@Override
+					public void onSelectionChange(SelectionChangeEvent arg0) {
+						ppg.setSelectedEntity( selectionModel.getSelectedObject() );
+					}
+			    });
+			    
+			    TextColumn<String> t = new TextColumn<String>() {
+					@Override
+					public String getValue(String arg0) {
+						return arg0;
+					}
+				};
+
+			    cellList.addColumn(t, "Risk data");
+			    cellList.setWidth("100%");
+			    
+			    cellList.setRowData(0, listEntities);
+			    
+				ppg = new EntityDataBox();
+				
+				dock.setWidth( "100%" );
+				dock.add(cellList,DockPanel.CENTER);
+				dock.add( ppg.asWidget(), DockPanel.EAST );
+				dock.setCellWidth( ppg.asWidget(), "60%" );
+				
+				mainView.setStyleName("mainViewLayer");
+				//mainView.setWidth("100%");
+				leftPanel.setStyleName("leftPanelLayer");
+				leftPanel.setWidth("400px");
+				//leftPanel.setHeight("100%");
+				rightPanel.setStyleName("rightPanelLayer");
+				page.setWidth("100%");
+				
+				Label title = new Label("Risk Data Repository");
+				title.setStyleName("title");
+				page.add(title);
+				
+				leftPanel.add(cellList);
+				rightPanel.add(ppg);
+				rightPanel.setWidth("90%");
+				mainView.add(leftPanel);
+				mainView.add(rightPanel);
+				
+				page.add(mainView);
+
+				RootPanel.get().add( page );
 			}
 		});
+
 	}
 	
-	protected void insertEntityIntoTable( String name ) {
-		dataProvider.getList().add( new EntityInfo( name ) );
-	}
 }

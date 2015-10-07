@@ -1,6 +1,5 @@
 package eu.riscoss.client.entities;
 
-import com.google.gwt.resources.client.ClientBundle.Source;
 import com.google.gwt.user.cellview.client.CellTable;
 
 public interface TableResources extends CellTable.Resources {

@@ -136,10 +136,10 @@ public class RDCConfigurationPage implements IsWidget {
 					enabledMap.enableRDC( getValue(), ((CheckBox) event.getSource()).getValue() );
 				}
 			});
-			grid.setWidget( num, 0, chk );
+			grid.setWidget( num, 1, chk );
 			Label lbl = new Label( key );
-			lbl.getElement().getStyle().setBackgroundColor( "rgb(200,200,200)" );
-			grid.setWidget( num, 1, lbl );
+			lbl.setStyleName("rdcTitle");
+			grid.setWidget( num, 0, lbl );
 			
 			for( int p = 0; p < jpn.size(); p++ ) {
 				num++;
