@@ -68,10 +68,14 @@ import eu.riscoss.client.JsonEntitySummary;
 import eu.riscoss.client.JsonRiskDataList;
 import eu.riscoss.client.Log;
 import eu.riscoss.client.RiscossJsonClient;
+import eu.riscoss.client.codec.CodecRASInfo;
 import eu.riscoss.client.rdr.EntityDataBox;
 import eu.riscoss.client.report.RiskAnalysisReport;
+import eu.riscoss.client.riskanalysis.RASPanel;
 import eu.riscoss.client.ui.CustomizableForm;
+import eu.riscoss.client.ui.TreeWidget;
 import eu.riscoss.client.ui.CustomizableForm.CustomField;
+import eu.riscoss.shared.JRASInfo;
 
 public class EntityPropertyPage implements IsWidget {
 	
@@ -213,13 +217,15 @@ public class EntityPropertyPage implements IsWidget {
 	boolean				rasLoaded		= false;
 	EntitiesModule		module;
 	
+	Button				backRAS;
+	
 	public EntityPropertyPage(EntitiesModule m) {
 		this.module = m;
 		tab.add( summaryPanel, "Properties" );
 		tab.add( ciPanel, "Contextual Information" );
 		tab.add( dataCollectors, "Data Collectors");
-		tab.add( rasPanel, "RAS" );
-		//tab.add( newRasPanel, "RAS(*)" );
+		//tab.add( rasPanel, "RAS" );
+		tab.add( newRasPanel, "RAS" );
 		tab.add( rdr, "RDR");
 		tab.selectTab( 0 );
 		tab.setSize( "100%", "100%" );
@@ -249,6 +255,16 @@ public class EntityPropertyPage implements IsWidget {
 				for (int i = 0; i < response.isArray().size(); ++i) {
 					entitiesList.add(response.isArray().get(i).isObject().get("name").isString().stringValue());
 				}
+			}
+		});
+		
+		backRAS = new Button("Back");
+		backRAS.setStyleName("button");
+		backRAS.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				panel.clear();
+				panel.add(riskTree);
 			}
 		});
 		
@@ -681,7 +697,7 @@ public class EntityPropertyPage implements IsWidget {
 		entityDataBox = new EntityDataBox();
 		entityDataBox.setSelectedEntity(entity);
 		rdr.setWidget(entityDataBox);
-		newRasPanel.setWidget(loadRASWidget());
+		loadRASWidget();
 	}
 	
 	public void saveEntityData() {
@@ -768,9 +784,102 @@ public class EntityPropertyPage implements IsWidget {
 		}
 	}
 	
-	private Widget loadRASWidget() {
-		//TODO new RAS panel
-		return null;
+	TreeWidget 		riskTree;
+	List<String>	models;
+	String			nextRisk;
+	String			risksses;
+	List<JRASInfo> 	list = new ArrayList<>();
+	int 			count = 0;
+	VerticalPanel 	panel;
+	
+	private void loadRASWidget() {
+		RiscossJsonClient.listRCs(entity, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				models = new ArrayList<String>();
+				for( int i = 0; i < response.isArray().size(); i++ ) {
+					JSONObject o = (JSONObject)response.isArray().get( i );
+					models.add( o.get( "name" ).isString().stringValue() );
+				}
+				riskTree = new TreeWidget();
+				for (int i = 0; i < models.size(); ++i) {
+					nextRisk = models.get(i);
+					RiscossJsonClient.listRiskAnalysisSessions( entity, models.get(i), new JsonCallback() {
+						String risk = nextRisk;
+						public void onSuccess(Method method, JSONValue response) {
+							if( response == null ) return;
+							if( response.isObject() == null ) return;
+							response = response.isObject().get( "list" );
+							List<JRASInfo> riskSessions = new ArrayList<>();
+							CodecRASInfo codec = GWT.create( CodecRASInfo.class );
+							if( response.isArray() != null ) {
+								for( int i = 0; i < response.isArray().size(); i++ ) {
+									JRASInfo info = codec.decode( response.isArray().get( i ) );
+									riskSessions.add( info );
+								}
+							}
+							Label a = new Label("> " + risk);
+							a.setWidth("100%");
+							a.setStyleName("bold");
+							HorizontalPanel cPanel = new HorizontalPanel();
+							cPanel.setStyleName("tree");
+							cPanel.setWidth("100%");
+							cPanel.add(a);
+							TreeWidget c = new TreeWidget(cPanel);
+							riskTree.addChild(c);
+							for (int i = 0; i < riskSessions.size(); ++i) {
+								risksses = riskSessions.get(i).getName();
+								Anchor b = new Anchor(risksses);
+								b.setWidth("100%");
+								b.setStyleName("font");
+								b.addClickHandler(new ClickHandler() {
+									String name = risksses;
+									int k = count;
+									@Override
+									public void onClick(ClickEvent event) {
+										setSelectedRiskSes(name, k);
+									}
+								});
+								list.add(riskSessions.get(i));
+								++count;
+								HorizontalPanel dPanel = new HorizontalPanel();
+								dPanel.setStyleName("tree");
+								dPanel.setWidth("100%");
+								dPanel.add(b);
+								TreeWidget d = new TreeWidget(dPanel);
+								c.addChild(d);
+							}
+						}
+						
+						public void onFailure(Method method, Throwable exception) {
+							Window.alert( exception.getMessage() );
+						}
+					});
+					
+				}
+				panel = new VerticalPanel();
+				panel.add(riskTree);
+				newRasPanel.setWidget(panel);
+			}
+		});
+		
+	}
+	
+	RASPanel rasPanelResult;
+	
+	private void setSelectedRiskSes(String name, int k) {
+		panel.clear();
+		rasPanelResult = new RASPanel();
+		rasPanelResult.loadRAS(list.get(k).getId());
+		HorizontalPanel h = new HorizontalPanel();
+		h.add(backRAS);
+		panel.add(h);
+		panel.add(rasPanelResult);
 	}
 
 	protected void loadRAS( JSONValue response ) {
