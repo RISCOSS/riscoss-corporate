@@ -1,0 +1,14 @@
+/target/
+**.settings/
+**.classpath
+**.project
+**.launch
+**.class
+**.nocache.js
+**/pom.properties
+classes/
+bin/
+maven-status
+gwt-unitCache
+riscoss-webapp/src/main/webapp/WEB-INF/lib/*
+riscoss-webapp/war
