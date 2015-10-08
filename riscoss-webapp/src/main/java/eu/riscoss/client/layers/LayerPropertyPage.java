@@ -181,24 +181,6 @@ public class LayerPropertyPage implements IsWidget {
 	
 	protected void loadProperties () {
 		
-		Grid grid = new Grid(2,2);
-		
-		Label nameL = new Label("Name:");
-		nameL.setStyleName("tag");
-		grid.setWidget(0,0,nameL);
-		TextBox tb = new TextBox();
-		tb.setText(layer);
-		tb.setWidth("120px");
-		grid.setWidget(0,1,tb);
-		Label parentN = new Label("Parent:");
-		parentN.setStyleName("tag");
-		grid.setWidget(1,0,parentN);
-		Label parentNv = new Label(parent);
-		parentNv.setStyleName("greentag");
-		grid.setWidget(1,1,parentNv);
-		
-		panel.add(grid);
-		
 		this.add = new Button("Add", new ClickHandler() {
 
 			@SuppressWarnings("deprecation")
@@ -240,16 +222,20 @@ public class LayerPropertyPage implements IsWidget {
 				}
 				
 				else if (type == 2) {
-					if (((TextBox) ((Grid) defvalue.getWidget()).getWidget(0, 1)).getText().equals("") ||
-							((TextBox) ((Grid) defvalue.getWidget()).getWidget(0, 3)).getText().equals("") ||
-							((TextBox) ((Grid) defvalue.getWidget()).getWidget(0, 5)).getText().equals("")) {
+					Grid g = (Grid) ((Grid) defvalue.getWidget()).getWidget(1, 0);
+					if (((TextBox) (g.getWidget(0, 0))).getText().equals("") ||
+							((TextBox) (g.getWidget(0, 2))).getText().equals("") ||
+							((TextBox) (g.getWidget(0, 4))).getText().equals("")) {
 						simplePopup.setWidget(new Label("No field can be empty"));
 						simplePopup.show();
 						return;
 					}
-					int hour = Integer.parseInt(((TextBox) ((Grid) defvalue.getWidget()).getWidget(0, 1)).getText());
-					int minute = Integer.parseInt(((TextBox) ((Grid) defvalue.getWidget()).getWidget(0, 3)).getText());
-					int second = Integer.parseInt(((TextBox) ((Grid) defvalue.getWidget()).getWidget(0, 5)).getText());
+					int hour = Integer.parseInt(((TextBox) (g.getWidget(0, 0))).getText());
+					int minute = Integer.parseInt(((TextBox) (g.getWidget(0, 2))).getText());
+					int second = Integer.parseInt(((TextBox) (g.getWidget(0, 4))).getText());
+					((TextBox) (g.getWidget(0, 0))).setText("");
+					((TextBox) (g.getWidget(0, 2))).setText("");
+					((TextBox) (g.getWidget(0, 4))).setText("");
 					Date date = dateBox.getValue();
 					date.setHours(hour);
 					date.setMinutes(minute);
@@ -348,7 +334,7 @@ public class LayerPropertyPage implements IsWidget {
 		});
 		this.add.setStyleName("deleteButton");
 		
-		newElement = new Grid(4,1);
+		newElement = new Grid(8,2);
 		
 		HorizontalPanel hPanel = new HorizontalPanel();
 		lBox = new ListBox();
@@ -364,56 +350,83 @@ public class LayerPropertyPage implements IsWidget {
 			public void onChange(ChangeEvent arg0) {
 				
 				if (lBox.getSelectedIndex() == 0) {
-					ciList.setWidget(1, 0, null);
+					ciList.setWidget(2, 0, null);
 					TextBox tb = new TextBox();
-					tb.setWidth("40px");
+					tb.setWidth("60px");
 					defvalue.setWidget(tb);
+					Label minL = new Label("Min");
+					minL.setStyleName("bold");
+					Label maxL = new Label("Max");
+					maxL.setStyleName("bold");
+					newElement.setWidget(5, 0, minL);
+					newElement.setWidget(5, 1, min);
+					newElement.setWidget(6, 0, maxL);
+					newElement.setWidget(6, 1, max);
+					newElement.setWidget(7, 0, add);
+					newElement.setWidget(7, 1, null);
 					ciItemPanel.setWidget(integerItem);
 				}
 				
 				else if (lBox.getSelectedIndex() == 1) {
-					ciList.setWidget(1, 0, null);
+					ciList.setWidget(2, 0, null);
 					ListBox lb = new ListBox();
 					lb.addItem("false");
 					lb.addItem("true");
 					defvalue.setWidget(lb);
+					newElement.setWidget(5, 0, add);
+					newElement.setWidget(5, 1, null);
+					newElement.setWidget(6, 0, null);
+					newElement.setWidget(6, 1, null);
+					newElement.setWidget(7, 0, null);
+					newElement.setWidget(7, 1, null);
 					ciItemPanel.setWidget(null);
 				}
 				
 				else if (lBox.getSelectedIndex() == 2) {
-					ciList.setWidget(1, 0, null);
-					Grid g = new Grid(1,7);
+					ciList.setWidget(2, 0, null);
+					Grid g = new Grid(1,6);
 					g.setCellSpacing(5);
 					
 					TextBox tb = new TextBox();
 					tb.setWidth("30px");
 					DateTimeFormat dateFormat = DateTimeFormat.getLongDateFormat();
 				    dateBox = new DateBox();
+				    dateBox.setWidth("150px");
 				    dateBox.setFormat(new DateBox.DefaultFormat(dateFormat));
 				    dateBox.getDatePicker().setYearArrowsVisible(true);
 				    
 					g.setWidget(0, 0, dateBox);
 					
 					tb = new TextBox();
-					tb.setWidth("30px");
-					g.setWidget(0, 1, tb);
+					tb.setWidth("20px");
+					g.setWidget(0, 0, tb);
 					Label hh = new Label("hh");
 					hh.setStyleName("bold2");
-					g.setWidget(0, 2, hh);
+					g.setWidget(0, 1, hh);
 					tb = new TextBox();
-					tb.setWidth("30px");
-					g.setWidget(0, 3, tb);
+					tb.setWidth("20px");
+					g.setWidget(0, 2, tb);
 					Label mm = new Label("mm");
 					mm.setStyleName("bold2");
-					g.setWidget(0, 4, mm);
+					g.setWidget(0, 3, mm);
 					tb = new TextBox();
-					tb.setWidth("30px");
-					g.setWidget(0, 5, tb);
+					tb.setWidth("20px");
+					g.setWidget(0, 4, tb);
 					Label ss = new Label("ss");
 					ss.setStyleName("bold2");
-					g.setWidget(0, 6, ss);
+					g.setWidget(0, 5, ss);
 					
-					defvalue.setWidget(g);
+					Grid gg = new Grid(2, 1);
+					gg.setWidget(0, 0, dateBox);
+					gg.setWidget(1, 0, g);
+					
+					defvalue.setWidget(gg);
+					newElement.setWidget(5, 0, add);
+					newElement.setWidget(5, 1, null);
+					newElement.setWidget(6, 0, null);
+					newElement.setWidget(6, 1, null);
+					newElement.setWidget(7, 0, null);
+					newElement.setWidget(7, 1, null);
 					ciItemPanel.setWidget(null);
 				}
 				
@@ -454,7 +467,13 @@ public class LayerPropertyPage implements IsWidget {
 					buttons.add(addEnum);
 					buttons.add(deleteLastEnum);
 					enumeration.setWidget(0, 0, buttons);
-					ciList.setWidget(1, 0, enumeration);
+					newElement.setWidget(5, 0, add);
+					newElement.setWidget(5, 1, null);
+					newElement.setWidget(6, 0, null);
+					newElement.setWidget(6, 1, null);
+					newElement.setWidget(7, 0, null);
+					newElement.setWidget(7, 1, null);
+					ciList.setWidget(2, 0, enumeration);
 					ciItemPanel.setWidget( null );
 				}
 				
@@ -462,61 +481,71 @@ public class LayerPropertyPage implements IsWidget {
 			
 		});
 		
-		min.setWidth("30px");
-		max.setWidth("30px");
-		id.setWidth("100px");
-		name.setWidth("100px");
-		description.setWidth("315px");
+		min.setWidth("60px");
+		max.setWidth("60px");
+		id.setWidth("150px");
+		name.setWidth("150px");
+		description.setWidth("150px");
 		
 		Label type = new Label("Type");
 		type.setStyleName("bold2");
-		hPanel.add(type);
-		hPanel.add(lBox);
+
 		Label idL = new Label("ID");
 		idL.setStyleName("bold2");
-		hPanel.add(idL);
-		hPanel.add(id);
+
 		Label nameTag = new Label("Name");
 		nameTag.setStyleName("bold2");
-		hPanel.add(nameTag);
-		hPanel.add(name);
-		
-		newElement.setWidget(0, 0, hPanel);
-		
-		HorizontalPanel hPanel2 = new HorizontalPanel();
 		
 		Label descriptionL = new Label("Description");
 		descriptionL.setStyleName("bold2");
-		hPanel2.add(descriptionL);
-		hPanel2.add(description);
-		newElement.setWidget(1, 0, hPanel2);
 		
-		HorizontalPanel hPanel3 = new HorizontalPanel();
 		TextBox tb2 = new TextBox();
-		tb2.setWidth("40px");
+		tb2.setWidth("60px");
 		defvalue.setWidget(tb2);
 		Label defvalTag = new Label("Default value");
 		defvalTag.setStyleName("bold2");
-		hPanel3.add(defvalTag);
-		hPanel3.add(defvalue);
-		ciItemPanel.setWidget(integerItem);
-		hPanel3.add(ciItemPanel);
-		newElement.setWidget(2, 0, hPanel3);
-		newElement.setWidget(3, 0, this.add);
 		
-		ciList.setWidget(0, 0, newElement);
+		Label minL = new Label("Min");
+		minL.setStyleName("bold2");
 		
-		hPanel.setSpacing(5);
-		hPanel2.setSpacing(5);
-		hPanel3.setSpacing(5);
+		Label maxL = new Label("Max");
+		maxL.setStyleName("bold2");
 		
-		ciList.setWidget(1, 0, null);
+		//ALTERNATIVE STRUCTURE
+		newElement.setWidget(0, 0, type);
+		newElement.setWidget(0, 1, lBox);
+		
+		newElement.setWidget(1, 0, idL);
+		newElement.setWidget(1, 1, id);
+		
+		newElement.setWidget(2, 0, nameTag);
+		newElement.setWidget(2, 1, name);
+		
+		newElement.setWidget(3, 0, descriptionL);
+		newElement.setWidget(3, 1, description);
+		
+		newElement.setWidget(4, 0, defvalTag);
+		newElement.setWidget(4, 1, defvalue);
+		
+		newElement.setWidget(5, 0, minL);
+		newElement.setWidget(5, 1, min);
+		
+		newElement.setWidget(6, 0, maxL);
+		newElement.setWidget(6, 1, max);
+		
+		newElement.setWidget(7, 0, this.add);
+		//END OF ALTERNATIVE STRUCTURE
+		
+		ciList.setWidget(1, 0, newElement);
+		
+		ciList.setWidget(2, 0, null);
 		
 		reloadData();
 		
 		ciPanel.add(ciList);
 		
 	}
+	
 	
 	public void reloadData() {
 		
@@ -553,7 +582,7 @@ public class LayerPropertyPage implements IsWidget {
 		table.setWidth("300px");
 		cInfoPanel = new HorizontalPanel();
 		cInfoPanel.add(table);
-		ciList.setWidget(2, 0, cInfoPanel);
+		ciList.setWidget(0, 0, cInfoPanel);
 		
 	}
 	
@@ -583,7 +612,7 @@ public class LayerPropertyPage implements IsWidget {
 		cInfoPanel.remove(vPanel);
 		vPanel = new VerticalPanel();
 		
-		Label title = new Label(jElement.getId() + " (" + jElement.getType() + ")");
+		Label title = new Label(jElement.getName());
 		title.setStyleName("smallTitle");
 		vPanel.add(title);
 		
