@@ -96,7 +96,7 @@ public class EntityPropertyPage implements IsWidget {
 			run.addClickHandler( new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					Boolean b = Window.confirm("Data collectors will be saved. Do you want to continue?");
+					Boolean b = Window.confirm("Data collectors will be saved before running. Do you want to continue? (If you click 'Cancel', it will not be executed)");
 					if (b) {
 						JSONObject json = ppg.getJson();
 						String str = "";

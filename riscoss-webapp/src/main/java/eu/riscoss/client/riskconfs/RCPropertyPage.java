@@ -57,7 +57,7 @@ public class RCPropertyPage implements IsWidget {
 		@Override
 		public void onModelsSelected( String layer, List<String> models ) {
 			rc.setModelList( layer, models );
-			saveRC();
+			//saveRC();
 		}
 	});
 	
@@ -97,6 +97,10 @@ public class RCPropertyPage implements IsWidget {
 				Window.alert( exception.getMessage() );
 			}
 		});
+	}
+	
+	public void saveRiskConfData() {
+		saveRC();
 	}
 	
 	private void loadModels( SimpleRiskCconf rc ) {

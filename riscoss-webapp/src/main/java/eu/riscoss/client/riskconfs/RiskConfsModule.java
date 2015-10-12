@@ -249,7 +249,7 @@ public class RiskConfsModule implements EntryPoint {
 	}
 	
 	private void saveRiskConfData() {
-		//TODO save info
+		ppg.saveRiskConfData();
 	}
 	
 	protected void deleteRC(RCInfo object) {
