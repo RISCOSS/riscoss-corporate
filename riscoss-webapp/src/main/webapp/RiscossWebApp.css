@@ -201,12 +201,6 @@ body {
 	margin-left: 30px !important;
 }
 
-.mainViewLayer {
-	
-}
-
-
-
 .layerData{
 	padding-bottom: 20px !important;
 	padding-top: 18px !important;
@@ -216,13 +210,31 @@ body {
 	font-size: 32px !important;
 	margin: 20px 20px 8px 20px !important;
 	border-bottom: 1px solid #E6E6E6 !important;
-	color: #000000 !important;
+	color: #2E2E2E !important;
 }
 
 .bold {
 	font-size: 14px !important;
 	font-weight: bold !important;
 	margin-right: 16px !important;
+}
+
+.table {
+}
+
+.contentTable {
+	padding: 3px 4px !important;
+	border: 1px solid #E6E6E6 !important;
+	font-size: 14px !important;
+}
+
+.headTable {
+	font-size: 14px !important;
+	font-weight: bold !important;
+	margin: 0 !important;
+	padding: 3px 4px !important;
+	background-color: #F2F2F2 !important;
+	border: 1px solid #E6E6E6 !important;
 }
 
 .bold2 {
@@ -233,13 +245,13 @@ body {
 .subtitle {
 	font-size: 26px !important;
 	margin-top: 28px !important;
-	color: #000000 !important;
+	color: #2E2E2E !important;
 	border-bottom: 1px dotted #E6E6E6 !important;
 }
 
 .smallTitle {
 	font-size: 20px !important;
-	color: #000000 !important;
+	color: #2E2E2E !important;
 	border-bottom: 1px dotted #E6E6E6 !important;
 	margin-bottom: 10px !important;
 	margin-top: 10px !important;
@@ -247,7 +259,7 @@ body {
 
 .smallTitle2 {
 	font-size: 16px !important;
-	color: #000000 !important;
+	color: #2E2E2E !important;
 	border-bottom: 1px dotted #E6E6E6 !important;
 	margin-bottom: 10px !important;
 	margin-top: 8px !important;
@@ -284,6 +296,7 @@ body {
 	background-color:  #4D9244 !important;
 	color: #F3F3F3 !important;
 	font-weight: bold !important;
+	font-size: 14px !important;
 }
 
 .deleteButton2 {

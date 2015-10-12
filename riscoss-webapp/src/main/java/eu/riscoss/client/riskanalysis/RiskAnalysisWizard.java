@@ -94,6 +94,8 @@ public class RiskAnalysisWizard implements EntryPoint {
 	String					idRerun;
 	String 					newId;
 	
+	Label 					title;
+	
 	public void onModuleLoad() {
 		
 		try {
@@ -107,7 +109,7 @@ public class RiskAnalysisWizard implements EntryPoint {
 			rightPanel.setWidth("400px");
 			//leftPanel.setHeight("100%");
 			
-			Label title = new Label("Multi-layer Analysis");
+			title = new Label("Multi-layer Analysis");
 			title.setStyleName("title");
 			page.add(title);
 			
@@ -447,8 +449,9 @@ public class RiskAnalysisWizard implements EntryPoint {
 		HorizontalPanel h = new HorizontalPanel();
 		h.add(back);
 		h.add(remove);
-		vPanel.add(h);
 		vPanel.add(rasPanel);
+		vPanel.add(h);
+		title.setText(selectedRiskSession);
 		mainView.add(vPanel);
 	}
 	
@@ -459,6 +462,7 @@ public class RiskAnalysisWizard implements EntryPoint {
 		top.add(g);
 		selectedRiskConf = "";
 		selectedRiskSession = "";
+		title.setText("Multi-layer Analysis");
 		g.setWidget(1, 1, new Label(" - "));
 	}
 }
