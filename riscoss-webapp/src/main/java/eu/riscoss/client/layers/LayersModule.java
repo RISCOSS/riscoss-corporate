@@ -766,28 +766,32 @@ public class LayersModule implements EntryPoint {
 			delete.addClickHandler(new ClickHandler() {
 							@Override
 							public void onClick(ClickEvent event) {
-								RiscossJsonClient.deleteEntity( selectedEntity, new JsonCallback() {
-									@Override
-									public void onFailure(Method method,Throwable exception) {
-										Window.alert( exception.getMessage() );
-									}
-									@Override
-									public void onSuccess(Method method,JSONValue response) {
-										mainView.remove(rightPanel);
-										RiscossJsonClient.listEntities(new JsonCallback() {
-											@Override
-											public void onFailure(
-													Method method,
-													Throwable exception) {
-											}
-											@Override
-											public void onSuccess(
-													Method method,
-													JSONValue response) {
-												reloadEntityTable(response);
-											}
-										});
-									}} );
+								Boolean b = Window.confirm("Are you sure you want to delete this entity?");
+								if (b) {
+									RiscossJsonClient.deleteEntity( selectedEntity, new JsonCallback() {
+										@Override
+										public void onFailure(Method method,Throwable exception) {
+											Window.alert( exception.getMessage() );
+										}
+										@Override
+										public void onSuccess(Method method,JSONValue response) {
+											mainView.remove(rightPanel);
+											RiscossJsonClient.listEntities(new JsonCallback() {
+												@Override
+												public void onFailure(
+														Method method,
+														Throwable exception) {
+												}
+												@Override
+												public void onSuccess(
+														Method method,
+														JSONValue response) {
+													reloadEntityTable(response);
+												}
+											});
+										}
+									} );
+								}
 							}
 						} ) ;
 			delete.setStyleName("button");

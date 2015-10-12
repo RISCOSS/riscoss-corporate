@@ -252,21 +252,6 @@ public class RiskConfsModule implements EntryPoint {
 		ppg.saveRiskConfData();
 	}
 	
-	protected void deleteRC(RCInfo object) {
-		
-		RiscossJsonClient.deleteRC( object.name, new JsonCallbackWrapper<RCInfo>( object ) {
-			@Override
-			public void onFailure( Method method, Throwable exception ) {
-				Window.alert( exception.getMessage() );
-			}
-
-			@Override
-			public void onSuccess( Method method, JSONValue response ) {
-				onRCSelected( null );
-				dataProvider.getList().remove( getValue() );
-			}} );
-	}
-	
 	protected void onAddNew() {
 		//String name = Window.prompt( "Name:", "" );
 		String name = riskConfName.getText().trim();
@@ -391,7 +376,9 @@ public class RiskConfsModule implements EntryPoint {
 				delete.addClickHandler(new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent arg0) {
-						RiscossJsonClient.deleteRC( selectedRC, new JsonCallback() {
+						Boolean b = Window.confirm("Are you sure you want to delete this risk configuration?");
+						if (b) {
+							RiscossJsonClient.deleteRC( selectedRC, new JsonCallback() {
 							@Override
 							public void onFailure( Method method, Throwable exception ) {
 								Window.alert( exception.getMessage() );
@@ -402,6 +389,7 @@ public class RiskConfsModule implements EntryPoint {
 								onRCSelected( null );
 								Window.Location.reload();
 							}} );	
+						}
 					}
 				});
 				buttons.add(save);
