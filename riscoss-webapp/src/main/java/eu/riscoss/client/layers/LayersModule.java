@@ -34,6 +34,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
@@ -118,6 +120,8 @@ public class LayersModule implements EntryPoint {
 	String				selectedEntity;
 	String 				selectedLayer;
 	String				selectedParent;
+	
+	Boolean				dataChanged = false;
 	
 	TextBox				nameL;
 	
@@ -298,7 +302,48 @@ public class LayersModule implements EntryPoint {
 	}
 	
 	private void saveLayerData() {
-		
+		if (dataChanged) {
+			dataChanged = false;
+			String name = nameL.getText().trim();
+			
+			if (name == null || name.equals("") ) 
+				return;
+			
+			//String s = RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
+			if (!RiscossUtil.sanitize(name).equals(name)){
+				//info: firefox has some problem with this window, and fires assertion errors in dev mode
+				Window.alert("Name contains prohibited characters (##,@,\") \nPlease re-enter name");
+				return;
+			}
+			
+			RiscossJsonClient.listLayers(new JsonCallback() {
+				@Override
+				public void onFailure(Method method, Throwable exception) {	
+				}
+				@Override
+				public void onSuccess(Method method, JSONValue response) {
+					for(int i=0; i<response.isArray().size(); i++){
+						JSONObject o = (JSONObject)response.isArray().get(i);
+						if (nameL.getText().trim().equals(o.get( "name" ).isString().stringValue())){
+							//info: firefox has some problem with this window, and fires assertion errors in dev mode
+							Window.alert("Layer name already in use.\nPlease re-enter name.");
+							return;
+						}
+					}
+					RiscossJsonClient.renameLayer(selectedLayer, nameL.getText().trim(), new JsonCallback() {
+						@Override
+						public void onFailure(Method method, Throwable exception) {
+							Window.alert(exception.getMessage());
+						}
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							selectedLayer = nameL.getText().trim();
+							reloadPage();
+						}
+					});	
+				}
+			});
+		} 
 	}
 	
 	private void reloadPage() {
@@ -384,51 +429,10 @@ public class LayersModule implements EntryPoint {
 		nameL = new TextBox();
 		nameL.setText(selectedLayer);
 		nameL.setStyleName("tag");
-		nameL.addKeyPressHandler(new KeyPressHandler() {
+		nameL.addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
-			public void onKeyPress(KeyPressEvent event) {
-				if (KeyCodes.KEY_ENTER == event.getNativeEvent().getKeyCode()) {
-					
-					String name = nameL.getText().trim();
-					
-					if (name == null || name.equals("") ) 
-						return;
-					
-					//String s = RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
-					if (!RiscossUtil.sanitize(name).equals(name)){
-						//info: firefox has some problem with this window, and fires assertion errors in dev mode
-						Window.alert("Name contains prohibited characters (##,@,\") \nPlease re-enter name");
-						return;
-					}
-					
-					RiscossJsonClient.listLayers(new JsonCallback() {
-						@Override
-						public void onFailure(Method method, Throwable exception) {	
-						}
-						@Override
-						public void onSuccess(Method method, JSONValue response) {
-							for(int i=0; i<response.isArray().size(); i++){
-								JSONObject o = (JSONObject)response.isArray().get(i);
-								if (nameL.getText().trim().equals(o.get( "name" ).isString().stringValue())){
-									//info: firefox has some problem with this window, and fires assertion errors in dev mode
-									Window.alert("Layer name already in use.\nPlease re-enter name.");
-									return;
-								}
-							}
-							RiscossJsonClient.renameLayer(selectedLayer, nameL.getText().trim(), new JsonCallback() {
-								@Override
-								public void onFailure(Method method, Throwable exception) {
-									Window.alert(exception.getMessage());
-								}
-								@Override
-								public void onSuccess(Method method, JSONValue response) {
-									selectedLayer = nameL.getText().trim();
-									reloadPage();
-								}
-							});	
-						}
-					});
-				}
+			public void onValueChange(ValueChangeEvent<String> event) {
+				dataChanged = true;
 			}
 		});
 		properties.setWidget(0, 1, nameL);
@@ -466,6 +470,7 @@ public class LayersModule implements EntryPoint {
 						}
 					} ) ;
 		delete.setStyleName("button");
+		buttons.add(save);
 		buttons.add(delete);
 		
 		grid.setWidget(2, 0, buttons);
@@ -502,7 +507,7 @@ public class LayersModule implements EntryPoint {
 				
 				HorizontalPanel buttons = new HorizontalPanel();
 				
-				Button newEntityButton = new Button("New entity");
+				Button newEntityButton = new Button("New " + selectedLayer + " entity");
 				newEntityButton.setStyleName("button");
 				newEntityButton.addClickHandler(new ClickHandler() {
 					@Override
@@ -657,7 +662,7 @@ public class LayersModule implements EntryPoint {
 		
 		HorizontalPanel buttons = new HorizontalPanel();
 		
-		Button newEntityButton = new Button("New entity");
+		Button newEntityButton = new Button("New " + selectedLayer + " entity");
 		newEntityButton.setStyleName("button");
 		newEntityButton.addClickHandler(new ClickHandler() {
 			@Override
@@ -712,10 +717,11 @@ public class LayersModule implements EntryPoint {
 		});
 		buttons.add(newEntityButton);
 		
-		
 		leftPanelEntity.add(buttons);
 		leftPanelEntity.add(table);
 	}
+	
+	EntityPropertyPage ppgEnt;
 	
 	private void reloadEntityInfo() {
 		if (selectedEntity != null) {
@@ -727,7 +733,7 @@ public class LayersModule implements EntryPoint {
 			l.setStyleName("subtitle");
 			rightPanel.add(l);
 			
-			EntityPropertyPage ppgEnt = new EntityPropertyPage(null);
+			ppgEnt = new EntityPropertyPage(null);
 			ppgEnt.setSelectedEntity(selectedEntity);
 			
 			Grid grid = new Grid(5,1);
@@ -785,6 +791,15 @@ public class LayersModule implements EntryPoint {
 							}
 						} ) ;
 			delete.setStyleName("button");
+			Button saveEntity = new Button("Save");
+			saveEntity.setStyleName("button");
+			saveEntity.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					ppgEnt.saveEntityData();
+				}
+			});
+			buttons.add(saveEntity);
 			buttons.add(delete);
 			grid.setWidget(2, 0, buttons);
 			grid.setWidget(3, 0, null);

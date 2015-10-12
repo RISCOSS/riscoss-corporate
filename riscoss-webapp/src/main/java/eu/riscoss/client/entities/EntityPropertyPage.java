@@ -776,12 +776,8 @@ public class EntityPropertyPage implements IsWidget {
 			saveParentyInfo();
 			saveDataCollectors();
 			module.reloadData();
-			Window.alert("Entity data successfully saved");
 			changedData = false;
 			confDialog.setChangedData();
-		}
-		else {
-			Window.alert("No changes detected");
 		}
 	}
 	

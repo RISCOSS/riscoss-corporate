@@ -163,6 +163,11 @@ body {
 	color: #636B75 !important;
 }
 
+.ciGrid {
+	margin-top: 16px !important;
+	padding-top: 12px !important;
+	border-top: 1px solid #4D9244 !important;
+}
 
 .tree {
 	font-size: 14px !important;
@@ -237,6 +242,7 @@ body {
 	color: #000000 !important;
 	border-bottom: 1px dotted #E6E6E6 !important;
 	margin-bottom: 10px !important;
+	margin-top: 10px !important;
 }
 
 .smallTitle2 {

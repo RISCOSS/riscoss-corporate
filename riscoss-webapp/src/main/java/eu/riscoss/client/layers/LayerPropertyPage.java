@@ -179,9 +179,11 @@ public class LayerPropertyPage implements IsWidget {
 		
 	}
 	
+	HorizontalPanel main = new HorizontalPanel();
+	
 	protected void loadProperties () {
 		
-		this.add = new Button("Add", new ClickHandler() {
+		this.add = new Button("New contextual info", new ClickHandler() {
 
 			@SuppressWarnings("deprecation")
 			@Override
@@ -332,9 +334,10 @@ public class LayerPropertyPage implements IsWidget {
 			}
 			
 		});
-		this.add.setStyleName("deleteButton");
+		this.add.setStyleName("button");
 		
 		newElement = new Grid(8,2);
+		newElement.setStyleName("ciGrid");
 		
 		HorizontalPanel hPanel = new HorizontalPanel();
 		lBox = new ListBox();
@@ -542,16 +545,22 @@ public class LayerPropertyPage implements IsWidget {
 		
 		reloadData();
 		
-		ciPanel.add(ciList);
+		main.add(ciList);
+		
+		ciPanel.add(main);
 		
 	}
 	
+	List<String> cInfo; 
+	List<String> cInfoName;
 	
 	public void reloadData() {
 		
-		List<String> cInfo = new ArrayList<>();
+		cInfo = new ArrayList<>();
+		cInfoName = new ArrayList<>();
 		for (int i = 0; i < info.getSize(); ++i) {
 			cInfo.add(info.getContextualInfoElement(i).getId());
+			cInfoName.add(info.getContextualInfoElement(i).getName());
 		}
 		
 		table = new CellTable<String>(15, (Resources) GWT.create(TableResources.class));
@@ -567,13 +576,17 @@ public class LayerPropertyPage implements IsWidget {
 	    selectionModel.addSelectionChangeHandler(new Handler() {
 			@Override
 			public void onSelectionChange(SelectionChangeEvent arg0) {
-				contextualInfoPanel(selectionModel.getSelectedObject());
+				int k = 0;
+				for (int i = 0; i < cInfoName.size(); ++i) {
+					if (selectionModel.getSelectedObject().equals(cInfoName.get(i))) k = i;
+				}
+				contextualInfoPanel(cInfo.get(k));
 			}
 	    });
 		
 		table.addColumn(t, "Contextual Information");
 		
-		if (cInfo.size() > 0) table.setRowData(0, cInfo);
+		if (cInfo.size() > 0) table.setRowData(0, cInfoName);
 		else {
 			cInfo.add("");
 			table.setRowData(0, cInfo);
@@ -609,15 +622,57 @@ public class LayerPropertyPage implements IsWidget {
 				jElement = info.getContextualInfoElement(i);
 			}
 		}
-		cInfoPanel.remove(vPanel);
+		//cInfoPanel.remove(vPanel);
+		main.remove(vPanel);
 		vPanel = new VerticalPanel();
 		
 		Label title = new Label(jElement.getName());
 		title.setStyleName("smallTitle");
 		vPanel.add(title);
 		
+		HorizontalPanel buttons = new HorizontalPanel();
+		Button save = new Button("Save");
+		save.setStyleName("button");
+		save.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				jElement.setId(newId.getText());
+				jElement.setName(newName.getText());
+				jElement.setDescription(newDescription.getText());
+				String type = jElement.getType();
+				List<String> l = new ArrayList<>();
+				if (type.equals("Integer")) {
+					jElement.setDefval(newDefValInt.getText());
+					l.add(newMin.getText());
+					l.add(newMax.getText());
+					jElement.setInfo(l);
+				}
+				else if (type.equals("Boolean")) {
+					jElement.setDefval(String.valueOf(newDefValBool.getSelectedIndex()));
+				}
+				else if (type.equals("List")) {
+					jElement.setDefval(String.valueOf(newDefValList.getSelectedIndex()));
+				}
+				else {
+					jElement.setDefval(getDate());
+				}
+				CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
+				JSONValue json = codec.encode( info );
+				RiscossJsonClient.setLayerContextualInfo(layer, json, new JsonCallback() {
+					@Override
+					public void onFailure(Method method, Throwable exception) {
+					}
+					@Override
+					public void onSuccess(Method method, JSONValue response) {
+						reloadData();
+						contextualInfoPanel(info.getContextualInfoElement(count).getId());
+					}
+				});
+			}
+		});
+		
 		Button delete = new Button("Delete");
-		delete.setStyleName("deleteButton");
+		delete.setStyleName("button");
 		delete.addClickHandler(new ClickHandler() {
 			
 			String idEnt = jElement.getId();
@@ -679,7 +734,10 @@ public class LayerPropertyPage implements IsWidget {
 				});	
 			}
 		});
-		vPanel.add(delete);
+		
+		buttons.add(save);
+		buttons.add(delete);
+		vPanel.add(buttons);
 		
 		Grid g = new Grid(4,2);
 		
@@ -687,111 +745,18 @@ public class LayerPropertyPage implements IsWidget {
 		idL.setStyleName("bold");
 		g.setWidget(0, 0, idL);
 		newId.setText(jElement.getId());
-		newId.addKeyPressHandler(new KeyPressHandler() {
-			@Override
-			public void onKeyPress(KeyPressEvent event) {
-				int elem = count;
-				if (KeyCodes.KEY_ENTER == event.getNativeEvent().getKeyCode()) {
-					String id = newId.getText();
-					if (id == null || id.equals("") ) 
-						return;
-					if (!RiscossUtil.sanitize(id).equals(id)){
-						Window.alert("Id contains prohibited characters (##,@,\") \nPlease re-enter name");
-						return;
-					}
-					for (int i = 0; i < info.getSize(); ++i) {
-						if (info.getContextualInfoElement(i).getId().equals(id)) {
-							//Window.alert("Id already in use");
-							return;
-						}
-					}
-					info.getContextualInfoElement(elem).setId(id);
-					CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
-					JSONValue json = codec.encode( info );
-					RiscossJsonClient.setLayerContextualInfo(layer, json, new JsonCallback() {
-						@Override
-						public void onFailure(Method method, Throwable exception) {
-						}
-						@Override
-						public void onSuccess(Method method, JSONValue response) {
-							String id = newId.getText();
-							reloadData();
-							contextualInfoPanel(id);
-						}
-					});
-				}
-			}
-		});
 		g.setWidget(0, 1, newId);
 		
 		Label nameL = new Label("Name");
 		nameL.setStyleName("bold");
 		g.setWidget(1, 0, nameL);
 		newName.setText(jElement.getName());
-		newName.addKeyPressHandler(new KeyPressHandler() {
-			@Override
-			public void onKeyPress(KeyPressEvent event) {
-				int elem = count;
-				if (KeyCodes.KEY_ENTER == event.getNativeEvent().getKeyCode()) {
-					String name = newName.getText();
-					if (name == null || name.equals("") ) 
-						return;
-					if (!RiscossUtil.sanitize(name).equals(name)){
-						Window.alert("Id contains prohibited characters (##,@,\") \nPlease re-enter name");
-						return;
-					}
-					info.getContextualInfoElement(elem).setName(name);
-					CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
-					JSONValue json = codec.encode( info );
-					element = elem;
-					RiscossJsonClient.setLayerContextualInfo(layer, json, new JsonCallback() {
-						@Override
-						public void onFailure(Method method, Throwable exception) {
-						}
-						@Override
-						public void onSuccess(Method method, JSONValue response) {
-							reloadData();
-							contextualInfoPanel(info.getContextualInfoElement(element).getId());
-						}
-					});
-				}
-			}
-		});
 		g.setWidget(1, 1, newName);
 		
 		Label descriptionL = new Label("Description");
 		descriptionL.setStyleName("bold");
 		g.setWidget(2, 0, descriptionL);
 		newDescription.setText(jElement.getDescription());
-		newDescription.addKeyPressHandler(new KeyPressHandler() {
-			@Override
-			public void onKeyPress(KeyPressEvent event) {
-				int elem = count;
-				if (KeyCodes.KEY_ENTER == event.getNativeEvent().getKeyCode()) {
-					String description = newDescription.getText();
-					if (description == null || description.equals("") ) 
-						return;
-					if (!RiscossUtil.sanitize(description).equals(description)){
-						Window.alert("Id contains prohibited characters (##,@,\") \nPlease re-enter name");
-						return;
-					}
-					info.getContextualInfoElement(elem).setDescription(description);
-					CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
-					JSONValue json = codec.encode( info );
-					element = elem;
-					RiscossJsonClient.setLayerContextualInfo(layer, json, new JsonCallback() {
-						@Override
-						public void onFailure(Method method, Throwable exception) {
-						}
-						@Override
-						public void onSuccess(Method method, JSONValue response) {
-							reloadData();
-							contextualInfoPanel(info.getContextualInfoElement(element).getId());
-						}
-					});
-				}
-			}
-		});
 		g.setWidget(2, 1, newDescription);
 		
 		Label defvalL = new Label("Default value");
@@ -801,112 +766,10 @@ public class LayerPropertyPage implements IsWidget {
 		
 		if (jElement.getType().equals("Integer")) {
 			newDefValInt.setText(s);
-			newDefValInt.addKeyPressHandler(new KeyPressHandler() {
-				@Override
-				public void onKeyPress(KeyPressEvent event) {
-					int elem = count;
-					if (KeyCodes.KEY_ENTER == event.getNativeEvent().getKeyCode()) {
-						String s = newDefValInt.getText();
-						if (s == null || s.equals("") ) 
-							return;
-						if (!RiscossUtil.sanitize(s).equals(s)){
-							Window.alert("Id contains prohibited characters (##,@,\") \nPlease re-enter name");
-							return;
-						}
-						if (Integer.parseInt(s) < Integer.parseInt(info.getContextualInfoElement(elem).getInfo().get(0)) ||
-								Integer.parseInt(s) > Integer.parseInt(info.getContextualInfoElement(elem).getInfo().get(1))) {
-							Window.alert("Default value must be within limits of min and max");
-							return;
-						}
-						info.getContextualInfoElement(elem).setDefval(s);
-						CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
-						JSONValue json = codec.encode( info );
-						element = elem;
-						RiscossJsonClient.setLayerContextualInfo(layer, json, new JsonCallback() {
-							@Override
-							public void onFailure(Method method, Throwable exception) {
-							}
-							@Override
-							public void onSuccess(Method method, JSONValue response) {
-								reloadData();
-								contextualInfoPanel(info.getContextualInfoElement(element).getId());
-							}
-						});
-					}
-				}
-			});
 			g.setWidget(3, 1, newDefValInt);
 			g.resize(6, 2);
 			newMin.setText(jElement.getInfo().get(0));
-			newMin.addKeyPressHandler(new KeyPressHandler() {
-				@Override
-				public void onKeyPress(KeyPressEvent event) {
-					int elem = count;
-					if (KeyCodes.KEY_ENTER == event.getNativeEvent().getKeyCode()) {
-						String s = newMin.getText();
-						if (s == null || s.equals("") ) 
-							return;
-						if (!RiscossUtil.sanitize(s).equals(s)){
-							Window.alert("Id contains prohibited characters (##,@,\") \nPlease re-enter name");
-							return;
-						}
-						if (Integer.parseInt(s) > Integer.parseInt(info.getContextualInfoElement(elem).getDefval()) ||
-								Integer.parseInt(s) > Integer.parseInt(info.getContextualInfoElement(elem).getInfo().get(1))) {
-							Window.alert("Default value and max must be greater than min value");
-							return;
-						}
-						info.getContextualInfoElement(elem).getInfo().set(0, s);
-						CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
-						JSONValue json = codec.encode( info );
-						element = elem;
-						RiscossJsonClient.setLayerContextualInfo(layer, json, new JsonCallback() {
-							@Override
-							public void onFailure(Method method, Throwable exception) {
-							}
-							@Override
-							public void onSuccess(Method method, JSONValue response) {
-								reloadData();
-								contextualInfoPanel(info.getContextualInfoElement(element).getId());
-							}
-						});
-					}
-				}
-			});
 			newMax.setText(jElement.getInfo().get(1));
-			newMax.addKeyPressHandler(new KeyPressHandler() {
-				int elem = count;
-				@Override
-				public void onKeyPress(KeyPressEvent event) {
-					if (KeyCodes.KEY_ENTER == event.getNativeEvent().getKeyCode()) {
-						String s = newMax.getText();
-						if (s == null || s.equals("") ) 
-							return;
-						if (!RiscossUtil.sanitize(s).equals(s)){
-							Window.alert("Id contains prohibited characters (##,@,\") \nPlease re-enter name");
-							return;
-						}
-						if (Integer.parseInt(s) < Integer.parseInt(info.getContextualInfoElement(elem).getDefval()) ||
-								Integer.parseInt(s) < Integer.parseInt(info.getContextualInfoElement(elem).getInfo().get(0))) {
-							Window.alert("Default value and min must be less than min value");
-							return;
-						}
-						info.getContextualInfoElement(elem).getInfo().set(1, s);
-						CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
-						JSONValue json = codec.encode( info );
-						element = elem;
-						RiscossJsonClient.setLayerContextualInfo(layer, json, new JsonCallback() {
-							@Override
-							public void onFailure(Method method, Throwable exception) {
-							}
-							@Override
-							public void onSuccess(Method method, JSONValue response) {
-								reloadData();
-								contextualInfoPanel(info.getContextualInfoElement(element).getId());
-							}
-						});
-					}
-				}
-			});
 			Label minLab = new Label("Min");
 			minLab.setStyleName("bold");
 			g.setWidget(4, 0, minLab);
@@ -918,26 +781,6 @@ public class LayerPropertyPage implements IsWidget {
 		}
 		else if (jElement.getType().equals("Boolean")) {
 			newDefValBool.setSelectedIndex(Integer.parseInt(s));
-			newDefValBool.addChangeHandler(new ChangeHandler() {
-				int elem = count;
-				@Override
-				public void onChange(ChangeEvent event) {
-					info.getContextualInfoElement(elem).setDefval(String.valueOf(newDefValBool.getSelectedIndex()));
-					CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
-					JSONValue json = codec.encode( info );
-					element = elem;
-					RiscossJsonClient.setLayerContextualInfo(layer, json, new JsonCallback() {
-						@Override
-						public void onFailure(Method method, Throwable exception) {
-						}
-						@Override
-						public void onSuccess(Method method, JSONValue response) {
-							reloadData();
-							contextualInfoPanel(info.getContextualInfoElement(element).getId());
-						}
-					});
-				}
-			});
 			g.setWidget(3, 1, newDefValBool);
 		}
 		else if (jElement.getType().equals("Date")) {
@@ -960,105 +803,15 @@ public class LayerPropertyPage implements IsWidget {
 			int day = Integer.parseInt(date[2]);
 			Date d = new Date(year, month, day);
 			newDate.setValue(d);
-			newDate.getDatePicker().addValueChangeHandler(new ValueChangeHandler<Date>() {
-				int elem = count;
-				@Override
-				public void onValueChange(ValueChangeEvent<Date> event) {
-					String s = getDate();
-					info.getContextualInfoElement(elem).setDefval(s);
-					CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
-					JSONValue json = codec.encode( info );
-					element = elem;
-					RiscossJsonClient.setLayerContextualInfo(layer, json, new JsonCallback() {
-						@Override
-						public void onFailure(Method method, Throwable exception) {
-						}
-						@Override
-						public void onSuccess(Method method, JSONValue response) {
-							reloadData();
-							contextualInfoPanel(info.getContextualInfoElement(element).getId());
-						}
-					});
-				}
-			});
 			
 			HorizontalPanel timePanel = new HorizontalPanel();
 			newHour.setText(String.valueOf(time[0]));
-			newHour.addKeyPressHandler(new KeyPressHandler() {
-				int elem = count;
-				@Override
-				public void onKeyPress(KeyPressEvent event) {
-					if (KeyCodes.KEY_ENTER == event.getNativeEvent().getKeyCode()) {
-						String s = getDate();
-						info.getContextualInfoElement(elem).setDefval(s);
-						CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
-						JSONValue json = codec.encode( info );
-						element = elem;
-						RiscossJsonClient.setLayerContextualInfo(layer, json, new JsonCallback() {
-							@Override
-							public void onFailure(Method method, Throwable exception) {
-							}
-							@Override
-							public void onSuccess(Method method, JSONValue response) {
-								reloadData();
-								contextualInfoPanel(info.getContextualInfoElement(element).getId());
-							}
-						});
-					}
-				}
-			});
 			timePanel.add(newHour);
 			timePanel.add(new Label("hh"));
 			newMinute.setText(String.valueOf(time[1]));
-			newMinute.addKeyPressHandler(new KeyPressHandler() {
-				int elem = count;
-				@Override
-				public void onKeyPress(KeyPressEvent event) {
-					if (KeyCodes.KEY_ENTER == event.getNativeEvent().getKeyCode()) {
-						String s = getDate();
-						info.getContextualInfoElement(elem).setDefval(s);
-						CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
-						JSONValue json = codec.encode( info );
-						element = elem;
-						RiscossJsonClient.setLayerContextualInfo(layer, json, new JsonCallback() {
-							@Override
-							public void onFailure(Method method, Throwable exception) {
-							}
-							@Override
-							public void onSuccess(Method method, JSONValue response) {
-								reloadData();
-								contextualInfoPanel(info.getContextualInfoElement(element).getId());
-							}
-						});
-					}
-				}
-			});
 			timePanel.add(newMinute);
 			timePanel.add(new Label("mm"));
 			newSecond.setText(String.valueOf(time[2]));
-			newSecond.addKeyPressHandler(new KeyPressHandler() {
-				int elem = count;
-				@Override
-				public void onKeyPress(KeyPressEvent event) {
-					if (KeyCodes.KEY_ENTER == event.getNativeEvent().getKeyCode()) {
-						String s = getDate();
-						info.getContextualInfoElement(elem).setDefval(s);
-						CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
-						JSONValue json = codec.encode( info );
-						element = elem;
-						RiscossJsonClient.setLayerContextualInfo(layer, json, new JsonCallback() {
-							@Override
-							public void onFailure(Method method, Throwable exception) {
-							}
-							@Override
-							public void onSuccess(Method method, JSONValue response) {
-								reloadData();
-								contextualInfoPanel(info.getContextualInfoElement(element).getId());
-							}
-						});
-					}
-				}
-			});
 			timePanel.add(newSecond);
 			timePanel.add(new Label("ss"));
 			
@@ -1071,33 +824,14 @@ public class LayerPropertyPage implements IsWidget {
 				newDefValList.addItem(jElement.getInfo().get(i));
 			}
 			newDefValList.setSelectedIndex(Integer.parseInt(s));
-			newDefValList.addChangeHandler(new ChangeHandler() {
-				int elem = count;
-				@Override
-				public void onChange(ChangeEvent event) {
-					info.getContextualInfoElement(elem).setDefval(String.valueOf(newDefValList.getSelectedIndex()));
-					CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
-					JSONValue json = codec.encode( info );
-					element = elem;
-					RiscossJsonClient.setLayerContextualInfo(layer, json, new JsonCallback() {
-						@Override
-						public void onFailure(Method method, Throwable exception) {
-						}
-						@Override
-						public void onSuccess(Method method, JSONValue response) {
-							reloadData();
-							contextualInfoPanel(info.getContextualInfoElement(element).getId());
-						}
-					});
-				}
-			});
 			g.setWidget(3, 1, newDefValList);
 		}
 		
 		vPanel.add(g);
 		vPanel.setStyleName("rightPanelLayer");
 		
-		cInfoPanel.add(vPanel);
+		//cInfoPanel.add(vPanel);
+		main.add(vPanel);
 	}
 	
 	public String getDate() {

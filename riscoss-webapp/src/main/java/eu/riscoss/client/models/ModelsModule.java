@@ -232,14 +232,9 @@ public class ModelsModule implements EntryPoint {
 	}
 	
 	private void saveModelData() {
-		//panel.saveModelData();
 		if (changedData) {
 			saveModelName();
-			Window.alert("Data successfully saved");
 			changedData = false;
-		}
-		else {
-			Window.alert("No changes detected");
 		}
 	}
 	
