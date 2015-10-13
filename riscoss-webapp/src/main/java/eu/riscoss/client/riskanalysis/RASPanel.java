@@ -49,10 +49,13 @@ public class RASPanel implements IsWidget {
 	
 	SimplePanel panel = new SimplePanel();
 	private String selectedRAS;
-	RiskAnalysisReport report = new RiskAnalysisReport();
+	RiskAnalysisReport 	report = new RiskAnalysisReport();
+	SimplePanel		 	inputTable;
+	RiskAnalysisWizard 	risk = null;
+	JsonRiskAnalysis	sessionSummary;
 	
-	public RASPanel() {
-		
+	public RASPanel(RiskAnalysisWizard w) {
+		if (w != null) risk = w;
 	}
 	
 	@Override
@@ -77,7 +80,7 @@ public class RASPanel implements IsWidget {
 	VerticalPanel vPanel;
 
 	protected void loadRASSummary( JsonRiskAnalysis ras ) {
-		
+		sessionSummary = ras;
 		if( panel.getWidget() != null ) {
 			panel.getWidget().removeFromParent();
 		}
@@ -90,6 +93,7 @@ public class RASPanel implements IsWidget {
 		
 		Label nL = new Label("Name");
 		nL.setStyleName("headTable");
+		nL.setWidth("130px");
 		grid.setWidget(0, 0, nL);
 		Label rasName = new Label(ras.getName());
 		rasName.setStyleName("contentTable");
@@ -98,6 +102,7 @@ public class RASPanel implements IsWidget {
 		
 		Label idL = new Label("ID");
 		idL.setStyleName("headTable");
+		idL.setWidth("130px");
 		grid.setWidget(1, 0, idL);
 		Label rasID = new Label(ras.getID());
 		rasID.setStyleName("contentTable");
@@ -105,6 +110,7 @@ public class RASPanel implements IsWidget {
 		
 		Label rcL = new Label("Risk configuration");
 		rcL.setStyleName("headTable");
+		rcL.setWidth("130px");
 		grid.setWidget(2, 0, rcL);
 		Label rasrc = new Label(ras.getRC());
 		rasrc.setStyleName("contentTable");
@@ -112,6 +118,7 @@ public class RASPanel implements IsWidget {
 		
 		Label eL = new Label("Target entity");
 		eL.setStyleName("headTable");
+		eL.setWidth("130px");
 		grid.setWidget(3, 0, eL);
 		Label rasEntity = new Label(ras.getTarget());
 		rasEntity.setStyleName("contentTable");
@@ -130,24 +137,15 @@ public class RASPanel implements IsWidget {
 				}
 			});
 			
-			Button missingVal = new Button("Edit missing values");
-			missingVal.setStyleName("deleteButton");
-			missingVal.addClickHandler(new ClickHandler() {
-				@Override
-				public void onClick( ClickEvent event ) {
-					onEditMissingValues();
-				}
-			});
-			
 			
 			Label nI = new Label("Data collectors");
 			nI.setStyleName("headTable");
+			nI.setWidth("130px");
 			grid.setWidget(4, 0, nI);
-			Label lastUpd = new Label("Last update: -");
+			Label lastUpd = new Label("Last execution: -");
 			lastUpd.setStyleName("contentTable");
 			grid.setWidget(4, 1, lastUpd);
 			grid.setWidget(4, 2, updateIndicators);
-			grid.setWidget(4, 3, missingVal);
 		}
 		{
 			
@@ -160,7 +158,7 @@ public class RASPanel implements IsWidget {
 				}
 			});
 			backup.setWidth("100%");
-			Button run = new Button("Run");
+			Button run = new Button("Run analysis");
 			run.setStyleName("deleteButton");
 			run.addClickHandler(new ClickHandler() {
 				@Override
@@ -172,6 +170,7 @@ public class RASPanel implements IsWidget {
 			
 			Label aL = new Label("Analysis");
 			aL.setStyleName("headTable");
+			aL.setWidth("130px");
 			grid.setWidget(5, 0, aL);
 			Label lastEx = new Label("Last execution: " + ras.getDate());
 			lastEx.setStyleName("contentTable");
@@ -180,11 +179,33 @@ public class RASPanel implements IsWidget {
 			grid.setWidget(5, 3, run);
 		}
 		
+		Button missingVal = new Button("Edit missing values");
+		missingVal.setStyleName("deleteButton");
+		missingVal.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick( ClickEvent event ) {
+				onEditMissingValues();
+			}
+		});
+		
 		vPanel.add(grid);
+		HorizontalPanel buttons = new HorizontalPanel();
+		buttons.setStyleName("margin-top");
+		if (risk != null) {
+			buttons.add(risk.getBack());
+			buttons.add(risk.getRemove());
+		}
+		buttons.add(missingVal);
+		vPanel.add(buttons);
 		Label resultsTitle = new Label("Risk analysis results");
 		resultsTitle.setStyleName("subtitle");
 		vPanel.add(resultsTitle);
 		vPanel.add(report.asWidget());
+		
+		Label inputValues = new Label("Input values");
+		inputValues.setStyleName("subtitle");
+		vPanel.add(inputValues);
+		vPanel.add(inputTable);
 		
 		panel.setWidget( vPanel );
 		
@@ -234,6 +255,10 @@ public class RASPanel implements IsWidget {
 				Window.alert( exception.getMessage() );
 			}
 		});
+	}
+	
+	protected void inputDataInfo() {
+		
 	}
 
 	protected void onRunAnalysisClicked() {

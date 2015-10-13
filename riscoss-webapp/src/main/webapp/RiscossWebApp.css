@@ -219,12 +219,20 @@ body {
 	margin-right: 16px !important;
 }
 
+/** CSS multi-layer table results **/
+
 .table {
+	
 }
 
 .contentTable {
 	padding: 3px 4px !important;
 	border: 1px solid #E6E6E6 !important;
+	font-size: 14px !important;
+}
+
+.contentResultsTable {
+	padding: 16px !important;
 	font-size: 14px !important;
 }
 
@@ -235,6 +243,11 @@ body {
 	padding: 3px 4px !important;
 	background-color: #F2F2F2 !important;
 	border: 1px solid #E6E6E6 !important;
+}
+
+.headerTable {
+	margin: 0 !important;
+	padding: 3px 4px !important;
 }
 
 .bold2 {
