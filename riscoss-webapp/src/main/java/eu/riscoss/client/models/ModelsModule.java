@@ -258,20 +258,6 @@ public class ModelsModule implements EntryPoint {
 		});
 	}
 
-	protected void deleteModel(ModelInfo info) {
-		RiscossJsonClient.deleteModel(info.getName(), new JsonCallbackWrapper<ModelInfo>(info) {
-			@Override
-			public void onFailure(Method method, Throwable exception) {
-				Window.alert(exception.getMessage());
-			}
-
-			@Override
-			public void onSuccess(Method method, JSONValue response) {
-				dataProvider.getList().remove(getValue());
-			}
-		});
-	}
-
 	public native void exportJS() /*-{
 		var that = this;
 		$wnd.editModel = $entry(function(amt) {
@@ -599,59 +585,62 @@ public class ModelsModule implements EntryPoint {
 		delete.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent arg0) {
-				RiscossJsonClient.deleteModel(selectedModel, new JsonCallback() {
-					@Override
-					public void onFailure(Method method, Throwable exception) {
-						Window.alert(exception.getMessage());
-					}
-
-					@Override
-					public void onSuccess(Method method, JSONValue response) {
-						//dataProvider.getList().remove(getValue());
-						mainView.remove(rightPanel);
-						table = new CellTable<ModelInfo>(15, (Resources) GWT.create(TableResources.class));
-
-						table.addColumn(new Column<ModelInfo, SafeHtml>(new SafeHtmlCell()) {
-							@Override
-							public SafeHtml getValue(ModelInfo object) {
-								return new LinkHtml(object.getName(), "javascript:editModel(\"" + object.getName() + "\")");
-							};
-						}, "Model");
-
-						dataProvider = new ListDataProvider<ModelInfo>();
-						dataProvider.addDataDisplay(table);
-						
-						RiscossJsonClient.listModels(new JsonCallback() {
-
-							public void onSuccess(Method method, JSONValue response) {
-								GWT.log(response.toString());
-								if (response.isArray() != null) {
-									for (int i = 0; i < response.isArray().size(); i++) {
-										JSONObject o = (JSONObject) response.isArray().get(i);
-										dataProvider.getList().add(new ModelInfo(o.get("name").isString().stringValue()));
+				Boolean b = Window.confirm("Are you sure you want to delete this model?");
+				if (b) {
+					RiscossJsonClient.deleteModel(selectedModel, new JsonCallback() {
+						@Override
+						public void onFailure(Method method, Throwable exception) {
+							Window.alert(exception.getMessage());
+						}
+	
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							//dataProvider.getList().remove(getValue());
+							mainView.remove(rightPanel);
+							table = new CellTable<ModelInfo>(15, (Resources) GWT.create(TableResources.class));
+	
+							table.addColumn(new Column<ModelInfo, SafeHtml>(new SafeHtmlCell()) {
+								@Override
+								public SafeHtml getValue(ModelInfo object) {
+									return new LinkHtml(object.getName(), "javascript:editModel(\"" + object.getName() + "\")");
+								};
+							}, "Model");
+	
+							dataProvider = new ListDataProvider<ModelInfo>();
+							dataProvider.addDataDisplay(table);
+							
+							RiscossJsonClient.listModels(new JsonCallback() {
+	
+								public void onSuccess(Method method, JSONValue response) {
+									GWT.log(response.toString());
+									if (response.isArray() != null) {
+										for (int i = 0; i < response.isArray().size(); i++) {
+											JSONObject o = (JSONObject) response.isArray().get(i);
+											dataProvider.getList().add(new ModelInfo(o.get("name").isString().stringValue()));
+										}
 									}
 								}
-							}
-
-							public void onFailure(Method method, Throwable exception) {
-								Window.alert(exception.getMessage());
-							}
-						});
-						
-						SimplePager pager = new SimplePager();
-						pager.setDisplay(table);
-
-						leftPanel.remove(tablePanel);
-						
-						tablePanel = new VerticalPanel();
-						tablePanel.add(table);
-						tablePanel.add(pager);
-						
-						leftPanel.add(tablePanel);
-						
-						
-					}
-				});
+	
+								public void onFailure(Method method, Throwable exception) {
+									Window.alert(exception.getMessage());
+								}
+							});
+							
+							SimplePager pager = new SimplePager();
+							pager.setDisplay(table);
+	
+							leftPanel.remove(tablePanel);
+							
+							tablePanel = new VerticalPanel();
+							tablePanel.add(table);
+							tablePanel.add(pager);
+							
+							leftPanel.add(tablePanel);
+							
+							
+						}
+					});
+				}
 			}
 		});
 		buttons.add(save);

@@ -31,11 +31,13 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import eu.riscoss.client.RiscossJsonClient;
@@ -47,10 +49,13 @@ public class RASPanel implements IsWidget {
 	
 	SimplePanel panel = new SimplePanel();
 	private String selectedRAS;
-	RiskAnalysisReport report = new RiskAnalysisReport();
+	RiskAnalysisReport 	report = new RiskAnalysisReport();
+	SimplePanel		 	inputTable;
+	RiskAnalysisWizard 	risk = null;
+	JsonRiskAnalysis	sessionSummary;
 	
-	public RASPanel() {
-		
+	public RASPanel(RiskAnalysisWizard w) {
+		if (w != null) risk = w;
 	}
 	
 	@Override
@@ -71,82 +76,138 @@ public class RASPanel implements IsWidget {
 			}
 		});
 	}
+	
+	VerticalPanel vPanel;
 
 	protected void loadRASSummary( JsonRiskAnalysis ras ) {
-		
+		sessionSummary = ras;
 		if( panel.getWidget() != null ) {
 			panel.getWidget().removeFromParent();
 		}
 		
-		Grid grid = new Grid(7,2);
+		vPanel = new VerticalPanel();
+		Grid grid = new Grid(6,4);
+		grid.setCellSpacing(0);
+		grid.setCellPadding(0);
+		grid.setStyleName("table");
 		
 		Label nL = new Label("Name");
-		nL.setStyleName("bold");
+		nL.setStyleName("headTable");
+		nL.setWidth("130px");
 		grid.setWidget(0, 0, nL);
-		grid.setWidget(0, 1, new Label(ras.getName()));
+		Label rasName = new Label(ras.getName());
+		rasName.setStyleName("contentTable");
+		rasName.setHeight("100%");
+		grid.setWidget(0, 1, rasName);
 		
 		Label idL = new Label("ID");
-		idL.setStyleName("bold");
+		idL.setStyleName("headTable");
+		idL.setWidth("130px");
 		grid.setWidget(1, 0, idL);
-		grid.setWidget(1, 1, new Label(ras.getID()));
+		Label rasID = new Label(ras.getID());
+		rasID.setStyleName("contentTable");
+		grid.setWidget(1, 1, rasID);
 		
 		Label rcL = new Label("Risk configuration");
-		rcL.setStyleName("bold");
+		rcL.setStyleName("headTable");
+		rcL.setWidth("130px");
 		grid.setWidget(2, 0, rcL);
-		grid.setWidget(2, 1, new Label(ras.getRC()));
+		Label rasrc = new Label(ras.getRC());
+		rasrc.setStyleName("contentTable");
+		grid.setWidget(2, 1, rasrc);
 		
 		Label eL = new Label("Target entity");
-		eL.setStyleName("bold");
+		eL.setStyleName("headTable");
+		eL.setWidth("130px");
 		grid.setWidget(3, 0, eL);
-		grid.setWidget(3, 1, new Label(ras.getTarget()));
+		Label rasEntity = new Label(ras.getTarget());
+		rasEntity.setStyleName("contentTable");
+		grid.setWidget(3, 1, rasEntity);
 
 //		grid.add( "Last execution:", new Label( ras.getDate() ) );
 //		grid.add( "Action:", new RadioButton( "action", "Run" ) );
 		{
-			HorizontalPanel hp = new HorizontalPanel();
-			hp.add( new Label( "Last update: -" ) );
-			hp.add( new Button( "Update now", new ClickHandler() {
+			
+			Button updateIndicators = new Button("Run data collectors");
+			updateIndicators.setStyleName("deleteButton");
+			updateIndicators.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick( ClickEvent event ) {
 					onUpdatedIndicatorsClicked();
 				}
-			} ) );
-			hp.add( new Button( "Edit missing values", new ClickHandler() {
-				@Override
-				public void onClick( ClickEvent event ) {
-					onEditMissingValues();
-				}
-			} ) );
-			hp.setWidth( "100%" );
+			});
 			
-			Label nI = new Label("Indicators");
-			nI.setStyleName("bold");
+			
+			Label nI = new Label("Data collectors");
+			nI.setStyleName("headTable");
+			nI.setWidth("130px");
 			grid.setWidget(4, 0, nI);
-			grid.setWidget(4, 1, hp);
+			Label lastUpd = new Label("Last execution: -");
+			lastUpd.setStyleName("contentTable");
+			grid.setWidget(4, 1, lastUpd);
+			grid.setWidget(4, 2, updateIndicators);
 		}
 		{
-			HorizontalPanel hp = new HorizontalPanel();
-			hp.add( new Label( "Last execution: " + ras.getDate()) );
-			hp.add( new Button( "Run now", new ClickHandler() {
+			
+			Button backup = new Button("Backup & run");
+			backup.setStyleName("deleteButton");
+			backup.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					//TODO backup and run function
+				}
+			});
+			backup.setWidth("100%");
+			Button run = new Button("Run analysis");
+			run.setStyleName("deleteButton");
+			run.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick( ClickEvent event ) {
 					onRunAnalysisClicked();
 				}
-			} ) );
-			hp.setWidth( "100%" );
+			});
+			//hp.setWidth( "100%" );
 			
 			Label aL = new Label("Analysis");
-			aL.setStyleName("bold");
+			aL.setStyleName("headTable");
+			aL.setWidth("130px");
 			grid.setWidget(5, 0, aL);
-			grid.setWidget(5, 1, hp);
+			Label lastEx = new Label("Last execution: " + ras.getDate());
+			lastEx.setStyleName("contentTable");
+			grid.setWidget(5, 1, lastEx);
+			grid.setWidget(5, 2, backup);
+			grid.setWidget(5, 3, run);
 		}
 		
-		Label lrL = new Label("Last report");
-		lrL.setStyleName("bold");
-		grid.setWidget(6, 0, lrL);
-		grid.setWidget(6, 1, report.asWidget());
+		Button missingVal = new Button("Edit missing values");
+		missingVal.setStyleName("deleteButton");
+		missingVal.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick( ClickEvent event ) {
+				onEditMissingValues();
+			}
+		});
 		
-		panel.setWidget( grid );
+		vPanel.add(grid);
+		HorizontalPanel buttons = new HorizontalPanel();
+		buttons.setStyleName("margin-top");
+		if (risk != null) {
+			buttons.add(risk.getBack());
+			buttons.add(risk.getRemove());
+		}
+		buttons.add(missingVal);
+		vPanel.add(buttons);
+		Label resultsTitle = new Label("Risk analysis results");
+		resultsTitle.setStyleName("subtitle");
+		vPanel.add(resultsTitle);
+		vPanel.add(report.asWidget());
+		
+		Label inputValues = new Label("Input values");
+		inputValues.setStyleName("subtitle");
+		vPanel.add(inputValues);
+		vPanel.add(inputTable);
+		
+		panel.setWidget( vPanel );
 		
 		RiscossJsonClient.getSessionResults( selectedRAS, new JsonCallback() {
 			@Override
@@ -194,6 +255,10 @@ public class RASPanel implements IsWidget {
 				Window.alert( exception.getMessage() );
 			}
 		});
+	}
+	
+	protected void inputDataInfo() {
+		
 	}
 
 	protected void onRunAnalysisClicked() {

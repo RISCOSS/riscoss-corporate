@@ -947,7 +947,7 @@ public class EntityPropertyPage implements IsWidget {
 	
 	private void setSelectedRiskSes(String name, int k) {
 		panel.clear();
-		rasPanelResult = new RASPanel();
+		rasPanelResult = new RASPanel(null);
 		rasPanelResult.loadRAS(list.get(k).getId());
 		HorizontalPanel h = new HorizontalPanel();
 		h.add(backRAS);

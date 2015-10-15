@@ -50,6 +50,8 @@ public class RiskAnalysisReport implements IsWidget {
 		}
 		
 		Grid grid = new Grid();
+		grid.setCellPadding(0);
+		grid.setCellSpacing(0);
 		for( int i = 0; i < response.isArray().size(); i++ ) {
 			JSONObject v = response.isArray().get( i ).isObject();
 			JsonRiskResult result = new JsonRiskResult( v );
@@ -66,7 +68,10 @@ public class RiskAnalysisReport implements IsWidget {
 						label = v.get( "name" ).isString().stringValue();
 					}
 				}
-				panel.add( new Label( label ) );
+				Label l = new Label( label );
+				l.setStyleName("bold");
+				panel.add( l );
+				panel.setStyleName("headerTable");
 				grid.setWidget( i, 0, panel );
 				
 				GaugeImage img = new GaugeImage();
@@ -79,19 +84,30 @@ public class RiskAnalysisReport implements IsWidget {
 			case EVIDENCE: {
 				grid.resize( grid.getRowCount() +1, 3 );
 				VerticalPanel panel = new VerticalPanel();
-				panel.add( new Label( v.get( "id" ).isString().stringValue() ) );
+				Label l = new Label(v.get( "id" ).isString().stringValue());
+				l.setStyleName("bold");
+				panel.add( l );
 				panel.add( new HTML( 
 						"Exposure: <font color='red'>" + 
 								v.get( "e" ).isObject().get( "e" ).isNumber().doubleValue() +
 						"</font>") );
+				panel.setStyleName("headerTable");
+				panel.setHeight("100%");
 				grid.setWidget( i, 0, panel );
 				
 				if( "evidence".equals( v.get( "datatype" ).isString().stringValue() ) ) {
 					GaugeImage img = new GaugeImage();
 					img.setEvidence( v.get( "p" ).isString().stringValue(), v.get( "m" ).isString().stringValue() );
-					grid.setWidget( i, 1, img );
+					SimplePanel p = new SimplePanel();
+					p.setWidget(img);
+					p.setStyleName("contentResultsTable");
+					grid.setWidget( i, 1, p );
 				}
-				grid.setWidget( i, 2, new Label( v.get( "description" ).isString().stringValue() ) );
+				Label d = new Label(v.get( "description" ).isString().stringValue());
+				SimplePanel sp = new SimplePanel();
+				sp.setWidget(d);
+				sp.setStyleName("contentResultsTable");
+				grid.setWidget( i, 2, sp);
 			}
 				break;
 			case INTEGER:

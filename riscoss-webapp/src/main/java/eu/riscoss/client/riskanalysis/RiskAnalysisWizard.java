@@ -60,7 +60,7 @@ public class RiskAnalysisWizard implements EntryPoint {
 	EntitySelectionPanel	entitySelectionPanel = new EntitySelectionPanel();
 	RCSelectionPanel		rcSelectionPanel = new RCSelectionPanel();
 	RASSelectionPanel		rasSelectionPanel = new RASSelectionPanel();
-	RASPanel				rasPanel = new RASPanel();
+	RASPanel				rasPanel;
 	
 	HorizontalPanel			topPanel = new HorizontalPanel();
 //	HorizontalPanel			bottomPanel = new HorizontalPanel();
@@ -94,6 +94,8 @@ public class RiskAnalysisWizard implements EntryPoint {
 	String					idRerun;
 	String 					newId;
 	
+	Label 					title;
+	
 	public void onModuleLoad() {
 		
 		try {
@@ -107,7 +109,7 @@ public class RiskAnalysisWizard implements EntryPoint {
 			rightPanel.setWidth("400px");
 			//leftPanel.setHeight("100%");
 			
-			Label title = new Label("Multi-layer Analysis");
+			title = new Label("Multi-layer Analysis");
 			title.setStyleName("title");
 			page.add(title);
 			
@@ -146,49 +148,7 @@ public class RiskAnalysisWizard implements EntryPoint {
 			newRiskSession.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					String n = newName.getText().trim();
-					if( "".equals( n ) ) return;
-					RiscossJsonClient.creteRiskAnalysisSession(n, selectedRiskConf, selectedEntity, new JsonCallback() {
-						@Override
-						public void onFailure( Method method, Throwable exception ) {
-							Window.alert( exception.getMessage() );
-						}
-						@Override
-						public void onSuccess( Method method, JSONValue response ) {
-							JsonRiskAnalysis ras =  new JsonRiskAnalysis( response );
-							newId = ras.getID();
-							RiscossJsonClient.rerunRiskAnalysisSession(newId, "", new JsonCallback() {
-								@Override
-								public void onFailure(Method method,
-										Throwable exception) {
-									Window.alert(exception.getMessage());
-								}
-								@Override
-								public void onSuccess(Method method,
-										JSONValue response) {
-									
-									generateRiskTree();
-									g.setWidget(2, 0, null);
-									g.setWidget(2, 1, null);
-									g.setWidget(2, 2, null);
-
-									selectedRiskSession = newName.getText().trim();
-									newName.setText("");
-									mainView.clear();
-									top.remove(g);
-									vPanel = new VerticalPanel();
-									vPanel.setStyleName("leftPanelLayer");
-									rasPanel = new RASPanel();
-									rasPanel.loadRAS(newId);
-									HorizontalPanel h = new HorizontalPanel();
-									h.add(back);
-									h.add(remove);
-									vPanel.add(h);
-									vPanel.add(rasPanel);
-									mainView.add(vPanel);
-								}
-							});
-						}} );
+					newRiskSession();
 				}
 			});
 			
@@ -203,17 +163,7 @@ public class RiskAnalysisWizard implements EntryPoint {
 			remove = new Button("Remove", new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					RiscossJsonClient.deleteRiskAnalysisSession(list.get(elem).getId(), new JsonCallback() {
-						@Override
-						public void onFailure(Method method, Throwable exception) {
-							Window.alert(exception.getMessage());
-						}
-						@Override
-						public void onSuccess(Method method, JSONValue response) {
-							generateRiskTree();
-							reloadPage();
-						}
-					});
+					remove();
 				}
 			});
 			remove.setStyleName("deleteButton");
@@ -223,6 +173,54 @@ public class RiskAnalysisWizard implements EntryPoint {
 			
 			Window.alert( ex.getMessage() );
 		}
+	}
+	
+	private void newRiskSession() {
+
+		String n = newName.getText().trim();
+		if( "".equals( n ) ) return;
+		title.setText(n);
+		RiscossJsonClient.creteRiskAnalysisSession(n, selectedRiskConf, selectedEntity, new JsonCallback() {
+			@Override
+			public void onFailure( Method method, Throwable exception ) {
+				Window.alert( exception.getMessage() );
+			}
+			@Override
+			public void onSuccess( Method method, JSONValue response ) {
+				JsonRiskAnalysis ras =  new JsonRiskAnalysis( response );
+				newId = ras.getID();
+				RiscossJsonClient.rerunRiskAnalysisSession(newId, "", new JsonCallback() {
+					@Override
+					public void onFailure(Method method,
+							Throwable exception) {
+						Window.alert(exception.getMessage());
+					}
+					@Override
+					public void onSuccess(Method method,
+							JSONValue response) {
+						rerun(response);
+					}
+				});
+			}
+		} );
+	}
+	
+	private void rerun(JSONValue response) {
+		generateRiskTree();
+		g.setWidget(2, 0, null);
+		g.setWidget(2, 1, null);
+		g.setWidget(2, 2, null);
+
+		selectedRiskSession = newName.getText().trim();
+		newName.setText("");
+		mainView.clear();
+		top.remove(g);
+		vPanel = new VerticalPanel();
+		vPanel.setStyleName("leftPanelLayer");
+		rasPanel = new RASPanel(this);
+		rasPanel.loadRAS(newId);
+		vPanel.add(rasPanel);
+		mainView.add(vPanel);
 	}
 	
 	private void appendChilds(TreeWidget rootEnt, JSONArray children) {
@@ -442,13 +440,10 @@ public class RiskAnalysisWizard implements EntryPoint {
 		top.remove(g);
 		vPanel = new VerticalPanel();
 		vPanel.setStyleName("leftPanelLayer");
-		rasPanel = new RASPanel();
+		rasPanel = new RASPanel(this);
 		rasPanel.loadRAS(list.get(k).getId());
-		HorizontalPanel h = new HorizontalPanel();
-		h.add(back);
-		h.add(remove);
-		vPanel.add(h);
 		vPanel.add(rasPanel);
+		title.setText(selectedRiskSession);
 		mainView.add(vPanel);
 	}
 	
@@ -459,6 +454,29 @@ public class RiskAnalysisWizard implements EntryPoint {
 		top.add(g);
 		selectedRiskConf = "";
 		selectedRiskSession = "";
+		title.setText("Multi-layer Analysis");
 		g.setWidget(1, 1, new Label(" - "));
+	}
+	
+	public Button getBack() {
+		return back;
+	}
+	
+	public Button getRemove() {
+		return remove;
+	}
+	
+	private void remove() {
+		RiscossJsonClient.deleteRiskAnalysisSession(list.get(elem).getId(), new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				generateRiskTree();
+				reloadPage();
+			}
+		});
 	}
 }
