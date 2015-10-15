@@ -1,0 +1,981 @@
+<?xml version="1.0" encoding="ISO-8859-1"?><riscoss>
+    <model>
+        <relationships>
+            <expose source="fuzzified:#obsolete-target" target="Obsolete Target Licenses Risk"/>
+            <expose source="fuzzified:#obsolete-components" target="Obsolete Component Licenses Risk"/>
+            <expose source="fuzzified:#declining-target" target="Declining Target Risk"/>
+            <expose source="fuzzified:#declining-components" target="Declining Component Risk"/>
+            <indicate source="#use-of-ASL2,#min-use" target="#usage-factor-of-ASL2" function="decl_calcUsage(relation,'#use-of-ASL2','#min-use')"/>
+            <indicate source="#target:CPL-EPL,#normalized-modernity-CPL-EPL,#target-licenses" target="#target-modernity-factor-CPL-EPL" function="decl_calcModernityFactor(relation,'#target:CPL-EPL','#normalized-modernity-CPL-EPL','#target-licenses')"/>
+            <indicate source="#use-of-LGPL2.1+,#min-use" target="#usage-factor-of-LGPL2.1+" function="decl_calcUsage(relation,'#use-of-LGPL2.1+','#min-use')"/>
+            <indicate source="#count:ASL2,#normalized-modernity-ASL2,#licenses" target="#modernity-factor-ASL2" function="decl_calcModernityFactor(relation,'#count:ASL2','#normalized-modernity-ASL2','#licenses')"/>
+            <indicate source="#use-of-MIT,#use-of-BSD4,#use-of-BSD3,#use-of-ASL1,#use-of-ASL2,#use-of-Artistic2,#use-of-LGPL2.1,#use-of-LGPL2.1+,#use-of-LGPL3+,#use-of-MPL,#use-of-CDDL,#use-of-CPL-EPL,#use-of-EUPL,#use-of-GPL2,#use-of-GPL2+,#use-of-GPL3,#use-of-AGPL3" target="#min-use" function="decl_min(relation)"/>
+            <indicate source="#usage-factor-of-ASL1,#max-usage" target="#normalized-usage-of-ASL1" function="decl_calcNormalizedUsage(relation,'#usage-factor-of-ASL1','#max-usage')"/>
+            <indicate source="#count:AGPL3,#normalized-modernity-AGPL3,#licenses" target="#modernity-factor-AGPL3" function="decl_calcModernityFactor(relation,'#count:AGPL3','#normalized-modernity-AGPL3','#licenses')"/>
+            <indicate source="#target:LGPL2.1,#normalized-modernity-LGPL2.1,#target-licenses" target="#target-modernity-factor-LGPL2.1" function="decl_calcModernityFactor(relation,'#target:LGPL2.1','#normalized-modernity-LGPL2.1','#target-licenses')"/>
+            <indicate source="#count:BSD4,#normalized-modernity-BSD4,#licenses" target="#modernity-factor-BSD4" function="decl_calcModernityFactor(relation,'#count:BSD4','#normalized-modernity-BSD4','#licenses')"/>
+            <indicate source="#count:LGPL2.1,#licenses,#normalized-usage-of-LGPL2.1" target="#trending-factor-of-LGPL2.1" function="decl_calcTrendingFactor(relation,'#normalized-usage-of-LGPL2.1','#count:LGPL2.1','#licenses')"/>
+            <indicate source="#count:EUPL,#licenses,#normalized-usage-of-EUPL" target="#trending-factor-of-EUPL" function="decl_calcTrendingFactor(relation,'#normalized-usage-of-EUPL','#count:EUPL','#licenses')"/>
+            <indicate source="#count:LGPL3+,#normalized-modernity-LGPL3+,#licenses" target="#modernity-factor-LGPL3+" function="decl_calcModernityFactor(relation,'#count:LGPL3+','#normalized-modernity-LGPL3+','#licenses')"/>
+            <indicate source="#trending-factor-of-MIT,#trending-factor-of-BSD4,#trending-factor-of-BSD3,#trending-factor-of-ASL1,#trending-factor-of-ASL2,#trending-factor-of-Artistic2,#trending-factor-of-LGPL2.1,#trending-factor-of-LGPL2.1+,#trending-factor-of-LGPL3+,#trending-factor-of-MPL,#trending-factor-of-CDDL,#trending-factor-of-CPL-EPL,#trending-factor-of-EUPL,#trending-factor-of-GPL2,#trending-factor-of-GPL2+,#trending-factor-of-GPL3,#trending-factor-of-AGPL3" target="#declining-components" function="decl_calcDecliningRiskIndicator(relation)"/>
+            <indicate source="#usage-factor-of-Artistic2,#max-usage" target="#normalized-usage-of-Artistic2" function="decl_calcNormalizedUsage(relation,'#usage-factor-of-Artistic2','#max-usage')"/>
+            <indicate source="#count:ASL2,#licenses,#normalized-usage-of-ASL2" target="#trending-factor-of-ASL2" function="decl_calcTrendingFactor(relation,'#normalized-usage-of-ASL2','#count:ASL2','#licenses')"/>
+            <indicate source="#count:GPL2+,#normalized-modernity-GPL2+,#licenses" target="#modernity-factor-GPL2+" function="decl_calcModernityFactor(relation,'#count:GPL2+','#normalized-modernity-GPL2+','#licenses')"/>
+            <indicate source="#usage-factor-of-GPL3,#max-usage" target="#normalized-usage-of-GPL3" function="decl_calcNormalizedUsage(relation,'#usage-factor-of-GPL3','#max-usage')"/>
+            <indicate source="#target:BSD4,#normalized-modernity-BSD4,#target-licenses" target="#target-modernity-factor-BSD4" function="decl_calcModernityFactor(relation,'#target:BSD4','#normalized-modernity-BSD4','#target-licenses')"/>
+            <indicate source="#use-of-GPL2+,#min-use" target="#usage-factor-of-GPL2+" function="decl_calcUsage(relation,'#use-of-GPL2+','#min-use')"/>
+            <indicate source="#target:AGPL3,#normalized-modernity-AGPL3,#target-licenses" target="#target-modernity-factor-AGPL3" function="decl_calcModernityFactor(relation,'#target:AGPL3','#normalized-modernity-AGPL3','#target-licenses')"/>
+            <indicate source="#count:MPL,#licenses,#normalized-usage-of-MPL" target="#trending-factor-of-MPL" function="decl_calcTrendingFactor(relation,'#normalized-usage-of-MPL','#count:MPL','#licenses')"/>
+            <indicate source="#count:CPL-EPL,#normalized-modernity-CPL-EPL,#licenses" target="#modernity-factor-CPL-EPL" function="decl_calcModernityFactor(relation,'#count:CPL-EPL','#normalized-modernity-CPL-EPL','#licenses')"/>
+            <indicate source="#use-of-Artistic2,#min-use" target="#usage-factor-of-Artistic2" function="decl_calcUsage(relation,'#use-of-Artistic2','#min-use')"/>
+            <indicate source="#usage-factor-of-MIT,#max-usage" target="#normalized-usage-of-MIT" function="decl_calcNormalizedUsage(relation,'#usage-factor-of-MIT','#max-usage')"/>
+            <indicate source="#target:LGPL2.1+,#normalized-modernity-LGPL2.1+,#target-licenses" target="#target-modernity-factor-LGPL2.1+" function="decl_calcModernityFactor(relation,'#target:LGPL2.1+','#normalized-modernity-LGPL2.1+','#target-licenses')"/>
+            <indicate source="#use-of-ASL1,#min-use" target="#usage-factor-of-ASL1" function="decl_calcUsage(relation,'#use-of-ASL1','#min-use')"/>
+            <indicate source="#usage-factor-of-MPL,#max-usage" target="#normalized-usage-of-MPL" function="decl_calcNormalizedUsage(relation,'#usage-factor-of-MPL','#max-usage')"/>
+            <indicate source="#target:MPL,#licenses,#normalized-usage-of-MPL" target="#trending-factor-of-target-MPL" function="decl_calcTargetTrendingFactor(relation,'#normalized-usage-of-MPL','#target:MPL')"/>
+            <indicate source="#count:BSD3,#licenses,#normalized-usage-of-BSD3" target="#trending-factor-of-BSD3" function="decl_calcTrendingFactor(relation,'#normalized-usage-of-BSD3','#count:BSD3','#licenses')"/>
+            <indicate source="#trending-factor-of-target-MIT,#trending-factor-of-target-BSD4,#trending-factor-of-target-BSD3,#trending-factor-of-target-ASL1,#trending-factor-of-target-ASL2,#trending-factor-of-target-Artistic2,#trending-factor-of-target-LGPL2.1,#trending-factor-of-target-LGPL2.1+,#trending-factor-of-target-LGPL3+,#trending-factor-of-target-MPL,#trending-factor-of-target-CDDL,#trending-factor-of-target-CPL-EPL,#trending-factor-of-target-EUPL,#trending-factor-of-target-GPL2,#trending-factor-of-target-GPL2+,#trending-factor-of-target-GPL3,#trending-factor-of-target-AGPL3" target="#declining-target" function="decl_calcDecliningRiskIndicator(relation)"/>
+            <indicate source="#count:BSD3,#normalized-modernity-BSD3,#licenses" target="#modernity-factor-BSD3" function="decl_calcModernityFactor(relation,'#count:BSD3','#normalized-modernity-BSD3','#licenses')"/>
+            <indicate source="#use-of-BSD3,#min-use" target="#usage-factor-of-BSD3" function="decl_calcUsage(relation,'#use-of-BSD3','#min-use')"/>
+            <indicate source="#target:GPL2+,#licenses,#normalized-usage-of-GPL2+" target="#trending-factor-of-target-GPL2+" function="decl_calcTargetTrendingFactor(relation,'#normalized-usage-of-GPL2+','#target:GPL2+')"/>
+            <indicate source="#count:CDDL,#licenses,#normalized-usage-of-CDDL" target="#trending-factor-of-CDDL" function="decl_calcTrendingFactor(relation,'#normalized-usage-of-CDDL','#count:CDDL','#licenses')"/>
+            <indicate source="#target:GPL2,#licenses,#normalized-usage-of-GPL2" target="#trending-factor-of-target-GPL2" function="decl_calcTargetTrendingFactor(relation,'#normalized-usage-of-GPL2','#target:GPL2')"/>
+            <indicate source="#target:CPL-EPL,#licenses,#normalized-usage-of-CPL-EPL" target="#trending-factor-of-target-CPL-EPL" function="decl_calcTargetTrendingFactor(relation,'#normalized-usage-of-CPL-EPL','#target:CPL-EPL')"/>
+            <indicate source="#usage-factor-of-GPL2+,#max-usage" target="#normalized-usage-of-GPL2+" function="decl_calcNormalizedUsage(relation,'#usage-factor-of-GPL2+','#max-usage')"/>
+            <indicate source="#count:Artistic2,#licenses,#normalized-usage-of-Artistic2" target="#trending-factor-of-Artistic2" function="decl_calcTrendingFactor(relation,'#normalized-usage-of-Artistic2','#count:Artistic2','#licenses')"/>
+            <indicate source="#usage-factor-of-CPL-EPL,#max-usage" target="#normalized-usage-of-CPL-EPL" function="decl_calcNormalizedUsage(relation,'#usage-factor-of-CPL-EPL','#max-usage')"/>
+            <indicate source="#target-modernity-factor-MIT,#target-modernity-factor-BSD4,#target-modernity-factor-BSD3,#target-modernity-factor-ASL1,#target-modernity-factor-ASL2,#target-modernity-factor-Artistic2,#target-modernity-factor-LGPL2.1,#target-modernity-factor-LGPL2.1+,#target-modernity-factor-LGPL3+,#target-modernity-factor-MPL,#target-modernity-factor-CDDL,#target-modernity-factor-CPL-EPL,#target-modernity-factor-EUPL,#target-modernity-factor-GPL2,#target-modernity-factor-GPL2+,#target-modernity-factor-GPL3,#target-modernity-factor-AGPL3" target="#obsolete-target" function="decl_calcObsoleteComponentsIndex(relation)"/>
+            <indicate source="#use-of-AGPL3,#min-use" target="#usage-factor-of-AGPL3" function="decl_calcUsage(relation,'#use-of-AGPL3','#min-use')"/>
+            <indicate source="#target:CDDL,#licenses,#normalized-usage-of-CDDL" target="#trending-factor-of-target-CDDL" function="decl_calcTargetTrendingFactor(relation,'#normalized-usage-of-CDDL','#target:CDDL')"/>
+            <indicate source="#declining-target" target="fuzzified:#declining-target" function="decl_avg(relation)"/>
+            <indicate source="#usage-factor-of-GPL2,#max-usage" target="#normalized-usage-of-GPL2" function="decl_calcNormalizedUsage(relation,'#usage-factor-of-GPL2','#max-usage')"/>
+            <indicate source="#count:MIT,#normalized-modernity-MIT,#licenses" target="#modernity-factor-MIT" function="decl_calcModernityFactor(relation,'#count:MIT','#normalized-modernity-MIT','#licenses')"/>
+            <indicate source="#target:EUPL,#licenses,#normalized-usage-of-EUPL" target="#trending-factor-of-target-EUPL" function="decl_calcTargetTrendingFactor(relation,'#normalized-usage-of-EUPL','#target:EUPL')"/>
+            <indicate source="#use-of-LGPL2.1,#min-use" target="#usage-factor-of-LGPL2.1" function="decl_calcUsage(relation,'#use-of-LGPL2.1','#min-use')"/>
+            <indicate source="#usage-factor-of-LGPL2.1+,#max-usage" target="#normalized-usage-of-LGPL2.1+" function="decl_calcNormalizedUsage(relation,'#usage-factor-of-LGPL2.1+','#max-usage')"/>
+            <indicate source="#count:CDDL,#normalized-modernity-CDDL,#licenses" target="#modernity-factor-CDDL" function="decl_calcModernityFactor(relation,'#count:CDDL','#normalized-modernity-CDDL','#licenses')"/>
+            <indicate source="#use-of-BSD4,#min-use" target="#usage-factor-of-BSD4" function="decl_calcUsage(relation,'#use-of-BSD4','#min-use')"/>
+            <indicate source="#target:BSD3,#licenses,#normalized-usage-of-BSD3" target="#trending-factor-of-target-BSD3" function="decl_calcTargetTrendingFactor(relation,'#normalized-usage-of-BSD3','#target:BSD3')"/>
+            <indicate source="#target:ASL1,#normalized-modernity-ASL1,#target-licenses" target="#target-modernity-factor-ASL1" function="decl_calcModernityFactor(relation,'#target:ASL1','#normalized-modernity-ASL1','#target-licenses')"/>
+            <indicate source="#declining-components" target="fuzzified:#declining-components" function="decl_avg(relation)"/>
+            <indicate source="#use-of-EUPL,#min-use" target="#usage-factor-of-EUPL" function="decl_calcUsage(relation,'#use-of-EUPL','#min-use')"/>
+            <indicate source="#count:LGPL2.1+,#normalized-modernity-LGPL2.1+,#licenses" target="#modernity-factor-LGPL2.1+" function="decl_calcModernityFactor(relation,'#count:LGPL2.1+','#normalized-modernity-LGPL2.1+','#licenses')"/>
+            <indicate source="#target:GPL3,#normalized-modernity-GPL3,#target-licenses" target="#target-modernity-factor-GPL3" function="decl_calcModernityFactor(relation,'#target:GPL3','#normalized-modernity-GPL3','#target-licenses')"/>
+            <indicate source="#target:ASL2,#normalized-modernity-ASL2,#target-licenses" target="#target-modernity-factor-ASL2" function="decl_calcModernityFactor(relation,'#target:ASL2','#normalized-modernity-ASL2','#target-licenses')"/>
+            <indicate source="#target:ASL1,#licenses,#normalized-usage-of-ASL1" target="#trending-factor-of-target-ASL1" function="decl_calcTargetTrendingFactor(relation,'#normalized-usage-of-ASL1','#target:ASL1')"/>
+            <indicate source="#target:MPL,#normalized-modernity-MPL,#target-licenses" target="#target-modernity-factor-MPL" function="decl_calcModernityFactor(relation,'#target:MPL','#normalized-modernity-MPL','#target-licenses')"/>
+            <indicate source="#count:GPL2+,#licenses,#normalized-usage-of-GPL2+" target="#trending-factor-of-GPL2+" function="decl_calcTrendingFactor(relation,'#normalized-usage-of-GPL2+','#count:GPL2+','#licenses')"/>
+            <indicate source="#target:LGPL2.1+,#licenses,#normalized-usage-of-LGPL2.1+" target="#trending-factor-of-target-LGPL2.1+" function="decl_calcTargetTrendingFactor(relation,'#normalized-usage-of-LGPL2.1+','#target:LGPL2.1+')"/>
+            <indicate source="#count:LGPL3+,#licenses,#normalized-usage-of-LGPL3+" target="#trending-factor-of-LGPL3+" function="decl_calcTrendingFactor(relation,'#normalized-usage-of-LGPL3+','#count:LGPL3+','#licenses')"/>
+            <indicate source="#target:CDDL,#normalized-modernity-CDDL,#target-licenses" target="#target-modernity-factor-CDDL" function="decl_calcModernityFactor(relation,'#target:CDDL','#normalized-modernity-CDDL','#target-licenses')"/>
+            <indicate source="#usage-factor-of-LGPL2.1,#max-usage" target="#normalized-usage-of-LGPL2.1" function="decl_calcNormalizedUsage(relation,'#usage-factor-of-LGPL2.1','#max-usage')"/>
+            <indicate source="#count:ASL1,#normalized-modernity-ASL1,#licenses" target="#modernity-factor-ASL1" function="decl_calcModernityFactor(relation,'#count:ASL1','#normalized-modernity-ASL1','#licenses')"/>
+            <indicate source="#usage-factor-of-LGPL3+,#max-usage" target="#normalized-usage-of-LGPL3+" function="decl_calcNormalizedUsage(relation,'#usage-factor-of-LGPL3+','#max-usage')"/>
+            <indicate source="#use-of-GPL3,#min-use" target="#usage-factor-of-GPL3" function="decl_calcUsage(relation,'#use-of-GPL3','#min-use')"/>
+            <indicate source="#target:Artistic2,#normalized-modernity-Artistic2,#target-licenses" target="#target-modernity-factor-Artistic2" function="decl_calcModernityFactor(relation,'#target:Artistic2','#normalized-modernity-Artistic2','#target-licenses')"/>
+            <indicate source="#count:LGPL2.1+,#licenses,#normalized-usage-of-LGPL2.1+" target="#trending-factor-of-LGPL2.1+" function="decl_calcTrendingFactor(relation,'#normalized-usage-of-LGPL2.1+','#count:LGPL2.1+','#licenses')"/>
+            <indicate source="#use-of-CPL-EPL,#min-use" target="#usage-factor-of-CPL-EPL" function="decl_calcUsage(relation,'#use-of-CPL-EPL','#min-use')"/>
+            <indicate source="#target:MIT,#normalized-modernity-MIT,#target-licenses" target="#target-modernity-factor-MIT" function="decl_calcModernityFactor(relation,'#target:MIT','#normalized-modernity-MIT','#target-licenses')"/>
+            <indicate source="#use-of-GPL2,#min-use" target="#usage-factor-of-GPL2" function="decl_calcUsage(relation,'#use-of-GPL2','#min-use')"/>
+            <indicate source="#target:ASL2,#licenses,#normalized-usage-of-ASL2" target="#trending-factor-of-target-ASL2" function="decl_calcTargetTrendingFactor(relation,'#normalized-usage-of-ASL2','#target:ASL2')"/>
+            <indicate source="#count:MPL,#normalized-modernity-MPL,#licenses" target="#modernity-factor-MPL" function="decl_calcModernityFactor(relation,'#count:MPL','#normalized-modernity-MPL','#licenses')"/>
+            <indicate source="#usage-factor-of-AGPL3,#max-usage" target="#normalized-usage-of-AGPL3" function="decl_calcNormalizedUsage(relation,'#usage-factor-of-AGPL3','#max-usage')"/>
+            <indicate source="#count:GPL3,#normalized-modernity-GPL3,#licenses" target="#modernity-factor-GPL3" function="decl_calcModernityFactor(relation,'#count:GPL3','#normalized-modernity-GPL3','#licenses')"/>
+            <indicate source="#target:GPL2+,#normalized-modernity-GPL2+,#target-licenses" target="#target-modernity-factor-GPL2+" function="decl_calcModernityFactor(relation,'#target:GPL2+','#normalized-modernity-GPL2+','#target-licenses')"/>
+            <indicate source="#count:ASL1,#licenses,#normalized-usage-of-ASL1" target="#trending-factor-of-ASL1" function="decl_calcTrendingFactor(relation,'#normalized-usage-of-ASL1','#count:ASL1','#licenses')"/>
+            <indicate source="#count:AGPL3,#licenses,#normalized-usage-of-AGPL3" target="#trending-factor-of-AGPL3" function="decl_calcTrendingFactor(relation,'#normalized-usage-of-AGPL3','#count:AGPL3','#licenses')"/>
+            <indicate source="#target:EUPL,#normalized-modernity-EUPL,#target-licenses" target="#target-modernity-factor-EUPL" function="decl_calcModernityFactor(relation,'#target:EUPL','#normalized-modernity-EUPL','#target-licenses')"/>
+            <indicate source="#count:GPL2,#normalized-modernity-GPL2,#licenses" target="#modernity-factor-GPL2" function="decl_calcModernityFactor(relation,'#count:GPL2','#normalized-modernity-GPL2','#licenses')"/>
+            <indicate source="#count:MIT,#licenses,#normalized-usage-of-MIT" target="#trending-factor-of-MIT" function="decl_calcTrendingFactor(relation,'#normalized-usage-of-MIT','#count:MIT','#licenses')"/>
+            <indicate source="#count:GPL3,#licenses,#normalized-usage-of-GPL3" target="#trending-factor-of-GPL3" function="decl_calcTrendingFactor(relation,'#normalized-usage-of-GPL3','#count:GPL3','#licenses')"/>
+            <indicate source="#target:Artistic2,#licenses,#normalized-usage-of-Artistic2" target="#trending-factor-of-target-Artistic2" function="decl_calcTargetTrendingFactor(relation,'#normalized-usage-of-Artistic2','#target:Artistic2')"/>
+            <indicate source="#usage-factor-of-EUPL,#max-usage" target="#normalized-usage-of-EUPL" function="decl_calcNormalizedUsage(relation,'#usage-factor-of-EUPL','#max-usage')"/>
+            <indicate source="#target:LGPL3+,#licenses,#normalized-usage-of-LGPL3+" target="#trending-factor-of-target-LGPL3+" function="decl_calcTargetTrendingFactor(relation,'#normalized-usage-of-LGPL3+','#target:LGPL3+')"/>
+            <indicate source="#count:CPL-EPL,#licenses,#normalized-usage-of-CPL-EPL" target="#trending-factor-of-CPL-EPL" function="decl_calcTrendingFactor(relation,'#normalized-usage-of-CPL-EPL','#count:CPL-EPL','#licenses')"/>
+            <indicate source="#obsolete-components" target="fuzzified:#obsolete-components" function="decl_avg(relation)"/>
+            <indicate source="#target:BSD3,#normalized-modernity-BSD3,#target-licenses" target="#target-modernity-factor-BSD3" function="decl_calcModernityFactor(relation,'#target:BSD3','#normalized-modernity-BSD3','#target-licenses')"/>
+            <indicate source="#target:LGPL2.1,#licenses,#normalized-usage-of-LGPL2.1" target="#trending-factor-of-target-LGPL2.1" function="decl_calcTargetTrendingFactor(relation,'#normalized-usage-of-LGPL2.1','#target:LGPL2.1')"/>
+            <indicate source="#use-of-MPL,#min-use" target="#usage-factor-of-MPL" function="decl_calcUsage(relation,'#use-of-MPL','#min-use')"/>
+            <indicate source="#usage-factor-of-MIT,#usage-factor-of-BSD4,#usage-factor-of-BSD3,#usage-factor-of-ASL1,#usage-factor-of-ASL2,#usage-factor-of-Artistic2,#usage-factor-of-LGPL2.1,#usage-factor-of-LGPL2.1+,#usage-factor-of-LGPL3+,#usage-factor-of-MPL,#usage-factor-of-CDDL,#usage-factor-of-CPL-EPL,#usage-factor-of-EUPL,#usage-factor-of-GPL2,#usage-factor-of-GPL2+,#usage-factor-of-GPL3,#usage-factor-of-AGPL3" target="#max-usage" function="decl_max(relation)"/>
+            <indicate source="#target:BSD4,#licenses,#normalized-usage-of-BSD4" target="#trending-factor-of-target-BSD4" function="decl_calcTargetTrendingFactor(relation,'#normalized-usage-of-BSD4','#target:BSD4')"/>
+            <indicate source="#count:GPL2,#licenses,#normalized-usage-of-GPL2" target="#trending-factor-of-GPL2" function="decl_calcTrendingFactor(relation,'#normalized-usage-of-GPL2','#count:GPL2','#licenses')"/>
+            <indicate source="#modernity-factor-MIT,#modernity-factor-BSD4,#modernity-factor-BSD3,#modernity-factor-ASL1,#modernity-factor-ASL2,#modernity-factor-Artistic2,#modernity-factor-LGPL2.1,#modernity-factor-LGPL2.1+,#modernity-factor-LGPL3+,#modernity-factor-MPL,#modernity-factor-CDDL,#modernity-factor-CPL-EPL,#modernity-factor-EUPL,#modernity-factor-GPL2,#modernity-factor-GPL2+,#modernity-factor-GPL3,#modernity-factor-AGPL3" target="#obsolete-components" function="decl_calcObsoleteComponentsIndex(relation)"/>
+            <indicate source="#count:Artistic2,#normalized-modernity-Artistic2,#licenses" target="#modernity-factor-Artistic2" function="decl_calcModernityFactor(relation,'#count:Artistic2','#normalized-modernity-Artistic2','#licenses')"/>
+            <indicate source="#count:EUPL,#normalized-modernity-EUPL,#licenses" target="#modernity-factor-EUPL" function="decl_calcModernityFactor(relation,'#count:EUPL','#normalized-modernity-EUPL','#licenses')"/>
+            <indicate source="#usage-factor-of-CDDL,#max-usage" target="#normalized-usage-of-CDDL" function="decl_calcNormalizedUsage(relation,'#usage-factor-of-CDDL','#max-usage')"/>
+            <indicate source="#target:AGPL3,#licenses,#normalized-usage-of-AGPL3" target="#trending-factor-of-target-AGPL3" function="decl_calcTargetTrendingFactor(relation,'#normalized-usage-of-AGPL3','#target:AGPL3')"/>
+            <indicate source="#use-of-CDDL,#min-use" target="#usage-factor-of-CDDL" function="decl_calcUsage(relation,'#use-of-CDDL','#min-use')"/>
+            <indicate source="#use-of-MIT,#min-use" target="#usage-factor-of-MIT" function="decl_calcUsage(relation,'#use-of-MIT','#min-use')"/>
+            <indicate source="#count:BSD4,#licenses,#normalized-usage-of-BSD4" target="#trending-factor-of-BSD4" function="decl_calcTrendingFactor(relation,'#normalized-usage-of-BSD4','#count:BSD4','#licenses')"/>
+            <indicate source="#usage-factor-of-ASL2,#max-usage" target="#normalized-usage-of-ASL2" function="decl_calcNormalizedUsage(relation,'#usage-factor-of-ASL2','#max-usage')"/>
+            <indicate source="#target:GPL2,#normalized-modernity-GPL2,#target-licenses" target="#target-modernity-factor-GPL2" function="decl_calcModernityFactor(relation,'#target:GPL2','#normalized-modernity-GPL2','#target-licenses')"/>
+            <indicate source="#usage-factor-of-BSD3,#max-usage" target="#normalized-usage-of-BSD3" function="decl_calcNormalizedUsage(relation,'#usage-factor-of-BSD3','#max-usage')"/>
+            <indicate source="#usage-factor-of-BSD4,#max-usage" target="#normalized-usage-of-BSD4" function="decl_calcNormalizedUsage(relation,'#usage-factor-of-BSD4','#max-usage')"/>
+            <indicate source="#target:LGPL3+,#normalized-modernity-LGPL3+,#target-licenses" target="#target-modernity-factor-LGPL3+" function="decl_calcModernityFactor(relation,'#target:LGPL3+','#normalized-modernity-LGPL3+','#target-licenses')"/>
+            <indicate source="#target:MIT,#licenses,#normalized-usage-of-MIT" target="#trending-factor-of-target-MIT" function="decl_calcTargetTrendingFactor(relation,'#normalized-usage-of-MIT','#target:MIT')"/>
+            <indicate source="#obsolete-target" target="fuzzified:#obsolete-target" function="decl_avg(relation)"/>
+            <indicate source="#use-of-LGPL3+,#min-use" target="#usage-factor-of-LGPL3+" function="decl_calcUsage(relation,'#use-of-LGPL3+','#min-use')"/>
+            <indicate source="#count:LGPL2.1,#normalized-modernity-LGPL2.1,#licenses" target="#modernity-factor-LGPL2.1" function="decl_calcModernityFactor(relation,'#count:LGPL2.1','#normalized-modernity-LGPL2.1','#licenses')"/>
+            <indicate source="#target:GPL3,#licenses,#normalized-usage-of-GPL3" target="#trending-factor-of-target-GPL3" function="decl_calcTargetTrendingFactor(relation,'#normalized-usage-of-GPL3','#target:GPL3')"/>
+            <increase source="target-selected" target="Obsolete Target Licenses Risk"/>
+            <increase source="target-selected" target="Declining Target Risk"/>
+            <increase source="component-selected" target="Declining Component Risk"/>
+            <increase source="component-selected" target="Obsolete Component Licenses Risk"/>
+        </relationships>
+        <entities>
+            <indicator id="#count:MIT"/>
+            <indicator id="#count:BSD4"/>
+            <indicator id="#count:BSD3"/>
+            <indicator id="#count:ASL1"/>
+            <indicator id="#count:ASL2"/>
+            <indicator id="#count:Artistic2"/>
+            <indicator id="#count:LGPL2.1"/>
+            <indicator id="#count:LGPL2.1+"/>
+            <indicator id="#count:LGPL3+"/>
+            <indicator id="#count:MPL"/>
+            <indicator id="#count:CDDL"/>
+            <indicator id="#count:CPL-EPL"/>
+            <indicator id="#count:EUPL"/>
+            <indicator id="#count:GPL2"/>
+            <indicator id="#count:GPL2+"/>
+            <indicator id="#count:GPL3"/>
+            <indicator id="#count:AGPL3"/>
+            <indicator id="#licenses"/>
+            <indicator id="#use-of-MIT">
+                <property name="input" value="false"/>
+                <property name="default-value" value="0.1"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#use-of-BSD4">
+                <property name="input" value="false"/>
+                <property name="default-value" value="0.1"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#use-of-BSD3">
+                <property name="input" value="false"/>
+                <property name="default-value" value="0.1"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#use-of-ASL1">
+                <property name="input" value="false"/>
+                <property name="default-value" value="0.1"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#use-of-ASL2">
+                <property name="input" value="false"/>
+                <property name="default-value" value="0.1"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#use-of-Artistic2">
+                <property name="input" value="false"/>
+                <property name="default-value" value="0.0"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#use-of-LGPL2.1">
+                <property name="input" value="false"/>
+                <property name="default-value" value="-0.1"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#use-of-LGPL2.1+">
+                <property name="input" value="false"/>
+                <property name="default-value" value="-0.1"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#use-of-LGPL3+">
+                <property name="input" value="false"/>
+                <property name="default-value" value="-0.1"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#use-of-MPL">
+                <property name="input" value="false"/>
+                <property name="default-value" value="0.0"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#use-of-CDDL">
+                <property name="input" value="false"/>
+                <property name="default-value" value="0.0"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#use-of-CPL-EPL">
+                <property name="input" value="false"/>
+                <property name="default-value" value="0.0"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#use-of-EUPL">
+                <property name="input" value="false"/>
+                <property name="default-value" value="0.0"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#use-of-GPL2">
+                <property name="input" value="false"/>
+                <property name="default-value" value="-0.1"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#use-of-GPL2+">
+                <property name="input" value="false"/>
+                <property name="default-value" value="-0.1"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#use-of-GPL3">
+                <property name="input" value="false"/>
+                <property name="default-value" value="-0.1"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#use-of-AGPL3">
+                <property name="input" value="false"/>
+                <property name="default-value" value="-0.1"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#min-use"/>
+            <indicator id="#usage-factor-of-MIT">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#usage-factor-of-BSD4">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#usage-factor-of-BSD3">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#usage-factor-of-ASL1">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#usage-factor-of-ASL2">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#usage-factor-of-Artistic2">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#usage-factor-of-LGPL2.1">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#usage-factor-of-LGPL2.1+">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#usage-factor-of-LGPL3+">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#usage-factor-of-MPL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#usage-factor-of-CDDL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#usage-factor-of-CPL-EPL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#usage-factor-of-EUPL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#usage-factor-of-GPL2">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#usage-factor-of-GPL2+">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#usage-factor-of-GPL3">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#usage-factor-of-AGPL3">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#max-usage"/>
+            <indicator id="#normalized-usage-of-MIT">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-usage-of-BSD4">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-usage-of-BSD3">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-usage-of-ASL1">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-usage-of-ASL2">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-usage-of-Artistic2">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-usage-of-LGPL2.1">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-usage-of-LGPL2.1+">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-usage-of-LGPL3+">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-usage-of-MPL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-usage-of-CDDL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-usage-of-CPL-EPL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-usage-of-EUPL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-usage-of-GPL2">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-usage-of-GPL2+">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-usage-of-GPL3">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-usage-of-AGPL3">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-MIT">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-BSD4">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-BSD3">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-ASL1">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-ASL2">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-Artistic2">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-LGPL2.1">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-LGPL2.1+">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-LGPL3+">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-MPL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-CDDL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-CPL-EPL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-EUPL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-GPL2">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-GPL2+">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-GPL3">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-AGPL3">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#declining-components"/>
+            <indicator id="#target:MIT">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="#target:BSD4">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="#target:BSD3">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="#target:ASL1">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="#target:ASL2">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="#target:Artistic2">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="#target:LGPL2.1">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="#target:LGPL2.1+">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="#target:LGPL3+">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="#target:MPL">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="#target:CDDL">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="#target:CPL-EPL">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="#target:EUPL">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="#target:GPL2">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="#target:GPL2+">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="#target:GPL3">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="#target:AGPL3">
+                <property name="min" value="0"/>
+                <property name="input" value="true"/>
+                <property name="max" value="1"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="#trending-factor-of-target-MIT">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-target-BSD4">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-target-BSD3">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-target-ASL1">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-target-ASL2">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-target-Artistic2">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-target-LGPL2.1">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-target-LGPL2.1+">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-target-LGPL3+">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-target-MPL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-target-CDDL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-target-CPL-EPL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-target-EUPL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-target-GPL2">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-target-GPL2+">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-target-GPL3">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#trending-factor-of-target-AGPL3">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#declining-target"/>
+            <indicator id="#normalized-modernity-MIT">
+                <property name="input" value="false"/>
+                <property name="default-value" value="1.00"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-modernity-BSD4">
+                <property name="input" value="false"/>
+                <property name="default-value" value="0.33"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-modernity-BSD3">
+                <property name="input" value="false"/>
+                <property name="default-value" value="0.67"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-modernity-ASL1">
+                <property name="input" value="false"/>
+                <property name="default-value" value="0.5"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-modernity-ASL2">
+                <property name="input" value="false"/>
+                <property name="default-value" value="1.0"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-modernity-Artistic2">
+                <property name="input" value="false"/>
+                <property name="default-value" value="1.0"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-modernity-LGPL2.1">
+                <property name="input" value="false"/>
+                <property name="default-value" value="0.25"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-modernity-LGPL2.1+">
+                <property name="input" value="false"/>
+                <property name="default-value" value="1.0"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-modernity-LGPL3+">
+                <property name="input" value="false"/>
+                <property name="default-value" value="1.0"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-modernity-MPL">
+                <property name="input" value="false"/>
+                <property name="default-value" value="0.67"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-modernity-CDDL">
+                <property name="input" value="false"/>
+                <property name="default-value" value="1.0"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-modernity-CPL-EPL">
+                <property name="input" value="false"/>
+                <property name="default-value" value="1.0"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-modernity-EUPL">
+                <property name="input" value="false"/>
+                <property name="default-value" value="1.0"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-modernity-GPL2">
+                <property name="input" value="false"/>
+                <property name="default-value" value="0.67"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-modernity-GPL2+">
+                <property name="input" value="false"/>
+                <property name="default-value" value="1.0"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-modernity-GPL3">
+                <property name="input" value="false"/>
+                <property name="default-value" value="1.0"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#normalized-modernity-AGPL3">
+                <property name="input" value="false"/>
+                <property name="default-value" value="1.0"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#modernity-factor-MIT">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#modernity-factor-BSD4">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#modernity-factor-BSD3">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#modernity-factor-ASL1">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#modernity-factor-ASL2">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#modernity-factor-Artistic2">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#modernity-factor-LGPL2.1">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#modernity-factor-LGPL2.1+">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#modernity-factor-LGPL3+">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#modernity-factor-MPL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#modernity-factor-CDDL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#modernity-factor-CPL-EPL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#modernity-factor-EUPL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#modernity-factor-GPL2">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#modernity-factor-GPL2+">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#modernity-factor-GPL3">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#modernity-factor-AGPL3">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#obsolete-components">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#target-licenses">
+                <property name="input" value="false"/>
+                <property name="datatype" value="integer"/>
+            </indicator>
+            <indicator id="#target-modernity-factor-MIT">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#target-modernity-factor-BSD4">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#target-modernity-factor-BSD3">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#target-modernity-factor-ASL1">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#target-modernity-factor-ASL2">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#target-modernity-factor-Artistic2">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#target-modernity-factor-LGPL2.1">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#target-modernity-factor-LGPL2.1+">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#target-modernity-factor-LGPL3+">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#target-modernity-factor-MPL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#target-modernity-factor-CDDL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#target-modernity-factor-CPL-EPL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#target-modernity-factor-EUPL">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#target-modernity-factor-GPL2">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#target-modernity-factor-GPL2+">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#target-modernity-factor-GPL3">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#target-modernity-factor-AGPL3">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <indicator id="#obsolete-target">
+                <property name="input" value="false"/>
+                <property name="datatype" value="real"/>
+            </indicator>
+            <event id="Declining Component Risk">
+                <property name="description" value="Risk that the project includes components released under declining licenses"/>
+                <property name="output" value="true"/>
+            </event>
+            <event id="Declining Target Risk">
+                <property name="description" value="Risk that the selected target license is declining"/>
+                <property name="output" value="true"/>
+            </event>
+            <event id="Obsolete Component Licenses Risk">
+                <property name="description" value="Risk that the project includes components released under obsolete licenses. A license is obsolete when at least a greater version of the same license exists. It is &#8220;more obsoleted&#8221; as the number of subsequent versions is greater"/>
+                <property name="output" value="true"/>
+            </event>
+            <event id="Obsolete Target Licenses Risk">
+                <property name="description" value="Risk that the selected target license is obsolete. A license is obsolete when at least a greater version of the same license exists. It is &#8220;more obsoleted&#8221; as the number of subsequent versions is greater"/>
+                <property name="output" value="true"/>
+            </event>
+            <proposition id="component-selected"/>
+            <proposition id="target-selected"/>
+            <situation id="fuzzified:#declining-components">
+                <property name="argument" value="Some of the component licenses show a declining usage ratio"/>
+            </situation>
+            <situation id="fuzzified:#declining-target">
+                <property name="argument" value="The target license is showing a declining usage ratio"/>
+            </situation>
+            <situation id="fuzzified:#obsolete-components">
+                <property name="argument" value="Some of the component license are obsolete"/>
+            </situation>
+            <situation id="fuzzified:#obsolete-target">
+                <property name="argument" value="The target license is relatively obsolete"/>
+            </situation>
+        </entities>
+    </model>
+    <script><![CDATA[function decl_calcUsage(r,id1,id2) {
+	target.setValue( Number(r.getSource(id1).getValue()) + (-1 * Number(r.getSource(id2).getValue()) ) );
+}
+
+function decl_min(r) {
+	var ret = Number(2147483647);
+	for( i = 0; i < r.getSources().size(); i++ ) {
+		if( r.getSources().get(i).getValue() < ret ) {
+			ret = r.getSources().get(i).getValue();
+		}
+	}
+	target.setValue(ret);
+}
+
+function decl_max(r) {
+	var ret = Number(0);
+	for( i = 0; i < r.getSources().size(); i++ ) {
+		if( r.getSources().get(i).getValue() > ret ) {
+			ret = r.getSources().get(i).getValue();
+		}
+	}
+	target.setValue(ret);
+}
+
+function decl_calcNormalizedUsage(r,id,max_id) {
+	target.setValue( 
+		Number( ((Number(r.getSource(id).getValue()) * 100) / Number(r.getSource(max_id).getValue())) / 100 )
+	);
+}
+
+function decl_calcTrendingFactor(r,lic_id,factor_id,licenses_id) {
+	var total = Number(r.getSource(licenses_id).getValue());
+	var lic_count = Number(r.getSource(lic_id).getValue());
+	var factor = Number(r.getSource(factor_id).getValue());
+	var s = Number( ( factor * lic_count ) / total );
+	if( !isNaN( s ) ) {
+		if( isFinite( s ) ) {
+			target.setValue( s );
+		}
+	}
+}
+
+function decl_calcTargetTrendingFactor(r,factor_id,lic_id) {
+	var lic_count = Number(r.getSource(lic_id).getValue());
+	if( lic_count > 0 ) {
+		var factor = Number(r.getSource(factor_id).getValue());
+		var s = Number( factor * lic_count );
+		target.setValue( s );
+	}
+	else {
+		target.setValue( 0 );
+	}
+}
+
+function decl_calcDecliningRiskIndicator(r) {
+	var s = Number(0);
+	for( i = 0; i < r.getSources().size(); i++ ) {
+		var n = Number(r.getSources().get(i).getValue());
+		if( !isNaN(n) ) {
+			s += Number(n);
+		}
+	}
+	target.setValue( Number( 1 - s ) );
+}
+
+function decl_avg(r) {
+	var e = 0;
+	for( i = 0; i < r.getSources().size(); i++ ) {
+		var n = r.getSources().get(i).getValue();
+		if( !isNaN(n) ) {
+			if( isFinite(n) ) {
+				e += n;
+			}
+		}
+	}
+	e = e / r.getSources().size();
+	target.setValue(e);
+}
+
+function decl_calcNormalizedModernity(r,id1,id2) {
+	var cur = Number(r.getSource(id1).getValue());
+	var past = Number(r.getSource(id2).getValue());
+	var ret = cur/past;
+	if( !isNaN(ret) ) target.setValue( ret );
+}
+
+function decl_calcModernityFactor(r,id1,id2,id3) {
+	var count = Number(r.getSource(id1).getValue());
+	var factor = Number(r.getSource(id2).getValue());
+	var total = Number(r.getSource(id3).getValue());
+	var ret = count * ( factor / total );
+	if( !isNaN(ret) ) {
+		target.setValue( ret );
+	}
+}
+
+function decl_calcObsoleteComponentsIndex(r) {
+	var s = Number(0);
+	for( i = 0; i < r.getSources().size(); i++ ) {
+		var n = Number(r.getSources().get(i).getValue());
+		if( !isNaN(n) ) {
+			s += Number(n);
+		}
+	}
+	target.setValue( Number(
+			1 - s
+	) );
+}
+]]></script>
+</riscoss>

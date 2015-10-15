@@ -1,6 +1,7 @@
 package eu.riscoss.agent.usecases;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import eu.riscoss.agent.RiscossRESTClient;
 import eu.riscoss.agent.UseCase;
 import eu.riscoss.agent.tasks.EnsureDomainExistence;
 import eu.riscoss.agent.tasks.EnsureLayerStructure;
+import eu.riscoss.shared.JArgument;
 import eu.riscoss.shared.JEntityData;
 import eu.riscoss.shared.JRASInfo;
 import eu.riscoss.shared.JRiskAnalysisResult;
@@ -28,7 +30,7 @@ public class UCRAS1 implements UseCase {
 		rest.login( "admin", "admin" );
 		
 		new EnsureDomainExistence( domain ).execute( rest );
-		new EnsureLayerStructure( domain, new String[] { "Project", "OSSComponent" } );
+		new EnsureLayerStructure( domain, new String[] { "Project", "OSSComponent" } ).execute( rest );
 		
 		{	// Create 3 entities: 1 project and 2 components
 			JEntityData data = null;
@@ -52,26 +54,32 @@ public class UCRAS1 implements UseCase {
 		}
 		
 		{	// Upload models and create risk configuration
-			rest.domain( domain ).models().upload( new File( "/Users/albertosiena/models/dev/i1.xml" ) );
+			rest.domain( domain ).models().upload( new File( "/Users/albertosiena/models/dev/github_maintenance_risk-1434467716514.xml" ) );
 			
-			rest.domain( domain ).rcs().get( "rc1" );
-			rest.domain( domain ).rcs().create( "rc1" );
-			rest.domain( domain ).rcs().rc( "rc1" ).associate( "Project", "i1.xml" );
-			rest.domain( domain ).rcs().rc( "rc1" ).associate( "OSSComponent", "i1.xml" );
-			rest.domain( domain ).rcs().rc( "rc1" ).associate( "OSSComponent", "i1.xml" );
+//			rest.domain( domain ).rcs().get( "rc1" );
+//			rest.domain( domain ).rcs().create( "rc1" );
+//			rest.domain( domain ).rcs().rc( "rc1" ).associate( "Project", "i1.xml" );
+//			rest.domain( domain ).rcs().rc( "rc1" ).associate( "OSSComponent", "i1.xml" );
+//			rest.domain( domain ).rcs().rc( "rc1" ).associate( "OSSComponent", "i1.xml" );
+			
+			rest.domain( domain ).rcs().create( "github-rc" );
+			rest.domain( domain ).rcs().rc( "github-rc1" ).associate( "OSSComponent", "github_maintenance_risk-1434467716514.xml" );
 		}
 		
 		{	// Create and execute a risk analysis session
 			Gson gson = new Gson();
-			JRASInfo ras = gson.fromJson( rest.domain( domain ).analysis().createSession( "p1", "rc1" ), JRASInfo.class );
+			JRASInfo ras = gson.fromJson( rest.domain( domain ).analysis().createSession( "c1", "rc1" ), JRASInfo.class );
 			
 			String ret = rest.domain( domain ).analysis().session( ras.getId() ).execute();
 			
-			JRiskAnalysisResult result = gson.fromJson( ret, JRiskAnalysisResult.class );
-			
 			System.out.println( "" + ret );
 			
+			JRiskAnalysisResult result = gson.fromJson( ret, JRiskAnalysisResult.class );
+			
+			print( result.argumentation.argument, System.out );
+			
 			// TODO create scenario
+			// SKIP (The github model gives risks in output with all inputs = 0)
 			
 			// TODO execute risk mitigation
 		}
@@ -81,6 +89,17 @@ public class UCRAS1 implements UseCase {
 		
 	}
 	
+	private void print( JArgument argument, PrintStream out ) {
+		print( argument, out, "" );
+	}
+
+	private void print( JArgument argument, PrintStream out, String prefix ) {
+		out.println( prefix + " " + argument.id + ": " + argument.truth );
+		for( JArgument arg : argument.subArgs ) {
+			print( arg, out, prefix + "  " );
+		}
+	}
+
 	<T> T decode( String json ) {
 		Type listType = new TypeToken<T>() {}.getType();
 		T t = gson.fromJson(json, listType);

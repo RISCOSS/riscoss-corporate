@@ -179,6 +179,17 @@
 			<artifactId>riscoss-rdc-omm</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		
+<!-- 		<dependency> -->
+<!-- 			<groupId>eu.riscoss</groupId> -->
+<!-- 			<artifactId>riscoss-ram</artifactId> -->
+<!-- 			<version>0.1-SNAPSHOT</version> -->
+<!-- 		</dependency> -->
+		<dependency>
+			<groupId>eu.riscoss</groupId>
+			<artifactId>riscoss-ram-rae</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 
 		<!-- Temporary dependency -->
 		<dependency>

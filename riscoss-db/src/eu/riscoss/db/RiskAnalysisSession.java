@@ -72,5 +72,10 @@ public interface RiskAnalysisSession {
 
 	void storeModelBlob( String name, String layer, String blob);
 	String getStoredModelBlob( String model );
+
+	void setEntityAttribute( String target, String key, String value );
+	String getEntityAttribute( String target, String key, String def );
+	
+	List<String> listInputs( String entity );
 	
 }

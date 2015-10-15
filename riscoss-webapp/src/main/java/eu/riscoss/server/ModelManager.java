@@ -37,10 +37,13 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
 import eu.riscoss.db.RiscossDB;
+import eu.riscoss.fbk.language.Proposition;
+import eu.riscoss.fbk.language.Relation;
 import eu.riscoss.reasoner.Chunk;
 import eu.riscoss.reasoner.DataType;
 import eu.riscoss.reasoner.Distribution;
 import eu.riscoss.reasoner.Evidence;
+import eu.riscoss.reasoner.FBKRiskAnalysisEngine;
 import eu.riscoss.reasoner.Field;
 import eu.riscoss.reasoner.FieldType;
 import eu.riscoss.reasoner.ModelSlice;
@@ -50,6 +53,9 @@ import eu.riscoss.shared.EChunkType;
 import eu.riscoss.shared.JChunkItem;
 import eu.riscoss.shared.JChunkList;
 import eu.riscoss.shared.JChunkValue;
+import eu.riscoss.shared.JProposition;
+import eu.riscoss.shared.JRelation;
+import eu.riscoss.shared.JRiskModel;
 import eu.riscoss.shared.RiscossUtil;
 import gwtupload.server.exceptions.UploadActionException;
 
@@ -555,6 +561,54 @@ public class ModelManager {
 			DBConnector.closeDB(db);
 		//}
 		//return response;
+	}
+	
+	@GET @Path("/{domain}/{name}/content")
+	public String getRiskModelContent(
+			@PathParam("domain") String domain, @HeaderParam("token") String token, @PathParam("name") String name ) {
+		
+		RiscossDB db = null;
+		
+		try {
+			db = DBConnector.openDB( domain, token );
+			
+			String blob = db.getModelBlob( name );
+			
+			FBKRiskAnalysisEngine fbk = new FBKRiskAnalysisEngine();
+			
+			fbk.loadModel( blob );
+			
+			JRiskModel jmodel = new JRiskModel();
+			
+			jmodel.name = name;
+			
+			for( Proposition p : fbk.getProgram().getModel().propositions() ) {
+				JProposition jp = new JProposition();
+				jp.id = p.getId();
+				jp.stereotype = p.getStereotype();
+				jmodel.add( jp );
+			}
+			for( Relation r : fbk.getProgram().getModel().relations() ) {
+				JRelation jr = new JRelation();
+				jr.stereotype = r.getStereotype();
+				Proposition target = r.getTarget();
+				if( target == null ) continue;
+				JProposition jtarget = jmodel.getProposition( target.getId() );
+				if( jtarget == null ) continue;
+				jr.setTarget( jtarget );
+				for( Proposition source : r.getSources() ) {
+					JProposition jsource = jmodel.getProposition( source.getId() );
+					if( jsource == null ) continue;
+					jr.addSource( jsource );
+				}
+				jmodel.add( jr );
+			}
+			
+			return gson.toJson( jmodel );
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
 	}
 
 }

@@ -235,6 +235,10 @@ public class OrientRAS implements RiskAnalysisSession {
 		return getAttribute( path() + "/entities/" + entity + "/inputs/" + indicator_id, "value", null );
 	}
 	
+	public List<String> listInputs( String entity ) {
+		return dom.listChildren( path() + "/entities/" + entity + "/inputs" );
+	}
+	
 	@Override
 	public void setStatus( String entity, String value ) {
 		setAttribute( path() + "/entities/" + entity, "status", value );
@@ -315,6 +319,16 @@ public class OrientRAS implements RiskAnalysisSession {
 	@Override
 	public String getStoredModelBlob( String modelName ) {
 		return getAttribute( path() + "/models/" + modelName, "blob", null );
+	}
+
+	@Override
+	public void setEntityAttribute( String entity, String key, String value ) {
+		setAttribute( path() + "/entities/" + entity, key, value );
+	}
+
+	@Override
+	public String getEntityAttribute( String entity, String key, String def ) {
+		return getAttribute( path() + "/entities/" + entity, key, def);
 	}
 	
 }

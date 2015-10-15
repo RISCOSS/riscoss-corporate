@@ -23,8 +23,11 @@ package eu.riscoss.server;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -32,6 +35,8 @@ import com.google.gson.JsonParser;
 import eu.riscoss.dataproviders.RiskData;
 import eu.riscoss.dataproviders.RiskDataType;
 import eu.riscoss.db.RiskAnalysisSession;
+import eu.riscoss.ram.rae.Argumentation;
+import eu.riscoss.ram.rae.RAE;
 import eu.riscoss.reasoner.Chunk;
 import eu.riscoss.reasoner.DataType;
 import eu.riscoss.reasoner.Distribution;
@@ -53,6 +58,8 @@ public class RiskAnalysisProcess {
 	
 	Date date = new Date();
 	private RiskAnalysisSession ras;
+	
+	Gson gson = new Gson();
 	
 	public RiskAnalysisProcess() {
 	}
@@ -100,8 +107,6 @@ public class RiskAnalysisProcess {
 	
 	private void analyseEntity( String target, String rc, String layer, RiskAnalysisSession session ) {
 		
-//		TimeDiff.get().log( "Analysing entity " + target );
-		
 		RiskAnalysisEngine rae = ReasoningLibrary.get().createRiskAnalysisEngine();
 		
 		// Load all models at given layer and run risk analysis
@@ -112,11 +117,9 @@ public class RiskAnalysisProcess {
 		
 		List<MissingDataItem> missingFields = new ArrayList<>();
 		
-//		TimeDiff.get().log( "Models loaded" );
+		// Setting indicators
 		
 		for( Chunk c : rae.queryModel( ModelSlice.INPUT_DATA ) ) {
-			
-//			TimeDiff.get().log( "Setting indicator " + c.getId() );
 			
 			Field f = rae.getField( c, FieldType.INPUT_VALUE );
 			
@@ -212,8 +215,6 @@ public class RiskAnalysisProcess {
 			}
 		}
 		
-//		TimeDiff.get().log( "Inputs set" );
-		
 		if( missingFields.size() > 0 ) {
 			if( EAnalysisOption.valueOf( session.getOption( "AnalysisOption", EAnalysisOption.RunThrough.name() ) ) == EAnalysisOption.RequestMissingData ) {
 				JsonObject ret = new JsonObject();
@@ -241,6 +242,8 @@ public class RiskAnalysisProcess {
 			}
 		}
 		
+		// Executing analysis
+		
 		try {
 			rae.runAnalysis( new String[] {} );
 		}
@@ -248,7 +251,7 @@ public class RiskAnalysisProcess {
 			ex.printStackTrace();
 		}
 		
-//		TimeDiff.get().log( "Analysis executed" );
+		// Saving output
 		
 		for( Chunk c : rae.queryModel( ModelSlice.OUTPUT_DATA ) ) {
 			Field f = rae.getField( c, FieldType.OUTPUT_VALUE );
@@ -288,7 +291,12 @@ public class RiskAnalysisProcess {
 			}
 		}
 		
-//		TimeDiff.get().log( "Output saved" );
+		RAE ram = new RAE();
+		Argumentation a = ram.createArgumentation( rae );
+		if( a != null ) {
+			String json = gson.toJson( a );
+			ras.setEntityAttribute( target, "argumentation", json );
+		}
 		
 		session.setStatus( target, EAnalysisResult.Done.name() );
 	}
@@ -349,19 +357,91 @@ public class RiskAnalysisProcess {
 	}
 	
 	public JMissingData gatherMissingData( String entity ) {
-		JMissingData md = fillMissingDataStructure( entity );
+		JMissingData md = fillMissingDataStructureNew( entity );
 		if( md == null ) {
 			md = new JMissingData( entity, "" );
 		}
 		return md;
 	}
 	
-	private JMissingData fillMissingDataStructure( String entity ) {
+//	private JMissingData fillMissingDataStructure( String entity ) {
+//		
+//		JMissingData md = new JMissingData( entity, ras.getLayer( entity ) );
+//		
+//		for( String child : ras.getChildren( entity ) ) {
+//			JMissingData childMD = fillMissingDataStructure( child );
+//			if( childMD != null ) {
+//				md.add( childMD );
+//			}
+//		}
+//		
+//		String layer = ras.getLayer( entity );
+//		RiskAnalysisEngine rae = ReasoningLibrary.get().createRiskAnalysisEngine();
+//		for( String model : ras.getModels( layer ) ) {
+//			String blob = ras.getStoredModelBlob( model );
+//			if( blob != null ) {
+//				rae.loadModel( blob );
+//			}
+//		}
+//		
+//		for( Chunk c : rae.queryModel( ModelSlice.INPUT_DATA ) ) {
+//			
+//			if( rae.getDefaultValue( c ) != null )
+//				continue;
+//			
+//			Field f = rae.getField( c, FieldType.INPUT_VALUE );
+//			
+//			String raw = ras.getInput( entity, c.getId() );
+//			if( raw == null ) {
+//				JDataItem item = new JDataItem();
+//				item.setDescription( (String)rae.getField( c, FieldType.DESCRIPTION ).getValue() );
+//				item.setLabel( (String)rae.getField( c, FieldType.LABEL ).getValue() );
+//				item.setId( c.getId() );
+//				item.setOrigin( EDataOrigin.RDR );
+//				item.setValue( "" );
+//				item.setType( EChunkDataType.valueOf( f.getDataType().name() ) );
+//				md.add( item );
+//			}
+//			else {
+//				JsonObject json = (JsonObject)new JsonParser().parse( raw );
+//				if( json.get( "origin" ) == null ) continue;
+//				String origin = json.get( "origin" ).getAsString();
+//				if( "user".equals( origin ) ) {
+//					JDataItem item = new JDataItem();
+//					item.setDescription( (String)rae.getField( c, FieldType.DESCRIPTION ).getValue() );
+//					item.setLabel( (String)rae.getField( c, FieldType.LABEL ).getValue() );
+//					item.setId( c.getId() );
+//					item.setOrigin( EDataOrigin.User );
+//					item.setValue( json.get("value").getAsString() );
+//					item.setType( EChunkDataType.valueOf( f.getDataType().name() ) );
+//					md.add( item );
+//				}
+//			}
+//			
+//		}
+//		
+//		return md;
+//		
+//	}
+	
+	private JMissingData fillMissingDataStructureNew( String entity ) {
+		return fillMissingDataStructureNew( entity, false, true, new String[] { "user" } );
+	}
+	
+	public JMissingData fillMissingDataStructureNew( String entity, boolean includeDefault, boolean includeRDR, String ... origins ) {
+		Set<String> set = new HashSet<>();
+		if( origins != null )
+			for( String o : origins )
+				set.add( o );
+		return fillMissingDataStructureNew(entity, includeDefault, includeRDR, set );
+	}
+	
+	private JMissingData fillMissingDataStructureNew( String entity, boolean includeDefault, boolean includeRDR, Set<String> origins ) {
 		
 		JMissingData md = new JMissingData( entity, ras.getLayer( entity ) );
 		
 		for( String child : ras.getChildren( entity ) ) {
-			JMissingData childMD = fillMissingDataStructure( child );
+			JMissingData childMD = fillMissingDataStructureNew( child, includeDefault, includeRDR, origins );
 			if( childMD != null ) {
 				md.add( childMD );
 			}
@@ -378,8 +458,21 @@ public class RiskAnalysisProcess {
 		
 		for( Chunk c : rae.queryModel( ModelSlice.INPUT_DATA ) ) {
 			
-			if( rae.getDefaultValue( c ) != null )
-				continue;
+			if( rae.getDefaultValue( c ) != null ) {
+				if( !includeDefault )
+					continue;
+				Field f = rae.getDefaultValue( c );
+				
+				JDataItem item = new JDataItem();
+				item.setDescription( (String)rae.getField( c, FieldType.DESCRIPTION ).getValue() );
+				item.setLabel( (String)rae.getField( c, FieldType.LABEL ).getValue() );
+				item.setId( c.getId() );
+				item.setOrigin( EDataOrigin.RDR );
+				item.setValue( "" );
+				item.setType( EChunkDataType.valueOf( f.getDataType().name() ) );
+				md.add( item );
+				
+			}
 			
 			Field f = rae.getField( c, FieldType.INPUT_VALUE );
 			
@@ -398,7 +491,8 @@ public class RiskAnalysisProcess {
 				JsonObject json = (JsonObject)new JsonParser().parse( raw );
 				if( json.get( "origin" ) == null ) continue;
 				String origin = json.get( "origin" ).getAsString();
-				if( "user".equals( origin ) ) {
+				if( includeRDR | origins.contains( origin ) ) {
+//				if( "user".equals( origin ) ) {
 					JDataItem item = new JDataItem();
 					item.setDescription( (String)rae.getField( c, FieldType.DESCRIPTION ).getValue() );
 					item.setLabel( (String)rae.getField( c, FieldType.LABEL ).getValue() );
