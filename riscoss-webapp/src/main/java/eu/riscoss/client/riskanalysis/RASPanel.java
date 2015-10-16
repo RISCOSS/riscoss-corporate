@@ -205,7 +205,7 @@ public class RASPanel implements IsWidget {
 		Label inputValues = new Label("Input values");
 		inputValues.setStyleName("subtitle");
 		vPanel.add(inputValues);
-		vPanel.add(inputTable);
+		//vPanel.add(inputTable);
 		
 		panel.setWidget( vPanel );
 		

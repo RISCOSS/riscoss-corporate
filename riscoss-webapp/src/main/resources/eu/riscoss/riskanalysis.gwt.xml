@@ -9,7 +9,8 @@
 
 	<!-- Other module inherits -->
 	<inherits name="org.fusesource.restygwt.RestyGWT" />
-
+	
+	<inherits name="com.googlecode.gwt.charts.Charts"/>
 	
 	<add-linker name="xsiframe" />
 	
