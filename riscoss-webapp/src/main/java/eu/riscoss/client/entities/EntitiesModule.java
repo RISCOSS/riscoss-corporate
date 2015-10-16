@@ -204,7 +204,7 @@ public class EntitiesModule implements EntryPoint {
 		// entity filtering /////////////
 		HorizontalPanel filterPanel = new HorizontalPanel();
 		leftPanel.add(filterPanel);
-		Label filterlabel = new Label("Filter entities: ");
+		Label filterlabel = new Label("Search entities: ");
 		filterlabel.setStyleName("bold");
 		filterPanel.add(filterlabel);
 		

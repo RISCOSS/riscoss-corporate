@@ -80,6 +80,7 @@ public class ModelsModule implements EntryPoint {
 
 	private static final String BUTTON_UPDATE_MODEL	= "Upload new model";
 	private static final String BUTTON_UPLOAD_DESC 	= "Upload new documentation";
+	private static final String BUTTON_REPLACE_DOC 	= "Replace documentation";
 	private static final String BUTTON_NEW_MODEL 	= "UPLOAD MODEL"; // "New...";
 	private static final String BUTTON_CHANGE_NAME 	= "change";
 	
@@ -345,19 +346,19 @@ public class ModelsModule implements EntryPoint {
 			String descfilename = json.get("modeldescfilename").isString().stringValue();
 //			Label descfLabel = new Label("Documentation:\n"+descfilename);
 			
-						
+			Button uploadDesc;	
 			if (descfilename==null || descfilename.equals("")){
+				uploadDesc = new Button(BUTTON_UPLOAD_DESC);
 				Label descfLabel = new Label("No documentation uploaded.");
 				grid.setWidget( 1, 0, descfLabel);
 			} else {
-
+				uploadDesc = new Button(BUTTON_REPLACE_DOC);
 				Anchor descfAnchor = new Anchor("Download documentation:\n"+descfilename, GWT.getHostPageBaseURL() +  "models/download?domain=" + RiscossJsonClient.getDomain() + 
 						"&name="+ name+"&type=desc&token="+RiscossCall.getToken());
 				grid.setWidget( 1, 0, descfAnchor);
 
 			}
 			
-			Button uploadDesc = new Button(BUTTON_UPLOAD_DESC);
 			uploadDesc.setStyleName("button");
 			SingleUploader docuUploader = new SingleUploader(FileInputType.CUSTOM.with(uploadDesc)); 
 			docuUploader.setTitle("Upload model documentation");
