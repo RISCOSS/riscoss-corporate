@@ -174,13 +174,13 @@ public class EntitiesModule implements EntryPoint {
 				RiscossJsonClient.listEntities(new JsonCallback() {
 					@Override
 					public void onFailure(Method method, Throwable exception) {
-						// TODO Auto-generated method stub
+						Window.alert(exception.getMessage());
 					}
 					@Override
 					public void onSuccess(Method method, JSONValue response) {
 						for(int i=0; i<response.isArray().size(); i++){
 							JSONObject o = (JSONObject)response.isArray().get(i);
-							if (entityName.getText().equals(o.get( "name" ).isString().stringValue())){
+							if (entityName.getText().equals(o.get( "name" ).isString().stringValue())) {
 								//info: firefox has some problem with this window, and fires assertion errors in dev mode
 								Window.alert("Entity name already in use.\nPlease re-enter name.");
 								return;
@@ -446,6 +446,8 @@ public class EntitiesModule implements EntryPoint {
 					EntityInfo info = new EntityInfo( newEntity );
 					
 					info.setLayer( JsonUtil.getValue( response, "layer", "" ) );
+					
+					reloadData();
 
 					RiscossJsonClient.getLayerContextualInfo(layerList.getItemText(layerList.getSelectedIndex()), new JsonCallback() {
 						@Override
@@ -457,7 +459,6 @@ public class EntitiesModule implements EntryPoint {
 							CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
 							JLayerContextualInfo jLayerContextualInfo = codec.decode( response );
 							updateContextualInfo(jLayerContextualInfo);
-							reloadData();
 						}
 					});
 					
