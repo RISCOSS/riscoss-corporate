@@ -177,13 +177,13 @@ public class RiscossWebApp implements EntryPoint {
 		helpUs.addItem("User feedback", new Command() {
 			@Override
 			public void execute() {
-				Window.open( "http://limesurvey.merit.unu.edu/index.php/97378/lang-en", "_self", ""); 
+				Window.open( "http://www.essi.upc.edu/~e-survey/index.php?sid=356784&lang=en", "_self", ""); 
 			}
 		});
 		helpUs.addItem("Expert feedback", new Command() {
 			@Override
 			public void execute() {
-				Window.open( "http://limesurvey.merit.unu.edu/index.php/53944/lang-en", "_self", ""); 
+				Window.open( "http://www.essi.upc.edu/~e-survey/index.php?sid=91563&lang=en", "_self", ""); 
 			}
 		});
 
