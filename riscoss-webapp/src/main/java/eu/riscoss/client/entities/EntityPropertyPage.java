@@ -89,29 +89,10 @@ public class EntityPropertyPage implements IsWidget {
 		DockPanel dock = new DockPanel();
 		RDCConfigurationPage ppg = new RDCConfigurationPage();
 		String RDCEntity;
+		EntitiesModule module;
 		
-		RDCConfDialog() {
-			Button run = new Button( "Run now" );
-			run.setStyleName("button");
-			run.addClickHandler( new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					Boolean b = Window.confirm("Data collectors will be saved before running. Do you want to continue? (If you click 'Cancel', it will not be executed)");
-					if (b) {
-						JSONObject json = ppg.getJson();
-						String str = "";
-						String sep = "";
-						for( String key : json.keySet() ) {
-							if( json.get( key ).isObject().get( "enabled" ).isBoolean().booleanValue() == true ) {
-								str += sep + key;
-								sep = ", ";
-							}
-						}
-						saveAndRunRDC(json);
-					}
-				}
-			});
-			dock.add(run , DockPanel.NORTH);
+		RDCConfDialog(EntitiesModule module) {
+			this.module = module;
 			dock.add( ppg.asWidget(), DockPanel.CENTER );
 			dialog.setWidget( dock );
 		}
@@ -122,6 +103,22 @@ public class EntityPropertyPage implements IsWidget {
 		
 		public void setChangedData() {
 			ppg.setChangedData();
+		}
+		
+		public void saveAndRun() {
+			Boolean b = Window.confirm("Data collectors will be saved before running. Do you want to continue? (If you click 'Cancel', it will not be executed)");
+			if (b) {
+				JSONObject json = ppg.getJson();
+				String str = "";
+				String sep = "";
+				for( String key : json.keySet() ) {
+					if( json.get( key ).isObject().get( "enabled" ).isBoolean().booleanValue() == true ) {
+						str += sep + key;
+						sep = ", ";
+					}
+				}
+				saveAndRunRDC(json);
+			}
 		}
 		
 		public void save() {
@@ -141,7 +138,7 @@ public class EntityPropertyPage implements IsWidget {
 				}
 				@Override
 				public void onSuccess(Method method, JSONValue response) {
-
+					module.reloadData();
 				}
 			});
 		}
@@ -238,9 +235,8 @@ public class EntityPropertyPage implements IsWidget {
 		tab.add( summaryPanel, "Properties" );
 		tab.add( ciPanel, "Contextual Information" );
 		tab.add( dataCollectors, "Data Collectors");
-		//tab.add( rasPanel, "RAS" );
-		tab.add( newRasPanel, "RAS" );
-		tab.add( rdr, "RDR");
+		tab.add( rdr, "Data Repository");
+		tab.add( newRasPanel, "Analysis Sessions" );
 		tab.selectTab( 0 );
 		tab.setSize( "100%", "100%" );
 		tab.addSelectionHandler( new SelectionHandler<Integer>() {
@@ -338,7 +334,7 @@ public class EntityPropertyPage implements IsWidget {
 		rasLoaded = false;
 		info = new JsonEntitySummary( response );
 		
-		confDialog = new RDCConfDialog();
+		confDialog = new RDCConfDialog(module);
 		confDialog.setSelectedEntity(entity);
 		
 		layer = info.getLayer();
@@ -561,6 +557,10 @@ public class EntityPropertyPage implements IsWidget {
 		loadRASWidget();
 	}
 	
+	public void runDC() {
+		confDialog.saveAndRun();
+	}
+	
 	List<String> types;
 	
 	private void loadContextualInfoData() {
@@ -773,9 +773,6 @@ public class EntityPropertyPage implements IsWidget {
 	public void saveEntityData() {
 		if (changedData || confDialog.changedData()) {
 			saveContextualInfo();
-			saveParentyInfo();
-			saveDataCollectors();
-			module.reloadData();
 			changedData = false;
 			confDialog.setChangedData();
 		}
@@ -793,17 +790,16 @@ public class EntityPropertyPage implements IsWidget {
 			}
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
-				
-			}
-		});
-		RiscossJsonClient.setParents(entity, parentList, new JsonCallback() {
-			@Override
-			public void onFailure(Method method, Throwable exception) {
-				Window.alert(exception.getMessage());
-			}
-			@Override
-			public void onSuccess(Method method, JSONValue response) {
-				
+				RiscossJsonClient.setParents(entity, parentList, new JsonCallback() {
+					@Override
+					public void onFailure(Method method, Throwable exception) {
+						Window.alert(exception.getMessage());
+					}
+					@Override
+					public void onSuccess(Method method, JSONValue response) {
+						saveDataCollectors();
+					}
+				});
 			}
 		});
 	}
@@ -852,7 +848,7 @@ public class EntityPropertyPage implements IsWidget {
 				}
 				@Override
 				public void onSuccess( Method method, JSONValue response ) {
-					//								Window.alert( "Ok" );
+					saveParentyInfo();
 				}} );
 		}
 	}

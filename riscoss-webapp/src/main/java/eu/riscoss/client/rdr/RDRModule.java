@@ -133,7 +133,7 @@ public class RDRModule implements EntryPoint {
 					}
 				};
 
-			    cellList.addColumn(t, "Risk data");
+			    cellList.addColumn(t, "Entities");
 			    cellList.setWidth("100%");
 			    
 			    cellList.setRowData(0, listEntities);

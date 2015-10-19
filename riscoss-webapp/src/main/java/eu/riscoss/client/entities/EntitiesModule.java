@@ -484,7 +484,16 @@ public class EntitiesModule implements EntryPoint {
 						}
 					} ) ;
 		delete.setStyleName("button");
+		Button runDataCollectors = new Button ("Run data collectors");
+		runDataCollectors.setStyleName("button");
+		runDataCollectors.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				ppg.runDC();
+			}
+		});
 		buttons.add(save);
+		buttons.add(runDataCollectors);
 		buttons.add(delete);
 		rightPanel.add(buttons);
 		
