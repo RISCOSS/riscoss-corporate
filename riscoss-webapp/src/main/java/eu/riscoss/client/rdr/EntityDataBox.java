@@ -30,6 +30,7 @@ import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import eu.riscoss.client.RiscossJsonClient;
@@ -38,6 +39,7 @@ import eu.riscoss.client.JsonRiskDataList;
 public class EntityDataBox implements IsWidget {
 	
 	SimplePanel panel = new SimplePanel();
+	String entity; 
 	
 	@Override
 	public Widget asWidget() {
@@ -45,6 +47,8 @@ public class EntityDataBox implements IsWidget {
 	}
 
 	public void setSelectedEntity( String name ) {
+		
+		entity = name;
 		
 		if( panel.getWidget() != null )
 			panel.getWidget().removeFromParent();
@@ -63,6 +67,8 @@ public class EntityDataBox implements IsWidget {
 	}
 
 	protected void showRiskData( JsonRiskDataList list ) {
+		VerticalPanel p = new VerticalPanel();
+		p.setWidth("100%");
 		Grid grid = new Grid( list.size(), 2 );
 //		grid.getColumnFormatter().setWidth(0, "20%");
 //		grid.getColumnFormatter().setWidth(1, "80%");
@@ -71,7 +77,11 @@ public class EntityDataBox implements IsWidget {
 			grid.setWidget( i, 0, new Label( item.getId() ) );
 			grid.setWidget( i, 1, new Label( item.getValue() ) );
 		}
-		panel.setWidget( grid );
+		Label title = new Label(entity);
+		title.setStyleName("smallTitle");
+		p.add(title);
+		p.add(grid);
+		panel.setWidget( p );
 	}
 
 }

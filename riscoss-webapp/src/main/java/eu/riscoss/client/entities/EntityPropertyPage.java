@@ -93,27 +93,6 @@ public class EntityPropertyPage implements IsWidget {
 		
 		RDCConfDialog(EntitiesModule module) {
 			this.module = module;
-			Button run = new Button( "Run now" );
-			run.setStyleName("button");
-			run.addClickHandler( new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					Boolean b = Window.confirm("Data collectors will be saved before running. Do you want to continue? (If you click 'Cancel', it will not be executed)");
-					if (b) {
-						JSONObject json = ppg.getJson();
-						String str = "";
-						String sep = "";
-						for( String key : json.keySet() ) {
-							if( json.get( key ).isObject().get( "enabled" ).isBoolean().booleanValue() == true ) {
-								str += sep + key;
-								sep = ", ";
-							}
-						}
-						saveAndRunRDC(json);
-					}
-				}
-			});
-			dock.add(run , DockPanel.NORTH);
 			dock.add( ppg.asWidget(), DockPanel.CENTER );
 			dialog.setWidget( dock );
 		}
@@ -124,6 +103,22 @@ public class EntityPropertyPage implements IsWidget {
 		
 		public void setChangedData() {
 			ppg.setChangedData();
+		}
+		
+		public void saveAndRun() {
+			Boolean b = Window.confirm("Data collectors will be saved before running. Do you want to continue? (If you click 'Cancel', it will not be executed)");
+			if (b) {
+				JSONObject json = ppg.getJson();
+				String str = "";
+				String sep = "";
+				for( String key : json.keySet() ) {
+					if( json.get( key ).isObject().get( "enabled" ).isBoolean().booleanValue() == true ) {
+						str += sep + key;
+						sep = ", ";
+					}
+				}
+				saveAndRunRDC(json);
+			}
 		}
 		
 		public void save() {
@@ -240,9 +235,8 @@ public class EntityPropertyPage implements IsWidget {
 		tab.add( summaryPanel, "Properties" );
 		tab.add( ciPanel, "Contextual Information" );
 		tab.add( dataCollectors, "Data Collectors");
-		//tab.add( rasPanel, "RAS" );
-		tab.add( newRasPanel, "RAS" );
-		tab.add( rdr, "RDR");
+		tab.add( rdr, "Data Repository");
+		tab.add( newRasPanel, "Analysis Sessions" );
 		tab.selectTab( 0 );
 		tab.setSize( "100%", "100%" );
 		tab.addSelectionHandler( new SelectionHandler<Integer>() {
@@ -561,6 +555,10 @@ public class EntityPropertyPage implements IsWidget {
 		entityDataBox.setSelectedEntity(entity);
 		rdr.setWidget(entityDataBox);
 		loadRASWidget();
+	}
+	
+	public void runDC() {
+		confDialog.saveAndRun();
 	}
 	
 	List<String> types;
