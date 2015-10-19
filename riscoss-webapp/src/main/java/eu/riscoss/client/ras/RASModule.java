@@ -14,6 +14,7 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.SimplePager;
+import com.google.gwt.user.cellview.client.CellTable.Resources;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -21,11 +22,15 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.ListDataProvider;
+import com.google.gwt.view.client.SelectionModel;
 
 import eu.riscoss.client.JsonCallbackWrapper;
 import eu.riscoss.client.RiscossCall;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecRASInfo;
+import eu.riscoss.client.entities.TableResources;
+import eu.riscoss.client.riskanalysis.JsonRiskAnalysis;
+import eu.riscoss.client.riskanalysis.RASPanel;
 import eu.riscoss.client.ui.LinkHtml;
 import eu.riscoss.shared.JRASInfo;
 
@@ -52,13 +57,13 @@ public class RASModule implements EntryPoint {
 	public void onModuleLoad() {
 		exportJS();
 		
-		table = new CellTable<JRASInfo>();
+		table = new CellTable<JRASInfo>(15, (Resources) GWT.create(TableResources.class));
 		
 		table.addColumn( new Column<JRASInfo,SafeHtml>(new SafeHtmlCell() ) {
 			@Override
 			public SafeHtml getValue(JRASInfo object) {
 				return new LinkHtml( object.getName(), "javascript:setSelectedRAS(\"" + object.getId() + "\")" ); };
-		}, "");
+		}, "Risk Analysis Session");
 		Column<JRASInfo,String> c = new Column<JRASInfo,String>(new ButtonCell() ) {
 			@Override
 			public String getValue(JRASInfo object) {
@@ -70,7 +75,7 @@ public class RASModule implements EntryPoint {
 					deleteRAS( object );
 				}
 			});
-			table.addColumn( c, "");
+		table.addColumn( c, "");
 		
 		dataProvider = new ListDataProvider<JRASInfo>();
 		dataProvider.addDataDisplay( table );
@@ -96,7 +101,10 @@ public class RASModule implements EntryPoint {
 		panel.add( tablePanel, DockPanel.CENTER );
 		panel.setStyleName("margin-left");
 		page.add(title);
-		page.add(panel);
+		leftPanel.add(panel);
+		mainView.add(leftPanel);
+		mainView.add(rightPanel);
+		page.add(mainView);
 		
 		//RootPanel.get().add( panel );
 		RootPanel.get().add( page );
@@ -132,8 +140,26 @@ public class RASModule implements EntryPoint {
 		
 	}
 	
+	RASPanel rasPanel;
+	
 	public void setSelectedRAS( String ras ) {
-		
+		rasPanel = new RASPanel(null);
+		rasPanel.loadRAS(ras);
+		RiscossJsonClient.getSessionSummary(ras, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				// TODO Auto-generated method stub
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				rightPanel.clear();
+				JsonRiskAnalysis json = new JsonRiskAnalysis( response );
+				Label title = new Label(json.getName());
+				title.setStyleName("subtitle");
+				rightPanel.add(title);
+				rightPanel.add(rasPanel);
+			}
+		});
 	}
 	
 	protected void deleteRAS( JRASInfo info ) {
