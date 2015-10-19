@@ -118,10 +118,13 @@ public class LayersManager {
 	public void deleteLayer( @DefaultValue(
 			"Playground") @PathParam("domain") String domain, 
 			@DefaultValue("") @HeaderParam("token") String token, 
-			@PathParam("layer") String name ) {
+			@PathParam("layer") String name ) throws Exception {
 		
 		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
+			if( db.entities( name ).size() > 0 ) {
+				throw new Exception( "You can not delete a layer that still contains entities. You must delete all the entities befor being able to delete this layer." );
+			}
 			db.removeLayer( name );
 		}
 		finally {

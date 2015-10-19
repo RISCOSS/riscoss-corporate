@@ -662,6 +662,9 @@ public class RiscossOrientDB implements RiscossDB {
 			}
 		};
 		
+		if( "".equals( entity ) ) entity = null;
+		if( "".equals( rc ) ) rc = null;
+		
 		if( entity == null & rc == null ) {
 			return dom.listOutEdgeNames( id, GDomDB.CHILDOF_CLASS, null, null, null, ap );
 		}
@@ -851,16 +854,22 @@ public class RiscossOrientDB implements RiscossDB {
 	}
 
 	@Override
-	public Collection<String> findEntities( String layer, String query, int max ) {
+	public Collection<String> findEntities( String layer, String query, SearchParams params ) {
 		if( layer == null ) layer = "";
+		query = query.toLowerCase();
+		String queryString = //"in.tag like '%" + query + "%'" + 
+				"in.tag.toLowerCase() like '%" + query + "%'" + 
+				(params.max > 0 ? " limit " + params.max : "") +
+				(params.from > 0 ? " skip " + params.from : "") +
+				(params.sort == SearchParams.SORT.AZ ? " order by tag" : "" );
 		if( !"".equals( layer ) ) {
 			NodeID lid = dom.get( "/layers/" + layer );
 			if( lid != null ) {
-				return dom.listOutEdgeNames( lid, GDomDB.LINK_CLASS, "contains", null, "in.tag like '%" + query + "%'" + (max > 0 ? " limit " + max : "") );
+				return dom.listOutEdgeNames( lid, GDomDB.LINK_CLASS, "contains", null, queryString );
 			}
 		}
 		NodeID id = dom.get( "/entities" );
-		return dom.listOutEdgeNames( id, GDomDB.CHILDOF_CLASS, null, null, "in.tag like '%" + query + "%'" + (max > 0 ? " limit " + max : "") );
+		return dom.listOutEdgeNames( id, GDomDB.CHILDOF_CLASS, null, null, queryString );
 		
 	}
 	

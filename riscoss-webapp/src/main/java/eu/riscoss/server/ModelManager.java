@@ -12,11 +12,11 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-*/
+ */
 
 /**
  * @author 	Alberto Siena
-**/
+ **/
 
 package eu.riscoss.server;
 
@@ -87,7 +87,7 @@ public class ModelManager {
 		}
 		
 		return a.toString();
- 
+		
 	}
 	/**
 	 * 
@@ -153,7 +153,7 @@ public class ModelManager {
 							jchunk.setValue( jd );
 							
 						}
-							break;
+						break;
 						case EVIDENCE: {
 							
 							JChunkValue.JEvidence je = new JChunkValue.JEvidence();
@@ -163,7 +163,7 @@ public class ModelManager {
 							jchunk.setValue( je );
 							
 						}
-							break;
+						break;
 						case INTEGER: {
 							
 							JChunkValue.JInteger ji = new JChunkValue.JInteger();
@@ -177,7 +177,7 @@ public class ModelManager {
 							jchunk.setValue( ji );
 							
 						}
-							break;
+						break;
 						case NaN:
 							break;
 						case REAL: {
@@ -192,7 +192,7 @@ public class ModelManager {
 							jchunk.setValue( ji );
 							
 						}
-							break;
+						break;
 						case STRING:
 							break;
 						default:
@@ -239,7 +239,7 @@ public class ModelManager {
 							jd.values.addAll( d.getValues() );
 							jchunk.setValue( jd );
 						}
-							break;
+						break;
 						case EVIDENCE: {
 							JChunkValue.JEvidence je = new JChunkValue.JEvidence();
 							Evidence e = rae.getField( c, FieldType.OUTPUT_VALUE ).getValue();
@@ -247,13 +247,13 @@ public class ModelManager {
 							je.m = e.getNegative();
 							jchunk.setValue( je );
 						}
-							break;
+						break;
 						case INTEGER: {
 							JChunkValue.JInteger ji = new JChunkValue.JInteger();
 							ji.value = (int)rae.getField( c, FieldType.OUTPUT_VALUE ).getValue();
 							jchunk.setValue( ji );
 						}
-							break;
+						break;
 						case NaN:
 							break;
 						case REAL: {
@@ -261,7 +261,7 @@ public class ModelManager {
 							ji.value = (double)rae.getField( c, FieldType.OUTPUT_VALUE ).getValue();
 							jchunk.setValue( ji );
 						}
-							break;
+						break;
 						case STRING:
 							break;
 						default:
@@ -283,7 +283,7 @@ public class ModelManager {
 		
 		return ret;
 	}
-
+	
 	/**
 	 * 
 	 * @param domain
@@ -306,122 +306,119 @@ public class ModelManager {
 		ret.add( "outputs", outputs );
 		
 		RiscossDB db = DBConnector.openDB( domain, token );
+		
+		RiskAnalysisEngine rae = ReasoningLibrary.get().createRiskAnalysisEngine();
+		
+		for( int i = 0; i < json.size(); i++ ) {
+			String modelName = json.get( i ).getAsString();
+			String blob = db.getModelBlob( modelName );
+			if( blob != null ) {
+				rae.loadModel( blob );
+			}
+		}
+		
+		
 		try {
 			
-			for( int i = 0; i < json.size(); i++ ) {
-				
-				String modelName = json.get( i ).getAsString();
-				
-				String blob = db.getModelBlob( modelName );
-				
-				if( blob != null ) {
-					
-					RiskAnalysisEngine rae = ReasoningLibrary.get().createRiskAnalysisEngine();
-					rae.loadModel( blob );
-					
-					
-					for( Chunk c : rae.queryModel( ModelSlice.INPUT_DATA ) ) {
-						JsonObject o = new JsonObject();
-						o.addProperty( "id", c.getId() );
-						o.addProperty( "label", getProperty( rae, c, FieldType.LABEL, c.getId() ) );
-						o.addProperty( "description", getProperty( rae, c, FieldType.DESCRIPTION, "" ) );
-						o.addProperty( "datatype", 
-								rae.getField( c, FieldType.INPUT_VALUE ).getDataType().name() );
-						switch( rae.getField( c, FieldType.INPUT_VALUE ).getDataType() ) {
-						case DISTRIBUTION: {
-							o.addProperty( "min", "0" );
-							o.addProperty( "max", "1" );
-							Distribution d = rae.getField( c, FieldType.INPUT_VALUE ).getValue();
-							o.add( "value", toJson( d ) );
-						}
-							break;
-						case EVIDENCE: {
-							Evidence e = rae.getField( c, FieldType.INPUT_VALUE ).getValue();
-							o.add( "value", toJson( e ) );
-						}
-							break;
-						case INTEGER: {
-							int min = 0;
-							if( rae.getField( c, FieldType.MIN ).getDataType() != DataType.NaN )
-								min = rae.getField( c, FieldType.MIN ).getValue();
-							int max = 100;
-							if( rae.getField( c, FieldType.MAX ).getDataType() != DataType.NaN )
-								max = rae.getField( c, FieldType.MAX ).getValue();
-							o.addProperty( "min", "" + min );
-							o.addProperty( "max", "" + max );
-							o.addProperty( "value", (int)rae.getField( c, FieldType.INPUT_VALUE ).getValue() );
-						}
-							break;
-						case NaN:
-							break;
-						case REAL: {
-							double min = 0;
-							if( rae.getField( c, FieldType.MIN ).getDataType() != DataType.NaN )
-								min = rae.getField( c, FieldType.MIN ).getValue();
-							double max = 1;
-							if( rae.getField( c, FieldType.MAX ).getDataType() != DataType.NaN )
-								max = rae.getField( c, FieldType.MAX ).getValue();
-							o.addProperty( "min", "" + min );
-							o.addProperty( "max", "" + max );
-							o.addProperty( "value", (double)rae.getField( c, FieldType.INPUT_VALUE ).getValue() );
-						}
-							break;
-						case STRING:
-							break;
-						default:
-							break;
-						}
-						inputs.add( o );
-					}
-					
-					for( Chunk c : rae.queryModel( ModelSlice.OUTPUT_DATA ) ) {
-						JsonObject o = new JsonObject();
-						o.addProperty( "id", c.getId() );
-						o.addProperty( "datatype", 
-								rae.getField( c, FieldType.OUTPUT_VALUE ).getDataType().name() );
-						String label = c.getId();
-						Field f = rae.getField( c, FieldType.LABEL );
-						if( f != null ) {
-							label = f.getValue();
-						}
-						o.addProperty( "label", label );
-						f = rae.getField( c, FieldType.DESCRIPTION );
-						if( f == null ) {
-							o.addProperty( "description", "" );
-						}
-						else {
-							o.addProperty( "description", (String)f.getValue() );
-						}
-						switch( rae.getField( c, FieldType.OUTPUT_VALUE ).getDataType() ) {
-						case DISTRIBUTION: {
-							Distribution d = rae.getField( c, FieldType.OUTPUT_VALUE ).getValue();
-							o.add( "value", toJson( d ) );
-						}
-							break;
-						case EVIDENCE: {
-							Evidence e = rae.getField( c, FieldType.OUTPUT_VALUE ).getValue();
-							o.add( "value", toJson( e ) );
-						}
-							break;
-						case INTEGER: {
-							o.addProperty( "value", (int)rae.getField( c, FieldType.OUTPUT_VALUE ).getValue() );
-						}
-							break;
-						case NaN:
-							break;
-						case REAL: {
-							o.addProperty( "value", (double)rae.getField( c, FieldType.OUTPUT_VALUE ).getValue() );
-						}
-							break;
-						case STRING:
-							break;
-						default:
-							break;
-						}
-						outputs.add( o );
-					}
-					
+			for( Chunk c : rae.queryModel( ModelSlice.INPUT_DATA ) ) {
+				JsonObject o = new JsonObject();
+				o.addProperty( "id", c.getId() );
+				o.addProperty( "label", getProperty( rae, c, FieldType.LABEL, c.getId() ) );
+				o.addProperty( "description", getProperty( rae, c, FieldType.DESCRIPTION, "" ) );
+				o.addProperty( "datatype", 
+						rae.getField( c, FieldType.INPUT_VALUE ).getDataType().name() );
+				switch( rae.getField( c, FieldType.INPUT_VALUE ).getDataType() ) {
+				case DISTRIBUTION: {
+					o.addProperty( "min", "0" );
+					o.addProperty( "max", "1" );
+					Distribution d = rae.getField( c, FieldType.INPUT_VALUE ).getValue();
+					o.add( "value", toJson( d ) );
 				}
+				break;
+				case EVIDENCE: {
+					Evidence e = rae.getField( c, FieldType.INPUT_VALUE ).getValue();
+					o.add( "value", toJson( e ) );
+				}
+				break;
+				case INTEGER: {
+					int min = 0;
+					if( rae.getField( c, FieldType.MIN ).getDataType() != DataType.NaN )
+						min = rae.getField( c, FieldType.MIN ).getValue();
+					int max = 100;
+					if( rae.getField( c, FieldType.MAX ).getDataType() != DataType.NaN )
+						max = rae.getField( c, FieldType.MAX ).getValue();
+					o.addProperty( "min", "" + min );
+					o.addProperty( "max", "" + max );
+					o.addProperty( "value", (int)rae.getField( c, FieldType.INPUT_VALUE ).getValue() );
+				}
+				break;
+				case NaN:
+					break;
+				case REAL: {
+					double min = 0;
+					if( rae.getField( c, FieldType.MIN ).getDataType() != DataType.NaN )
+						min = rae.getField( c, FieldType.MIN ).getValue();
+					double max = 1;
+					if( rae.getField( c, FieldType.MAX ).getDataType() != DataType.NaN )
+						max = rae.getField( c, FieldType.MAX ).getValue();
+					o.addProperty( "min", "" + min );
+					o.addProperty( "max", "" + max );
+					o.addProperty( "value", (double)rae.getField( c, FieldType.INPUT_VALUE ).getValue() );
+				}
+				break;
+				case STRING:
+					break;
+				default:
+					break;
+				}
+				inputs.add( o );
+			}
+			
+			for( Chunk c : rae.queryModel( ModelSlice.OUTPUT_DATA ) ) {
+				JsonObject o = new JsonObject();
+				o.addProperty( "id", c.getId() );
+				o.addProperty( "datatype", 
+						rae.getField( c, FieldType.OUTPUT_VALUE ).getDataType().name() );
+				String label = c.getId();
+				Field f = rae.getField( c, FieldType.LABEL );
+				if( f != null ) {
+					label = f.getValue();
+				}
+				o.addProperty( "label", label );
+				f = rae.getField( c, FieldType.DESCRIPTION );
+				if( f == null ) {
+					o.addProperty( "description", "" );
+				}
+				else {
+					o.addProperty( "description", (String)f.getValue() );
+				}
+				switch( rae.getField( c, FieldType.OUTPUT_VALUE ).getDataType() ) {
+				case DISTRIBUTION: {
+					Distribution d = rae.getField( c, FieldType.OUTPUT_VALUE ).getValue();
+					o.add( "value", toJson( d ) );
+				}
+				break;
+				case EVIDENCE: {
+					Evidence e = rae.getField( c, FieldType.OUTPUT_VALUE ).getValue();
+					o.add( "value", toJson( e ) );
+				}
+				break;
+				case INTEGER: {
+					o.addProperty( "value", (int)rae.getField( c, FieldType.OUTPUT_VALUE ).getValue() );
+				}
+				break;
+				case NaN:
+					break;
+				case REAL: {
+					o.addProperty( "value", (double)rae.getField( c, FieldType.OUTPUT_VALUE ).getValue() );
+				}
+				break;
+				case STRING:
+					break;
+				default:
+					break;
+				}
+				outputs.add( o );
 			}
 		}
 		finally {
@@ -432,14 +429,14 @@ public class ModelManager {
 		
 		return ret.toString();
 	}
-
+	
 	private JsonElement toJson(Evidence e) {
 		JsonObject o = new JsonObject();
 		o.addProperty( "p", e.getPositive() );
 		o.addProperty( "e", e.getNegative() );
 		return o;
 	}
-
+	
 	private JsonElement toJson(Distribution d) {
 		JsonArray a = new JsonArray();
 		for( double val : d.getValues() ) {
@@ -447,7 +444,7 @@ public class ModelManager {
 		}
 		return a;
 	}
-
+	
 	private String getProperty( RiskAnalysisEngine rae, Chunk chunk, FieldType ft, String def ) {
 		Field f = rae.getField( chunk, ft );
 		if( f == null ) return def;
@@ -508,24 +505,24 @@ public class ModelManager {
 			) {
 		
 		RiscossDB db = DBConnector.openDB( domain, token );
-
-				try {
-					//attention:filename sanitation is not directly notified to the user
-					modelname = RiscossUtil.sanitize(modelname);
-					
-					for (String storedmodel : db.getModelList()) {
-						if (storedmodel.equals(modelname)){
-							return;
-//							throw new RuntimeException(
-//									"A model with this name was already uploaded. Please update this model on the model's properties page, change its name or delete it." );
-						}
-					}
-					db.storeModel( content, modelname );
-
-				} catch (Exception e) {
-					throw new UploadActionException(e);
+		
+		try {
+			//attention:filename sanitation is not directly notified to the user
+			modelname = RiscossUtil.sanitize(modelname);
+			
+			for (String storedmodel : db.getModelList()) {
+				if (storedmodel.equals(modelname)){
+					return;
+					//							throw new RuntimeException(
+					//									"A model with this name was already uploaded. Please update this model on the model's properties page, change its name or delete it." );
 				}
-
+			}
+			db.storeModel( content, modelname );
+			
+		} catch (Exception e) {
+			throw new UploadActionException(e);
+		}
+		
 		DBConnector.closeDB( db );
 	}
 	
@@ -538,27 +535,27 @@ public class ModelManager {
 		
 		//String response = "";
 		//try {
-			for (String storedmodel : db.getModelList()) {
-				// System.out.println(storedmodel);
-				if (storedmodel.equals(newName)) {
-					duplicate = true;
-					// response = "<response>\n" +
-					// "Duplicate model name. Please delete the stored model first."+
-					// "</response>\n";
-					//response = "Error: This name is already in use.";
-					 throw new RuntimeException("Duplicate entry");
-					//break;
-					// throw new
-					// UploadActionException("Duplicate model name. Please delete the stored model first.");
-				}
+		for (String storedmodel : db.getModelList()) {
+			// System.out.println(storedmodel);
+			if (storedmodel.equals(newName)) {
+				duplicate = true;
+				// response = "<response>\n" +
+				// "Duplicate model name. Please delete the stored model first."+
+				// "</response>\n";
+				//response = "Error: This name is already in use.";
+				throw new RuntimeException("Duplicate entry");
+				//break;
+				// throw new
+				// UploadActionException("Duplicate model name. Please delete the stored model first.");
 			}
-			if (duplicate == false) {
-				db.changeModelName(name, newName);
-				//response = "Success";
-			}
-			
+		}
+		if (duplicate == false) {
+			db.changeModelName(name, newName);
+			//response = "Success";
+		}
+		
 		//} finally {
-			DBConnector.closeDB(db);
+		DBConnector.closeDB(db);
 		//}
 		//return response;
 	}
@@ -610,5 +607,5 @@ public class ModelManager {
 			DBConnector.closeDB( db );
 		}
 	}
-
+	
 }

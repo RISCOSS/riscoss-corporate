@@ -21,10 +21,10 @@
 
 package eu.riscoss.client.entities;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.fusesource.restygwt.client.JsonCallback;
+import org.fusesource.restygwt.client.JsonEncoderDecoder;
 import org.fusesource.restygwt.client.Method;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -33,12 +33,8 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
@@ -46,7 +42,6 @@ import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -61,10 +56,8 @@ import eu.riscoss.client.JsonUtil;
 import eu.riscoss.client.Log;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecLayerContextualInfo;
-import eu.riscoss.client.layers.LayersComboBox;
-import eu.riscoss.client.ui.ClickWrapper;
-import eu.riscoss.client.ui.EntityBox;
 import eu.riscoss.client.ui.TreeWidget;
+import eu.riscoss.shared.JEntityNode;
 import eu.riscoss.shared.JLayerContextualInfo;
 import eu.riscoss.shared.RiscossUtil;
 
@@ -299,6 +292,44 @@ public class EntitiesModule implements EntryPoint {
 		}
 	}
 	
+	private void appendChildren( TreeWidget rootEnt, List<JEntityNode> children ) {
+		this.root = rootEnt;
+		for (int i = 0; i < children.size(); ++i) {
+//			RiscossJsonClient.getEntityData(children.get(i).isString().stringValue(), new JsonCallback() {
+//				TreeWidget rootWidget = root;
+//				@Override
+//				public void onFailure(Method method, Throwable exception) {
+//					Window.alert(exception.getMessage());
+//				}
+//				@Override
+//				public void onSuccess(Method method, JSONValue response) {
+//					JsonEntitySummary entityElement = new JsonEntitySummary(response);
+					JEntityNode child = children.get( i );
+					nextEntityName = child.name;
+					Anchor a = new Anchor(nextEntityName + " (" + child.layer + ")");
+					a.setWidth("100%");
+					a.setStyleName("font");
+					a.addClickHandler(new ClickHandler() {
+						String name = nextEntityName;
+						@Override
+						public void onClick(ClickEvent event) {
+							setSelectedEntity(name);
+						}
+					});
+					HorizontalPanel cPanel = new HorizontalPanel();
+					cPanel.setStyleName("tree");
+					cPanel.setWidth("100%");
+					cPanel.add(a);
+					TreeWidget c = new TreeWidget(cPanel);
+					root.addChild(c);
+					if( child.children.size() > 0) appendChildren( c, child.children );
+//				}
+//			});
+		}
+	}
+	
+	public interface CodecEntityNodeList extends JsonEncoderDecoder<JEntityNode> {}
+	
 	private void generateTree(String query, String filterlayer) {
 		//RiscossJsonClient.listEntities(new JsonCallback() {
 		RiscossJsonClient.searchEntities( query, filterlayer, new JsonCallback() {
@@ -308,41 +339,76 @@ public class EntitiesModule implements EntryPoint {
 			}
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
-				for (int i = 0; i < response.isArray().size(); ++i) {
-					RiscossJsonClient.getEntityData( response.isArray().get(i).isObject().get("name").isString().stringValue(), new JsonCallback() {
-						@Override
-						public void onFailure(Method method, Throwable exception) {
-							Window.alert( exception.getMessage() );
-						}
-						@Override
-						public void onSuccess(Method method, JSONValue response) {
-							leftPanel.remove(entitiesTree);
-							JsonEntitySummary entityElement = new JsonEntitySummary(response);
-							if (entityElement.getParentList().size() == 0) {
-								nextEntityName = entityElement.getEntityName();
-								Anchor a = new Anchor(nextEntityName  + " (" + entityElement.getLayer() + ")");
-								a.setWidth("100%");
-								a.setStyleName("font");
-								a.addClickHandler(new ClickHandler() {
-									String name = nextEntityName;
-									@Override
-									public void onClick(ClickEvent event) {
-										setSelectedEntity(name);
-									}
-								});
-								HorizontalPanel cPanel = new HorizontalPanel();
-								cPanel.setStyleName("tree");
-								cPanel.setWidth("100%");
-								cPanel.add(a);
-								TreeWidget c = new TreeWidget(cPanel);
-								entitiesTree.addChild(c);
-								if (entityElement.getChildrenList().size() > 0) {
-									appendChilds(c, entityElement.getChildrenList());
-								}
-							}
-							leftPanel.add(entitiesTree);
-						}} );
+				leftPanel.remove(entitiesTree);
+				Log.println( "" + response );
+				JSONArray array = response.isArray();
+				if( array == null ) {
+					Window.alert( "Not an array" );
+					return;
 				}
+				CodecEntityNodeList codec = GWT.create( CodecEntityNodeList.class );
+				for( int i = 0; i < array.size(); i++ ) {
+					Log.println( "" + array.get(i) );
+					JEntityNode node = codec.decode( array.get( i ) );
+					nextEntityName = node.name;
+					Anchor a = new Anchor(nextEntityName  + " (" + node.layer + ")");
+					a.setWidth("100%");
+					a.setStyleName("font");
+					a.addClickHandler(new ClickHandler() {
+						String name = nextEntityName;
+						@Override
+						public void onClick(ClickEvent event) {
+							setSelectedEntity(name);
+						}
+					});
+					HorizontalPanel cPanel = new HorizontalPanel();
+					cPanel.setStyleName("tree");
+					cPanel.setWidth("100%");
+					cPanel.add(a);
+					TreeWidget c = new TreeWidget(cPanel);
+					entitiesTree.addChild(c);
+					if( node.children.size() > 0) {
+						appendChildren( c, node.children );
+					}
+				}
+				leftPanel.add(entitiesTree);
+				
+//				for (int i = 0; i < response.isArray().size(); ++i) {
+//					RiscossJsonClient.getEntityData( response.isArray().get(i).isObject().get("name").isString().stringValue(), new JsonCallback() {
+//						@Override
+//						public void onFailure(Method method, Throwable exception) {
+//							Window.alert( exception.getMessage() );
+//						}
+//						@Override
+//						public void onSuccess(Method method, JSONValue response) {
+//							leftPanel.remove(entitiesTree);
+							
+//							JsonEntitySummary entityElement = new JsonEntitySummary(response);
+//							if (entityElement.getParentList().size() == 0) {
+//								nextEntityName = entityElement.getEntityName();
+//								Anchor a = new Anchor(nextEntityName  + " (" + entityElement.getLayer() + ")");
+//								a.setWidth("100%");
+//								a.setStyleName("font");
+//								a.addClickHandler(new ClickHandler() {
+//									String name = nextEntityName;
+//									@Override
+//									public void onClick(ClickEvent event) {
+//										setSelectedEntity(name);
+//									}
+//								});
+//								HorizontalPanel cPanel = new HorizontalPanel();
+//								cPanel.setStyleName("tree");
+//								cPanel.setWidth("100%");
+//								cPanel.add(a);
+//								TreeWidget c = new TreeWidget(cPanel);
+//								entitiesTree.addChild(c);
+//								if (entityElement.getChildrenList().size() > 0) {
+//									appendChilds(c, entityElement.getChildrenList());
+//								}
+//							}
+//							leftPanel.add(entitiesTree);
+//						}} );
+//				}
 			}
 		});
 	}

@@ -23,6 +23,7 @@ package eu.riscoss.server;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,10 +46,12 @@ import com.google.gson.JsonPrimitive;
 
 import eu.riscoss.dataproviders.RiskData;
 import eu.riscoss.db.RiscossDB;
+import eu.riscoss.db.SearchParams;
 import eu.riscoss.rdc.RDC;
 import eu.riscoss.rdc.RDCFactory;
 import eu.riscoss.rdc.RDCParameter;
 import eu.riscoss.shared.JEntityData;
+import eu.riscoss.shared.JEntityNode;
 import eu.riscoss.shared.JRiskNativeData;
 import eu.riscoss.shared.RiscossUtil;
 
@@ -110,26 +113,28 @@ public class EntityManager {
 	@GET @Path("/{domain}/search") 
 	public String search(@DefaultValue("Playground") @PathParam("domain") String domain, @HeaderParam("token") String token,
 			@DefaultValue("") @QueryParam("query") String query ) {
-		return search(domain, token, "", query, "0");
-		
+		return searchNew( domain, token, "", query, "0", "0", "false" );
 	}
 	
-	@GET @Path("/{domain}/{layer}/search") 
+	@GET @Path("/{domain}/{layer}/search_old") 
 	public String search(@DefaultValue("Playground") @PathParam("domain") String domain, @HeaderParam("token") String token,
 			@DefaultValue("") @PathParam("layer") String layer, 
 			@DefaultValue("") @QueryParam("query") String query, 
-			@DefaultValue("0") @QueryParam("max") String strMax    //not used for now in client
+			@DefaultValue("0") @QueryParam("from") String strFrom,
+			@DefaultValue("0") @QueryParam("max") String strMax,    //not used for now in client
+			@DefaultValue("false") @QueryParam("h") String strHierarchy
 		) {
-		
-		int max = -1;
-		
-		try { max = Integer.parseInt( strMax ); } catch( Exception ex ) {}
 		
 		JsonArray a = new JsonArray();
 		
 		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
-			Collection<String> list = db.findEntities( layer, query, max );
+			SearchParams params = new SearchParams();
+			params.setMax( strMax );
+			params.setFrom( strFrom );
+			params.setOptLoadHierarchy( strHierarchy );
+			
+			Collection<String> list = db.findEntities( layer, query, params );
 			for (String name : list) {
 				JsonObject o = new JsonObject();
 				o.addProperty("name", name);
@@ -142,7 +147,79 @@ public class EntityManager {
 		return a.toString();
 	}
 
+	@GET @Path("/{domain}/{layer}/search") 
+	public String searchNew(@DefaultValue("Playground") @PathParam("domain") String domain, @HeaderParam("token") String token,
+			@DefaultValue("") @PathParam("layer") String layer, 
+			@DefaultValue("") @QueryParam("query") String query, 
+			@DefaultValue("0") @QueryParam("from") String strFrom,
+			@DefaultValue("0") @QueryParam("max") String strMax,    //not used for now in client
+			@DefaultValue("f") @QueryParam("h") String strHierarchy
+		) {
+		
+//		Map<String,JEntityNode> map = new HashMap<>();
+		
+		List<JEntityNode> result = new ArrayList<JEntityNode>();
+		
+		RiscossDB db = DBConnector.openDB( domain, token );
+		try {
+			SearchParams params = new SearchParams();
+			params.setMax( strMax );
+			params.setFrom( strFrom );
+			params.setOptLoadHierarchy( strHierarchy );
+			
+			Collection<String> list = db.findEntities( layer, query, params );
+			for (String name : list) {
+				JEntityNode jd = new JEntityNode();
+				jd.name = name;
+				jd.layer = db.layerOf( name );
+				result.add( jd );
+				if( params.loadHierarchy = true ) {
+					loadDescendants( jd, db );
+				}
+			}
+		} finally {
+			DBConnector.closeDB(db);
+		}
+		return new Gson().toJson( result );
+	}
+	
+	private void loadDescendants( JEntityNode jparent, RiscossDB db ) {
+		for( String name : db.getChildren( jparent.name ) ) {
+			JEntityNode jd = new JEntityNode();
+			jd.name = name;
+			jd.layer = db.layerOf( name );
+			jparent.children.add( jd );
+			loadDescendants( jd, db );
+		}
+	}
 
+	Map<String,JEntityData> getParents( String entity, RiscossDB db ) {
+		
+		Map<String,JEntityData> map = new HashMap<String, JEntityData>();
+		
+		for( String name : db.getParents( entity ) ) {
+			JEntityData jd = new JEntityData();
+			jd.name = name;
+			jd.layer = db.layerOf( name );
+			map.put( name, jd );
+		}
+		
+		return map;
+	}
+	
+	Map<String,JEntityData> getRoots( String entity, RiscossDB db ) {
+		
+		List<String> parents = db.getParents( entity );
+		
+		if( parents.size() < 1 )
+			return new HashMap<String, JEntityData>();
+		
+		Map<String,JEntityData> map = new HashMap<String, JEntityData>();
+		
+		return map;
+		
+	}
+	
 	@POST @Path("/{domain}/create")
 	@Produces("application/json")
 	//TODO: remove parent. Extra call for adding parents.
