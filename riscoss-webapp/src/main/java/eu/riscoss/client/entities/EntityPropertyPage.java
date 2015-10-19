@@ -77,8 +77,8 @@ import eu.riscoss.client.rdr.EntityDataBox;
 import eu.riscoss.client.report.RiskAnalysisReport;
 import eu.riscoss.client.riskanalysis.RASPanel;
 import eu.riscoss.client.ui.CustomizableForm;
-import eu.riscoss.client.ui.TreeWidget;
 import eu.riscoss.client.ui.CustomizableForm.CustomField;
+import eu.riscoss.client.ui.TreeWidget;
 import eu.riscoss.shared.JRASInfo;
 
 public class EntityPropertyPage implements IsWidget {
@@ -965,7 +965,9 @@ public class EntityPropertyPage implements IsWidget {
 		}
 		try {
 			RiskAnalysisReport report = new RiskAnalysisReport();
-			report.showResults( response.isObject().get( "results" ).isArray() );
+			report.showResults( 
+					response.isObject().get( "results" ).isArray(),
+					response.isObject().get( "argumentation" ) );
 			rasPanel.setWidget( report.asWidget() );
 			rasLoaded = true;
 		}

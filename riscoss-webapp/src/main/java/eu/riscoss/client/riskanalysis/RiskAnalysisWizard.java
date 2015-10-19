@@ -44,10 +44,8 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.view.client.ListDataProvider;
 
 import eu.riscoss.client.JsonEntitySummary;
-import eu.riscoss.client.ModelInfo;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecRASInfo;
 import eu.riscoss.client.ui.TreeWidget;

@@ -171,7 +171,9 @@ public class ReportModule implements EntryPoint {
 		
 //		Window.alert( "2: " + response );
 		RiskAnalysisReport report = new RiskAnalysisReport();
-		report.showResults( response );
+		report.showResults( 
+				response,
+				object.isObject().get( "argumentation" ) );
 		
 		DisclosurePanel dp = new DisclosurePanel( "Input values used for this evaluation" );
 		

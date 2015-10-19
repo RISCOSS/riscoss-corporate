@@ -76,7 +76,10 @@ public class UCRAS1 implements UseCase {
 			
 			JRiskAnalysisResult result = gson.fromJson( ret, JRiskAnalysisResult.class );
 			
-			print( result.argumentation.argument, System.out );
+			for( JArgument arg : result.argumentation.arguments.values() ) {
+				print( arg, System.out );
+//				print( result.argumentation.argument, System.out );
+			}
 			
 			// TODO create scenario
 			// SKIP (The github model gives risks in output with all inputs = 0)
@@ -94,7 +97,7 @@ public class UCRAS1 implements UseCase {
 	}
 
 	private void print( JArgument argument, PrintStream out, String prefix ) {
-		out.println( prefix + " " + argument.id + ": " + argument.truth );
+		out.println( prefix + " " + argument.summary + ": " + argument.truth );
 		for( JArgument arg : argument.subArgs ) {
 			print( arg, out, prefix + "  " );
 		}

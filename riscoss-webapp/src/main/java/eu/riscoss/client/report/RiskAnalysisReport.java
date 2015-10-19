@@ -21,10 +21,19 @@
 
 package eu.riscoss.client.report;
 
+import org.fusesource.restygwt.client.JsonEncoderDecoder;
+
+import com.google.gwt.core.shared.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONValue;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -32,21 +41,36 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import eu.riscoss.client.JsonRiskResult;
+import eu.riscoss.client.Log;
+import eu.riscoss.client.ui.ClickWrapper;
 import eu.riscoss.client.ui.GaugeImage;
+import eu.riscoss.client.ui.TreeWidget;
+import eu.riscoss.shared.JArgumentation;
+import eu.riscoss.shared.JArgument;
 
 public class RiskAnalysisReport implements IsWidget {
 	
+	public interface Codec extends JsonEncoderDecoder<JArgumentation>{}
+	
 	SimplePanel panel = new SimplePanel();
+	
+	JArgumentation argumentation = new JArgumentation();
 	
 	@Override
 	public Widget asWidget() {
 		return panel;
 	}
 	
-	public void showResults( JSONArray response ) {
+	public void showResults( JSONArray response, JSONValue jsonArgumentation ) {
 		
 		if( panel.getWidget() != null ) {
 			panel.getWidget().removeFromParent();
+		}
+		
+		Codec codec = GWT.create( Codec.class );
+		
+		if( jsonArgumentation != null ) {
+			argumentation = codec.decode( jsonArgumentation );
 		}
 		
 		Grid grid = new Grid();
@@ -78,7 +102,36 @@ public class RiskAnalysisReport implements IsWidget {
 				img.setDistribution( result.getDistributionString() );
 				grid.setWidget( i, 1, img );
 				
-				grid.setWidget( i, 2, new Label( result.getDescription() ) );
+				HorizontalPanel hp = new HorizontalPanel();
+				
+				hp.add( new Label( result.getDescription() ) );
+				
+				JArgument arg = argumentation.arguments.get( result.getChunkId() );
+				if( arg != null ) {
+					Button b = new Button( "Why?" );
+					
+					b.addClickHandler( new ClickWrapper<JArgument>( arg ) {
+						@Override
+						public void onClick( ClickEvent event ) {
+							DialogBox d = new DialogBox( true );
+							JArgument arg = getValue();
+							TreeWidget w = load( arg );
+							d.add( w );
+							d.center();
+						}
+						
+						private TreeWidget load( JArgument arg ) {
+							TreeWidget w = new TreeWidget( new Label( arg.summary ) );
+							for( JArgument subArg : arg.subArgs ) {
+								w.addChild( load( subArg ) );
+							}
+							return w;
+						}} );
+					
+					hp.add( b );
+				}
+				
+				grid.setWidget( i, 2, hp );
 			}
 				break;
 			case EVIDENCE: {
@@ -107,7 +160,39 @@ public class RiskAnalysisReport implements IsWidget {
 				SimplePanel sp = new SimplePanel();
 				sp.setWidget(d);
 				sp.setStyleName("contentResultsTable");
-				grid.setWidget( i, 2, sp);
+				
+				HorizontalPanel hp = new HorizontalPanel();
+				
+				hp.add( sp );
+				
+				JArgument arg = argumentation.arguments.get( result.getChunkId() );
+				if( arg != null ) {
+					Button b = new Button( "Why?" );
+					
+					b.addClickHandler( new ClickWrapper<JArgument>( arg ) {
+						@Override
+						public void onClick( ClickEvent event ) {
+							DialogBox d = new DialogBox( true );
+							d.setText( "Argumentation" );
+							JArgument arg = getValue();
+							TreeWidget w = load( arg );
+							d.add( w );
+							d.center();
+						}
+						
+						private TreeWidget load( JArgument arg ) {
+							TreeWidget w = new TreeWidget( new Label( arg.summary ) );
+							for( JArgument subArg : arg.subArgs ) {
+								w.addChild( load( subArg ) );
+							}
+							return w;
+						}} );
+					
+					hp.add( b );
+				}
+				
+				grid.setWidget( i, 2, hp );
+//				grid.setWidget( i, 2, sp);
 			}
 				break;
 			case INTEGER:

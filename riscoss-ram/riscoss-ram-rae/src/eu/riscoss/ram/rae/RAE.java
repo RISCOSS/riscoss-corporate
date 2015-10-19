@@ -125,12 +125,6 @@ public class RAE {
 						
 						arg.addArgument( subArg );
 						
-//						if( subArg.getTruth() > conf.getThreshold( ArgumentationConf.Threshold.Low ) ) {
-//							
-//							arg.setSummary( arg.getSummary() + ", the value of " + sub_p.getId() + " is " + conf.getThreshold( subArg.getTruth() ).name()  );
-//							
-//						}
-						
 					}
 					
 				}

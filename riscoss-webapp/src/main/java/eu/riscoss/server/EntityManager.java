@@ -445,11 +445,23 @@ public class EntityManager {
 			JsonArray a = json.get("list").getAsJsonArray();
 			for (int i = 0; i < a.size(); i++) {
 				String child = a.get(i).getAsString();
-				db.assignEntity(child, entity);
+				if( !isDescendand( entity, child, db ) ) {
+					db.assignEntity( child, entity );
+				}
 			}
 		} finally {
 			DBConnector.closeDB(db);
 		}
+	}
+
+	private boolean isDescendand( String descendant, String entity, RiscossDB db  ) {
+		
+		for( String child : db.getChildren( entity ) ) {
+			if( child.compareTo( descendant ) == 0 ) return true;
+			if( isDescendand( descendant, child, db ) ) return true;
+		}
+		
+		return false;
 	}
 
 	/**

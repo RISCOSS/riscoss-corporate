@@ -478,15 +478,24 @@ public class AnalysisManager {
 	}
 	
 	private JArgumentation transform( Argumentation a ) {
+		
 		JArgumentation argumentation = new JArgumentation();
 		
-		fill( argumentation.argument, a.getArgument() );
+		for( Argument arg : a.getArgument().subArguments() ) {
+			JArgument jarg = new JArgument();
+			jarg.summary = arg.getSummary();
+			jarg.truth = arg.getTruth();
+			argumentation.arguments.put( arg.getId(), jarg );
+			fill( jarg, arg );
+		}
+		
+//		fill( argumentation.argument, a.getArgument() );
 		
 		return argumentation;
 	}
 	
 	private void fill( JArgument jarg, Argument arg ) {
-		jarg.id = arg.getId();
+		jarg.summary = arg.getSummary();
 		jarg.truth = arg.getTruth();
 		for( Argument subArg : arg.subArguments() ) {
 			JArgument jsub = new JArgument();

@@ -22,7 +22,6 @@ public class Argumentation {
 
 	private void print( Argument a, PrintStream out, String prefix ) {
 		
-//		out.println( prefix + " " + a.getId() + ": " + a.getTruth() );
 		out.println( prefix + " " + a.getSummary() + ": " + a.getTruth() );
 		
 		for( Argument sub_a : a.subArguments() ) {

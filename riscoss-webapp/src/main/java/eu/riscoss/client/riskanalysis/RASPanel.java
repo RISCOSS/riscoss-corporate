@@ -23,7 +23,6 @@ package eu.riscoss.client.riskanalysis;
 
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
-import org.fusesource.restygwt.client.Resource;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -31,7 +30,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.IsWidget;
@@ -217,7 +215,9 @@ public class RASPanel implements IsWidget {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				try {
-					report.showResults( response.isObject().get( "results" ).isArray() );
+					report.showResults( 
+							response.isObject().get( "results" ).isArray(),
+							response.isObject().get( "argumentation" ) );
 				}
 				catch( Exception ex ) {
 //					Window.alert( ex.getMessage() + "\n" + response );
@@ -278,7 +278,9 @@ public class RASPanel implements IsWidget {
 							Window.alert( exception.getMessage() );
 						}
 					});
-					report.showResults( response.isObject().get( "results" ).isArray() );
+					report.showResults( 
+							response.isObject().get( "results" ).isArray(),
+							response.isObject().get( "argumentation" ) );
 				}
 				catch( Exception ex ) {
 					Window.alert( ex.getMessage() + "\n" + response );

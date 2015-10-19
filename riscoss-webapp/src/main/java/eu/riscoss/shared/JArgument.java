@@ -5,7 +5,7 @@ import java.util.List;
 
 public class JArgument {
 	
-	public String id;
+	public String summary;
 	public List<JArgument> subArgs = new ArrayList<>();
 	public double truth;
 	
