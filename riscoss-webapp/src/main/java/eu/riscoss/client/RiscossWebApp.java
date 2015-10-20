@@ -35,6 +35,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
@@ -126,6 +127,8 @@ public class RiscossWebApp implements EntryPoint {
 		});
 	}
 	
+	HorizontalPanel shortcuts = new HorizontalPanel();
+	
 	void showUI( JSiteMap sitemap) {
 		
 		Log.println( "Loading UI for domain " + sitemap.domain );
@@ -187,6 +190,9 @@ public class RiscossWebApp implements EntryPoint {
 			}
 		});
 
+		HorizontalPanel hPanel = new HorizontalPanel();
+		VerticalPanel vPanel = new VerticalPanel();
+		
 		VerticalPanel north = new VerticalPanel();
 //		Image logo = new Image( "http://riscossplatform.ow2.org/riscoss/wiki/wiki1/download/ColorThemes/RISCOSS_2/logo_riscoss_DSP.png" );
 		Image logo = new Image( "resources/logo_riscoss_DSP.png" );
@@ -195,12 +201,91 @@ public class RiscossWebApp implements EntryPoint {
 		Label version = new Label("v0.3.0");
 		version.setStyleName("version");
 		north.add(version);
-		north.add( menu );
-		north.setWidth("100%");
+		//north.setWidth("100%");
+		hPanel.add(north);
+		//generateShortcuts();
+		hPanel.add(shortcuts);
+		hPanel.setWidth("100%");
+		vPanel.add(hPanel);
+		vPanel.add(menu);
+		vPanel.setWidth("100%");
 		
-		RootPanel.get().add( north );
+		RootPanel.get().add( vPanel );
 		RootPanel.get().setStyleName("root");
 		
+	}
+	
+	public void generateShortcuts() {
+		shortcuts.setStyleName("float-right");
+		SimplePanel s1 = new SimplePanel();
+		s1.setStyleName("shortcut-1");
+		s1.setSize("200px", "90px");
+		Anchor entities = new Anchor ("entities to be analysed updated");
+		entities.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				loadPanel("entities.jsp");
+			}
+		});
+		Anchor layers = new Anchor ("defining a hierarchy of layers");
+		layers.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				loadPanel("layers.jsp");
+			}
+		});
+		HTMLPanel l = new HTMLPanel("Before you can run risk analysis, you need to have the <span id='entities'></span>.<br/>Entities can be organized hierarchically <span id='layers'></span>.");
+		l.add(entities, "entities");
+		l.add(layers, "layers");
+		s1.setWidget(l);
+		
+		SimplePanel s2 = new SimplePanel();
+		s2.setSize("200px", "90px");
+		s2.setStyleName("shortcut-2");
+		Anchor riskconfs = new Anchor("defining risks configurations");
+		riskconfs.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				loadPanel("riskconfs.jsp");
+			}
+		});
+		Anchor models = new Anchor("uploaded models");
+		models.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				loadPanel("models.jsp");
+			}
+		});
+		HTMLPanel l2 = new HTMLPanel("The risk analysis needs to be configured <span id='riskconfs'></span>.<br/>The risk configurations use the <span id='models'></span>.");
+		l2.add(riskconfs, "riskconfs");
+		l2.add(models, "models");
+		s2.setWidget(l2);
+		
+		SimplePanel s3 = new SimplePanel();
+		s3.setSize("200px", "90px");
+		s3.setStyleName("shortcut-3");
+		Anchor riskanalysis = new Anchor("manage your risk analysis sessions");
+		riskanalysis.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				loadPanel("riskanalysis.jsp");
+			}
+		});
+		Anchor ras = new Anchor("generate some comparisons");
+		ras.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				loadPanel("ras.jsp");
+			}
+		});
+		HTMLPanel l3 = new HTMLPanel("You are ready to <span id='riskanalysis'></span>.<br/>You can also <span id='ras'></span>.");
+		l3.add(riskanalysis, "riskanalysis");
+		l3.add(ras, "ras");
+		s3.setWidget(l3);
+		
+		shortcuts.add(s1);
+		shortcuts.add(s2);
+		shortcuts.add(s3);
 	}
 	
 	static class DomainSelectionDialog {

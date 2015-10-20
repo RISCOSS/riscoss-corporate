@@ -218,6 +218,7 @@ public class RASPanel implements IsWidget {
 					report.showResults( 
 							response.isObject().get( "results" ).isArray(),
 							response.isObject().get( "argumentation" ) );
+					inputDataInfo(response.isObject().get( "input" ));
 				}
 				catch( Exception ex ) {
 //					Window.alert( ex.getMessage() + "\n" + response );
@@ -257,8 +258,14 @@ public class RASPanel implements IsWidget {
 		});
 	}
 	
-	protected void inputDataInfo() {
-		
+	protected void inputDataInfo(JSONValue input) {
+		CodecMissingData codec = GWT.create( CodecMissingData.class );
+		JMissingData md = codec.decode( input );
+		md.getLayer();
+		Window.alert("ei");
+		MultiLayerInputForm inputForm = new MultiLayerInputMatrix();
+		inputForm.load(md);
+		vPanel.add(inputForm);
 	}
 
 	protected void onRunAnalysisClicked() {
