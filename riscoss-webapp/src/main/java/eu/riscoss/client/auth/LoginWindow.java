@@ -59,7 +59,7 @@ public class LoginWindow extends DialogBox {
 		
 		this.usernameBox = new TextBox();
 		
-		table.setWidget( 0, 0, new Label( "email:" ) );
+		table.setWidget( 0, 0, new Label( "username:" ) );
 		table.setWidget( 0, 1, usernameBox );
 		
 		this.pwdBox = new PasswordTextBox();

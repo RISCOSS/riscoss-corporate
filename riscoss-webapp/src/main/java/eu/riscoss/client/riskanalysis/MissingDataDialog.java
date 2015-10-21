@@ -55,7 +55,18 @@ public class MissingDataDialog {
 		RiscossJsonClient.setAnalysisMissingData(ras, values, new JsonCallback() {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
-				// TODO Auto-generated method stub
+				
+				RiscossJsonClient.updateSessionData(ras, new JsonCallback() {
+					@Override
+					public void onSuccess( Method method, JSONValue response ) {
+						Window.alert( "Done" );
+					}
+					
+					@Override
+					public void onFailure( Method method, Throwable exception ) {
+						Window.alert( exception.getMessage() );
+					}
+				});
 				
 			}
 			@Override
@@ -63,6 +74,7 @@ public class MissingDataDialog {
 				Window.alert( exception.getMessage() );
 			}
 		});
+		
 		
 		dialog.hide();
 	}

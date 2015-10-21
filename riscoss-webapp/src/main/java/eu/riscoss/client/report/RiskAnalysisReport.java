@@ -39,6 +39,11 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.googlecode.gwt.charts.client.ChartLoader;
+import com.googlecode.gwt.charts.client.ChartPackage;
+import com.googlecode.gwt.charts.client.ColumnType;
+import com.googlecode.gwt.charts.client.DataTable;
+import com.googlecode.gwt.charts.client.corechart.ColumnChart;
 
 import eu.riscoss.client.JsonRiskResult;
 import eu.riscoss.client.Log;
@@ -52,26 +57,36 @@ public class RiskAnalysisReport implements IsWidget {
 	
 	public interface Codec extends JsonEncoderDecoder<JArgumentation>{}
 	
-	SimplePanel panel = new SimplePanel();
+	VerticalPanel panel = new VerticalPanel();
 	
-	JArgumentation argumentation = new JArgumentation();
+	JSONArray		response;
+	JArgumentation	argumentation = new JArgumentation();
 	
 	@Override
 	public Widget asWidget() {
 		return panel;
 	}
 	
+	HorizontalPanel		mainChartPanel = new HorizontalPanel();
+	VerticalPanel 		descriptions   = new VerticalPanel();
+	
 	public void showResults( JSONArray response, JSONValue jsonArgumentation ) {
 		
-		if( panel.getWidget() != null ) {
+		/*if( panel.getWidget() != null ) {
 			panel.getWidget().removeFromParent();
-		}
+		}*/
+		panel.clear();
+		mainChartPanel.clear();
+		descriptions.clear();
+		this.response = response;
 		
 		Codec codec = GWT.create( Codec.class );
 		
 		if( jsonArgumentation != null ) {
 			argumentation = codec.decode( jsonArgumentation );
 		}
+		
+		//generateMainChart();
 		
 		Grid grid = new Grid();
 		grid.setCellPadding(0);
@@ -203,7 +218,52 @@ public class RiskAnalysisReport implements IsWidget {
 				break;
 			}
 		}
+		panel.add( mainChartPanel );
+		panel.add( grid );
+	}
+	
+	ColumnChart 		chart;
+	
+	private void generateMainChart() {
+		ChartLoader chartLoader = new ChartLoader(ChartPackage.CORECHART);
+		chartLoader.loadApi(new Runnable() {
+
+			@Override
+			public void run() {
+				// Create and attach the chart
+				chart = new ColumnChart();
+				mainChartPanel.add(chart);
+				mainChartPanel.add(descriptions);
+				draw();
+			}
+		});
+	}
+	
+	protected void draw() {
+		DataTable colOldData = DataTable.create();
+		colOldData.addColumn(ColumnType.STRING, "Risk");
+		colOldData.addColumn(ColumnType.NUMBER, "Exposure");
 		
-		panel.setWidget( grid );
+		for (int i = 0; i < response.isArray().size(); ++i) {
+			JSONObject v = response.isArray().get( i ).isObject();
+			JsonRiskResult result = new JsonRiskResult( v );
+			
+			switch( result.getDataType() ) {
+				case EVIDENCE: {
+					String id = v.get( "id" ).isString().stringValue();
+					Double value = v.get( "e" ).isObject().get( "e" ).isNumber().doubleValue();
+					colOldData.addRow(id, value);
+					break;
+				}
+				default:
+					break;
+			}
+			descriptions.add(new Label(v.get( "id" ).isString().stringValue() + ":" 
+									+ v.get( "description" ).isString().stringValue()));
+		}		
+		colOldData.setTableProperty("min", 0.0);
+		colOldData.setTableProperty("max", 1.0);
+		chart.draw(colOldData);
+		
 	}
 }

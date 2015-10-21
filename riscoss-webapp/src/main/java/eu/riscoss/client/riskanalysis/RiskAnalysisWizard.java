@@ -158,14 +158,6 @@ public class RiskAnalysisWizard implements EntryPoint {
 			});
 			back.setStyleName("deleteButton");
 			
-			remove = new Button("Remove", new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					remove();
-				}
-			});
-			remove.setStyleName("deleteButton");
-			
 		}
 		catch( Exception ex ) {
 			
@@ -201,6 +193,10 @@ public class RiskAnalysisWizard implements EntryPoint {
 				});
 			}
 		} );
+	}
+	
+	public void setTitle(String name) {
+		title.setText(name);
 	}
 	
 	private void rerun(JSONValue response) {
@@ -339,7 +335,7 @@ public class RiskAnalysisWizard implements EntryPoint {
 	List<JRASInfo> list = new ArrayList<>();
 	int count = 0;
 	
-	private void generateRiskTree() {
+	public void generateRiskTree() {
 		rightPanel.clear();
 		riskTree = new TreeWidget();
 		for (int i = 0; i < models.size(); ++i) {
@@ -460,12 +456,8 @@ public class RiskAnalysisWizard implements EntryPoint {
 		return back;
 	}
 	
-	public Button getRemove() {
-		return remove;
-	}
-	
-	private void remove() {
-		RiscossJsonClient.deleteRiskAnalysisSession(list.get(elem).getId(), new JsonCallback() {
+	public void remove(String id) {
+		RiscossJsonClient.deleteRiskAnalysisSession(id, new JsonCallback() {
 			@Override
 			public void onFailure(Method method, Throwable exception) {
 				Window.alert(exception.getMessage());
