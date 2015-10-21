@@ -6,7 +6,7 @@ The [RISCOSS project](http://www.riscoss.eu) will offer novel risk identificatio
 
 RISCOSS will deliver a decision-making management platform integrated in a business-oriented decision-making framework, which together support placing technical OSS adoption decisions into organizational, business strategy and broader OSS community context.
 
-This is the main repository for the RISCOSS Platform code. Detailed information about the project and how to contribute them detailed in  [this repository wiki](https://github.com/RISCOSS/riscoss-platform-core/wiki)
+This is the main repository for the RISCOSS Platform code. Detailed information about the project and how to contribute them detailed in  [this repository wiki](https://github.com/RISCOSS/riscoss-corporate/wiki)
 
 Please refer to the [RISCOSS White Paper](http://www.riscoss.eu/bin/download/Discover/Whitepaper/RISCOSS-Whitepaper.pdf) for a more detailed description.
 
