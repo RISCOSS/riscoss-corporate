@@ -10,7 +10,7 @@
 	<!-- Other module inherits -->
 	<inherits name="org.fusesource.restygwt.RestyGWT" />
 	
-	<inherits name="com.googlecode.gwt.charts.Charts"/>
+	<inherits name='com.googlecode.gflot.GFlot'/>/>
 
 
 	<add-linker name="xsiframe" />

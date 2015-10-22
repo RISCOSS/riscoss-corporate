@@ -244,6 +244,10 @@ body {
 	border-top: 16px solid #F363AD !important;
 }
 
+.colorBox {
+	margin-right: 6px !important;
+}
+
 /** CSS multi-layer table results **/
 
 .table {
@@ -388,6 +392,22 @@ body {
 
 .margin-left {
 	margin-left: 30px !important;
+}
+
+.margin-bottom {
+	padding-top: 4px !important;
+	padding-bottom: 4px !important;
+}
+
+
+.margin-grid {
+	margin-left: 30px !important;
+	margin-top: 16px !important;
+}
+
+.chart {
+	margin-top: 16px !important;
+	margin-left: 80px !important;
 }
 
 .rightPanel {

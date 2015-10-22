@@ -54,7 +54,7 @@ public class RASPanel implements IsWidget {
 	SimplePanel		 	inputTable;
 	HorizontalPanel		mainChart = new HorizontalPanel();
 	RiskAnalysisWizard 	risk = null;
-	JsonRiskAnalysis	sessionSummary;
+	JsonRiskAnalysis	sessionSummary;		
 	
 	private String		rasName;
 	private String 		riskConf;
@@ -67,6 +67,10 @@ public class RASPanel implements IsWidget {
 	@Override
 	public Widget asWidget() {
 		return panel;
+	}
+	
+	public JsonRiskAnalysis getSummary() {
+		return this.sessionSummary;
 	}
 		
 	public void loadRAS( String selectedRAS ) {
@@ -198,7 +202,7 @@ public class RASPanel implements IsWidget {
 		
 		Label inputValues = new Label("Input values");
 		inputValues.setStyleName("subtitle");
-		vPanel.add(inputValues);
+		//vPanel.add(inputValues);
 		//vPanel.add(inputTable);
 		
 		panel.setWidget( vPanel );
@@ -211,9 +215,18 @@ public class RASPanel implements IsWidget {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				try {
-					report.showResults( 
-							response.isObject().get( "results" ).isArray(),
-							response.isObject().get( "argumentation" ) );
+					if (risk != null) {
+						report.showResults( 
+								sessionSummary,
+								response.isObject().get( "results" ).isArray(),
+								response.isObject().get( "argumentation" ) );
+					}
+					else {
+						report.showResults(
+								response.isObject().get( "results" ).isArray(),
+								response.isObject().get( "argumentation" ) );
+						
+					}
 					
 					//inputDataInfo(response.isObject().get( "input" ));
 				}
@@ -344,9 +357,18 @@ public class RASPanel implements IsWidget {
 							Window.alert( exception.getMessage() );
 						}
 					});
-					report.showResults( 
-							response.isObject().get( "results" ).isArray(),
-							response.isObject().get( "argumentation" ) );
+					if (risk != null) {
+						report.showResults( 
+								sessionSummary,
+								response.isObject().get( "results" ).isArray(),
+								response.isObject().get( "argumentation" ) );
+					}
+					else {
+						report.showResults(
+								response.isObject().get( "results" ).isArray(),
+								response.isObject().get( "argumentation" ) );
+						
+					}
 					
 					//inputDataInfo(response.isObject().get( "input" ));
 				}
