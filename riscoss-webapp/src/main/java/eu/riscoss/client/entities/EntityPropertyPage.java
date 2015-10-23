@@ -771,11 +771,11 @@ public class EntityPropertyPage implements IsWidget {
 	}
 	
 	public void saveEntityData() {
-		if (changedData || confDialog.changedData()) {
+		//if (changedData || confDialog.changedData()) {
 			saveContextualInfo();
 			changedData = false;
 			confDialog.setChangedData();
-		}
+		//}
 	}
 	
 	private void saveDataCollectors() {
@@ -848,9 +848,11 @@ public class EntityPropertyPage implements IsWidget {
 				}
 				@Override
 				public void onSuccess( Method method, JSONValue response ) {
-					saveParentyInfo();
-				}} );
+					
+				}
+			} );
 		}
+		if (tb.getRowCount() == 0) saveParentyInfo();
 	}
 	
 	TreeWidget 		riskTree;
