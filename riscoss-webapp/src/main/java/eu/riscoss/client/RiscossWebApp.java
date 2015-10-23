@@ -203,7 +203,10 @@ public class RiscossWebApp implements EntryPoint {
 		north.add(version);
 		//north.setWidth("100%");
 		hPanel.add(north);
-		//generateShortcuts();
+		
+		//Comment this line if you don't need shortcuts
+		generateShortcuts();
+		
 		hPanel.add(shortcuts);
 		hPanel.setWidth("100%");
 		vPanel.add(hPanel);

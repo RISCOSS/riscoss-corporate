@@ -143,7 +143,7 @@ public class RiskAnalysisReport implements IsWidget {
 				JArgument arg = argumentation.arguments.get( result.getChunkId() );
 				if( arg != null ) {
 					Button b = new Button( "Why?" );
-					
+					b.setStyleName("button");
 					b.addClickHandler( new ClickWrapper<JArgument>( arg ) {
 						@Override
 						public void onClick( ClickEvent event ) {
@@ -202,6 +202,7 @@ public class RiskAnalysisReport implements IsWidget {
 				JArgument arg = argumentation.arguments.get( result.getChunkId() );
 				if( arg != null ) {
 					Button b = new Button( "Why?" );
+					b.setStyleName("button");
 					
 					b.addClickHandler( new ClickWrapper<JArgument>( arg ) {
 						@Override
@@ -318,6 +319,7 @@ public class RiskAnalysisReport implements IsWidget {
 				JArgument arg = argumentation.arguments.get( result.getChunkId() );
 				if( arg != null ) {
 					Button b = new Button( "Why?" );
+					b.setStyleName("button");
 					
 					b.addClickHandler( new ClickWrapper<JArgument>( arg ) {
 						@Override
@@ -355,6 +357,33 @@ public class RiskAnalysisReport implements IsWidget {
 						"</font>") );
 				panel.setStyleName("headerTable");
 				panel.setHeight("100%");
+				
+				JArgument arg = argumentation.arguments.get( result.getChunkId() );
+				if( arg != null ) {
+					Button b = new Button( "Why?" );
+					b.setStyleName("button");
+					
+					b.addClickHandler( new ClickWrapper<JArgument>( arg ) {
+						@Override
+						public void onClick( ClickEvent event ) {
+							DialogBox d = new DialogBox( true );
+							JArgument arg = getValue();
+							TreeWidget w = load( arg );
+							d.add( w );
+							d.center();
+						}
+						
+						private TreeWidget load( JArgument arg ) {
+							TreeWidget w = new TreeWidget( new Label( arg.summary ) );
+							for( JArgument subArg : arg.subArgs ) {
+								w.addChild( load( subArg ) );
+							}
+							return w;
+						}} );
+					
+					panel.add( b );
+				}
+				
 				grid.setWidget( i, 0, panel );
 				
 				if( "evidence".equals( v.get( "datatype" ).isString().stringValue() ) ) {
@@ -641,36 +670,11 @@ public class RiskAnalysisReport implements IsWidget {
 			hp.add(p);
 			
 			HTMLPanel htm = new HTMLPanel("<b>" + v.get( "id" ).isString().stringValue() + "</b>: " + 
-					v.get( "description" ).isString().stringValue() +
-					" <span id='" + s + "'></span>");
+					v.get( "description" ).isString().stringValue());
 			hp.add(htm);
 			
 			html.add(hp, c);
 			
-			if( arg != null ) {
-				Button b = new Button( "Why?" );
-				b.addClickHandler( new ClickWrapper<JArgument>( arg ) {
-					@Override
-					public void onClick( ClickEvent event ) {
-						DialogBox d = new DialogBox( true );
-						d.setText( "Argumentation" );
-						JArgument arg = getValue();
-						TreeWidget w = load( arg );
-						d.add( w );
-						d.center();
-					}
-					
-					private TreeWidget load( JArgument arg ) {
-						TreeWidget w = new TreeWidget( new Label( arg.summary ) );
-						for( JArgument subArg : arg.subArgs ) {
-							w.addChild( load( subArg ) );
-						}
-						return w;
-					}
-				} );
-				b.setStyleName("deleteButton");
-				html.add(b, s);
-			}
 			html.setWidth("100%");
 			html.setStyleName("descriptionPanel");
 			descriptions.add(html);

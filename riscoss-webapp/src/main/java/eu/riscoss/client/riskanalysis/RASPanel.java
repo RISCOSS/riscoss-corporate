@@ -100,7 +100,7 @@ public class RASPanel implements IsWidget {
 		rasName = ras.getName();
 		
 		vPanel = new VerticalPanel();
-		Grid grid = new Grid(6,4);
+		Grid grid = new Grid(4,4);
 		grid.setCellSpacing(0);
 		grid.setCellPadding(0);
 		grid.setStyleName("table");
@@ -114,29 +114,29 @@ public class RASPanel implements IsWidget {
 		rasName.setHeight("100%");
 		grid.setWidget(0, 1, rasName);
 		
-		Label idL = new Label("ID");
+		/*Label idL = new Label("ID");
 		idL.setStyleName("headTable");
 		idL.setWidth("130px");
 		grid.setWidget(1, 0, idL);
 		Label rasID = new Label(ras.getID());
 		rasID.setStyleName("contentTable");
-		grid.setWidget(1, 1, rasID);
+		grid.setWidget(1, 1, rasID);*/
 		
 		Label rcL = new Label("Risk configuration");
 		rcL.setStyleName("headTable");
 		rcL.setWidth("130px");
-		grid.setWidget(2, 0, rcL);
+		grid.setWidget(1, 0, rcL);
 		Label rasrc = new Label(ras.getRC());
 		rasrc.setStyleName("contentTable");
-		grid.setWidget(2, 1, rasrc);
+		grid.setWidget(1, 1, rasrc);
 		
 		Label eL = new Label("Target entity");
 		eL.setStyleName("headTable");
 		eL.setWidth("130px");
-		grid.setWidget(3, 0, eL);
+		grid.setWidget(2, 0, eL);
 		Label rasEntity = new Label(ras.getTarget());
 		rasEntity.setStyleName("contentTable");
-		grid.setWidget(3, 1, rasEntity);
+		grid.setWidget(2, 1, rasEntity);
 
 //		grid.add( "Last execution:", new Label( ras.getDate() ) );
 //		grid.add( "Action:", new RadioButton( "action", "Run" ) );
@@ -152,13 +152,13 @@ public class RASPanel implements IsWidget {
 			});
 			
 			
-			Label nI = new Label("Data collectors");
+			/*Label nI = new Label("Data collectors");
 			nI.setStyleName("headTable");
 			nI.setWidth("130px");
 			grid.setWidget(4, 0, nI);
 			Label lastUpd = new Label("Last execution: -");
 			lastUpd.setStyleName("contentTable");
-			grid.setWidget(4, 1, lastUpd);
+			grid.setWidget(4, 1, lastUpd);*/
 		}
 		{
 			//hp.setWidth( "100%" );
@@ -166,34 +166,47 @@ public class RASPanel implements IsWidget {
 			Label aL = new Label("Analysis");
 			aL.setStyleName("headTable");
 			aL.setWidth("130px");
-			grid.setWidget(5, 0, aL);
+			grid.setWidget(3, 0, aL);
 			Label lastEx = new Label("Last execution: " + ras.getDate());
 			lastEx.setStyleName("contentTable");
-			grid.setWidget(5, 1, lastEx);
+			grid.setWidget(3, 1, lastEx);
 		}
 		
 		generateButtons();
 		
 		vPanel.add(grid);
+		
+		VerticalPanel buttonPanel = new VerticalPanel();
+		
 		HorizontalPanel buttons = new HorizontalPanel();
-		buttons.setStyleName("margin-top");
+		HorizontalPanel buttons2 = new HorizontalPanel();
+		HorizontalPanel empty = new HorizontalPanel();
+		
+		buttons.addStyleName("margin-top");
+		buttons2.setStyleName("margin-top");
+		empty.setWidth("12px");
 		if (risk != null) {
 			buttons.add(risk.getBack());
 			buttons.add(missingVal);
-			buttons.add(update);
-			buttons.add(run);
-			buttons.add(backupUpdate);
-			buttons.add(backupRun);
 			buttons.add(remove);
+			
+			buttons2.add(update);
+			buttons2.add(run);
+			buttons2.add(empty);
+			buttons2.add(backupUpdate);
+			buttons2.add(backupRun);
 		}
 		else {
 			buttons.add(missingVal);
-			buttons.add(update);
-			buttons.add(run);
-			buttons.add(backupUpdate);
-			buttons.add(backupRun);
+			buttons2.add(update);
+			buttons2.add(run);
+			buttons2.add(empty);
+			buttons2.add(backupUpdate);
+			buttons2.add(backupRun);
 		}
-		vPanel.add(buttons);
+		buttonPanel.add(buttons);
+		buttonPanel.add(buttons2);
+		vPanel.add(buttonPanel);
 		Label resultsTitle = new Label("Risk analysis results");
 		resultsTitle.setStyleName("subtitle");
 		vPanel.add(resultsTitle);
@@ -303,19 +316,50 @@ public class RASPanel implements IsWidget {
 		});
 	}
 	
+	public void reloadPanel() {
+		RiscossJsonClient.rerunRiskAnalysisSession(selectedRAS, "", new RiscossJsonClient.JsonWaitWrapper(
+				new JsonCallback() {
+			@Override
+			public void onSuccess( Method method, JSONValue response ) {
+					if (risk != null) {
+						report.showResults( 
+								sessionSummary,
+								response.isObject().get( "results" ).isArray(),
+								response.isObject().get( "argumentation" ) );
+					}
+					else {
+						report.showResults(
+								response.isObject().get( "results" ).isArray(),
+								response.isObject().get( "argumentation" ) );
+						
+					}
+					
+					//inputDataInfo(response.isObject().get( "input" ));
+				}
+			@Override
+			public void onFailure( Method method, Throwable exception ) {
+				Window.alert( exception.getMessage() );
+			}
+		} ) );
+	}
+	
 	protected void onEditMissingValues() {
 		RiscossJsonClient.getAnalysisMissingData(selectedRAS, new JsonCallback() {
 				@Override
 				public void onSuccess( Method method, JSONValue response ) {
 					CodecMissingData codec = GWT.create( CodecMissingData.class );
 					JMissingData md = codec.decode( response );
-					new MissingDataDialog( md, selectedRAS ).show();
+					createDialog(md);
 				}
 				@Override
 				public void onFailure( Method method, Throwable exception ) {
 					Window.alert( exception.getMessage() );
 				}
 			} );
+	}
+	
+	private void createDialog(JMissingData md) {
+		new MissingDataDialog( this, md, selectedRAS ).show();
 	}
 
 	protected void onUpdatedIndicatorsClicked() {

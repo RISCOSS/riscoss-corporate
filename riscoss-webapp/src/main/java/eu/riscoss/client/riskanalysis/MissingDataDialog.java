@@ -22,7 +22,8 @@ public class MissingDataDialog {
 	
 	MultiLayerInputForm inputForm = new MultiLayerInputMatrix();
 
-	private String ras;
+	private String 	ras;
+	RASPanel 		panel;
 	
 	public MissingDataDialog( JMissingData md, String ras ) {
 		
@@ -43,6 +44,27 @@ public class MissingDataDialog {
 		dialog.setWidget( dock );
 		
 	}
+	
+	public MissingDataDialog(RASPanel panel, JMissingData md, String ras ) {
+			
+			this.panel = panel;
+			this.ras = ras;
+			
+			dialog.setText( "Enter Missing Data Information" );
+			
+			inputForm.load( md );
+			
+			DockPanel dock = new DockPanel();
+			dock.add( inputForm, DockPanel.CENTER );
+			dock.add( new Button( "Done", new ClickHandler() {
+				@Override
+				public void onClick( ClickEvent event ) {
+					onDone();
+				}
+			} ), DockPanel.SOUTH );
+			dialog.setWidget( dock );
+			
+		}
 
 	protected void onDone() {
 		
@@ -59,7 +81,10 @@ public class MissingDataDialog {
 				RiscossJsonClient.updateSessionData(ras, new JsonCallback() {
 					@Override
 					public void onSuccess( Method method, JSONValue response ) {
-						Window.alert( "Done" );
+						//Window.alert( "Done" );
+						if (panel != null) {
+							panel.reloadPanel();
+						}
 					}
 					
 					@Override
