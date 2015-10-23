@@ -224,24 +224,24 @@ body {
 }
 
 .shortcut-1 {
-	background-color: #A9E2F3 !important;
+	background-color: #FFFB93 !important;
 	margin: 10px 20px !important;
 	padding: 8px !important;
-	border-top: 16px solid #59CCF0 !important;
+	border-top: 16px solid #FFF728 !important;
 }
 
 .shortcut-2 {
-	background-color: #F5DA81 !important;
+	background-color: #FCD089 !important;
 	margin: 10px 20px !important;
 	padding: 8px !important;
-	border-top: 16px solid #F3C737 !important;
+	border-top: 16px solid #FCBF62 !important;
 }
 
 .shortcut-3 {
-	background-color: #F5A9D0 !important;
+	background-color: #A5D1AB !important;
 	margin: 10px 20px !important;
 	padding: 8px !important;
-	border-top: 16px solid #F363AD !important;
+	border-top: 16px solid #62C46F !important;
 }
 
 .colorBox {
