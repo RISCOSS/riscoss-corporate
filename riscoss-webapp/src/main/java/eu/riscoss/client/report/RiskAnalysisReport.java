@@ -37,7 +37,6 @@ import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
@@ -63,11 +62,9 @@ import com.googlecode.gflot.client.Tick;
 import com.googlecode.gflot.client.options.AbstractAxisOptions;
 import com.googlecode.gflot.client.options.AxisOptions;
 import com.googlecode.gflot.client.options.BarSeriesOptions;
-import com.googlecode.gflot.client.options.FontOptions;
 import com.googlecode.gflot.client.options.GlobalSeriesOptions;
 import com.googlecode.gflot.client.options.GridOptions;
 import com.googlecode.gflot.client.options.LegendOptions;
-import com.googlecode.gflot.client.options.LegendOptions.LegendPosition;
 import com.googlecode.gflot.client.options.PlotOptions;
 
 import eu.riscoss.client.JsonRiskResult;
@@ -80,7 +77,6 @@ import eu.riscoss.client.ui.TreeWidget;
 import eu.riscoss.shared.JArgument;
 import eu.riscoss.shared.JArgumentation;
 import eu.riscoss.shared.JRASInfo;
-import eu.riscoss.shared.Pair;
 
 public class RiskAnalysisReport implements IsWidget {
 	
@@ -669,8 +665,11 @@ public class RiskAnalysisReport implements IsWidget {
 			hp.setStyleName("margin-bottom");
 			hp.add(p);
 			
-			HTMLPanel htm = new HTMLPanel("<b>" + v.get( "id" ).isString().stringValue() + "</b>: " + 
-					v.get( "description" ).isString().stringValue());
+			String htmlString = "<b>" + v.get( "id" ).isString().stringValue() + "</b>";
+			if( v.get( "description" ) != null ) {
+				htmlString += ": " + v.get( "description" ).isString().stringValue();
+			}
+			HTMLPanel htm = new HTMLPanel( htmlString );
 			hp.add(htm);
 			
 			html.add(hp, c);
