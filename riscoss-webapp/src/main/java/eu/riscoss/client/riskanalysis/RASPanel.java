@@ -43,6 +43,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecMissingData;
+import eu.riscoss.client.ras.RASModule;
 import eu.riscoss.client.report.RiskAnalysisReport;
 import eu.riscoss.shared.JMissingData;
 
@@ -55,6 +56,8 @@ public class RASPanel implements IsWidget {
 	HorizontalPanel		mainChart = new HorizontalPanel();
 	RiskAnalysisWizard 	risk = null;
 	JsonRiskAnalysis	sessionSummary;		
+	
+	Boolean				browse;
 	
 	private String		rasName;
 	private String 		riskConf;
@@ -71,6 +74,13 @@ public class RASPanel implements IsWidget {
 	
 	public JsonRiskAnalysis getSummary() {
 		return this.sessionSummary;
+	}
+	
+	RASModule 		rasModule;
+	
+	public void setBrowse(RASModule ras) {
+		browse = true;
+		rasModule = ras;
 	}
 		
 	public void loadRAS( String selectedRAS ) {
@@ -196,6 +206,16 @@ public class RASPanel implements IsWidget {
 			buttons2.add(backupUpdate);
 			buttons2.add(backupRun);
 		}
+		else if (browse) {
+			buttons.add(browseBack);
+			buttons.add(missingVal);
+			buttons.add(browseDelete);
+			buttons2.add(update);
+			buttons2.add(run);
+			buttons2.add(empty);
+			buttons2.add(backupUpdate);
+			buttons2.add(backupRun);
+		}
 		else {
 			buttons.add(missingVal);
 			buttons2.add(update);
@@ -228,7 +248,7 @@ public class RASPanel implements IsWidget {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				try {
-					if (risk != null) {
+					if (risk != null || browse) {
 						report.showResults( 
 								sessionSummary,
 								response.isObject().get( "results" ).isArray(),
@@ -258,6 +278,8 @@ public class RASPanel implements IsWidget {
 	Button		backupUpdate;
 	Button		backupRun;
 	Button		remove;
+	Button		browseBack;
+	Button 		browseDelete;
 	
 	protected void generateButtons() {
 		
@@ -314,6 +336,33 @@ public class RASPanel implements IsWidget {
 				risk.remove(selectedRAS);
 			}
 		});
+		
+		browseBack = new Button("Back");
+		browseBack.setStyleName("deleteButton");
+		browseBack.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent arg0) {
+				rasModule.back();
+			}
+		});
+		
+		browseDelete = new Button("Delete");
+		browseDelete.setStyleName("deleteButton");
+		browseDelete.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent arg0) {
+				RiscossJsonClient.deleteRiskAnalysisSession(sessionSummary.getID(), new JsonCallback() {
+					@Override
+					public void onFailure(Method method, Throwable exception) {
+						// TODO Auto-generated method stub
+					}
+					@Override
+					public void onSuccess(Method method, JSONValue response) {
+						rasModule.back();
+					}
+				});
+			}
+		});
 	}
 	
 	public void reloadPanel() {
@@ -321,7 +370,7 @@ public class RASPanel implements IsWidget {
 				new JsonCallback() {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
-					if (risk != null) {
+					if (risk != null || browse) {
 						report.showResults( 
 								sessionSummary,
 								response.isObject().get( "results" ).isArray(),
@@ -401,7 +450,7 @@ public class RASPanel implements IsWidget {
 							Window.alert( exception.getMessage() );
 						}
 					});
-					if (risk != null) {
+					if (risk != null || browse) {
 						report.showResults( 
 								sessionSummary,
 								response.isObject().get( "results" ).isArray(),

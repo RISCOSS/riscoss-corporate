@@ -140,10 +140,15 @@ public class RASModule implements EntryPoint {
 		
 	}
 	
+	public void back() {
+		Window.Location.reload();
+	}
+	
 	RASPanel rasPanel;
 	
 	public void setSelectedRAS( String ras ) {
 		rasPanel = new RASPanel(null);
+		rasPanel.setBrowse(this);
 		rasPanel.loadRAS(ras);
 		RiscossJsonClient.getSessionSummary(ras, new JsonCallback() {
 			@Override
@@ -152,12 +157,19 @@ public class RASModule implements EntryPoint {
 			}
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
-				rightPanel.clear();
+				/*rightPanel.clear();
 				JsonRiskAnalysis json = new JsonRiskAnalysis( response );
 				Label title = new Label(json.getName());
 				title.setStyleName("subtitle");
 				rightPanel.add(title);
-				rightPanel.add(rasPanel);
+				rightPanel.add(rasPanel);*/
+				page.clear();
+				page.setStyleName("leftPanelLayer");
+				JsonRiskAnalysis json = new JsonRiskAnalysis( response );
+				Label title = new Label(json.getName());
+				title.setStyleName("subtitle");
+				page.add(title);
+				page.add(rasPanel);
 			}
 		});
 	}
