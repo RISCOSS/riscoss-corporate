@@ -110,4 +110,34 @@ public class PageManager {
 		return mod;
 	}
 	
+	public String getPage( String title, String module ) {
+		
+		String s = "";
+		
+		s += "<!doctype html>\n";
+		s += "<html style=\"height:100%\">\n";
+		s += "<head>\n";
+		s += "<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">\n";
+		s += "<link type=\"text/css\" rel=\"stylesheet\" href=\"RiscossWebApp.css\">\n";
+		s += "<title>" + title + "</title>\n";
+		if( isAccessAllowed() ) { 
+			s += "<script type=\"text/javascript\" language=\"javascript\" src=\"" + module + "/" + module + ".nocache.js\"></script>\n";
+		}
+		s += "</head>\n";
+		s += "<body style=\"height:100%\">\n";
+		s += "<iframe src=\"javascript:''\" id=\"__gwt_historyFrame\" tabIndex='-1' style=\"position:absolute;width:0;height:0;border:0\"></iframe>\n";
+		s += "<noscript>";
+		s += "<div style=\"width: 22em; position: absolute; left: 50%; margin-left: -11em; color: red; background-color: white; border: 1px solid red; padding: 4px; font-family: sans-serif\">\n";
+		s += "Your web browser must have JavaScript enabled in order for this application to display correctly.\n";
+		s += "</div>\n";
+		s += "</noscript>\n";
+		if( !isAccessAllowed() ) { 
+			s += "Unauthorized access.\n";
+		}
+		s += "</body>\n";
+		s += "</html>\n";
+		
+		return s;
+
+	}
 }

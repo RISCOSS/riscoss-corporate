@@ -1,4 +1,4 @@
-package eu.riscoss.db;
+package eu.riscoss.db.domdb;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,7 +82,7 @@ public class GDomDB {
 		return this.graph;
 	}
 	
-	List<ODocument> querySynch( String query ) {
+	public List<ODocument> querySynch( String query ) {
 		try {
 			List<ODocument> docs = graph.getRawGraph().query( 
 					new OSQLSynchQuery<ODocument>( query ) );
@@ -487,6 +487,10 @@ public class GDomDB {
 
 	public String getRootName() {
 		return this.rootName;
+	}
+
+	public OrientBaseGraph getGraph() {
+		return this.graph;
 	}
 
 }

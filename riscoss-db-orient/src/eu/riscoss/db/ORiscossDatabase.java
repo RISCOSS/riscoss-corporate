@@ -14,12 +14,16 @@ import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
+import eu.riscoss.db.domdb.GAuthDom;
+import eu.riscoss.db.domdb.GDomConfig;
+import eu.riscoss.db.domdb.GDomContainer;
+
 /**
  * (ONLY) Riscoss database superadmin access, for changing domains and users.
  * Use RiscossDB for all accesses to the database content (except users and domain) with a defined domain and user credentials
  *
  */
-public class RiscossOrientDatabase implements RiscossDatabase {
+public class ORiscossDatabase implements RiscossDatabase {
 	
 	private static final OServerParameterConfiguration[] I_PARAMS = new OServerParameterConfiguration[] { 
 		new OServerParameterConfiguration( OrientTokenHandler.SIGN_KEY_PAR, "any key")
@@ -57,7 +61,7 @@ public class RiscossOrientDatabase implements RiscossDatabase {
 	
 	private String username;
 	
-	public RiscossOrientDatabase( String addr, String username, String password) {
+	public ORiscossDatabase( String addr, String username, String password) {
 		
 		OrientBaseGraph graph = null;
 		
@@ -74,13 +78,13 @@ public class RiscossOrientDatabase implements RiscossDatabase {
 		
 	}
 	
-	@SuppressWarnings("resource") // FIXME
-	public RiscossOrientDatabase( String addr, byte[] tokenBytes ) {
+	public ORiscossDatabase( String addr, byte[] tokenBytes ) {
 		
-		OrientTokenHandler handler = RiscossOrientDatabase.createTokenHandler();
+		OrientTokenHandler handler = ORiscossDatabase.createTokenHandler();
 		
 		OToken tok = handler.parseWebToken( tokenBytes );
 		handler.validateBinaryToken( tok );
+		@SuppressWarnings("resource") // FIXME
 		OrientBaseGraph graph = new OrientGraphNoTx( (ODatabaseDocumentTx)new ODatabaseDocumentTx( addr ).open( tok ) );
 		this.container = new GDomContainer( graph );
 		this.username = graph.getRawGraph().getUser().getName();
@@ -108,7 +112,7 @@ public class RiscossOrientDatabase implements RiscossDatabase {
 	@Override
 	public String getRole() {
 		
-		return container.graph.getRawGraph().getMetadata().getSecurity().getRole( username ).getName();
+		return container.getGraph().getRawGraph().getMetadata().getSecurity().getRole( username ).getName();
 		
 	}
 	
@@ -196,7 +200,7 @@ public class RiscossOrientDatabase implements RiscossDatabase {
 
 	@Override
 	public SiteManager getSiteManager() {
-		return new RiscossOrientSiteManager( container.graph );
+		return new ORiscossSiteManager( container.getGraph() );
 	}
 
 	@Override

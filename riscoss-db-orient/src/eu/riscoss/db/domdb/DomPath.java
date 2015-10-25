@@ -1,4 +1,4 @@
-package eu.riscoss.db;
+package eu.riscoss.db.domdb;
 
 import java.util.ArrayList;
 import java.util.Iterator;

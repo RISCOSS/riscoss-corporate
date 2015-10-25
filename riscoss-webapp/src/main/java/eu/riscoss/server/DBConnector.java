@@ -29,8 +29,8 @@ import org.apache.commons.codec.binary.Base64;
 
 import eu.riscoss.db.RiscossDB;
 import eu.riscoss.db.RiscossDatabase;
-import eu.riscoss.db.RiscossOrientDB;
-import eu.riscoss.db.RiscossOrientDatabase;
+import eu.riscoss.db.ORiscossDomain;
+import eu.riscoss.db.ORiscossDatabase;
 
 public class DBConnector {
 	
@@ -58,7 +58,7 @@ public class DBConnector {
 	 * @return
 	 */
 	public static RiscossDatabase openDatabase( String username, String password ) {
-		return new RiscossOrientDatabase( db_addr, username, password );
+		return new ORiscossDatabase( db_addr, username, password );
 	}
 	/**
 	 * Opens the database with a previously stored token (e.g. from a cookie), specific for "superuser" access to change domains and users.
@@ -66,7 +66,7 @@ public class DBConnector {
 	 * @return
 	 */
 	public static RiscossDatabase openDatabase( String token ) {
-		return new RiscossOrientDatabase( db_addr, Base64.decodeBase64( token ) );
+		return new ORiscossDatabase( db_addr, Base64.decodeBase64( token ) );
 	}
 	
 	/**
@@ -74,14 +74,14 @@ public class DBConnector {
 	 * @param domain
 	 * @return
 	 */
-	@Deprecated
-	public static RiscossDB openDB( String domain ) {
-		try {
-			return new RiscossOrientDB( db_addr, URLEncoder.encode( domain, "UTF-8" ) );
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException( e );
-		}
-	}
+//	@Deprecated
+//	public static RiscossDB openDB( String domain ) {
+//		try {
+//			return new ORiscossDomain( db_addr, URLEncoder.encode( domain, "UTF-8" ) );
+//		} catch (UnsupportedEncodingException e) {
+//			throw new RuntimeException( e );
+//		}
+//	}
 	
 	/**
 	 * Opens the database with username and password, for normal access with domain and user
@@ -92,7 +92,7 @@ public class DBConnector {
 	 */
 	public static RiscossDB openDB( String domain, String username, String password ) {
 		try {
-			return new RiscossOrientDB( db_addr, URLEncoder.encode( domain, "UTF-8" ), username, password );
+			return new ORiscossDomain( db_addr, URLEncoder.encode( domain, "UTF-8" ), username, password );
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException( e );
 		}
@@ -105,7 +105,7 @@ public class DBConnector {
 	public static RiscossDB openDB( String domain, String token ) {
 
 		try {
-			return new RiscossOrientDB( db_addr, URLEncoder.encode( domain, "UTF-8" ), Base64.decodeBase64( token ) );
+			return new ORiscossDomain( db_addr, URLEncoder.encode( domain, "UTF-8" ), Base64.decodeBase64( token ) );
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException( e );
 		}

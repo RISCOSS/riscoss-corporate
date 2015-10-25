@@ -1,4 +1,4 @@
-package eu.riscoss.db;
+package eu.riscoss.db.domdb;
 
 import com.orientechnologies.orient.core.record.impl.ODocument;
 

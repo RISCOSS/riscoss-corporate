@@ -1,4 +1,4 @@
-package eu.riscoss.db;
+package eu.riscoss.db.domdb;
 
 public class NodeID implements Comparable<NodeID> {
 	

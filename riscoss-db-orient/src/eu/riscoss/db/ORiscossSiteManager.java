@@ -15,7 +15,12 @@ import com.orientechnologies.orient.core.metadata.security.OSecurityRole;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 
-public class RiscossOrientSiteManager implements SiteManager {
+import eu.riscoss.db.domdb.GAuthDom;
+import eu.riscoss.db.domdb.GDomConfig;
+import eu.riscoss.db.domdb.GDomDB;
+import eu.riscoss.db.domdb.NodeID;
+
+public class ORiscossSiteManager implements SiteManager {
 	
 	static final String CLASSNAME = "Sitemap";
 	
@@ -33,7 +38,7 @@ public class RiscossOrientSiteManager implements SiteManager {
 	
 	GDomDB			dom;
 	
-	public RiscossOrientSiteManager(OrientBaseGraph graph) {
+	public ORiscossSiteManager(OrientBaseGraph graph) {
 		dom = new GDomDB( new SiteMapConf(), graph, CLASSNAME);
 	}
 	
@@ -154,7 +159,7 @@ public class RiscossOrientSiteManager implements SiteManager {
 	private boolean isSuperAdmin() {
 		
 		try {
-			Set<? extends OSecurityRole> roles = dom.graph.getRawGraph().getUser().getRoles();
+			Set<? extends OSecurityRole> roles = dom.getGraph().getRawGraph().getUser().getRoles();
 			
 			for( OSecurityRole role : roles ) {
 				if( role.hasRule( ResourceGeneric.BYPASS_RESTRICTED, null ) ) {
@@ -173,7 +178,7 @@ public class RiscossOrientSiteManager implements SiteManager {
 	private String extractRole( String domainname ) {
 		
 		try {
-			String username = dom.graph.getRawGraph().getUser().getName();
+			String username = dom.getGraph().getRawGraph().getUser().getName();
 			
 			String q = "select from (select expand(roles) from (select from ouser where name = '" + username + "')) where domain.tag='" + domainname + "'";
 			
@@ -182,7 +187,7 @@ public class RiscossOrientSiteManager implements SiteManager {
 			if( docs == null ) return "";
 			if( docs.size() < 1 ) return "";
 			
-			ORole role = dom.graph.getRawGraph().getMetadata().getSecurity().getRole( (String)docs.get( 0 ).field( "name" ) );
+			ORole role = dom.getGraph().getRawGraph().getMetadata().getSecurity().getRole( (String)docs.get( 0 ).field( "name" ) );
 			
 			return role.getParentRole().getName();
 		}

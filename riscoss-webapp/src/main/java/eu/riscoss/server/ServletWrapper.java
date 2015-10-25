@@ -124,6 +124,7 @@ public class ServletWrapper extends ServletContainer {
 				sm.createPage( "/Configure", "Layers", "layers.jsp", new String[] { KnownRoles.Administrator.name() } );
 				sm.createPage( "/Configure", "Entities", "entities.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Producer.name(), KnownRoles.Modeler.name() } );
 				sm.createPage( "/Configure", "Models", "models.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Modeler.name() } );
+//				sm.createPage( "/Configure", "Edit Models", "editor.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Modeler.name() } );
 				sm.createPage( "/Configure", "Risk Configurations", "riskconfs.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Modeler.name() } );
 				
 				sm.createSection( "/Run" );

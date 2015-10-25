@@ -20,17 +20,25 @@ import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
-public class RiscossOrientDB implements RiscossDB {
+import eu.riscoss.db.domdb.AttributeProvider;
+import eu.riscoss.db.domdb.GAuthDom;
+import eu.riscoss.db.domdb.GDomDB;
+import eu.riscoss.db.domdb.GenericNodeCollection;
+import eu.riscoss.db.domdb.NameAttributeProvider;
+import eu.riscoss.db.domdb.NodeID;
+import eu.riscoss.db.domdb.OLinkedList;
+
+public class ORiscossDomain implements RiscossDB {
 	
 	GDomDB		dom = null;
 	
-	RiscossOrientDB( OrientBaseGraph graph, String domain ) {
+	ORiscossDomain( OrientBaseGraph graph, String domain ) {
 		
 		dom = new GDomDB( graph, domain );
 		
 	}
 	
-	public RiscossOrientDB( String address, String domain ) {
+	public ORiscossDomain( String address, String domain ) {
 		
 		OrientGraphNoTx graph = new OrientGraphFactory( address ).getNoTx();
 		
@@ -38,7 +46,7 @@ public class RiscossOrientDB implements RiscossDB {
 		
 	}
 	
-	public RiscossOrientDB( String address, String domain, String username, String password ) {
+	public ORiscossDomain( String address, String domain, String username, String password ) {
 		
 		OrientGraphNoTx graph = new OrientGraphFactory( address, username, password ).getNoTx();
 		
@@ -46,9 +54,9 @@ public class RiscossOrientDB implements RiscossDB {
 		
 	}
 	
-	public RiscossOrientDB( String address, String domain, byte[] token ) {
+	public ORiscossDomain( String address, String domain, byte[] token ) {
 		
-		OrientTokenHandler handler = RiscossOrientDatabase.createTokenHandler();
+		OrientTokenHandler handler = ORiscossDatabase.createTokenHandler();
 		
 		OToken tok = handler.parseWebToken(token);
 		handler.validateBinaryToken( tok );
@@ -703,7 +711,7 @@ public class RiscossOrientDB implements RiscossDB {
 	}
 
 	public void execute( String cmd ) {
-		dom.graph.getRawGraph().command(new OCommandSQL(cmd)).execute();
+		dom.getGraph().getRawGraph().command(new OCommandSQL(cmd)).execute();
 	}
 	
 	@Override

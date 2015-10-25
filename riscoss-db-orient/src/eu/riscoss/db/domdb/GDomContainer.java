@@ -1,4 +1,4 @@
-package eu.riscoss.db;
+package eu.riscoss.db.domdb;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -176,6 +176,10 @@ public class GDomContainer {
 		if( docs.size() < 1 ) return false;
 		
 		return true;
+	}
+
+	public OrientBaseGraph getGraph() {
+		return this.graph;
 	}
 	
 }

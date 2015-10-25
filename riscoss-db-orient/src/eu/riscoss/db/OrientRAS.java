@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import eu.riscoss.db.domdb.GDomDB;
+import eu.riscoss.db.domdb.NodeID;
+
 public class OrientRAS implements RiskAnalysisSession {
 	
 	GDomDB dom;

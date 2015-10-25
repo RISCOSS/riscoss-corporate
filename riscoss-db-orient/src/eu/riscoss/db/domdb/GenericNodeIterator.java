@@ -1,16 +1,19 @@
-package eu.riscoss.db;
+package eu.riscoss.db.domdb;
 
 import java.util.Iterator;
 import java.util.List;
 
 import com.orientechnologies.orient.core.record.impl.ODocument;
 
-public class NodeIterator implements Iterator<NodeID> {
+public class GenericNodeIterator<T> implements Iterator<T> {
 	
 	Iterator<ODocument>	it;
 	
-	public NodeIterator( List<ODocument> l ) {
+	AttributeProvider<T> provider;
+	
+	public GenericNodeIterator( List<ODocument> l, AttributeProvider<T> provider ) {
 		this.it = l.iterator();
+		this.provider = provider;
 	}
 	
 	@Override
@@ -19,9 +22,10 @@ public class NodeIterator implements Iterator<NodeID> {
 	}
 	
 	@Override
-	public NodeID next() {
+	public T next() {
 		ODocument v = it.next();
-		return new NodeID( v.getIdentity().toString() );
+		return provider.getValue( v );
+//		return new NodeID( v.getIdentity().toString() );
 	}
 	
 	@Override
