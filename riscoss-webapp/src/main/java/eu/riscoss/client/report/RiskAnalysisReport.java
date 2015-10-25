@@ -106,6 +106,7 @@ public class RiskAnalysisReport implements IsWidget {
 		Grid grid = new Grid();
 		grid.setCellPadding(0);
 		grid.setCellSpacing(0);
+		this.response = response;
 		for( int i = 0; i < response.isArray().size(); i++ ) {
 			JSONObject v = response.isArray().get( i ).isObject();
 			JsonRiskResult result = new JsonRiskResult( v );
@@ -602,6 +603,7 @@ public class RiskAnalysisReport implements IsWidget {
 	
 	protected void drawCh() {
 		int nbSeries = response.isArray().size();
+		//Window.alert(String.valueOf(nbSeries));
 
         PlotModel model = new PlotModel();
         PlotOptions plotOptions = PlotOptions.create();
@@ -647,36 +649,37 @@ public class RiskAnalysisReport implements IsWidget {
 				Double value = v.get( "e" ).isObject().get( "e" ).isNumber().doubleValue();
 				series.add( model.addSeries( Series.of( id ).setBarsSeriesOptions( BarSeriesOptions.create().setOrder( i ) ) ) );
 				values.add(value);
+				String s = "arg" + i;
+				String c = "col" + i;
+				HTMLPanel html = new HTMLPanel("<span id='" + c + "'></span>");
+				JArgument arg = argumentation.arguments.get( result.getChunkId() );
+				SimplePanel p = new SimplePanel();
+				p.setSize("20px", "20px");
+				p.getElement().getStyle().setBackgroundColor(colorsArray[i]);
+				p.setStyleName("colorBox");
+				
+				HorizontalPanel hp = new HorizontalPanel();
+				hp.setStyleName("margin-bottom");
+				hp.add(p);
+				
+				String htmlString = "<b>" + v.get( "id" ).isString().stringValue() + "</b>";
+				if( v.get( "description" ) != null ) {
+					htmlString += ": " + v.get( "description" ).isString().stringValue();
+				}
+				HTMLPanel htm = new HTMLPanel( htmlString );
+				hp.add(htm);
+				
+				html.add(hp, c);
+				
+				html.setWidth("100%");
+				html.setStyleName("descriptionPanel");
+				descriptions.add(html);
 				break;
 			}
 			default:
 				break;
 			}
-			String s = "arg" + i;
-			String c = "col" + i;
-			HTMLPanel html = new HTMLPanel("<span id='" + c + "'></span>");
-			JArgument arg = argumentation.arguments.get( result.getChunkId() );
-			SimplePanel p = new SimplePanel();
-			p.setSize("20px", "20px");
-			p.getElement().getStyle().setBackgroundColor(colorsArray[i]);
-			p.setStyleName("colorBox");
 			
-			HorizontalPanel hp = new HorizontalPanel();
-			hp.setStyleName("margin-bottom");
-			hp.add(p);
-			
-			String htmlString = "<b>" + v.get( "id" ).isString().stringValue() + "</b>";
-			if( v.get( "description" ) != null ) {
-				htmlString += ": " + v.get( "description" ).isString().stringValue();
-			}
-			HTMLPanel htm = new HTMLPanel( htmlString );
-			hp.add(htm);
-			
-			html.add(hp, c);
-			
-			html.setWidth("100%");
-			html.setStyleName("descriptionPanel");
-			descriptions.add(html);
 		}
 
         // add data
@@ -692,7 +695,7 @@ public class RiskAnalysisReport implements IsWidget {
         //plot2.setHeight("100%");
         int size = nbSeries*40;
         if (size < 350) size = 350;
-        plot2.setHeight(size + "px");
+        //plot2.setHeight(size + "px");
 	    mainChartPanel.add(plot2);
 	    mainChartPanel.add(descriptions);
 	}
