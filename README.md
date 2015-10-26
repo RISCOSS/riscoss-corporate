@@ -11,7 +11,7 @@ This is the main repository for the RISCOSS Platform code. Detailed information 
 Please refer to the [RISCOSS White Paper](http://www.riscoss.eu/bin/download/Discover/Whitepaper/RISCOSS-Whitepaper.pdf) for a more detailed description.
 
 #Project Partners
-![](https://github.com/riscoss/riscoss-platform-core/wiki/images/logos/partners/upc_logo.jpg) [Universitat Politècnica de Catalunya](http://www.upc.edu/) (Spain) <br>
+![](https://github.com/riscoss/riscoss-corporate/wiki/images/logos/partners/upc_logo.jpg) [Universitat Politècnica de Catalunya](http://www.upc.edu/) (Spain) <br>
  ![](https://github.com/riscoss/riscoss-platform-core/wiki/images/logos/partners/ericsson_logo.jpg) [ERICSSON Telecomunicazioni](http://www.ericsson.com/it) (Italy) <br>
 ![](https://github.com/riscoss/riscoss-platform-core/wiki/images/logos/partners/FBK_logo.jpg) [Fondazione Bruno Kessler](http://www.fbk.eu/) (Italy) <br>
 ![](https://github.com/riscoss/riscoss-platform-core/wiki/images/logos/partners/maastricht_logo.jpg) [Universiteit Maastricht](http://www.maastrichtuniversity.nl/) (Nederlands) <br>
