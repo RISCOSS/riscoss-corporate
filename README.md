@@ -1,4 +1,4 @@
-![](https://github.com/riscoss/riscoss-platform-core/wiki/images/logos/logo_riscoss_text.png)
+![](https://github.com/riscoss/riscoss-corporate/wiki/images/logos/logo_riscoss_text.png)
 
 # Introduction
 
@@ -21,6 +21,6 @@ Please refer to the [RISCOSS White Paper](http://www.riscoss.eu/bin/download/Dis
  ![](https://github.com/riscoss/riscoss-corporate/wiki/images/logos/partners/kpa_logo.jpg) [KPA](http://www.kpa-group.com/) (Israel) <br>
 
 RISCOSS is a Specific Targeted Research Project (STREP) of the Seventh Framework Programme for research and technological development (FP7 Call 8, Objective 1.2, outcome c) - the European Union's chief instrument for funding research projects that commence over the period 2012 to 2015 (PROJECT NUMBER: 318249).<br>
- ![](https://github.com/riscoss-corporate/wiki/images/logos/FP7-gen-RGB-small.jpg)
+ ![](https://github.com/riscoss/riscoss-corporate/wiki/images/logos/FP7-gen-RGB-small.jpg)
  ![](https://github.com/riscoss/riscoss-corporate/wiki/images/logos/European_Commission_Logo.jpg)
 
