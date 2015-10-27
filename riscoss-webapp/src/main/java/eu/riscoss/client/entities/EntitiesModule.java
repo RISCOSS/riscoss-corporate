@@ -56,6 +56,8 @@ import eu.riscoss.client.JsonUtil;
 import eu.riscoss.client.Log;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecLayerContextualInfo;
+import eu.riscoss.client.riskanalysis.JsonRiskAnalysis;
+import eu.riscoss.client.riskanalysis.RASPanel;
 import eu.riscoss.client.ui.TreeWidget;
 import eu.riscoss.shared.JEntityNode;
 import eu.riscoss.shared.JLayerContextualInfo;
@@ -566,6 +568,63 @@ public class EntitiesModule implements EntryPoint {
 			public void onSuccess( Method method, JSONValue response ) {
 				setSelectedEntity(newEntity);
 			}} );
+	}
+	
+	public void back() {
+		page.clear();
+		page.setStyleName("");
+		Label title = new Label("Entity management");
+		title.setStyleName("title");
+		page.add(title);
+		page.add(mainView);
+		upload();
+	}
+	
+	public void deleteRiskSes(String ras) {
+		RiscossJsonClient.deleteRiskAnalysisSession(ras, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				back();
+				upload();
+			}
+		});
+	}
+	
+	private void upload() {
+		ppg = new EntityPropertyPage(this);
+		ppg.setSelectedEntity(selectedEntity);
+		ppg.setSelectedTab(4);
+		loadProperties();
+	}
+	
+	RASPanel rasPanelResult;
+	
+	public void setSelectedRiskSes(String risk, EntityPropertyPage p) {
+		rasPanelResult = new RASPanel(null);
+		rasPanelResult.setEppg(p);
+		rasPanelResult.loadRAS(risk);
+		
+		RiscossJsonClient.getSessionSummary(risk, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				page.clear();
+				page.setStyleName("leftPanelLayer");
+				JsonRiskAnalysis json = new JsonRiskAnalysis( response );
+				Label title = new Label(json.getName());
+				title.setStyleName("subtitle");
+				page.add(title);
+				page.add(rasPanelResult);
+			}
+		});
+
 	}
 	
 }

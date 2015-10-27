@@ -43,6 +43,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecMissingData;
+import eu.riscoss.client.entities.EntityPropertyPage;
 import eu.riscoss.client.ras.RASModule;
 import eu.riscoss.client.report.RiskAnalysisReport;
 import eu.riscoss.shared.JMissingData;
@@ -54,14 +55,13 @@ public class RASPanel implements IsWidget {
 	RiskAnalysisReport 	report = new RiskAnalysisReport();
 	SimplePanel		 	inputTable;
 	HorizontalPanel		mainChart = new HorizontalPanel();
-	RiskAnalysisWizard 	risk = null;
 	JsonRiskAnalysis	sessionSummary;		
-	
-	Boolean				browse;
 	
 	private String		rasName;
 	private String 		riskConf;
 	private String		entity;
+	
+	RiskAnalysisWizard 	risk = null;
 	
 	public RASPanel(RiskAnalysisWizard w) {
 		if (w != null) risk = w;
@@ -76,11 +76,16 @@ public class RASPanel implements IsWidget {
 		return this.sessionSummary;
 	}
 	
-	RASModule 		rasModule;
+	RASModule 		rasModule = null;
 	
 	public void setBrowse(RASModule ras) {
-		browse = true;
-		rasModule = ras;
+		if (ras != null) rasModule = ras;
+	}
+	
+	EntityPropertyPage 	eppg = null;
+	
+	public void setEppg(EntityPropertyPage eppg) {
+		if (eppg != null) this.eppg = eppg;
 	}
 		
 	public void loadRAS( String selectedRAS ) {
@@ -104,7 +109,6 @@ public class RASPanel implements IsWidget {
 		if( panel.getWidget() != null ) {
 			panel.getWidget().removeFromParent();
 		}
-		
 		riskConf = ras.getRC();
 		entity = ras.getTarget();
 		rasName = ras.getName();
@@ -124,14 +128,6 @@ public class RASPanel implements IsWidget {
 		rasName.setHeight("100%");
 		grid.setWidget(0, 1, rasName);
 		
-		/*Label idL = new Label("ID");
-		idL.setStyleName("headTable");
-		idL.setWidth("130px");
-		grid.setWidget(1, 0, idL);
-		Label rasID = new Label(ras.getID());
-		rasID.setStyleName("contentTable");
-		grid.setWidget(1, 1, rasID);*/
-		
 		Label rcL = new Label("Risk configuration");
 		rcL.setStyleName("headTable");
 		rcL.setWidth("130px");
@@ -148,8 +144,6 @@ public class RASPanel implements IsWidget {
 		rasEntity.setStyleName("contentTable");
 		grid.setWidget(2, 1, rasEntity);
 
-//		grid.add( "Last execution:", new Label( ras.getDate() ) );
-//		grid.add( "Action:", new RadioButton( "action", "Run" ) );
 		{
 			
 			Button updateIndicators = new Button("Run data collectors");
@@ -161,18 +155,9 @@ public class RASPanel implements IsWidget {
 				}
 			});
 			
-			
-			/*Label nI = new Label("Data collectors");
-			nI.setStyleName("headTable");
-			nI.setWidth("130px");
-			grid.setWidget(4, 0, nI);
-			Label lastUpd = new Label("Last execution: -");
-			lastUpd.setStyleName("contentTable");
-			grid.setWidget(4, 1, lastUpd);*/
 		}
 		{
-			//hp.setWidth( "100%" );
-			
+
 			Label aL = new Label("Analysis");
 			aL.setStyleName("headTable");
 			aL.setWidth("130px");
@@ -195,6 +180,11 @@ public class RASPanel implements IsWidget {
 		buttons.addStyleName("margin-top");
 		buttons2.setStyleName("margin-top");
 		empty.setWidth("12px");
+		
+		//This needs to be fixed, right now it works but
+		//coupling is too high
+		
+		//If RASPanel placed in multi-layer analysis
 		if (risk != null) {
 			buttons.add(risk.getBack());
 			buttons.add(missingVal);
@@ -206,7 +196,8 @@ public class RASPanel implements IsWidget {
 			buttons2.add(backupUpdate);
 			buttons2.add(backupRun);
 		}
-		else if (browse) {
+		//If RASPanel placed in browse ras
+		else if (rasModule != null) {
 			buttons.add(browseBack);
 			buttons.add(missingVal);
 			buttons.add(browseDelete);
@@ -216,8 +207,11 @@ public class RASPanel implements IsWidget {
 			buttons2.add(backupUpdate);
 			buttons2.add(backupRun);
 		}
-		else {
+		//If RASPanel
+		else if (eppg != null) {
+			buttons.add(entityBack);
 			buttons.add(missingVal);
+			buttons.add(entityDelete);
 			buttons2.add(update);
 			buttons2.add(run);
 			buttons2.add(empty);
@@ -248,18 +242,18 @@ public class RASPanel implements IsWidget {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				try {
-					if (risk != null || browse) {
+					//if (risk != null || browse) {
 						report.showResults( 
 								sessionSummary,
 								response.isObject().get( "results" ).isArray(),
 								response.isObject().get( "argumentation" ) );
-					}
-					else {
+					//}
+					/*else {
 						report.showResults(
 								response.isObject().get( "results" ).isArray(),
 								response.isObject().get( "argumentation" ) );
 						
-					}
+					}*/
 					
 					//inputDataInfo(response.isObject().get( "input" ));
 				}
@@ -280,6 +274,8 @@ public class RASPanel implements IsWidget {
 	Button		remove;
 	Button		browseBack;
 	Button 		browseDelete;
+	Button		entityBack;
+	Button		entityDelete;
 	
 	protected void generateButtons() {
 		
@@ -354,13 +350,31 @@ public class RASPanel implements IsWidget {
 				RiscossJsonClient.deleteRiskAnalysisSession(sessionSummary.getID(), new JsonCallback() {
 					@Override
 					public void onFailure(Method method, Throwable exception) {
-						// TODO Auto-generated method stub
+						Window.alert(exception.getMessage());
 					}
 					@Override
 					public void onSuccess(Method method, JSONValue response) {
 						rasModule.back();
 					}
 				});
+			}
+		});
+		
+		entityBack = new Button("Back");
+		entityBack.setStyleName("deleteButton");
+		entityBack.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent arg0) {
+				eppg.back();
+			}
+		});
+		
+		entityDelete = new Button("Delete");
+		entityDelete.setStyleName("deleteButton");
+		entityDelete.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent arg0) {
+				eppg.delete(sessionSummary.getID());
 			}
 		});
 	}
@@ -370,18 +384,18 @@ public class RASPanel implements IsWidget {
 				new JsonCallback() {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
-					if (risk != null || browse) {
+					//if (risk != null || browse) {
 						report.showResults( 
 								sessionSummary,
 								response.isObject().get( "results" ).isArray(),
 								response.isObject().get( "argumentation" ) );
-					}
-					else {
+					//}
+					/*else {
 						report.showResults(
 								response.isObject().get( "results" ).isArray(),
 								response.isObject().get( "argumentation" ) );
 						
-					}
+					}*/
 					
 					//inputDataInfo(response.isObject().get( "input" ));
 				}
@@ -450,18 +464,18 @@ public class RASPanel implements IsWidget {
 							Window.alert( exception.getMessage() );
 						}
 					});
-					if (risk != null || browse) {
+					//if (risk != null || browse) {
 						report.showResults( 
 								sessionSummary,
 								response.isObject().get( "results" ).isArray(),
 								response.isObject().get( "argumentation" ) );
-					}
-					else {
+					//}
+					/*else {
 						report.showResults(
 								response.isObject().get( "results" ).isArray(),
 								response.isObject().get( "argumentation" ) );
 						
-					}
+					}*/
 					
 					//inputDataInfo(response.isObject().get( "input" ));
 				}
