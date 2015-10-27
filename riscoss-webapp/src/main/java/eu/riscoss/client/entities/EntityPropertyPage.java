@@ -239,7 +239,7 @@ public class EntityPropertyPage implements IsWidget {
 		tab.add( newRasPanel, "Analysis Sessions" );
 		tab.selectTab( 0 );
 		tab.setSize( "100%", "100%" );
-		tab.addSelectionHandler( new SelectionHandler<Integer>() {
+		/*tab.addSelectionHandler( new SelectionHandler<Integer>() {
 			@Override
 			public void onSelection( SelectionEvent<Integer> event ) {
 				if( rasLoaded == true ) return;
@@ -253,7 +253,7 @@ public class EntityPropertyPage implements IsWidget {
 						loadRAS( response );
 					}} );
 			}
-		});
+		});*/
 		
 		RiscossJsonClient.listEntities(new JsonCallback() {
 			@Override
@@ -268,16 +268,10 @@ public class EntityPropertyPage implements IsWidget {
 			}
 		});
 		
-		backRAS = new Button("Back");
-		backRAS.setStyleName("button");
-		backRAS.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				panel.clear();
-				panel.add(riskTree);
-			}
-		});
-		
+	}
+	
+	public void setSelectedTab(int i) {
+		tab.selectTab(i);
 	}
 	
 	@Override
@@ -941,19 +935,21 @@ public class EntityPropertyPage implements IsWidget {
 		
 	}
 	
-	RASPanel rasPanelResult;
+	
 	
 	private void setSelectedRiskSes(String name, int k) {
-		panel.clear();
-		rasPanelResult = new RASPanel(null);
-		rasPanelResult.loadRAS(list.get(k).getId());
-		HorizontalPanel h = new HorizontalPanel();
-		h.add(backRAS);
-		panel.add(h);
-		panel.add(rasPanelResult);
+		module.setSelectedRiskSes(list.get(k).getId(), this);
 	}
 
-	protected void loadRAS( JSONValue response ) {
+	public void back() {
+		module.back();
+	}
+	
+	public void delete(String ras) {
+		module.deleteRiskSes(ras);
+	}
+	
+	/*protected void loadRAS( JSONValue response ) {
 		if( rasPanel.getWidget() != null ) {
 			rasPanel.getWidget().removeFromParent();
 		}
@@ -972,7 +968,7 @@ public class EntityPropertyPage implements IsWidget {
 		catch( Exception ex ) {
 			Window.alert( ex.getMessage() );
 		}
-	}
+	}*/
 
 	protected void onChildEntitySelected( List<String> entities ) {
 		RiscossJsonClient.setChildren( entity, entities, new JsonCallback() {
