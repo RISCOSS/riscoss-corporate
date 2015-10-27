@@ -24,17 +24,21 @@ package eu.riscoss.server;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.codec.binary.Base64;
 
+import eu.riscoss.db.ORiscossDatabase;
+import eu.riscoss.db.ORiscossDomain;
 import eu.riscoss.db.RiscossDB;
 import eu.riscoss.db.RiscossDatabase;
-import eu.riscoss.db.ORiscossDomain;
-import eu.riscoss.db.ORiscossDatabase;
 
 public class DBConnector {
 	
 	static String db_addr = null;
+	
+	private static Lock lock = new ReentrantLock();
 	
 	public static File findLocation( Class<?> cls ) {
 		String t = cls.getPackage().getName() + ".";
@@ -51,6 +55,18 @@ public class DBConnector {
 		return new File( new File( s ).getParent() );
 	}
 	
+	private static void lock() {
+		System.out.println( "Lock by " + Thread.currentThread() );
+//		Thread.dumpStack();
+		lock.lock();
+	}
+	
+	private static void unlock() {
+		System.out.println( "UNLock by " + Thread.currentThread() );
+//		Thread.dumpStack();
+		lock.unlock();
+	}
+	
 	/**
 	 * Opens the database with username and password, specific for "superuser" access to change domains and users.
 	 * @param username
@@ -58,6 +74,7 @@ public class DBConnector {
 	 * @return
 	 */
 	public static RiscossDatabase openDatabase( String username, String password ) {
+		lock();
 		return new ORiscossDatabase( db_addr, username, password );
 	}
 	/**
@@ -66,22 +83,10 @@ public class DBConnector {
 	 * @return
 	 */
 	public static RiscossDatabase openDatabase( String token ) {
+		lock();
 		return new ORiscossDatabase( db_addr, Base64.decodeBase64( token ) );
 	}
 	
-	/**
-	 * to delete, no user check!
-	 * @param domain
-	 * @return
-	 */
-//	@Deprecated
-//	public static RiscossDB openDB( String domain ) {
-//		try {
-//			return new ORiscossDomain( db_addr, URLEncoder.encode( domain, "UTF-8" ) );
-//		} catch (UnsupportedEncodingException e) {
-//			throw new RuntimeException( e );
-//		}
-//	}
 	
 	/**
 	 * Opens the database with username and password, for normal access with domain and user
@@ -92,6 +97,7 @@ public class DBConnector {
 	 */
 	public static RiscossDB openDB( String domain, String username, String password ) {
 		try {
+			lock();
 			return new ORiscossDomain( db_addr, URLEncoder.encode( domain, "UTF-8" ), username, password );
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException( e );
@@ -103,8 +109,8 @@ public class DBConnector {
 	 * @return
 	 */
 	public static RiscossDB openDB( String domain, String token ) {
-
 		try {
+			lock();
 			return new ORiscossDomain( db_addr, URLEncoder.encode( domain, "UTF-8" ), Base64.decodeBase64( token ) );
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException( e );
@@ -119,11 +125,18 @@ public class DBConnector {
 		catch( Exception ex ) {
 			ex.printStackTrace();
 		}
+		finally {
+			unlock();
+		}
 	}
 
-//	public static void setDbaddr(String dbaddr) {
 	public static void initDatabase( String dbaddr ) {
 		db_addr = dbaddr;
+	}
+
+	public static void closeDB( RiscossDatabase db ) {
+		unlock();
+		db.close();
 	}
 	
 }

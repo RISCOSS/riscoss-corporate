@@ -64,7 +64,8 @@ public class AuthManager {
 	//TODO: change to POST?!
 	public String checkToken( @HeaderParam("token") String token ) {
 //		System.out.println( "Received token: " + token );
-		DBConnector.openDatabase( token ).close();
+		RiscossDatabase db = DBConnector.openDatabase( token );
+		DBConnector.closeDB( db );
 		return new JsonPrimitive( "Ok" ).toString();
 	}
 	
@@ -125,7 +126,7 @@ public class AuthManager {
 		}
 		finally {
 			if( database != null )
-				database.close();
+				DBConnector.closeDB( database );
 		}
 		
 	}

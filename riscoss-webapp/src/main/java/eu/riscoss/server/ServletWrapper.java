@@ -166,10 +166,11 @@ public class ServletWrapper extends ServletContainer {
 						}
 						db.setPredefinedRole( tok, KnownRoles.Administrator.name() );
 					}
-					domainDB.close();
+					DBConnector.closeDB( domainDB );
+//					domainDB.close();
 				}
 			}
-			db.close();
+			DBConnector.closeDB( db );
 			Reflections reflections = new Reflections( RDCRunner.class.getPackage().getName() );
 			
 			Set<Class<? extends RDC>> subTypes = reflections.getSubTypesOf(RDC.class);

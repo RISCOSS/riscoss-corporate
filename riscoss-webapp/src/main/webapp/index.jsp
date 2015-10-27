@@ -29,7 +29,7 @@ if (cookies != null) {
 	if( token != null ) {
 		try {
 			RiscossDatabase db = DBConnector.openDatabase( token );
-			db.close();
+			DBConnector.closeDB( db );
 			%>
 				<jsp:include page="home.jsp" flush="true"/>
 			<% return;

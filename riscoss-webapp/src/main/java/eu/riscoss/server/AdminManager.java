@@ -48,6 +48,7 @@ public class AdminManager {
 		RiscossDatabase db = null;
 		
 		try {
+			
 			db = DBConnector.openDatabase( token );
 			
 			JSiteMap sitemap = new JSiteMap();
@@ -61,8 +62,9 @@ public class AdminManager {
 			return new Gson().toJson( sitemap );
 		}
 		finally {
+			
 			if( db != null )
-				db.close();
+				DBConnector.closeDB( db );
 		}
 	}
 	
@@ -97,6 +99,7 @@ public class AdminManager {
 		RiscossDatabase db = null;
 		
 		try {
+			
 			db = DBConnector.openDatabase( null, null );
 			JsonArray array = new JsonArray();
 			for( String roleName : db.listRoles() ) {
@@ -106,56 +109,11 @@ public class AdminManager {
 			return array.toString();
 		}
 		finally {
+			
 			if( db != null )
-				db.close();
+				DBConnector.closeDB( db );
 		}
 	}
-	
-//	@GET @Path("/domains/list")
-//	public String listDomains(
-//			@DefaultValue("") @HeaderParam("token") String token,
-//			@DefaultValue("") @QueryParam("username") String username ) {
-//		
-//		Set<String> set = new HashSet<>();
-//		{
-//			RiscossDatabase db = null;
-//			
-//			try {
-//				db = DBConnector.openDatabase( token );
-//				
-//				for( String domain : db.listDomains() ) {
-//					if( domain != null )
-//						set.add( domain );
-//				}
-//			}
-//			finally {
-//				if( db != null )
-//					db.close();
-//			}
-//		}
-//		
-////		if( token.length() > 1 ) {
-////			RiscossDatabase db = null;
-////			if( !username.equals("") ) try {
-////				db = DBConnector.openDatabase( token );
-////				
-////				if( db.getUsername().equals( username ) ) {
-////					for( String domain : db.listDomains( username ) ) {
-////						if( domain != null )
-////							set.add( domain );
-//////							array.add( new JsonPrimitive( domain ) );
-////					}
-////				}
-////			}
-////			finally {
-////				if( db != null )
-////					db.close();
-////			}
-////		}
-//		
-//		return gson.toJson( set ).toString();
-//		
-//	}
 	
 	@POST @Path("/domains/create")
 	public String createDomain( @HeaderParam("token") String token, @QueryParam("name") String name ) {
@@ -163,6 +121,7 @@ public class AdminManager {
 		RiscossDatabase db = null;
 		
 		try {
+			
 			db = DBConnector.openDatabase( token );
 			db.createDomain( name );
 			RiscossDB domainDB = DBConnector.openDB( name, token );
@@ -172,12 +131,13 @@ public class AdminManager {
 					domainDB.addPermissions( r.name(), RiscossDBResource.valueOf( perm.getLeft().name() ), perm.getRight() );
 				}
 			}
-			domainDB.close();
+			DBConnector.closeDB( domainDB );
 			return new JsonPrimitive( name ).toString();
 		}
 		finally {
+			
 			if( db != null )
-				db.close();
+				DBConnector.closeDB( db );
 		}
 	}
 	
@@ -200,6 +160,7 @@ public class AdminManager {
 			
 		}
 		finally {
+			
 			if( db != null )
 				DBConnector.closeDB( db );
 		}
@@ -226,6 +187,7 @@ public class AdminManager {
 			
 		}
 		finally {
+			
 			if( db != null )
 				DBConnector.closeDB( db );
 		}
@@ -241,6 +203,7 @@ public class AdminManager {
 		RiscossDatabase db = null;
 		
 		try {
+			
 			db = DBConnector.openDatabase( token );
 			
 			JsonArray array = new JsonArray();
@@ -258,8 +221,9 @@ public class AdminManager {
 			
 		}
 		finally {
+			
 			if( db != null )
-				db.close();
+				DBConnector.closeDB( db );
 		}
 	}
 	
@@ -280,13 +244,14 @@ public class AdminManager {
 		OrientGraphNoTx graph = new OrientGraphFactory( DBConnector.db_addr ).getNoTx();
 		
 		try {
+			
 			OSecurity security = graph.getRawGraph().getMetadata().getSecurity();
 			
 			security.dropUser( username );
 			
-//			return new JsonPrimitive( "Ok" ).toString();
 		}
 		finally {
+			
 			if( graph != null )
 				graph.getRawGraph().close();
 		}
@@ -302,6 +267,7 @@ public class AdminManager {
 		RiscossDB db = null;
 		
 		try {
+			
 			db = DBConnector.openDB( domain, token );
 			
 			db.setUserRole( user, role );
@@ -310,8 +276,9 @@ public class AdminManager {
 			
 		}
 		finally {
+			
 			if( db != null ) 
-				db.close();
+				DBConnector.closeDB( db );
 		}
 	}
 	
@@ -323,6 +290,7 @@ public class AdminManager {
 		RiscossDB db = null;
 		
 		try {
+			
 			db = DBConnector.openDB( domain, token );
 			JsonArray array = new JsonArray();
 			for( String user : db.listUsers() ) {
@@ -334,8 +302,9 @@ public class AdminManager {
 			
 		}
 		finally {
+			
 			if( db != null ) 
-				db.close();
+				DBConnector.closeDB( db );
 		}
 	}
 	
@@ -359,11 +328,11 @@ public class AdminManager {
 			
 		}
 		finally {
+			
 			if( db != null )
-				db.close();
+				DBConnector.closeDB( db );
 		}
 		
-//		return "";
 	}
 	
 	/**
@@ -400,7 +369,7 @@ public class AdminManager {
 			}
 			finally {
 				if( db != null )
-					db.close();
+					DBConnector.closeDB( db );
 			}
 		}
 		
@@ -418,7 +387,7 @@ public class AdminManager {
 			}
 			finally {
 				if( db != null )
-					db.close();
+					DBConnector.closeDB( db );
 			}
 		}
 		
@@ -442,8 +411,9 @@ public class AdminManager {
 			
 		}
 		finally {
+			
 			if( db != null )
-				db.close();
+				DBConnector.closeDB( db );
 		}
 	}
 	
@@ -464,8 +434,9 @@ public class AdminManager {
 			domaindb.setUserRole( user, role );
 		}
 		finally {
+			
 			if( domaindb != null )
-				domaindb.close();
+				DBConnector.closeDB( domaindb );
 		}
 	}
 	
@@ -477,6 +448,7 @@ public class AdminManager {
 		RiscossDatabase db = null;
 		
 		try {
+			
 			db = DBConnector.openDatabase( token );
 			
 			if( db.isAdmin() ) {
@@ -501,7 +473,7 @@ public class AdminManager {
 						domaindb.setUserRole( username, db.getPredefinedRole( domain ) );
 					}
 					
-					domaindb.close();
+					DBConnector.closeDB( domaindb );
 					
 					return new JsonPrimitive( domain ).toString();
 				}
@@ -510,8 +482,9 @@ public class AdminManager {
 			return null;
 		}
 		finally {
+			
 			if( db != null )
-				db.close();
+				DBConnector.closeDB( db );
 		}
 	}
 	

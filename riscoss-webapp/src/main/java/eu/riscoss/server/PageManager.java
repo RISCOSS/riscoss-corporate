@@ -89,7 +89,7 @@ public class PageManager {
 		}
 		finally {
 			if( db != null )
-				db.close();
+				DBConnector.closeDB( db );
 		}
 	}
 	

@@ -22,7 +22,7 @@ public class SecurityManager {
 		}
 		finally {
 			if( database != null )
-				database.close();
+				DBConnector.closeDB( database );
 		}
 		
 	}
