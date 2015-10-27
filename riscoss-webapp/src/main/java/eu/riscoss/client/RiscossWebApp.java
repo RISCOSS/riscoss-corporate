@@ -21,6 +21,8 @@
 
 package eu.riscoss.client;
 
+import java.util.ArrayList;
+
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
 
@@ -127,8 +129,6 @@ public class RiscossWebApp implements EntryPoint {
 		});
 	}
 	
-	HorizontalPanel shortcuts = new HorizontalPanel();
-	
 	void showUI( JSiteMap sitemap) {
 		
 		Log.println( "Loading UI for domain " + sitemap.domain );
@@ -164,6 +164,7 @@ public class RiscossWebApp implements EntryPoint {
 			submenu.setAnimationEnabled(true);
 			menu.addItem( subsection.getLabel(), submenu);
 			for( JSitePage page : subsection.pages() ) {
+				access.add(page.getLabel());
 				submenu.addItem( page.getLabel(), new MenuCommand( page.getUrl() ) {
 					@Override
 					public void execute() {
@@ -218,52 +219,80 @@ public class RiscossWebApp implements EntryPoint {
 		
 	}
 	
+	
+	HorizontalPanel shortcuts = new HorizontalPanel();
+	ArrayList<String> access = new ArrayList<>();
+	
 	public void generateShortcuts() {
 		shortcuts.setStyleName("float-right");
+		
+		//Entity-layer shortcut
 		SimplePanel s1 = new SimplePanel();
 		s1.setStyleName("shortcut-1");
 		s1.setSize("200px", "90px");
-		Anchor entities = new Anchor ("entities to be analysed updated");
-		entities.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				loadPanel("entities.jsp");
-			}
-		});
-		Anchor layers = new Anchor ("defining a hierarchy of layers");
-		layers.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				loadPanel("layers.jsp");
-			}
-		});
-		HTMLPanel l = new HTMLPanel("Before you can run risk analysis, you need to have the <span id='entities'></span>.<br/>Entities can be organized hierarchically <span id='layers'></span>.");
-		l.add(entities, "entities");
-		l.add(layers, "layers");
-		s1.setWidget(l);
+		VerticalPanel v = new VerticalPanel();
 		
+		if (access.contains("Entities")) {
+			Anchor entities = new Anchor ("entities to be analysed updated");
+			entities.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					loadPanel("entities.jsp");
+				}
+			});
+			HTMLPanel l1 = new HTMLPanel("Before you can run risk analysis, you need to have the <span id='entities'></span>.");
+			l1.add(entities, "entities");
+			v.add(l1);
+		}
+		
+		if (access.contains("Layers")) {
+			Anchor layers = new Anchor ("defining a hierarchy of layers");
+			layers.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					loadPanel("layers.jsp");
+				}
+			});
+			HTMLPanel l2 = new HTMLPanel("Entities can be organized hierarchically <span id='layers'></span>.");
+			l2.add(layers, "layers");
+			v.add(l2);
+		}
+		s1.add(v);
+		
+		//Riskconf-model shortcut
 		SimplePanel s2 = new SimplePanel();
 		s2.setSize("200px", "90px");
 		s2.setStyleName("shortcut-2");
-		Anchor riskconfs = new Anchor("defining risks configurations");
-		riskconfs.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				loadPanel("riskconfs.jsp");
-			}
-		});
-		Anchor models = new Anchor("uploaded models");
-		models.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				loadPanel("models.jsp");
-			}
-		});
-		HTMLPanel l2 = new HTMLPanel("The risk analysis needs to be configured <span id='riskconfs'></span>.<br/>The risk configurations use the <span id='models'></span>.");
-		l2.add(riskconfs, "riskconfs");
-		l2.add(models, "models");
-		s2.setWidget(l2);
+		VerticalPanel vv = new VerticalPanel();
 		
+		if (access.contains("Risk Configurations")) {
+			Anchor riskconfs = new Anchor("defining risks configurations");
+			riskconfs.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					loadPanel("riskconfs.jsp");
+				}
+			});
+			HTMLPanel l3 = new HTMLPanel("The risk analysis needs to be configured <span id='riskconfs'></span>.");
+			l3.add(riskconfs, "riskconfs");
+			vv.add(l3);
+		}
+		
+		if (access.contains("Models")) {
+			Anchor models = new Anchor("uploaded models");
+			models.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					loadPanel("models.jsp");
+				}
+			});
+			HTMLPanel l4 = new HTMLPanel("The risk configurations use the <span id='models'></span>.");
+			l4.add(models, "models");
+			vv.add(l4);
+		}
+		s2.setWidget(vv);
+		
+		//analysis-browse shortcut
 		SimplePanel s3 = new SimplePanel();
 		s3.setSize("200px", "90px");
 		s3.setStyleName("shortcut-3");
@@ -281,10 +310,10 @@ public class RiscossWebApp implements EntryPoint {
 				loadPanel("ras.jsp");
 			}
 		});
-		HTMLPanel l3 = new HTMLPanel("You are ready to <span id='riskanalysis'></span>.<br/>You can also <span id='ras'></span>.");
-		l3.add(riskanalysis, "riskanalysis");
-		l3.add(ras, "ras");
-		s3.setWidget(l3);
+		HTMLPanel l5 = new HTMLPanel("You are ready to <span id='riskanalysis'></span>.<br/>You can also <span id='ras'></span>.");
+		l5.add(riskanalysis, "riskanalysis");
+		l5.add(ras, "ras");
+		s3.setWidget(l5);
 		
 		shortcuts.add(s1);
 		shortcuts.add(s2);
