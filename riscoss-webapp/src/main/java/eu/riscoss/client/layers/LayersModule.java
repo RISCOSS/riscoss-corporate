@@ -31,16 +31,12 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.CellTable.Resources;
 import com.google.gwt.user.cellview.client.TextColumn;
@@ -61,9 +57,6 @@ import com.google.gwt.view.client.SelectionChangeEvent.Handler;
 import com.google.gwt.view.client.SingleSelectionModel;
 
 import eu.riscoss.client.RiscossJsonClient;
-import eu.riscoss.client.ui.ClickWrapper;
-import eu.riscoss.client.ui.FramePanel;
-import eu.riscoss.client.ui.LabeledWidget;
 import eu.riscoss.client.codec.CodecLayerContextualInfo;
 import eu.riscoss.client.entities.EntityPropertyPage;
 import eu.riscoss.client.entities.TableResources;
@@ -125,9 +118,10 @@ public class LayersModule implements EntryPoint {
 	
 	TextBox				nameL;
 	
+	HorizontalPanel 	layerData;
+	
 	public void onModuleLoad() {
 		dock.setSize( "100%", "100%" );
-		parentName.addItem("[top]");
 		
 		mainView.setStyleName("mainViewLayer");
 		mainView.setWidth("100%");
@@ -182,6 +176,7 @@ public class LayersModule implements EntryPoint {
 						parent.addChild( lw );
 						parent = lw;
 					}
+					parentName.addItem("[top]");
 				}
 			}
 			
@@ -194,7 +189,7 @@ public class LayersModule implements EntryPoint {
 		title.setStyleName("title");
 		page.add(title);
 		
-		HorizontalPanel layerData = new HorizontalPanel();
+		layerData = new HorizontalPanel();
 		layerData.setStyleName("layerData");
 		Label name = new Label("Name");
 		name.setStyleName("bold");
@@ -241,7 +236,7 @@ public class LayersModule implements EntryPoint {
 						}
 						
 						selectedLayer = name;
-						String parent = parentName.getItemText( parentName.getSelectedIndex() );
+						String parent = parentName.getValue( parentName.getSelectedIndex() );
 						selectedParent = parent;
 //						Window.alert( "'" + parent + "': " + "[top]".equals( parent ) );
 						if( "[top]".equals( parent ) ) {
@@ -257,7 +252,6 @@ public class LayersModule implements EntryPoint {
 							@Override
 							public void onSuccess(Method method, JSONValue response) {
 								//Window.Location.reload();
-								parentName.addItem(selectedLayer);
 								layerName.setText("");
 								reloadPage();
 							}} );
@@ -347,6 +341,8 @@ public class LayersModule implements EntryPoint {
 	}
 	
 	private void reloadPage() {
+		layerData.remove(parentName);
+		parentName = new ListBox();
 		bottom.setUrl("entities.html?layer=" + selectedLayer);
 		ppg.setParent(selectedParent);
 		//layerName.setText("");
@@ -395,6 +391,8 @@ public class LayersModule implements EntryPoint {
 						parent.addChild( lw );
 						parent = lw;
 					}
+					parentName.addItem("[top]");
+					layerData.add(parentName);
 				}
 			}
 			
