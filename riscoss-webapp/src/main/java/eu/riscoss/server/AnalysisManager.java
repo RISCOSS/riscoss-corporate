@@ -73,6 +73,7 @@ import eu.riscoss.reasoner.Evidence;
 import eu.riscoss.reasoner.Field;
 import eu.riscoss.reasoner.FieldType;
 import eu.riscoss.reasoner.ModelSlice;
+import eu.riscoss.reasoner.Rank;
 import eu.riscoss.reasoner.ReasoningLibrary;
 import eu.riscoss.reasoner.RiskAnalysisEngine;
 import eu.riscoss.shared.EAnalysisOption;
@@ -407,6 +408,8 @@ public class AnalysisManager {
 						o.addProperty( "id", indicatorId );
 						DataType dt = DataType.valueOf( ras.getResult( layerName, entityName, indicatorId, "datatype", DataType.REAL.name() ) );
 						o.addProperty( "datatype", dt.name().toLowerCase() );
+						o.addProperty( "type", ras.getResult( layerName, entityName, indicatorId, "type", "" ) );
+						o.addProperty( "rank", ras.getResult( layerName, entityName, indicatorId, "rank", "0" ) );
 						switch( dt ) {
 						case EVIDENCE: {
 							JsonObject je = new JsonObject();
@@ -503,95 +506,6 @@ public class AnalysisManager {
 			jarg.subArgs.add( jsub );
 		}
 	}
-	
-//	private JsonElement getAnalysisResultsNew( RiskAnalysisSession ras ) {
-//		
-//		JRiskAnalysisResult result = new JRiskAnalysisResult();
-//		
-////		JsonObject json = new JsonObject();
-//		
-//		{
-//			JsonArray ret = new JsonArray();
-//			
-//			for( int l = 0; l < ras.getLayerCount(); l++ ) {
-//				
-//				String layerName = ras.getLayer( l );
-//				
-//				for( String entityName : ras.getEntities( layerName ) ) {
-//					
-//					for( String indicatorId : ras.getResults( layerName, entityName ) ) {
-//						
-//						JRiskAnalysisResultItem item = new JRiskAnalysisResultItem();
-//						
-//						DataType dt = DataType.valueOf( ras.getResult( layerName, entityName, indicatorId, "datatype", DataType.REAL.name() ) );
-//						
-////						JsonObject o = new JsonObject();
-//						item.id = indicatorId;
-//						item.datatype = EChunkDataType.valueOf( dt.name().toUpperCase() );
-////						o.addProperty( "id", indicatorId );
-////						o.addProperty( "datatype", dt.name().toLowerCase() );
-//						switch( dt ) {
-//						case EVIDENCE: {
-//							JsonObject je = new JsonObject();
-//							je.addProperty( "e", 
-//									Double.parseDouble( ras.getResult( layerName, entityName, indicatorId, "e", "0" ) ) );
-//							o.add( "e", je );
-//							o.addProperty( "p", ras.getResult( layerName, entityName, indicatorId, "p", "0" ) );
-//							o.addProperty( "m", ras.getResult( layerName, entityName, indicatorId, "m", "0" ) );
-//							o.addProperty( "description", ras.getResult( layerName, entityName, indicatorId, "description", "" ) );
-//							o.addProperty( "label", ras.getResult( layerName, entityName, indicatorId, "label", indicatorId ) );
-//						}
-//						break;
-//						case DISTRIBUTION: {
-//							String value = ras.getResult( layerName, entityName, indicatorId, "value", "" );
-//							Distribution d = Distribution.unpack( value );
-//							JsonArray values = new JsonArray();
-//							for( int i = 0; i <  d.getValues().size(); i++ ) {
-//								values.add( new JsonPrimitive( "" + d.getValues().get( i ) ) );
-//							}
-//							o.add( "value", values );
-//						}
-//						break;
-//						case INTEGER:
-////							o.addProperty( "value", ras.getResult( layerName, entityName, indicatorId, "value", "0" ) );
-//							item.value = ras.getResult( layerName, entityName, indicatorId, "value", "0" );
-//							break;
-//						case REAL:
-////							o.addProperty( "value", ras.getResult( layerName, entityName, indicatorId, "value", "0" ) );
-//							item.value = ras.getResult( layerName, entityName, indicatorId, "value", "0" );
-//							break;
-//						case STRING:
-////							o.addProperty( "value", ras.getResult( layerName, entityName, indicatorId, "value", "" ) );
-//							break;
-//						case NaN:
-//							break;
-//						default:
-//							break;
-//						}
-//						result.results.add( item );
-////						ret.add( o );
-//					}
-//					
-//				}
-//			}
-//			
-////			json.add( "results", ret );
-//		}
-//		
-//		result.result = EAnalysisResult.Done;
-////		json.addProperty( "result", EAnalysisResult.Done.name() );
-//		
-//		result.info.entity = ras.getTarget();
-//		
-////			JsonObject info = new JsonObject();
-////			info.addProperty( "entity", ras.getTarget() );
-////			json.add( "info", info );
-//			
-//			// TODO: read the whole set of input values
-//		
-//		return gson.toJsonTree( result );
-//		
-//	}
 	
 	void gatherEntityTree( String entity, RiscossDB db, RiskAnalysisSession ras ) {
 		

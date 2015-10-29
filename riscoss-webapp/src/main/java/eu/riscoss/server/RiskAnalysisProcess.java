@@ -44,6 +44,7 @@ import eu.riscoss.reasoner.Evidence;
 import eu.riscoss.reasoner.Field;
 import eu.riscoss.reasoner.FieldType;
 import eu.riscoss.reasoner.ModelSlice;
+import eu.riscoss.reasoner.Rank;
 import eu.riscoss.reasoner.ReasoningLibrary;
 import eu.riscoss.reasoner.RiskAnalysisEngine;
 import eu.riscoss.server.AnalysisManager.MissingDataItem;
@@ -256,6 +257,8 @@ public class RiskAnalysisProcess {
 		for( Chunk c : rae.queryModel( ModelSlice.OUTPUT_DATA ) ) {
 			Field f = rae.getField( c, FieldType.OUTPUT_VALUE );
 			session.setResult( layer, target, c.getId(), "datatype", f.getDataType().name() );
+			session.setResult( layer, target, c.getId(), "type", rae.getField( c,  FieldType.TYPE ).getValue( "" ) );
+			session.setResult( layer, target, c.getId(), "rank", "" + new Rank( c, f ).getRank() );
 			switch( f.getDataType() ) {
 			case EVIDENCE: {
 				Evidence e = f.getValue();
