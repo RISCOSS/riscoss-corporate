@@ -103,6 +103,8 @@ public class RASPanel implements IsWidget {
 	}
 	
 	VerticalPanel vPanel;
+	HorizontalPanel buttons;
+	HorizontalPanel buttons2;
 
 	protected void loadRASSummary( JsonRiskAnalysis ras ) {
 		sessionSummary = ras;
@@ -173,8 +175,8 @@ public class RASPanel implements IsWidget {
 		
 		VerticalPanel buttonPanel = new VerticalPanel();
 		
-		HorizontalPanel buttons = new HorizontalPanel();
-		HorizontalPanel buttons2 = new HorizontalPanel();
+		buttons = new HorizontalPanel();
+		buttons2 = new HorizontalPanel();
 		HorizontalPanel empty = new HorizontalPanel();
 		
 		buttons.addStyleName("margin-top");
@@ -379,7 +381,10 @@ public class RASPanel implements IsWidget {
 		});
 	}
 	
+	Label running = new Label("  Running...");
+	
 	public void reloadPanel() {
+		buttons2.add(running);
 		RiscossJsonClient.rerunRiskAnalysisSession(selectedRAS, "", new RiscossJsonClient.JsonWaitWrapper(
 				new JsonCallback() {
 			@Override
@@ -389,6 +394,7 @@ public class RASPanel implements IsWidget {
 								sessionSummary,
 								response.isObject().get( "results" ).isArray(),
 								response.isObject().get( "argumentation" ) );
+						buttons2.remove(running);
 					//}
 					/*else {
 						report.showResults(
@@ -448,6 +454,7 @@ public class RASPanel implements IsWidget {
 	}
 
 	protected void onUpdateIsClicked() {
+		buttons2.add(running);
 		RiscossJsonClient.rerunRiskAnalysisSession(selectedRAS, "", new RiscossJsonClient.JsonWaitWrapper(
 				new JsonCallback() {
 			@Override
@@ -508,7 +515,7 @@ public class RASPanel implements IsWidget {
 	String id;
 	
 	protected void onBackupUpdateClicked() {
-		
+		buttons2.add(running);
 		String date = getDate();
 		name = rasName + " (" + date + ")";
 		RiscossJsonClient.creteRiskAnalysisSession(name, riskConf, entity, new JsonCallback() {
@@ -538,6 +545,7 @@ public class RASPanel implements IsWidget {
 	}
 	
 	protected void onBackupRunClicked() {
+		buttons2.add(running);
 		String date = getDate();
 		name = rasName + " (" + date + ")";
 		RiscossJsonClient.creteRiskAnalysisSession(name, riskConf, entity, new JsonCallback() {
