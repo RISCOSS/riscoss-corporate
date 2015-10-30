@@ -164,13 +164,15 @@ public class RiscossWebApp implements EntryPoint {
 			submenu.setAnimationEnabled(true);
 			menu.addItem( subsection.getLabel(), submenu);
 			for( JSitePage page : subsection.pages() ) {
-				access.add(page.getLabel());
-				submenu.addItem( page.getLabel(), new MenuCommand( page.getUrl() ) {
-					@Override
-					public void execute() {
-						loadPanel( getUrl() );
-					}
-				});
+				if (page.getLabel() != "One-layer Analysis") {
+					access.add(page.getLabel());
+					submenu.addItem( page.getLabel(), new MenuCommand( page.getUrl() ) {
+						@Override
+						public void execute() {
+							loadPanel( getUrl() );
+						}
+					});
+				}
 			}
 		}
 		
@@ -225,14 +227,19 @@ public class RiscossWebApp implements EntryPoint {
 	
 	public void generateShortcuts() {
 		shortcuts.setStyleName("float-right");
-		
+		shortcuts.setHeight("100%");
+		Boolean b1 = false;
+		Boolean b2 = false;
+		Boolean b3 = false;
 		//Entity-layer shortcut
 		SimplePanel s1 = new SimplePanel();
 		s1.setStyleName("shortcut-1");
-		s1.setSize("200px", "90px");
+		s1.setWidth("200px");
+		s1.setHeight("100px");
 		VerticalPanel v = new VerticalPanel();
 		
 		if (access.contains("Entities")) {
+			b1 = true;
 			Anchor entities = new Anchor ("entities to be analysed updated");
 			entities.addClickHandler(new ClickHandler() {
 				@Override
@@ -246,6 +253,7 @@ public class RiscossWebApp implements EntryPoint {
 		}
 		
 		if (access.contains("Layers")) {
+			b1 = true;
 			Anchor layers = new Anchor ("defining a hierarchy of layers");
 			layers.addClickHandler(new ClickHandler() {
 				@Override
@@ -261,11 +269,13 @@ public class RiscossWebApp implements EntryPoint {
 		
 		//Riskconf-model shortcut
 		SimplePanel s2 = new SimplePanel();
-		s2.setSize("200px", "90px");
+		s2.setWidth("200px");
+		s2.setHeight("100px");
 		s2.setStyleName("shortcut-2");
 		VerticalPanel vv = new VerticalPanel();
 		
 		if (access.contains("Risk Configurations")) {
+			b2 = true;
 			Anchor riskconfs = new Anchor("defining risks configurations");
 			riskconfs.addClickHandler(new ClickHandler() {
 				@Override
@@ -279,6 +289,7 @@ public class RiscossWebApp implements EntryPoint {
 		}
 		
 		if (access.contains("Models")) {
+			b2 = true;
 			Anchor models = new Anchor("uploaded models");
 			models.addClickHandler(new ClickHandler() {
 				@Override
@@ -294,30 +305,41 @@ public class RiscossWebApp implements EntryPoint {
 		
 		//analysis-browse shortcut
 		SimplePanel s3 = new SimplePanel();
-		s3.setSize("200px", "90px");
+		s3.setWidth("200px");
+		s3.setHeight("100px");
 		s3.setStyleName("shortcut-3");
-		Anchor riskanalysis = new Anchor("manage your risk analysis sessions");
-		riskanalysis.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				loadPanel("riskanalysis.jsp");
-			}
-		});
-		Anchor ras = new Anchor("generate some comparisons");
-		ras.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				loadPanel("ras.jsp");
-			}
-		});
-		HTMLPanel l5 = new HTMLPanel("You are ready to <span id='riskanalysis'></span>.<br/>You can also <span id='ras'></span>.");
-		l5.add(riskanalysis, "riskanalysis");
-		l5.add(ras, "ras");
-		s3.setWidget(l5);
+		VerticalPanel vvv = new VerticalPanel();
+		if (access.contains("Multi-layer Analysis")) {
+			b3 = true;
+			Anchor riskanalysis = new Anchor("manage your risk analysis sessions");
+			riskanalysis.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					loadPanel("riskanalysis.jsp");
+				}
+			});
+			HTMLPanel l5 = new HTMLPanel("You are ready to <span id='riskanalysis'></span>");
+			l5.add(riskanalysis, "riskanalysis");
+			vvv.add(l5);
+		}
+		if (access.contains("Risk Analysis Sessions")) {
+			b3 = true;
+			Anchor ras = new Anchor("generate some comparisons");
+			ras.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					loadPanel("ras.jsp");
+				}
+			});
+			HTMLPanel l6 = new HTMLPanel("You can also <span id='ras'></span>.");
+			l6.add(ras, "ras");
+			vvv.add(l6);
+		}
+		s3.setWidget(vvv);
 		
-		shortcuts.add(s1);
-		shortcuts.add(s2);
-		shortcuts.add(s3);
+		if (b1) shortcuts.add(s1);
+		if (b2) shortcuts.add(s2);
+		if (b3) shortcuts.add(s3);
 	}
 	
 	static class DomainSelectionDialog {
