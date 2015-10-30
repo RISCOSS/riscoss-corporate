@@ -166,6 +166,7 @@ public class EntityPropertyPage implements IsWidget {
 							}
 							Log.println( "MSG: " + msg );
 							Window.alert( msg );
+							module.ppg.refreshDC();
 							}
 							catch( Exception ex ) {
 								Window.alert( ex.getMessage() );
@@ -553,6 +554,12 @@ public class EntityPropertyPage implements IsWidget {
 	
 	public void runDC() {
 		confDialog.saveAndRun();
+	}
+	
+	public void refreshDC() {
+		entityDataBox = new EntityDataBox();
+		entityDataBox.setSelectedEntity(entity);
+		rdr.setWidget(entityDataBox);
 	}
 	
 	List<String> types;
