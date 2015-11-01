@@ -172,6 +172,7 @@ public class ReportModule implements EntryPoint {
 //		Window.alert( "2: " + response );
 		RiskAnalysisReport report = new RiskAnalysisReport();
 		report.showResults( 
+				null,
 				response,
 				object.isObject().get( "argumentation" ) );
 		

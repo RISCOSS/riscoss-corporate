@@ -96,149 +96,6 @@ public class RiskAnalysisReport implements IsWidget {
 	HorizontalPanel		mainChartPanel = new HorizontalPanel();
 	VerticalPanel 		descriptions   = new VerticalPanel();
 	
-	public void showResults( JSONArray response, JSONValue jsonArgumentation ) {
-		Codec codec = GWT.create( Codec.class );
-		
-		if( jsonArgumentation != null ) {
-			argumentation = codec.decode( jsonArgumentation );
-		}
-		
-		Grid grid = new Grid();
-		grid.setCellPadding(0);
-		grid.setCellSpacing(0);
-		this.response = response;
-		for( int i = 0; i < response.isArray().size(); i++ ) {
-			JSONObject v = response.isArray().get( i ).isObject();
-			JsonRiskResult result = new JsonRiskResult( v );
-//			grid.insertRow( grid.getRowCount() );
-			switch( result.getDataType() ) {
-			case DISTRIBUTION: {
-				grid.resize( grid.getRowCount() +1, 3 );
-				
-				VerticalPanel panel = new VerticalPanel();
-				
-				String label = v.get( "id" ).isString().stringValue();
-				if( v.get( "name" ) != null ) {
-					if( v.get( "name" ).isString() != null ) {
-						label = v.get( "name" ).isString().stringValue();
-					}
-				}
-				Label l = new Label( label );
-				l.setStyleName("bold");
-				panel.add( l );
-				panel.setStyleName("headerTable");
-				grid.setWidget( i, 0, panel );
-				
-				GaugeImage img = new GaugeImage();
-				img.setDistribution( result.getDistributionString() );
-				grid.setWidget( i, 1, img );
-				
-				HorizontalPanel hp = new HorizontalPanel();
-				
-				hp.add( new Label( result.getDescription() ) );
-				
-				JArgument arg = argumentation.arguments.get( result.getChunkId() );
-				if( arg != null ) {
-					Button b = new Button( "Why?" );
-					b.setStyleName("button");
-					b.addClickHandler( new ClickWrapper<JArgument>( arg ) {
-						@Override
-						public void onClick( ClickEvent event ) {
-							DialogBox d = new DialogBox( true );
-							JArgument arg = getValue();
-							TreeWidget w = load( arg );
-							d.add( w );
-							d.center();
-						}
-						
-						private TreeWidget load( JArgument arg ) {
-							TreeWidget w = new TreeWidget( new Label( arg.summary ) );
-							for( JArgument subArg : arg.subArgs ) {
-								w.addChild( load( subArg ) );
-							}
-							return w;
-						}} );
-					
-					hp.add( b );
-				}
-				
-				grid.setWidget( i, 2, hp );
-			}
-				break;
-			case EVIDENCE: {
-				grid.resize( grid.getRowCount() +1, 3 );
-				VerticalPanel panel = new VerticalPanel();
-				Label l = new Label(v.get( "id" ).isString().stringValue());
-				l.setStyleName("bold");
-				panel.add( l );
-				panel.add( new HTML( 
-						"Exposure: <font color='red'>" + 
-								v.get( "e" ).isObject().get( "e" ).isNumber().doubleValue() +
-						"</font>") );
-				panel.setStyleName("headerTable");
-				panel.setHeight("100%");
-				grid.setWidget( i, 0, panel );
-				
-				if( "evidence".equals( v.get( "datatype" ).isString().stringValue() ) ) {
-					GaugeImage img = new GaugeImage();
-					img.setEvidence( v.get( "p" ).isString().stringValue(), v.get( "m" ).isString().stringValue() );
-					SimplePanel p = new SimplePanel();
-					p.setWidget(img);
-					p.setStyleName("contentResultsTable");
-					grid.setWidget( i, 1, p );
-				}
-				Label d = new Label(v.get( "description" ).isString().stringValue());
-				SimplePanel sp = new SimplePanel();
-				sp.setWidget(d);
-				sp.setStyleName("contentResultsTable");
-				
-				HorizontalPanel hp = new HorizontalPanel();
-				
-				hp.add( sp );
-				
-				JArgument arg = argumentation.arguments.get( result.getChunkId() );
-				if( arg != null ) {
-					Button b = new Button( "Why?" );
-					b.setStyleName("button");
-					
-					b.addClickHandler( new ClickWrapper<JArgument>( arg ) {
-						@Override
-						public void onClick( ClickEvent event ) {
-							DialogBox d = new DialogBox( true );
-							d.setText( "Argumentation" );
-							JArgument arg = getValue();
-							TreeWidget w = load( arg );
-							d.add( w );
-							d.center();
-						}
-						
-						private TreeWidget load( JArgument arg ) {
-							TreeWidget w = new TreeWidget( new Label( arg.summary ) );
-							for( JArgument subArg : arg.subArgs ) {
-								w.addChild( load( subArg ) );
-							}
-							return w;
-						}} );
-					
-					hp.add( b );
-				}
-				
-				grid.setWidget( i, 2, hp );
-//				grid.setWidget( i, 2, sp);
-			}
-				break;
-			case INTEGER:
-			case NaN:
-			case REAL:
-			case STRING:
-			default:
-				break;
-			}
-		}
-		
-		panel.add( grid );
-	}
-	
 	ArrayList<SimplePanel> 	panels;
 	ArrayList<String> 		riskSessions;
 	ArrayList<String>		dates;
@@ -269,6 +126,7 @@ public class RiskAnalysisReport implements IsWidget {
 		descriptions.clear();
 		mainChartPanel.setStyleName("margin-top");
 		this.response = response;
+		Boolean evidence = false;
 		
 		Codec codec = GWT.create( Codec.class );
 		
@@ -343,6 +201,7 @@ public class RiskAnalysisReport implements IsWidget {
 			}
 				break;
 			case EVIDENCE: {
+				evidence = true;
 				grid.resize( grid.getRowCount() +1, 3 );
 				VerticalPanel panel = new VerticalPanel();
 				Label l = new Label(v.get( "id" ).isString().stringValue());
@@ -406,7 +265,7 @@ public class RiskAnalysisReport implements IsWidget {
 				break;
 			}
 		}
-		panel.add( mainChartPanel );
+		if (evidence) panel.add( mainChartPanel );
 		panel.add( grid );
 	}
 	
