@@ -25,7 +25,6 @@ import java.util.Date;
 
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
-import org.python.icu.util.Calendar;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -43,6 +42,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecMissingData;
+import eu.riscoss.client.codec.CodecRiskData;
 import eu.riscoss.client.entities.EntityPropertyPage;
 import eu.riscoss.client.ras.RASModule;
 import eu.riscoss.client.report.RiskAnalysisReport;
@@ -53,7 +53,7 @@ public class RASPanel implements IsWidget {
 	SimplePanel 		panel = new SimplePanel();
 	private String 		selectedRAS;
 	RiskAnalysisReport 	report = new RiskAnalysisReport();
-	SimplePanel		 	inputTable;
+	VerticalPanel		 inputTable = new VerticalPanel();
 	HorizontalPanel		mainChart = new HorizontalPanel();
 	JsonRiskAnalysis	sessionSummary;		
 	
@@ -183,13 +183,9 @@ public class RASPanel implements IsWidget {
 		buttons2.setStyleName("margin-top");
 		empty.setWidth("12px");
 		
-		//This needs to be fixed, right now it works but
-		//coupling is too high
-		
 		//If RASPanel placed in multi-layer analysis
 		if (risk != null) {
 			buttons.add(risk.getBack());
-			buttons.add(missingVal);
 			buttons.add(remove);
 			
 			buttons2.add(update);
@@ -201,7 +197,6 @@ public class RASPanel implements IsWidget {
 		//If RASPanel placed in browse ras
 		else if (rasModule != null) {
 			buttons.add(browseBack);
-			buttons.add(missingVal);
 			buttons.add(browseDelete);
 			buttons2.add(update);
 			buttons2.add(run);
@@ -212,7 +207,6 @@ public class RASPanel implements IsWidget {
 		//If RASPanel
 		else if (eppg != null) {
 			buttons.add(entityBack);
-			buttons.add(missingVal);
 			buttons.add(entityDelete);
 			buttons2.add(update);
 			buttons2.add(run);
@@ -231,8 +225,8 @@ public class RASPanel implements IsWidget {
 		
 		Label inputValues = new Label("Input values");
 		inputValues.setStyleName("subtitle");
-		//vPanel.add(inputValues);
-		//vPanel.add(inputTable);
+		vPanel.add(inputValues);
+		vPanel.add(inputTable);
 		
 		panel.setWidget( vPanel );
 		
@@ -244,20 +238,12 @@ public class RASPanel implements IsWidget {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				try {
-					//if (risk != null || browse) {
 						report.showResults( 
 								sessionSummary,
 								response.isObject().get( "results" ).isArray(),
 								response.isObject().get( "argumentation" ) );
-					//}
-					/*else {
-						report.showResults(
-								response.isObject().get( "results" ).isArray(),
-								response.isObject().get( "argumentation" ) );
-						
-					}*/
 					
-					//inputDataInfo(response.isObject().get( "input" ));
+					inputDataInfo(response.isObject().get( "input" ));
 				}
 				catch( Exception ex ) {
 //					Window.alert( ex.getMessage() + "\n" + response );
@@ -268,7 +254,6 @@ public class RASPanel implements IsWidget {
 		
 	}
 	
-	Button		missingVal;
 	Button		update;
 	Button		run;
 	Button		backupUpdate;
@@ -278,17 +263,9 @@ public class RASPanel implements IsWidget {
 	Button 		browseDelete;
 	Button		entityBack;
 	Button		entityDelete;
+	Button		save;
 	
 	protected void generateButtons() {
-		
-		missingVal = new Button("Edit missing values");
-		missingVal.setStyleName("deleteButton");
-		missingVal.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick( ClickEvent event ) {
-				onEditMissingValues();
-			}
-		});
 		
 		update = new Button("Update");
 		update.setStyleName("deleteButton");
@@ -379,6 +356,26 @@ public class RASPanel implements IsWidget {
 				eppg.delete(sessionSummary.getID());
 			}
 		});
+		
+		save = new Button("Save");
+		save.setStyleName("button");
+		save.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				CodecRiskData crd = GWT.create( CodecRiskData.class );
+				JSONValue values = crd.encode( inputForm.getValueMap() );
+				RiscossJsonClient.setAnalysisMissingData(selectedRAS, values, new JsonCallback() {
+					@Override
+					public void onSuccess( Method method, JSONValue response ) {
+						onUpdatedIndicatorsClicked();
+					}
+					@Override
+					public void onFailure( Method method, Throwable exception ) {
+						Window.alert( exception.getMessage() );
+					}
+				});
+			}
+		});
 	}
 	
 	Label running = new Label("  Running...");
@@ -389,21 +386,13 @@ public class RASPanel implements IsWidget {
 				new JsonCallback() {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
-					//if (risk != null || browse) {
 						report.showResults( 
 								sessionSummary,
 								response.isObject().get( "results" ).isArray(),
 								response.isObject().get( "argumentation" ) );
 						buttons2.remove(running);
-					//}
-					/*else {
-						report.showResults(
-								response.isObject().get( "results" ).isArray(),
-								response.isObject().get( "argumentation" ) );
-						
-					}*/
 					
-					//inputDataInfo(response.isObject().get( "input" ));
+					inputDataInfo(response.isObject().get( "input" ));
 				}
 			@Override
 			public void onFailure( Method method, Throwable exception ) {
@@ -411,31 +400,12 @@ public class RASPanel implements IsWidget {
 			}
 		} ) );
 	}
-	
-	protected void onEditMissingValues() {
-		RiscossJsonClient.getAnalysisMissingData(selectedRAS, new JsonCallback() {
-				@Override
-				public void onSuccess( Method method, JSONValue response ) {
-					CodecMissingData codec = GWT.create( CodecMissingData.class );
-					JMissingData md = codec.decode( response );
-					createDialog(md);
-				}
-				@Override
-				public void onFailure( Method method, Throwable exception ) {
-					Window.alert( exception.getMessage() );
-				}
-			} );
-	}
-	
-	private void createDialog(JMissingData md) {
-		new MissingDataDialog( this, md, selectedRAS ).show();
-	}
 
 	protected void onUpdatedIndicatorsClicked() {
 		RiscossJsonClient.updateSessionData(selectedRAS, new JsonCallback() {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
-				Window.alert( "Done" );
+				onUpdateIsClicked();
 			}
 			
 			@Override
@@ -445,14 +415,19 @@ public class RASPanel implements IsWidget {
 		});
 	}
 	
+	MultiLayerInputForm inputForm;
+	
 	protected void inputDataInfo(JSONValue input) {
 		CodecMissingData codec = GWT.create( CodecMissingData.class );
 		JMissingData md = codec.decode( input );
-		MultiLayerInputForm inputForm = new MultiLayerInputMatrixRead();
+		inputForm = new MultiLayerInputMatrix();
 		inputForm.load(md);
-		vPanel.add(inputForm);
+		inputTable.clear();
+		inputTable.add(inputForm);
+		inputTable.add(save);
 	}
 
+	
 	protected void onUpdateIsClicked() {
 		buttons2.add(running);
 		RiscossJsonClient.rerunRiskAnalysisSession(selectedRAS, "", new RiscossJsonClient.JsonWaitWrapper(
@@ -471,20 +446,12 @@ public class RASPanel implements IsWidget {
 							Window.alert( exception.getMessage() );
 						}
 					});
-					//if (risk != null || browse) {
-						report.showResults( 
-								sessionSummary,
-								response.isObject().get( "results" ).isArray(),
-								response.isObject().get( "argumentation" ) );
-					//}
-					/*else {
-						report.showResults(
-								response.isObject().get( "results" ).isArray(),
-								response.isObject().get( "argumentation" ) );
-						
-					}*/
+					report.showResults( 
+							sessionSummary,
+							response.isObject().get( "results" ).isArray(),
+							response.isObject().get( "argumentation" ) );
 					
-					//inputDataInfo(response.isObject().get( "input" ));
+					inputDataInfo(response.isObject().get( "input" ));
 				}
 				catch( Exception ex ) {
 					Window.alert( ex.getMessage() + "\n" + response );

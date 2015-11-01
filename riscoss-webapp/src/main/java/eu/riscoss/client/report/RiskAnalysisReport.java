@@ -410,6 +410,8 @@ public class RiskAnalysisReport implements IsWidget {
 		panel.add( grid );
 	}
 	
+	String nextDate;
+	
 	protected void getSessionsInformation() {
 		RiscossJsonClient.listRiskAnalysisSessions(summary.getTarget(), summary.getRC(), new JsonCallback() {
 			@Override
@@ -437,46 +439,43 @@ public class RiskAnalysisReport implements IsWidget {
 							public void onSuccess(Method method,
 									JSONValue response) {
 								JsonRiskAnalysis r = new JsonRiskAnalysis(response);
-								dates.add(r.getDate());	
-								if (i == count) getData();
+								nextDate = r.getDate();
+								RiscossJsonClient.getSessionResults( r.getID(), new JsonCallback() {
+									String d = nextDate;
+									@Override
+									public void onFailure(Method method, Throwable exception) {
+										Window.alert(exception.getMessage());
+									}
+									@Override
+									public void onSuccess(Method method, JSONValue response) {
+										JSONArray results = response.isObject().get( "results" ).isArray();
+										ArrayList<Double> values = new ArrayList<>();
+										for (int s = 0; s < results.isArray().size(); ++s) {
+											JSONObject v = results.isArray().get( s ).isObject();
+											JsonRiskResult result = new JsonRiskResult( v );
+//											
+											switch( result.getDataType() ) {
+												case EVIDENCE: {
+													values.add(v.get( "e" ).isObject().get( "e" ).isNumber().doubleValue());
+												}
+												default: break;
+											}
+										}
+										Date date = getDate(d);
+										Info inf = new Info(date, values);
+										dataList.add(inf);
+										++counting;
+										if (counting == count) {
+											sortByDate();
+										}
+									}
+								});
 							}
 						});
 					}
 				}
 			}
 		});
-	}
-	
-	private void getData() {
-		for (int i = 0; i < riskSessions.size(); ++i) {
-			RiscossJsonClient.getSessionResults( riskSessions.get(i), new JsonCallback() {
-				@Override
-				public void onFailure(Method method, Throwable exception) {
-					Window.alert(exception.getMessage());
-				}
-				@Override
-				public void onSuccess(Method method, JSONValue response) {
-					JSONArray results = response.isObject().get( "results" ).isArray();
-					ArrayList<Double> values = new ArrayList<>();
-					for (int s = 0; s < results.isArray().size(); ++s) {
-						JSONObject v = results.isArray().get( s ).isObject();
-						JsonRiskResult result = new JsonRiskResult( v );
-//						grid.insertRow( grid.getRowCount() );
-						switch( result.getDataType() ) {
-							case EVIDENCE: {
-								values.add(v.get( "e" ).isObject().get( "e" ).isNumber().doubleValue());
-							}
-							default: break;
-						}
-					}
-					l.add(values);
-					++counting;
-					if (counting == count) {
-						sortByDate();
-					}
-				}
-			});
-		}
 	}
 	
 	private class Info {
@@ -505,12 +504,6 @@ public class RiskAnalysisReport implements IsWidget {
 	}
 	
 	private void sortByDate() {
-		for (int i = 0; i < dates.size(); ++i) {
-			Date date = getDate(dates.get(i));
-			ArrayList<Double> doubles = l.get(i);
-			Info inf = new Info(date, doubles);
-			dataList.add(inf);
-		}
 		
 		Collections.sort(dataList, new Comparator<Info>() {
 			@Override
