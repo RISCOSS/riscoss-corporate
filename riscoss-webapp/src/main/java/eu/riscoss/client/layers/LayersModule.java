@@ -480,7 +480,7 @@ public class LayersModule implements EntryPoint {
 		
 		rightPanel.add(grid);
 		
-		RiscossJsonClient.listEntities(new JsonCallback() {
+		RiscossJsonClient.listEntities(selectedLayer, new JsonCallback() {
 			@Override
 			public void onFailure(Method method, Throwable exception) {
 				Window.alert( exception.getMessage() );
@@ -614,7 +614,7 @@ public class LayersModule implements EntryPoint {
 		entities = new ArrayList<>();
 		for( int i = 0; i < response.isArray().size(); i++ ) {
 			JSONObject o = (JSONObject)response.isArray().get( i );
-				if (o.get("layer").isString().stringValue().equals(selectedLayer)) entities.add(o.get("name").isString().stringValue());
+			entities.add(o.get("name").isString().stringValue());
 		}
 		leftPanelEntity.clear();
 		table = new CellTable<String>(15, (Resources) GWT.create(TableResources.class));
