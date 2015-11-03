@@ -32,4 +32,8 @@ public class SearchParams {
 		catch( Exception ex ) {}
 	}
 	
+	public void setOptLoadHierarchy( boolean b ) {
+		this.loadHierarchy = b;
+	}
+	
 }

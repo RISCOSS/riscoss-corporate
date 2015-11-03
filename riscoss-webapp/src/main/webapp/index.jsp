@@ -27,12 +27,11 @@ if (cookies != null) {
 }
 	
 	if( token != null ) {
+		RiscossDatabase db = null;
 		try {
-			RiscossDatabase db = DBConnector.openDatabase( token );
-			DBConnector.closeDB( db );
-			%>
-				<jsp:include page="home.jsp" flush="true"/>
-			<% return;
+			db = DBConnector.openDatabase( token );
+			%><jsp:include page="home.jsp" flush="true"/><%
+			return;
 		}
 		catch( Exception ex ) { 
 			System.err.println( ex.getMessage() );
@@ -41,6 +40,9 @@ if (cookies != null) {
 			cookie.setValue("");
 			cookie.setPath("/");
 			response.addCookie(cookie);
+		}
+		finally {
+			DBConnector.closeDB( db );
 		}
 	}
 		

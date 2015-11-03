@@ -880,5 +880,18 @@ public class ORiscossDomain implements RiscossDB {
 		return dom.listOutEdgeNames( id, GDomDB.CHILDOF_CLASS, null, null, queryString );
 		
 	}
+
+	@Override
+	public List<String> getScope( String layer ) {
+		List<String> scope = new ArrayList<String>();
+		OLinkedList olist = new OLinkedList( dom, "/layers" );
+		scope.add( layer );
+		String next = olist.getNextLayer( layer );
+		while( next != null ) {
+			scope.add( next);
+			next = olist.getNextLayer( next );
+		}
+		return scope;
+	}
 	
 }

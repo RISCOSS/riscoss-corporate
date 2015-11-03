@@ -10,7 +10,7 @@ public class DVInteger implements RiskDataValue {
 		this.value = initValue;
 	}
 
-	public String getHumanReadablString() {
+	public String getHumanReadableString() {
 		return String.valueOf( value );
 	}
 	

@@ -64,6 +64,8 @@ import eu.riscoss.dataproviders.RiskDataType;
 import eu.riscoss.db.RecordAbstraction;
 import eu.riscoss.db.RiscossDB;
 import eu.riscoss.db.RiskAnalysisSession;
+import eu.riscoss.ram.algo.DownwardEntitySearch;
+import eu.riscoss.ram.algo.TraverseCallback;
 import eu.riscoss.ram.rae.Argument;
 import eu.riscoss.ram.rae.Argumentation;
 import eu.riscoss.reasoner.Chunk;
@@ -73,7 +75,6 @@ import eu.riscoss.reasoner.Evidence;
 import eu.riscoss.reasoner.Field;
 import eu.riscoss.reasoner.FieldType;
 import eu.riscoss.reasoner.ModelSlice;
-import eu.riscoss.reasoner.Rank;
 import eu.riscoss.reasoner.ReasoningLibrary;
 import eu.riscoss.reasoner.RiskAnalysisEngine;
 import eu.riscoss.shared.EAnalysisOption;
@@ -216,9 +217,9 @@ public class AnalysisManager {
 	
 	void cacheRDRData( RiskAnalysisSession ras, RiscossDB db  ) {
 		
-		new EntityTreeBrowser( db ).analyseEntity( ras.getTarget(), new EntityTreeBrowser.Callback<AnalysisDataSource>( new AnalysisDataSource( ras, db ) ) {
+		new DownwardEntitySearch( db ).analyseEntity( ras.getTarget(), new TraverseCallback<AnalysisDataSource>( new AnalysisDataSource( ras, db ) ) {
 			@Override
-			public void onEntityFound( String entity ) {
+			public void afterEntityAnalyzed( String entity ) {
 				RiskAnalysisSession ras = getValue().ras;
 				RiscossDB db = getValue().db;
 				String layer = db.layerOf( entity );
@@ -236,9 +237,6 @@ public class AnalysisManager {
 					}
 				}
 			}
-
-			@Override
-			public void onLayerFound( String layer ) {}
 		} );
 		
 	}

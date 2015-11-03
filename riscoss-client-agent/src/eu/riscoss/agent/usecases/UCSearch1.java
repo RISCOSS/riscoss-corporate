@@ -16,8 +16,8 @@ public class UCSearch1 implements UseCase {
 		
 		rest.login( "admin", "admin" );
 		
-		new EnsureDomainExistence( domain ).execute( rest );
-		new EnsureLayerStructure( domain, layers ).execute( rest );
+		new EnsureDomainExistence( domain ).execute( rest, null );
+		new EnsureLayerStructure( domain, layers ).execute( rest, null );
 		
 		for( String entity : entities )
 			if( !rest.domain( domain ).entities().exists( entity ) )

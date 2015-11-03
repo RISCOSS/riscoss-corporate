@@ -29,8 +29,8 @@ public class UCRAS1 implements UseCase {
 		
 		rest.login( "admin", "admin" );
 		
-		new EnsureDomainExistence( domain ).execute( rest );
-		new EnsureLayerStructure( domain, new String[] { "Project", "OSSComponent" } ).execute( rest );
+		new EnsureDomainExistence( domain ).execute( rest, null );
+		new EnsureLayerStructure( domain, new String[] { "Project", "OSSComponent" } ).execute( rest, null );
 		
 		{	// Create 3 entities: 1 project and 2 components
 			JEntityData data = null;

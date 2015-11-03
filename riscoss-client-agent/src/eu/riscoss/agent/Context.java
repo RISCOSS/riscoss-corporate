@@ -3,13 +3,7 @@ package eu.riscoss.agent;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ExecutionContext {
-	
-	private static final ExecutionContext instance = new ExecutionContext();
-	
-	public static ExecutionContext get() {
-		return instance;
-	}
+public class Context {
 	
 	Map<String,Object> map = new HashMap<>();
 	
@@ -26,5 +20,5 @@ public class ExecutionContext {
 			return def;
 		}
 	}
-	
+
 }

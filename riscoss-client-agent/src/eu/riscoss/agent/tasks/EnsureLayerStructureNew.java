@@ -9,22 +9,21 @@ import com.google.gson.reflect.TypeToken;
 import eu.riscoss.agent.Context;
 import eu.riscoss.agent.RiscossRESTClient;
 
-public class EnsureLayerStructure implements TestTask {
+public class EnsureLayerStructureNew implements TestTask {
 	
-	String domain;
+//	String domain;
 	String[] layers;
 	
 	Gson gson = new Gson();
 	
-	public EnsureLayerStructure( String domain, String[] layers ) {
-		this.domain = domain;
+	public EnsureLayerStructureNew( String[] layers ) {
 		this.layers = layers;
 	}
 	
 	@Override
 	public void execute( RiscossRESTClient rest, Context context ) {	// Ensure that two layers exist in the domain: Project and OSSComponent
 		List<Map<String,String>> remoteLayers = 
-				gson.fromJson(rest.domain( domain ).layers().list(), new TypeToken<List<Map<String,String>>>() {}.getType() );
+				gson.fromJson(rest.domain( context.get( "domain", "" ) ).layers().list(), new TypeToken<List<Map<String,String>>>() {}.getType() );
 		{
 			boolean[] found = new boolean[layers.length];
 			for( int i = 0; i < found.length; i++ ) found[i] = false;
@@ -38,14 +37,14 @@ public class EnsureLayerStructure implements TestTask {
 			for( int i = 0; i < layers.length; i++ ) {
 				if( found[i] == false ) {
 					if( i == 0 )
-						rest.domain( domain ).layers().create( layers[i] );
+						rest.domain( context.get( "domain", "" ) ).layers().create( layers[i] );
 					else
-						rest.domain( domain ).layers().create( layers[i], layers[i-1] );
+						rest.domain( context.get( "domain", "" ) ).layers().create( layers[i], layers[i-1] );
 				}
 			}
 			
 			remoteLayers = 
-					gson.fromJson(rest.domain( domain ).layers().list(), new TypeToken<List<Map<String,String>>>() {}.getType() );
+					gson.fromJson(rest.domain( context.get( "domain", "" ) ).layers().list(), new TypeToken<List<Map<String,String>>>() {}.getType() );
 			
 			for( int i = 0; i < layers.length; i++ ) {
 				String layer = layers[i];

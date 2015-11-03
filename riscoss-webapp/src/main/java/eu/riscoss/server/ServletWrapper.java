@@ -55,7 +55,9 @@ public class ServletWrapper extends ServletContainer {
 		
 		super.init();
 		
-		{
+		RiscossDatabase db = null;
+		
+		try {
 			ServletContext sc = getServletContext();
 			
 			String dbaddr = sc.getInitParameter( "eu.riscoss.db.address" );
@@ -101,7 +103,7 @@ public class ServletWrapper extends ServletContainer {
 			
 			String initString = sc.getInitParameter( "eu.riscoss.param.domains.list" );
 			
-			RiscossDatabase db = DBConnector.openDatabase( superadmin, superpwd );
+			db = DBConnector.openDatabase( superadmin, superpwd );
 			
 			db.init();
 			
@@ -170,7 +172,11 @@ public class ServletWrapper extends ServletContainer {
 //					domainDB.close();
 				}
 			}
-			DBConnector.closeDB( db );
+		}
+		finally {
+			if( db != null )
+				DBConnector.closeDB( db );
+		}
 			Reflections reflections = new Reflections( RDCRunner.class.getPackage().getName() );
 			
 			Set<Class<? extends RDC>> subTypes = reflections.getSubTypesOf(RDC.class);
@@ -182,7 +188,6 @@ public class ServletWrapper extends ServletContainer {
 				}
 				catch( Exception ex ) {}
 			}
-		}
 		
 	}
 	

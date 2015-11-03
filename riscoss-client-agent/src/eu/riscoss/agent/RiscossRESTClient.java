@@ -44,7 +44,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import eu.riscoss.agent.services.AdminService;
-import eu.riscoss.agent.services.AnalysisService;
 import eu.riscoss.agent.services.DomainService;
 import eu.riscoss.agent.services.DomainsService;
 import eu.riscoss.agent.services.UserService;

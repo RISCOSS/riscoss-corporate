@@ -21,6 +21,8 @@
 
 package eu.riscoss.server;
 
+import java.util.List;
+
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -178,11 +180,26 @@ public class LayersManager {
 			@PathParam("layer") String name, 
 			@QueryParam("newname") String newName ) {
 		
-		System.out.println("Name change request: "+name+" to "+newName+".");
-		
 		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
 			db.renameLayer( name, newName );
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
+	}
+	
+	@GET @Path("/{domain}/{layer}/scope")
+	@Info("Returns the scope of a layer; a scope is an ordered set that contains the target layer and its sub-layers")
+	public String getScope( 
+			@DefaultValue("") @PathParam("domain") String domain,
+			@DefaultValue("") @HeaderParam("token") String token,
+			@DefaultValue("") @PathParam("layer") String layer ) {
+		
+		RiscossDB db = DBConnector.openDB( domain, token );
+		try {
+			List<String> scope = db.getScope( layer );
+			return gson.toJson( scope );
 		}
 		finally {
 			DBConnector.closeDB( db );

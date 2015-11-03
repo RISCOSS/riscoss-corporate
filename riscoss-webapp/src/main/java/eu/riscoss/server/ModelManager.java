@@ -20,6 +20,9 @@
 
 package eu.riscoss.server;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -317,6 +320,7 @@ public class ModelManager {
 			}
 		}
 		
+		Set<String> set = new HashSet<>();
 		
 		try {
 			
@@ -371,7 +375,10 @@ public class ModelManager {
 				default:
 					break;
 				}
-				inputs.add( o );
+				if( !set.contains( c.getId() ) ) {
+					inputs.add( o );
+					set.add( c.getId() );
+				}
 			}
 			
 			for( Chunk c : rae.queryModel( ModelSlice.OUTPUT_DATA ) ) {

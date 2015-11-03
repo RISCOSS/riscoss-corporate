@@ -1,7 +1,7 @@
 package eu.riscoss.agent;
 
+import eu.riscoss.agent.usecases.UCCycles;
 import eu.riscoss.agent.usecases.UCRAS1;
-import eu.riscoss.agent.usecases.UCSearch1;
 
 
 public class RiscossClientAgent {
@@ -13,7 +13,7 @@ public class RiscossClientAgent {
 	public void run( String base_addr ) {
 		
 		try {
-			new UCRAS1().run( new RiscossRESTClient( base_addr ) );
+			new UCCycles().run( new RiscossRESTClient( base_addr ) );
 		}
 		catch( Exception ex ) {
 			ex.printStackTrace();

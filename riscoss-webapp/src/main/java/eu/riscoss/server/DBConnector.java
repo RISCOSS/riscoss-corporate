@@ -22,7 +22,6 @@
 package eu.riscoss.server;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -56,13 +55,13 @@ public class DBConnector {
 	}
 	
 	private static void lock() {
-		System.out.println( "Lock by " + Thread.currentThread() );
+//		System.out.println( "Lock by " + Thread.currentThread() );
 //		Thread.dumpStack();
 		lock.lock();
 	}
 	
 	private static void unlock() {
-		System.out.println( "UNLock by " + Thread.currentThread() );
+//		System.out.println( "UNLock by " + Thread.currentThread() );
 //		Thread.dumpStack();
 		lock.unlock();
 	}
@@ -75,7 +74,13 @@ public class DBConnector {
 	 */
 	public static RiscossDatabase openDatabase( String username, String password ) {
 		lock();
-		return new ORiscossDatabase( db_addr, username, password );
+		try {
+			return new ORiscossDatabase( db_addr, username, password );
+		}
+		catch( Exception ex ) {
+			unlock();
+			throw new RuntimeException( ex );
+		}
 	}
 	/**
 	 * Opens the database with a previously stored token (e.g. from a cookie), specific for "superuser" access to change domains and users.
@@ -84,7 +89,13 @@ public class DBConnector {
 	 */
 	public static RiscossDatabase openDatabase( String token ) {
 		lock();
-		return new ORiscossDatabase( db_addr, Base64.decodeBase64( token ) );
+		try {
+			return new ORiscossDatabase( db_addr, Base64.decodeBase64( token ) );
+		}
+		catch( Exception ex ) {
+			unlock();
+			throw new RuntimeException( ex );
+		}
 	}
 	
 	
@@ -99,7 +110,9 @@ public class DBConnector {
 		try {
 			lock();
 			return new ORiscossDomain( db_addr, URLEncoder.encode( domain, "UTF-8" ), username, password );
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch( Exception e ) {
+			unlock();
 			throw new RuntimeException( e );
 		}
 	}
@@ -112,7 +125,9 @@ public class DBConnector {
 		try {
 			lock();
 			return new ORiscossDomain( db_addr, URLEncoder.encode( domain, "UTF-8" ), Base64.decodeBase64( token ) );
-		} catch (UnsupportedEncodingException e) {
+		}
+		catch( Exception e ) {
+			unlock();
 			throw new RuntimeException( e );
 		}
 	}
@@ -136,7 +151,8 @@ public class DBConnector {
 
 	public static void closeDB( RiscossDatabase db ) {
 		unlock();
-		db.close();
+		if( db != null )
+			db.close();
 	}
 	
 }

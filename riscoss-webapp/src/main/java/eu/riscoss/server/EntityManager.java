@@ -24,8 +24,10 @@ package eu.riscoss.server;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -47,6 +49,9 @@ import com.google.gson.JsonPrimitive;
 import eu.riscoss.dataproviders.RiskData;
 import eu.riscoss.db.RiscossDB;
 import eu.riscoss.db.SearchParams;
+import eu.riscoss.ram.algo.DownwardEntitySearch;
+import eu.riscoss.ram.algo.TraverseCallback;
+import eu.riscoss.ram.algo.DownwardEntitySearch.DIRECTION;
 import eu.riscoss.rdc.RDC;
 import eu.riscoss.rdc.RDCFactory;
 import eu.riscoss.rdc.RDCParameter;
@@ -111,9 +116,11 @@ public class EntityManager {
 	}
 	
 	@GET @Path("/{domain}/search") 
-	public String search(@DefaultValue("Playground") @PathParam("domain") String domain, @HeaderParam("token") String token,
+	public String search(
+			@PathParam("domain") String domain, 
+			@HeaderParam("token") String token,
 			@DefaultValue("") @QueryParam("query") String query ) {
-		return searchNew( domain, token, "", query, "0", "0", "false" );
+		return searchNew( domain, token, "", query, "0", "0", "false", "" );
 	}
 	
 	@GET @Path("/{domain}/{layer}/search_old") 
@@ -152,11 +159,10 @@ public class EntityManager {
 			@DefaultValue("") @PathParam("layer") String layer, 
 			@DefaultValue("") @QueryParam("query") String query, 
 			@DefaultValue("0") @QueryParam("from") String strFrom,
-			@DefaultValue("0") @QueryParam("max") String strMax,    //not used for now in client
-			@DefaultValue("f") @QueryParam("h") String strHierarchy
+			@DefaultValue("0") @QueryParam("max") String strMax, 
+			@DefaultValue("f") @QueryParam("h") String strHierarchy,
+			@DefaultValue("") @QueryParam("f") String flags
 		) {
-		
-//		Map<String,JEntityNode> map = new HashMap<>();
 		
 		List<JEntityNode> result = new ArrayList<JEntityNode>();
 		
@@ -165,31 +171,59 @@ public class EntityManager {
 			SearchParams params = new SearchParams();
 			params.setMax( strMax );
 			params.setFrom( strFrom );
+			params.setOptLoadHierarchy( flags.indexOf( "h" ) != -1 );
 			params.setOptLoadHierarchy( strHierarchy );
 			
-			Collection<String> list = db.findEntities( layer, query, params );
-			for (String name : list) {
-				JEntityNode jd = new JEntityNode();
-				jd.name = name;
-				jd.layer = db.layerOf( name );
-				result.add( jd );
-				if( params.loadHierarchy = true ) {
-					loadDescendants( jd, db );
-				}
+			List<String> layers = new ArrayList<String>();
+			
+			if( flags.indexOf( "s" ) != -1 ) {
+				layers = db.getScope( layer );
 			}
+			else {
+				layers.add( layer );
+			}
+			
+			for( String l : layers ) {
+				
+				Collection<String> list = db.findEntities( l, query, params );
+				for (String name : list) {
+					JEntityNode jd = new JEntityNode();
+					jd.name = name;
+					jd.layer = db.layerOf( name );
+					result.add( jd );
+					if( params.loadHierarchy = true ) {
+						loadDescendants( jd, db );
+					}
+				}
+				
+			}
+			
 		} finally {
 			DBConnector.closeDB(db);
 		}
 		return new Gson().toJson( result );
 	}
 	
+	Set<String> set = new HashSet<String>();
+	
 	private void loadDescendants( JEntityNode jparent, RiscossDB db ) {
 		for( String name : db.getChildren( jparent.name ) ) {
-			JEntityNode jd = new JEntityNode();
-			jd.name = name;
-			jd.layer = db.layerOf( name );
-			jparent.children.add( jd );
-			loadDescendants( jd, db );
+			if( set.contains( name ) ) {
+				System.err.println( "Cycle detected!!!!!!!!!!!!!" );
+				JEntityNode jd = new JEntityNode();
+				jd.name = "CYCLE DETECTED! (" + name + ")";
+				jd.layer = db.layerOf( name );
+				jparent.children.add( jd );
+			}
+			else {
+				JEntityNode jd = new JEntityNode();
+				jd.name = name;
+				jd.layer = db.layerOf( name );
+				jparent.children.add( jd );
+				set.add( name );
+				loadDescendants( jd, db );
+				set.remove( name );
+			}
 		}
 	}
 
@@ -432,8 +466,10 @@ public class EntityManager {
 
 	@POST @Path("/{domain}/{entity}/children")
 	@Produces("application/json")
-	public void setChildren(@DefaultValue("Playground") @PathParam("domain") String domain,
-			@PathParam("entity") String entity, String children, //@HeaderParam("json")
+	public void setChildren(
+			@DefaultValue("Playground") @PathParam("domain") String domain,
+			@PathParam("entity") String entity, 
+			String children, //@HeaderParam("json")
 			@DefaultValue("") @HeaderParam("token") String token ) {
 		RiscossDB db = DBConnector.openDB(domain, token);
 		try {
@@ -443,25 +479,21 @@ public class EntityManager {
 				db.removeEntity( old_child, entity );
 			}
 			JsonArray a = json.get("list").getAsJsonArray();
+			List<String> scope = db.getScope( db.layerOf( entity ) );
 			for (int i = 0; i < a.size(); i++) {
 				String child = a.get(i).getAsString();
-				if( !isDescendand( entity, child, db ) ) {
-					db.assignEntity( child, entity );
-				}
+				if( "c30".equals( child ) )
+					if( "c47".equals( entity ) )
+						System.out.print("");
+				if( child.equals( entity ) ) continue;
+				if( hasDescendant( child, entity, db) ) continue;
+				if( !scope.contains( db.layerOf( child ) ) ) continue;
+				
+				db.assignEntity( child, entity );
 			}
 		} finally {
 			DBConnector.closeDB(db);
 		}
-	}
-
-	private boolean isDescendand( String descendant, String entity, RiscossDB db  ) {
-		
-		for( String child : db.getChildren( entity ) ) {
-			if( child.compareTo( descendant ) == 0 ) return true;
-			if( isDescendand( descendant, child, db ) ) return true;
-		}
-		
-		return false;
 	}
 
 	/**
@@ -643,6 +675,121 @@ public class EntityManager {
 		} finally {
 			DBConnector.closeDB(db);
 		}
+	}
+	
+	@GET @Path("/{domain}/{entity}/candidatechildren")
+	@Info("Returns a list of entities that can be set as child of the given entity. Thi is useful to avoid circles.")
+	public String getCandidateChildren( 
+			@PathParam("domain") @Info("The context domain") String domain,
+			@PathParam("entity") @Info("The candidate parent entity") String entity,
+			@DefaultValue("") @HeaderParam("token") String token ) {
+		
+		RiscossDB db = null;
+		
+		try {
+			
+			db = DBConnector.openDB(domain, token);
+			
+			List<String> scope = db.getScope( db.layerOf( entity ) );
+			
+			List<String> entities = new ArrayList<String>();
+			
+			for( String layer : scope ) {
+				
+				for( String candidate : db.entities( layer ) ) {
+					
+					if( !hasDescendant( candidate, entity, db) ) {
+						entities.add( candidate );
+					}
+					
+				}
+				
+			}
+			
+			return new Gson().toJson( entities );
+			
+		} finally {
+			DBConnector.closeDB(db);
+		}
+//		return "";
+	}
+	
+	@GET @Path("/{domain}/{entity}/candidateparents")
+	@Info("Returns a list of entities that can be set as parent of the given entity. Thi is useful to avoid circles.")
+	public String getCandidateParents( 
+			@PathParam("domain") @Info("The context domain") String domain,
+			@PathParam("entity") @Info("The candidate child entity") String entity,
+			@DefaultValue("") @HeaderParam("token") String token ) {
+		RiscossDB db = DBConnector.openDB(domain, token);
+		try {
+			
+			Collection<String> layers = db.layerNames();
+			
+			List<String> entities = new ArrayList<String>();
+			
+			String l = db.layerOf( entity );
+			
+			for( String layer : layers ) {
+				
+				for( String candidate : db.entities( layer ) ) {
+					
+					if( !hasAncestor( candidate, entity, db) ) {
+						entities.add( candidate );
+					}
+					
+				}
+				
+				if( layers.equals( l ) ) {
+					break;
+				}
+				
+			}
+			
+			return new Gson().toJson( entities );
+			
+		} finally {
+			DBConnector.closeDB(db);
+		}
+//		return "";
+	}
+	
+	static class EntityFinder extends TraverseCallback<String> {
+		
+		boolean found = false;
+		
+		public EntityFinder(String storedValue) {
+			super(storedValue);
+		}
+		@Override
+		public boolean onEntityFound( String entity ) {
+			found = getValue().equals( entity );
+			return found;
+		}
+		
+	}
+	
+	boolean hasDescendant( String entity, String descendant, RiscossDB db ) {
+		
+		DownwardEntitySearch ett = new DownwardEntitySearch( db );
+		
+		EntityFinder finder = new EntityFinder( descendant );
+		
+		ett.analyseEntity( entity, finder );
+		
+		return finder.found;
+		
+	}
+	
+	boolean hasAncestor( String entity, String ancestor, RiscossDB db ) {
+		
+		DownwardEntitySearch ett = new DownwardEntitySearch( db, DIRECTION.UP );
+		
+		EntityFinder finder = new EntityFinder( ancestor );
+		
+		ett.analyseEntity( entity, finder );
+		
+		return finder.found;
+		
 	}
 	
 }

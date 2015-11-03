@@ -1,6 +1,6 @@
 package eu.riscoss.agent.tasks;
 
-import eu.riscoss.agent.ExecutionContext;
+import eu.riscoss.agent.Context;
 import eu.riscoss.agent.RiscossRESTClient;
 
 public class SelectDomain implements TestTask {
@@ -12,8 +12,8 @@ public class SelectDomain implements TestTask {
 	}
 	
 	@Override
-	public void execute( RiscossRESTClient rest ) {
-		ExecutionContext.get().set( "domain", domain );
+	public void execute( RiscossRESTClient rest, Context context ) {
+		context.set( "domain", domain );
 	}
 	
 }

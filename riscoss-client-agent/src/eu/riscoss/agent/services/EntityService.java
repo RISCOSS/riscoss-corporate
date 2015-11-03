@@ -30,5 +30,9 @@ public class EntityService extends RESTService {
 		json.add( "list", array );
 		rest.post( "entities/" + getDomain() + "/" + encode( getEntity() ) + "/children" ).send( json.toString() );
 	}
+
+	public String getChildren() {
+		return rest.get( "entities/" + getDomain() + "/" + encode( getEntity() ) + "/children" ).send();
+	}
 	
 }

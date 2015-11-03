@@ -18,6 +18,14 @@ public class OLinkedList {
 		return dom.getAttribute( id, "tag", "-" );
 	}
 	
+	public String getNextLayer( String name ) {
+		NodeID id = dom.getVertex( this.rootPath + "/" + name );
+		if( id == null ) return null;
+		id = getNextLayer( id );
+		if( id == null ) return null;
+		return getName( id );
+	}
+	
 	public NodeID getNextLayer( NodeID prev ) {
 		List<NodeID> list = dom.listOutEdges( prev, GDomDB.LINK_CLASS, "next", null );
 		if( list == null ) return null;

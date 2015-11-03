@@ -5,6 +5,7 @@ import java.util.List;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import eu.riscoss.agent.Context;
 import eu.riscoss.agent.RiscossRESTClient;
 
 public class EnsureDomainExistence implements TestTask {
@@ -16,7 +17,7 @@ public class EnsureDomainExistence implements TestTask {
 	}
 	
 	@Override
-	public void execute( RiscossRESTClient rest ) {
+	public void execute( RiscossRESTClient rest , Context context ) {
 		List<String> domains = new Gson().fromJson(rest.domains().list(), new TypeToken<List<String>>() {}.getType() );
 		boolean found = false;
 		for( String d : domains ) {
