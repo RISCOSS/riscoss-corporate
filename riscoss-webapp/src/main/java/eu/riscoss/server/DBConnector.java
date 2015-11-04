@@ -57,13 +57,13 @@ public class DBConnector {
 	private static void lock() {
 //		System.out.println( "Lock by " + Thread.currentThread() );
 //		Thread.dumpStack();
-		lock.lock();
+//		lock.lock();
 	}
 	
 	private static void unlock() {
 //		System.out.println( "UNLock by " + Thread.currentThread() );
 //		Thread.dumpStack();
-		lock.unlock();
+//		lock.unlock();
 	}
 	
 	/**
