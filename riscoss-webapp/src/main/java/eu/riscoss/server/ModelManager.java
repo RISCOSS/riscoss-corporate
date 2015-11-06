@@ -64,13 +64,16 @@ import gwtupload.server.exceptions.UploadActionException;
 
 
 @Path("models")
+@Info("Manages the upload, download, modification and inspection of risk models")
 public class ModelManager {
 	
 	Gson gson = new Gson();
 	
 	@GET @Path("/{domain}/list")
-	public String getList( @DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token ) {
+	@Info("Returns a list of models previously uploaded in the selected domain")
+	public String getList( 
+			@PathParam("domain") String domain,
+			@HeaderParam("token") String token ) {
 		
 		JsonArray a = new JsonArray();
 		
@@ -100,10 +103,12 @@ public class ModelManager {
 	 * @return
 	 */
 	@POST @Path("/{domain}/chunklist")
+	@Info("Returns a list of input and output chunks for the specified models; it also includes the type of the chunk (goal, risk, indicator)")
 	//returns also the type of each object (goal/risk/...) and is used in AHP
-	public String getModelChunkList( @DefaultValue("Playground") @PathParam("domain") String domain, 
-			@DefaultValue("") @HeaderParam("token") String token,
-			String models ) {  //@HeaderParam("json") String models,
+	public String getModelChunkList(
+			@PathParam("domain") String domain, 
+			@HeaderParam("token") String token,
+			@Info("A JSONized array of model names") String models ) {
 		
 		JsonArray json = (JsonArray)new JsonParser().parse( models );
 		
@@ -295,10 +300,13 @@ public class ModelManager {
 	 * @return
 	 */
 	@POST 	@Path("/{domain}/chunks")
+	@Info("Returns a list of input and output chunks for the specified models")
 	//used in the whatifanalysis, and in the ModelsModule (for showing the content)
 	//returns various info, but not the types.
-	public String getModelChunks( @DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, String models ) {//@HeaderParam("json") String models ) {
+	public String getModelChunks(
+			@PathParam("domain") String domain,
+			@HeaderParam("token") String token, 
+			@Info("A JSONized array of model names") String models ) {//@HeaderParam("json") String models ) {
 		
 		JsonArray json = (JsonArray)new JsonParser().parse( models );
 		
@@ -460,9 +468,13 @@ public class ModelManager {
 	}
 	
 	@GET @Path("/{domain}/{model}/get")
-	public String getInfo( @DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, @PathParam("model") String name ) {
+	public String getInfo(
+			@PathParam("domain") String domain,
+			@HeaderParam("token") String token, 
+			@PathParam("model") String name ) {
+		
 		RiscossDB db = DBConnector.openDB( domain, token );
+		
 		try {
 			String filename = db.getModelFilename( name );  //modelfilename
 			String descfile = db.getModelDescFielname(name);

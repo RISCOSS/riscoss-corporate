@@ -36,6 +36,7 @@ import eu.riscoss.shared.KnownRoles;
 import eu.riscoss.shared.Pair;
 
 @Path("admin")
+@Info("Administration")
 public class AdminManager {
 	
 	Gson gson = new Gson();
@@ -43,7 +44,10 @@ public class AdminManager {
 	int counter = 0;
 	
 	@GET @Path("/{domain}/sitemap")
-	public String getSitemap( @HeaderParam("token") String token, @PathParam("domain") String domain ) {
+	@Info("Returns the map of the available UI pages")
+	public String getSitemap( 
+			@HeaderParam("token") @Info("The authentication token") String token, 
+			@PathParam("domain") @Info("The selected domain") String domain ) {
 		
 		RiscossDatabase db = null;
 		
@@ -94,6 +98,7 @@ public class AdminManager {
 	}
 
 	@GET @Path("/roles/list")
+	@Info("Returns the list of registered Roles")
 	public String listRoles() {
 		
 		RiscossDatabase db = null;
@@ -116,7 +121,10 @@ public class AdminManager {
 	}
 	
 	@POST @Path("/domains/create")
-	public String createDomain( @HeaderParam("token") String token, @QueryParam("name") String name ) {
+	@Info("Creates a new domain")
+	public String createDomain( 
+			@HeaderParam("token") @Info("The authentication token") String token, 
+			@QueryParam("name") @Info("The name of the new domain") String name ) {
 		
 		RiscossDatabase db = null;
 		
@@ -142,11 +150,12 @@ public class AdminManager {
 	}
 	
 	@POST @Path("/{domain}/roles/create")
+	@Info("Creates a new Role")
 	public String createRole( 
-			@HeaderParam("token") String token,
-			@DefaultValue("Playground") @PathParam("domain") String domain, 
-			@QueryParam("name") String name,
-			@DefaultValue("Guest") String parentRole ) {
+			@HeaderParam("token") @Info("The authentication token") String token,
+			@PathParam("domain") @Info("The selected domain") String domain, 
+			@QueryParam("name") @Info("Name of the new Role") String name,
+			@DefaultValue("Guest") @Info("Type") String parentRole ) {
 		
 		RiscossDB db = DBConnector.openDB( token, domain );
 		
@@ -167,9 +176,10 @@ public class AdminManager {
 	}
 	
 	@GET @Path("/{domain}/roles/list")
+	@Info("Returns the list of available roles in a given domain")
 	public String listRoles( 
-			@HeaderParam("token") String token,
-			@DefaultValue("Playground") @PathParam("domain") String domain ) {
+			@HeaderParam("token") @Info("The authentication token") String token,
+			@PathParam("domain") @Info("The selected domain") String domain ) {
 		
 		RiscossDB db = DBConnector.openDB( token, domain );
 		
@@ -194,11 +204,12 @@ public class AdminManager {
 	}
 	
 	@GET @Path("/users/list")
+	@Info("Returns the list of registered users")
 	public String listUsers( 
-			@HeaderParam("token") String token,
-			@DefaultValue("0") @QueryParam("from") String from, 
-			@DefaultValue("100") @QueryParam("max") String max,
-			@DefaultValue("") @QueryParam("pattern") String pattern ) {
+			@HeaderParam("token") @Info("The authentication token") String token,
+			@DefaultValue("0") @Info("Index of the first item to return; for pagination support") @QueryParam("from") String from, 
+			@DefaultValue("100") @Info("Number of items to return; for pagination support") @QueryParam("max") String max,
+			@DefaultValue("") @Info("Search pattern") @QueryParam("pattern") String pattern ) {
 		
 		RiscossDatabase db = null;
 		
@@ -228,17 +239,19 @@ public class AdminManager {
 	}
 	
 	@GET @Path("/users/{user}/info")
+	@Info("Returns details about a user")
 	public String getUserInfo(
-			@HeaderParam("token") String token,
-			@PathParam("user") String user
+			@HeaderParam("token") @Info("The authentication token") String token,
+			@PathParam("user") @Info("User name") String user
 			) {
 		return "";
 	}
 	
 	@DELETE @Path("/users/{user}/delete")
+	@Info("Deletes completely a user account from every domain and from the database")
 	public void deleteUser(
-			@HeaderParam("token") String token,
-			@PathParam("user") String username
+			@HeaderParam("token") @Info("The authentication token") String token,
+			@PathParam("user") @Info("Name of the user dto be deleted") String username
 			) {
 		
 		OrientGraphNoTx graph = new OrientGraphFactory( DBConnector.db_addr ).getNoTx();
@@ -258,11 +271,12 @@ public class AdminManager {
 	}
 	
 	@POST @Path("/{domain}/users/{user}/set")
+	@Info("Sets the role of a user in a domain")
 	public String setUser(
-			@HeaderParam("token") String token,
-			@PathParam("domain") String domain,
-			@PathParam("user") String user,
-			@QueryParam("role") String role ) {
+			@HeaderParam("token") @Info("The authentication token") String token,
+			@PathParam("domain") @Info("The selected domain") String domain,
+			@PathParam("user") @Info("Name of the user to be set") String user,
+			@QueryParam("role") @Info("Role name") String role ) {
 		
 		RiscossDB db = null;
 		
@@ -283,9 +297,10 @@ public class AdminManager {
 	}
 	
 	@GET @Path("/{domain}/users/list")
+	@Info("Returns the list of users subscribed to a certain domain")
 	public String listUsers(
-			@HeaderParam("token") String token,
-			@PathParam("domain") String domain ) {
+			@HeaderParam("token") @Info("The authentication token") String token,
+			@PathParam("domain") @Info("The selected domain") String domain ) {
 		
 		RiscossDB db = null;
 		
@@ -309,9 +324,10 @@ public class AdminManager {
 	}
 	
 	@GET @Path("/{domain}/info")
+	@Info("Returns details about a domain")
 	public String getDomainIndo(
-			@HeaderParam("token") String token,
-			@PathParam("domain") String domain ) {
+			@HeaderParam("token") @Info("The authentication token") String token,
+			@PathParam("domain") @Info("The selected domain") String domain ) {
 		
 		RiscossDatabase db = null;
 		
@@ -344,8 +360,10 @@ public class AdminManager {
 	 * @return
 	 */
 	@GET @Path("/domains/public")
+	@Info("Returns the list of domains available to a specific user; i.e., the list of public domains, plus the list of domain which have been granted to the user by an admin")
 	public String listAvailableDomains(
-			@HeaderParam("token") String token, @QueryParam("username") String username ) {
+			@HeaderParam("token") @Info("The authentication token") String token, 
+			@QueryParam("username") @Info("The user name") String username ) {
 		
 		return gson.toJson( listAvailableUserDomains(token, username ) ).toString();
 		
@@ -396,10 +414,11 @@ public class AdminManager {
 	}
 	
 	@POST @Path("/{domain}/default-role")
+	@Info("Returns the default role of a domain. The default role is the role, which is assigned to a user, the first time that the user subscribes to the domain.")
 	public void setPredefinedRole( 
-			@HeaderParam("token") String token,
-			@PathParam("domain") String domain,
-			@QueryParam("role") String value ) {
+			@HeaderParam("token") @Info("The authentication token") String token,
+			@PathParam("domain") @Info("The selected domain") String domain,
+			@QueryParam("role") @Info("The role name") String value ) {
 		
 		RiscossDatabase db = null;
 		
@@ -418,11 +437,12 @@ public class AdminManager {
 	}
 	
 	@POST @Path("/{domain}/users/{user}/role")
+	@Info("Sets the role of a user in a given domain")
 	public void setUserRole(
-			@HeaderParam("token") String token,
-			@PathParam("domain") String domain,
-			@PathParam("user") String user,
-			@QueryParam("role") String role
+			@HeaderParam("token") @Info("The authentication token") String token,
+			@PathParam("domain") @Info("The selected domain") String domain,
+			@PathParam("user") @Info("The user name") String user,
+			@QueryParam("role") @Info("The role name") String role
 			) {
 		
 		RiscossDB domaindb = null;
@@ -441,7 +461,10 @@ public class AdminManager {
 	}
 	
 	@POST @Path("/{domain}/domains/selected")
-	public String setSessionSelectedDomain( @PathParam("domain") String domain, @HeaderParam("token") String token) {
+	@Info("Checks whether the user is authorized to access a given domain")
+	public String setSessionSelectedDomain( 
+			@PathParam("domain") @Info("The selected domain") String domain, 
+			@HeaderParam("token") @Info("The authentication token") String token) {
 		
 		if( domain == null ) return null;
 		

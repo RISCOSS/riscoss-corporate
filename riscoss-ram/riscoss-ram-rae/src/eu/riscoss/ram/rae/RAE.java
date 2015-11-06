@@ -2,24 +2,17 @@ package eu.riscoss.ram.rae;
 
 import eu.riscoss.fbk.language.Proposition;
 import eu.riscoss.fbk.language.Relation;
+import eu.riscoss.ram.RiskConfiguration;
+import eu.riscoss.ram.RiskScenario;
 import eu.riscoss.reasoner.CompoundAnalysisEngine;
 import eu.riscoss.reasoner.DataType;
 import eu.riscoss.reasoner.FBKRiskAnalysisEngine;
+import eu.riscoss.reasoner.ReasoningLibrary;
 import eu.riscoss.reasoner.RiskAnalysisEngine;
 
 public class RAE {
 	
 	ArgumentationConf conf = new ArgumentationConf();
-	
-	public void run( String xml ) {
-		
-		FBKRiskAnalysisEngine engine = new FBKRiskAnalysisEngine();
-		
-		engine.loadModel( xml );
-		
-		engine.runAnalysis( new String[] {} );
-		
-	}
 	
 	public Argumentation createArgumentation( RiskAnalysisEngine engine ) {
 		
@@ -134,6 +127,14 @@ public class RAE {
 			return arg;
 		}
 		
+		return null;
+	}
+
+	public RiskScenario createScenario( RiskConfiguration rc ) {
+		
+		RiskAnalysisEngine engine = ReasoningLibrary.get().createRiskAnalysisEngine();
+		
+		// TODO Auto-generated method stub
 		return null;
 	}
 	

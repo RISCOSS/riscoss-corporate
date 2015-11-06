@@ -99,6 +99,7 @@ public interface RiscossDB {
 	public abstract void							destroyRAS( String ras );
 	
 	public abstract void							close();
+	public abstract String							getName();
 	
 	/*
 	 * User management

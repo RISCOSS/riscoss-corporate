@@ -50,8 +50,8 @@ public class LayersManager {
 	
 	@GET @Path("/{domain}/list")
 	public String list( 
-			@DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token ) {
+			@PathParam("domain") String domain,
+			@HeaderParam("token") String token ) {
 		
 		JsonArray a = new JsonArray();
 		
@@ -74,8 +74,8 @@ public class LayersManager {
 	//@POST @Path("{domain}/new")
 	@Deprecated
 	public void createNew_old(
-			@DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, 
+			@PathParam("domain") String domain,
+			@HeaderParam("token") String token, 
 			@QueryParam("name") String name,
 			@QueryParam("parent") String parentName
 			) {
@@ -96,8 +96,8 @@ public class LayersManager {
 	
 	@POST @Path("{domain}/create")
 	public void createNew(
-			@DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, 
+			@PathParam("domain") String domain,
+			@HeaderParam("token") String token, 
 			@QueryParam("name") String name,
 			@QueryParam("parent") String parentName
 			) {
@@ -117,10 +117,11 @@ public class LayersManager {
 	}
 	
 	@DELETE @Path("{domain}/{layer}/delete")
-	public void deleteLayer( @DefaultValue(
-			"Playground") @PathParam("domain") String domain, 
-			@DefaultValue("") @HeaderParam("token") String token, 
-			@PathParam("layer") String name ) throws Exception {
+	public void deleteLayer( 
+			@PathParam("domain") String domain, 
+			@HeaderParam("token") String token, 
+			@PathParam("layer") String name
+			) throws Exception {
 		
 		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
@@ -137,8 +138,8 @@ public class LayersManager {
 	
 	@GET @Path( "{domain}/{layer}/ci" )
 	public String getContextualInfo( 
-			@DefaultValue("Playground") @PathParam("domain") String domain, 
-			@DefaultValue("") @HeaderParam("token") String token, 
+			@PathParam("domain") String domain, 
+			@HeaderParam("token") String token, 
 			@PathParam("layer") String layer ) {
 		
 		RiscossDB db = DBConnector.openDB( domain, token );
@@ -158,10 +159,10 @@ public class LayersManager {
 	
 	@POST @Path( "{domain}/{layer}/ci" )
 	public void setContextualInfo( 
-			@DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, 
+			@PathParam("domain") String domain,
+			@HeaderParam("token") String token, 
 			@PathParam("layer") String layer, 
-			String json ) { //@HeaderParam("info") ) {
+			String json ) {
 		
 		RiscossDB db = DBConnector.openDB( domain, token );
 		try {
@@ -175,8 +176,8 @@ public class LayersManager {
 	
 	@POST @Path("{domain}/{layer}/rename")
 	public void editLayer( 
-			@DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, 
+			@PathParam("domain") String domain,
+			@HeaderParam("token") String token, 
 			@PathParam("layer") String name, 
 			@QueryParam("newname") String newName ) {
 		
@@ -192,9 +193,9 @@ public class LayersManager {
 	@GET @Path("/{domain}/{layer}/scope")
 	@Info("Returns the scope of a layer; a scope is an ordered set that contains the target layer and its sub-layers")
 	public String getScope( 
-			@DefaultValue("") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token,
-			@DefaultValue("") @PathParam("layer") String layer ) {
+			@PathParam("domain") String domain,
+			@HeaderParam("token") String token,
+			@PathParam("layer") String layer ) {
 		
 		RiscossDB db = DBConnector.openDB( domain, token );
 		try {

@@ -23,7 +23,8 @@ package eu.riscoss.server;
 
 import java.io.File;
 import java.net.URLEncoder;
-import java.util.concurrent.locks.Lock;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.codec.binary.Base64;
@@ -37,7 +38,9 @@ public class DBConnector {
 	
 	static String db_addr = null;
 	
-	private static Lock lock = new ReentrantLock();
+//	private static ReentrantLock lock = new ReentrantLock();
+	
+	private static Map<String,ReentrantLock> locks = new ConcurrentHashMap<String,ReentrantLock>();
 	
 	public static File findLocation( Class<?> cls ) {
 		String t = cls.getPackage().getName() + ".";
@@ -54,16 +57,32 @@ public class DBConnector {
 		return new File( new File( s ).getParent() );
 	}
 	
-	private static void lock() {
-//		System.out.println( "Lock by " + Thread.currentThread() );
+	private static void lock( String domain ) {
+		
+		ReentrantLock lock = locks.get( domain );
+		
+		if( lock == null ) {
+			lock = new ReentrantLock();
+			locks.put( domain, lock );
+		}
+		
+		System.out.println( "'" + domain + "' locked by " + Thread.currentThread() );
 //		Thread.dumpStack();
-//		lock.lock();
+		lock.lock();
 	}
 	
-	private static void unlock() {
-//		System.out.println( "UNLock by " + Thread.currentThread() );
-//		Thread.dumpStack();
-//		lock.unlock();
+	private static void unlock( String domain) {
+		
+		ReentrantLock lock = locks.get( domain );
+		
+		if( lock == null ) return;
+		
+		if( lock.getHoldCount() > 0 ) {
+			System.out.println( "'" + domain + "' UNLock by " + Thread.currentThread() );
+//			Thread.dumpStack();
+			lock.unlock();
+//			locks.remove( domain );
+		}
 	}
 	
 	/**
@@ -73,12 +92,12 @@ public class DBConnector {
 	 * @return
 	 */
 	public static RiscossDatabase openDatabase( String username, String password ) {
-		lock();
+		lock( "" );
 		try {
 			return new ORiscossDatabase( db_addr, username, password );
 		}
 		catch( Exception ex ) {
-			unlock();
+			unlock( "" );
 			throw new RuntimeException( ex );
 		}
 	}
@@ -88,12 +107,12 @@ public class DBConnector {
 	 * @return
 	 */
 	public static RiscossDatabase openDatabase( String token ) {
-		lock();
+		lock( "" );
 		try {
 			return new ORiscossDatabase( db_addr, Base64.decodeBase64( token ) );
 		}
 		catch( Exception ex ) {
-			unlock();
+			unlock( "" );
 			throw new RuntimeException( ex );
 		}
 	}
@@ -108,14 +127,15 @@ public class DBConnector {
 	 */
 	public static RiscossDB openDB( String domain, String username, String password ) {
 		try {
-			lock();
+			lock( domain );
 			return new ORiscossDomain( db_addr, URLEncoder.encode( domain, "UTF-8" ), username, password );
 		}
 		catch( Exception e ) {
-			unlock();
+			unlock( domain );
 			throw new RuntimeException( e );
 		}
 	}
+	
 	/**
 	 * Opens the database with a previously stored token (e.g. from a cookie), for normal access with domain and user
 	 * @param token
@@ -123,13 +143,17 @@ public class DBConnector {
 	 */
 	public static RiscossDB openDB( String domain, String token ) {
 		try {
-			lock();
+			lock( domain );
 			return new ORiscossDomain( db_addr, URLEncoder.encode( domain, "UTF-8" ), Base64.decodeBase64( token ) );
 		}
 		catch( Exception e ) {
-			unlock();
+			unlock( domain );
 			throw new RuntimeException( e );
 		}
+	}
+	
+	public static void initDatabase( String dbaddr ) {
+		db_addr = dbaddr;
 	}
 	
 	public static void closeDB( RiscossDB db ) {
@@ -141,18 +165,21 @@ public class DBConnector {
 			ex.printStackTrace();
 		}
 		finally {
-			unlock();
+			unlock( db.getName() );
 		}
 	}
 
-	public static void initDatabase( String dbaddr ) {
-		db_addr = dbaddr;
-	}
-
 	public static void closeDB( RiscossDatabase db ) {
-		unlock();
-		if( db != null )
+		if( db == null ) return;
+		try {
 			db.close();
+		}
+		catch( Exception ex ) {
+			ex.printStackTrace();
+		}
+		finally {
+			unlock( "" );
+		}
 	}
 	
 }

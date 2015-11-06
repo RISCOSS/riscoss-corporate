@@ -1,8 +1,6 @@
 package eu.riscoss.server;
 
 
-import java.io.File;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -25,6 +23,7 @@ import eu.riscoss.db.RiscossDatabase;
 import eu.riscoss.shared.KnownRoles;
 
 @Path("auth")
+@Info("Authentication and Authorization")
 public class AuthManager {
 	
 	private static final OServerParameterConfiguration[] I_PARAMS = new OServerParameterConfiguration[] { 
@@ -40,17 +39,22 @@ public class AuthManager {
 	 * @throws Exception
 	 */
 	@POST @Path("/login")
-	public String login( @HeaderParam("username") String username, @HeaderParam("password") String password ) throws Exception {
-		System.out.println("#### DB address "+new File(DBConnector.db_addr).getAbsolutePath()+" ####");
+	@Info("This function authenticates the user and returns a token that can be reused (untile the session expires) to call functions that require authentication")
+	public String login( 
+			@HeaderParam("username") String username, 
+			@HeaderParam("password") String password ) throws Exception {
+		
+//		System.out.println("#### DB address "+new File(DBConnector.db_addr).getAbsolutePath()+" ####");
+		
 		OrientGraphNoTx graph = new OrientGraphFactory( DBConnector.db_addr, username, password ).getNoTx();
 		
 		try {
 			
 			String token = getStringToken( graph );
 			
-			System.out.println( "Login succeeded. Token:" );
-			System.out.println( token );
-			System.out.println( token.length() );
+//			System.out.println( "Login succeeded. Token:" );
+//			System.out.println( token );
+//			System.out.println( token.length() );
 			
 			return new JsonPrimitive( token ).toString();
 		}
@@ -61,16 +65,19 @@ public class AuthManager {
 	}
 	
 	@GET @Path("token")
+	@Info("This function performs a validity check of the token and return successfully if the token is correct and not expired")
 	//TODO: change to POST?!
 	public String checkToken( @HeaderParam("token") String token ) {
-//		System.out.println( "Received token: " + token );
 		RiscossDatabase db = DBConnector.openDatabase( token );
 		DBConnector.closeDB( db );
 		return new JsonPrimitive( "Ok" ).toString();
 	}
 	
 	@POST @Path("/register")
-	public String register( @HeaderParam("username") String username, @HeaderParam("password") String password ) {
+	@Info("Registers a new user into the database")
+	public String register(
+			@HeaderParam("username") String username, 
+			@HeaderParam("password") String password ) {
 		
 		OrientGraphNoTx graph = new OrientGraphFactory( DBConnector.db_addr ).getNoTx();
 		
@@ -110,7 +117,9 @@ public class AuthManager {
 	}
 	
 	@GET @Path("/username")
-	public String getUsername( @HeaderParam("token") String token ) {
+	@Info("Returns the user name corresponding to the given token (if valid)")
+	public String getUsername( 
+			@HeaderParam("token") String token ) {
 		
 		RiscossDatabase database = DBConnector.openDatabase( token );
 		

@@ -1,15 +1,35 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
-	<groupId>eu.riscoss</groupId>
-	<artifactId>riscoss-ram-rae</artifactId>
+	<groupId>riscoss-ram-app</groupId>
+	<artifactId>riscoss-ram-app</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-
+	
 	<dependencies>
+	
+		<dependency>
+			<groupId>riscoss-db</groupId>
+			<artifactId>riscoss-db</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 		<dependency>
 			<groupId>eu.riscoss</groupId>
 			<artifactId>riscoss-ram-core</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.riscoss</groupId>
+			<artifactId>riscoss-ram-ahp</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.riscoss</groupId>
+			<artifactId>riscoss-ram-cbrank</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.riscoss</groupId>
+			<artifactId>riscoss-ram-ga</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
@@ -19,16 +39,18 @@
 		</dependency>
 		<dependency>
 			<groupId>eu.riscoss</groupId>
-			<artifactId>riscoss-fbk</artifactId>
-			<version>0.24-SNAPSHOT</version>
+			<artifactId>riscoss-ram-rae</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		
 		<dependency>
-			<groupId>eu.riscoss</groupId>
-			<artifactId>riscoss-dispatcher</artifactId>
-			<version>0.24-SNAPSHOT</version>
-		</dependency>
+       		<groupId>org.reflections</groupId>
+       		<artifactId>reflections</artifactId>
+         	<version>0.9.9-RC1</version>
+     	</dependency>
+		
 	</dependencies>
-
+	
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<plugins>

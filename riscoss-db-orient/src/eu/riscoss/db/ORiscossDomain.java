@@ -893,5 +893,10 @@ public class ORiscossDomain implements RiscossDB {
 		}
 		return scope;
 	}
+
+	@Override
+	public String getName() {
+		return dom.getRootName();
+	}
 	
 }

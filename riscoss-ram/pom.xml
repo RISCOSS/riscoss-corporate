@@ -15,6 +15,7 @@
         <module>riscoss-ram-cbrank</module>
         <module>riscoss-ram-ga</module>
         <module>riscoss-ram-rae</module>
+        <module>riscoss-ram-app</module>
     </modules>
     
 </project>

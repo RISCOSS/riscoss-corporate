@@ -265,8 +265,11 @@ public class AnalysisManager {
 	}
 	
 	@POST @Path("/{domain}/session/{sid}/missing-data")
-	public void setSessionMissingData(@DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, @PathParam("sid") String sid, String values // @HeaderParam("values")
+	public void setSessionMissingData(
+			@PathParam("domain") String domain,
+			@HeaderParam("token") String token, 
+			@PathParam("sid") @Info("The risk session ID") String sid, 
+			String values
 	) {
 		JsonObject json = (JsonObject) new JsonParser().parse(values);
 		RiscossDB db = DBConnector.openDB(domain, token);

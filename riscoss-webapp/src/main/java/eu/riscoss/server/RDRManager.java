@@ -22,7 +22,6 @@
 package eu.riscoss.server;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -39,9 +38,10 @@ public class RDRManager {
 	
 	@POST @Path("/{domain}/store")
 	@Consumes({"application/json"})
-	public void store( @DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, 
-			String riskData ) { //@HeaderParam("json") 
+	public void store( 
+			@PathParam("domain") String domain,
+			@HeaderParam("token") String token, 
+			String riskData ) {
 		System.out.println("RiskData: "+ riskData );
 		JsonArray json = (JsonArray)new JsonParser().parse( riskData );
 		RiscossDB db = DBConnector.openDB( domain, token );

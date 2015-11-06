@@ -29,10 +29,6 @@ public class EnsureParent implements TestTask {
 		children.add( child );
 		String[] array = new String[children.size()];
 		children.toArray( array );
-		System.out.println( "SET CHILDREN " + parent + " -> " + children );
-		if( "c8".equals( child ) )
-			if( "c47".equals( parent ) )
-				System.out.print("");
 		rest.domain( context.get( "domain", "" ) ).entity( parent ).setChildren( array );
 	}
 	

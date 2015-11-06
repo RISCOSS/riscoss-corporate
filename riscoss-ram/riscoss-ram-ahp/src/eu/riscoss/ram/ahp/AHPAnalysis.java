@@ -9,9 +9,12 @@ import org.python.core.PyList;
 import org.python.core.PySystemState;
 import org.python.util.PythonInterpreter;
 
-public class AHPAnalysis {
+import eu.riscoss.ram.MitigationActivity;
+import eu.riscoss.ram.RiskScenario;
+
+public class AHPAnalysis extends MitigationActivity {
 	
-	public JAHPResult run( JAHPInput ahpInput ) {
+	public JAHPResult run( AHPInput ahpInput ) {
 		
 		System.out.println( "Running AHP" );
 		
@@ -22,7 +25,7 @@ public class AHPAnalysis {
 			String strList1 = ahpInput.mkList( ahpInput.goals, goal_map );
 			String[] strList2 = new String[ahpInput.risks.size()];
 			for( int i = 0; i < ahpInput.risks.size(); i++ ) {
-				List<JAHPComparison> list = ahpInput.risks.get( i );
+				List<AHPComparison> list = ahpInput.risks.get( i );
 				Map<String,Integer> risk_map = ahpInput.mkIdMap( list );
 				strList2[i] = ahpInput.mkList( list, risk_map );
 			}
@@ -76,6 +79,12 @@ public class AHPAnalysis {
 		}
 		
 		return null;
+	}
+
+	public void apply( RiskScenario scenario ) {
+		
+		
+		
 	}
 	
 }

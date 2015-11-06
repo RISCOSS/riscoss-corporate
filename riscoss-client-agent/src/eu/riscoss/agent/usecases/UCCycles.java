@@ -22,10 +22,16 @@ public class UCCycles implements UseCase {
 
 	Gson gson = new Gson();
 	
+	String domain = "Cycles_Domain";
+	
+	public UCCycles() {}
+	
+	public UCCycles( String domain ) {
+		this.domain = domain;
+	}
+	
 	@Override
 	public void run( RiscossRESTClient rest ) throws Exception {
-		
-		String domain = "Cycles_Domain";
 		
 		rest.login( "admin", "admin" );
 		
@@ -44,19 +50,23 @@ public class UCCycles implements UseCase {
 		
 		List<JsonObject> list  = new Gson().fromJson( w.getContext().get( "entities", "" ), new TypeToken<List<JsonObject>>() {}.getType() );
 		
-		for( JsonObject o : list ) {
-			rest.domain( domain ).entities().delete( o.get( "name" ).getAsString() );
+		if( list != null ) {
+			for( JsonObject o : list ) {
+				rest.domain( domain ).entities().delete( o.get( "name" ).getAsString() );
+			}
 		}
 		
 //		Thread.sleep( 1000 );
 		
 		w.execute( new ListEntities() );
 		list  = new Gson().fromJson( w.getContext().get( "entities", "" ), new TypeToken<List<JsonObject>>() {}.getType() );
-		if( list.size() > 0 ) {
-			for( JsonObject o : list ) {
-				System.out.println( o.get( "name" ).getAsString() + " = " + o.get( "layer" ).getAsString() );
+		if( list != null ) {
+			if( list.size() > 0 ) {
+				for( JsonObject o : list ) {
+					System.out.println( o.get( "name" ).getAsString() + " = " + o.get( "layer" ).getAsString() );
+				}
+				return;
 			}
-			return;
 		}
 		
 //		w.execute( new EnsureEntityExistence( "Product", "PRODUCT1"  ) );

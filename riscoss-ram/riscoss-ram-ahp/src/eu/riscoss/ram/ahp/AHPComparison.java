@@ -1,7 +1,7 @@
 package eu.riscoss.ram.ahp;
 
 
-public class JAHPComparison {
+public class AHPComparison {
 	
 	public int value = 1;
 	
