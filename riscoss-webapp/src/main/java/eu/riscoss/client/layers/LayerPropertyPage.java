@@ -707,6 +707,7 @@ public class LayerPropertyPage implements IsWidget {
 							}
 							
 						}
+						vPanel.clear();
 					}
 					
 					public void onFailure(Method method, Throwable exception) {

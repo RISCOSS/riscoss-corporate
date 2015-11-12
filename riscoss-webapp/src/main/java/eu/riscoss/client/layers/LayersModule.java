@@ -27,6 +27,7 @@ import java.util.List;
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
 
+import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -39,7 +40,8 @@ import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.CellTable.Resources;
-import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
@@ -52,6 +54,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SelectionChangeEvent.Handler;
 import com.google.gwt.view.client.SingleSelectionModel;
@@ -94,7 +97,7 @@ public class LayersModule implements EntryPoint {
 	Button				newLayer = new Button();
 	Button				save;
 	
-	List<String>		entities;
+	List<JSONObject>	entities;
 	
 	HorizontalPanel		mainViewEntity = new HorizontalPanel();
 	VerticalPanel 		leftPanelEntity = new VerticalPanel();
@@ -106,7 +109,12 @@ public class LayersModule implements EntryPoint {
 	TextBox 			entityName;
 	
 	JSONValue			list;
-	CellTable<String>	table = new CellTable<String>(15, (Resources) GWT.create(TableResources.class));
+	
+	//Entities table
+	VerticalPanel tablePanel = new VerticalPanel();
+	ListDataProvider<JSONObject> dataProvider;
+	SimplePager pager = new SimplePager();
+	CellTable<JSONObject>	table = new CellTable<JSONObject>(15, (Resources) GWT.create(TableResources.class));
 	
 	String				nextParent;
 	
@@ -292,7 +300,80 @@ public class LayersModule implements EntryPoint {
 			}
 		});
 		
+		generateNewEntityButton();
+		
 		RootPanel.get().add( page );
+		
+	}
+	
+	Button newEntityButton;
+	
+	private void generateNewEntityButton() {
+		newEntityButton = new Button("New " + selectedLayer + " entity");
+		newEntityButton.setStyleName("button");
+		newEntityButton.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				String name = entityName.getText().trim();
+				
+				if (name == null || name.equals("") ) 
+					return;
+				
+				//String s = RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
+				if (!RiscossUtil.sanitize(name).equals(name)){
+					//info: firefox has some problem with this window, and fires assertion errors in dev mode
+					Window.alert("Name contains prohibited characters (##,@,\") \nPlease re-enter name");
+					return;
+				}
+
+				for(int i=0; i<list.isArray().size(); i++){
+					JSONObject o = (JSONObject)list.isArray().get(i);
+					if (name.equals(o.get( "name" ).isString().stringValue())){
+						//info: firefox has some problem with this window, and fires assertion errors in dev mode
+						Window.alert("Layer name already in use.\nPlease re-enter name.");
+						return;
+					}
+				}
+				RiscossJsonClient.createEntity(name, selectedLayer, "", new JsonCallback() {
+					@Override
+					public void onFailure(Method method,
+							Throwable exception) {
+						Window.alert(exception.getMessage());
+					}
+					@Override
+					public void onSuccess(Method method,
+							JSONValue response) {
+						selectedEntity = entityName.getText().trim();
+						entityName.setText("");
+						RiscossJsonClient.getLayerContextualInfo(selectedLayer, new JsonCallback() {
+							@Override
+							public void onFailure(Method method, Throwable exception) {
+								Window.alert( exception.getMessage() );
+							}
+							@Override
+							public void onSuccess(Method method, JSONValue response) {
+								CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
+								JLayerContextualInfo jLayerContextualInfo = codec.decode( response );
+								updateContextualInfo(jLayerContextualInfo);
+								reloadEntityInfo();
+								RiscossJsonClient.listEntities(selectedLayer, new JsonCallback() {
+									@Override
+									public void onFailure(Method method,
+											Throwable exception) {
+									}
+									@Override
+									public void onSuccess(Method method,
+											JSONValue response) {
+										reloadEntityTable(response);
+									}
+								});
+							}
+						});
+					}
+				});		
+			}
+			
+		});
 	}
 	
 	private void saveLayerData() {
@@ -505,76 +586,12 @@ public class LayersModule implements EntryPoint {
 				
 				HorizontalPanel buttons = new HorizontalPanel();
 				
-				Button newEntityButton = new Button("New " + selectedLayer + " entity");
-				newEntityButton.setStyleName("button");
-				newEntityButton.addClickHandler(new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						String name = entityName.getText().trim();
-						
-						if (name == null || name.equals("") ) 
-							return;
-						
-						//String s = RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
-						if (!RiscossUtil.sanitize(name).equals(name)){
-							//info: firefox has some problem with this window, and fires assertion errors in dev mode
-							Window.alert("Name contains prohibited characters (##,@,\") \nPlease re-enter name");
-							return;
-						}
-
-						for(int i=0; i<list.isArray().size(); i++){
-							JSONObject o = (JSONObject)list.isArray().get(i);
-							if (name.equals(o.get( "name" ).isString().stringValue())){
-								//info: firefox has some problem with this window, and fires assertion errors in dev mode
-								Window.alert("Layer name already in use.\nPlease re-enter name.");
-								return;
-							}
-						}
-						RiscossJsonClient.createEntity(name, selectedLayer, "", new JsonCallback() {
-							@Override
-							public void onFailure(Method method,
-									Throwable exception) {
-								Window.alert(exception.getMessage());
-							}
-							@Override
-							public void onSuccess(Method method,
-									JSONValue response) {
-								selectedEntity = entityName.getText().trim();
-								entityName.setText("");
-								RiscossJsonClient.getLayerContextualInfo(selectedLayer, new JsonCallback() {
-									@Override
-									public void onFailure(Method method, Throwable exception) {
-										Window.alert( exception.getMessage() );
-									}
-									@Override
-									public void onSuccess(Method method, JSONValue response) {
-										CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
-										JLayerContextualInfo jLayerContextualInfo = codec.decode( response );
-										updateContextualInfo(jLayerContextualInfo);
-										reloadEntityInfo();
-									}
-								});
-								RiscossJsonClient.listEntities(new JsonCallback() {
-									@Override
-									public void onFailure(Method method,
-											Throwable exception) {
-									}
-									@Override
-									public void onSuccess(Method method,
-											JSONValue response) {
-										reloadEntityTable(response);
-									}
-								});
-							}
-						});		
-					}
-					
-				});
+				newEntityButton.setText("New " + selectedLayer + " entity");
 				buttons.add(newEntityButton);
 				
 				
 				leftPanelEntity.add(buttons);
-				leftPanelEntity.add(table);
+				leftPanelEntity.add(tablePanel);
 				
 				mainView.add(rightPanel);
 			}
@@ -584,29 +601,33 @@ public class LayersModule implements EntryPoint {
 	protected void updateContextualInfo( JLayerContextualInfo contextualInfo ) {
 		int k;
 		JSONArray array = new JSONArray();
-		for (k = 0; k < contextualInfo.getSize(); k++) {
-			JSONObject o = new JSONObject();
-			o.put( "id", new JSONString( contextualInfo.getContextualInfoElement(k).getId() ) );
-			o.put( "target", new JSONString( selectedEntity ) );
-			String value = contextualInfo.getContextualInfoElement(k).getDefval();
-			for (int i = 0; i < contextualInfo.getContextualInfoElement(k).getInfo().size(); ++i) {
-				value+=";"+contextualInfo.getContextualInfoElement(k).getInfo().get(i);
+		if (contextualInfo != null) {
+			for (k = 0; k < contextualInfo.getSize(); k++) {
+				JSONObject o = new JSONObject();
+				o.put( "id", new JSONString( contextualInfo.getContextualInfoElement(k).getId() ) );
+				o.put( "target", new JSONString( selectedEntity ) );
+				String value = contextualInfo.getContextualInfoElement(k).getDefval();
+				for (int i = 0; i < contextualInfo.getContextualInfoElement(k).getInfo().size(); ++i) {
+					value+=";"+contextualInfo.getContextualInfoElement(k).getInfo().get(i);
+				}
+				o.put( "value", new JSONString( value ) );
+				o.put( "type", new JSONString( "custom" ) );
+				o.put( "datatype", new JSONString( contextualInfo.getContextualInfoElement(k).getType()));
+				o.put( "origin", new JSONString( "user" ) );
+				array.set( k, o );
 			}
-			o.put( "value", new JSONString( value ) );
-			o.put( "type", new JSONString( "custom" ) );
-			o.put( "datatype", new JSONString( contextualInfo.getContextualInfoElement(k).getType()));
-			o.put( "origin", new JSONString( "user" ) );
-			array.set( k, o );
+			RiscossJsonClient.postRiskData( array, new JsonCallback() {
+				@Override
+				public void onFailure( Method method, Throwable exception ) {
+					Window.alert( exception.getMessage() );
+				}
+				@Override
+				public void onSuccess( Method method, JSONValue response ) {
+					//								Window.alert( "Ok" );
+				}
+			} );
 		}
-		RiscossJsonClient.postRiskData( array, new JsonCallback() {
-			@Override
-			public void onFailure( Method method, Throwable exception ) {
-				Window.alert( exception.getMessage() );
-			}
-			@Override
-			public void onSuccess( Method method, JSONValue response ) {
-				//								Window.alert( "Ok" );
-			}} );
+		
 	}
 	
 	private void reloadEntityTable(JSONValue response) {
@@ -614,24 +635,24 @@ public class LayersModule implements EntryPoint {
 		entities = new ArrayList<>();
 		for( int i = 0; i < response.isArray().size(); i++ ) {
 			JSONObject o = (JSONObject)response.isArray().get( i );
-			entities.add(o.get("name").isString().stringValue());
+			entities.add( o );
 		}
 		leftPanelEntity.clear();
-		table = new CellTable<String>(15, (Resources) GWT.create(TableResources.class));
-		TextColumn<String> t = new TextColumn<String>() {
+		table = new CellTable<JSONObject>(15, (Resources) GWT.create(TableResources.class));
+		Column<JSONObject,String> t = new Column<JSONObject,String>(new TextCell()) {
 			@Override
-			public String getValue(String arg0) {
-				return arg0;
+			public String getValue(JSONObject arg0) {
+				return arg0.get("name").isString().stringValue();
 			}
 		};
 		
-		final SingleSelectionModel<String> selectionModel = new SingleSelectionModel<String>();
+		final SingleSelectionModel<JSONObject> selectionModel = new SingleSelectionModel<JSONObject>();
 	    table.setSelectionModel(selectionModel);
 	    selectionModel.addSelectionChangeHandler(new Handler() {
 			@Override
 			public void onSelectionChange(SelectionChangeEvent arg0) {
-				if (selectionModel.getSelectedObject() != "") {
-					selectedEntity = selectionModel.getSelectedObject();
+				if (!selectionModel.getSelectedObject().get("name").isString().stringValue().equals("")) {
+					selectedEntity = selectionModel.getSelectedObject().get("name").isString().stringValue();
 					reloadEntityInfo();
 				}
 			}
@@ -641,11 +662,27 @@ public class LayersModule implements EntryPoint {
 		
 		if (entities.size() > 0) table.setRowData(0, entities);
 		else {
-			entities.add("");
+			entities.add(new JSONObject());
 			table.setRowData(0, entities);
+			entities.remove(0);
 		}
 		table.setStyleName("table");
 		table.setWidth("100%");
+		
+		dataProvider = new ListDataProvider<JSONObject>();
+		dataProvider.addDataDisplay( table );
+		
+		for( int i = 0; i < entities.size(); i++ ) {
+			dataProvider.getList().add( entities.get(i) );
+		}
+		
+		pager = new SimplePager();
+	    pager.setDisplay( table );
+	    
+	    tablePanel = new VerticalPanel();
+	    tablePanel.setWidth("100%");
+		tablePanel.add(table);
+		tablePanel.add(pager);
 		
 		HorizontalPanel layerData = new HorizontalPanel();
 		layerData.setStyleName("layerData");
@@ -660,63 +697,11 @@ public class LayersModule implements EntryPoint {
 		
 		HorizontalPanel buttons = new HorizontalPanel();
 		
-		Button newEntityButton = new Button("New " + selectedLayer + " entity");
-		newEntityButton.setStyleName("button");
-		newEntityButton.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				String name = entityName.getText().trim();
-				
-				if (name == null || name.equals("") ) 
-					return;
-				
-				//String s = RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
-				if (!RiscossUtil.sanitize(name).equals(name)){
-					//info: firefox has some problem with this window, and fires assertion errors in dev mode
-					Window.alert("Name contains prohibited characters (##,@,\") \nPlease re-enter name");
-					return;
-				}
-
-				for(int i=0; i<list.isArray().size(); i++){
-					JSONObject o = (JSONObject)list.isArray().get(i);
-					if (name.equals(o.get( "name" ).isString().stringValue())){
-						//info: firefox has some problem with this window, and fires assertion errors in dev mode
-						Window.alert("Layer name already in use.\nPlease re-enter name.");
-						return;
-					}
-				}
-				RiscossJsonClient.createEntity(name, selectedLayer, "", new JsonCallback() {
-					@Override
-					public void onFailure(Method method,
-							Throwable exception) {
-						Window.alert(exception.getMessage());
-					}
-					@Override
-					public void onSuccess(Method method,
-							JSONValue response) {
-						selectedEntity = entityName.getText().trim();
-						entityName.setText("");
-						reloadEntityInfo();
-						RiscossJsonClient.listEntities(new JsonCallback() {
-							@Override
-							public void onFailure(Method method,
-									Throwable exception) {
-							}
-							@Override
-							public void onSuccess(Method method,
-									JSONValue response) {
-								reloadEntityTable(response);
-							}
-						});
-					}
-				});
-				
-			}
-		});
+		newEntityButton.setText("New " + selectedLayer + " entity");
 		buttons.add(newEntityButton);
 		
 		leftPanelEntity.add(buttons);
-		leftPanelEntity.add(table);
+		leftPanelEntity.add(tablePanel);
 	}
 	
 	EntityPropertyPage ppgEnt;
@@ -774,7 +759,7 @@ public class LayersModule implements EntryPoint {
 										@Override
 										public void onSuccess(Method method,JSONValue response) {
 											mainView.remove(rightPanel);
-											RiscossJsonClient.listEntities(new JsonCallback() {
+											RiscossJsonClient.listEntities(selectedLayer, new JsonCallback() {
 												@Override
 												public void onFailure(
 														Method method,

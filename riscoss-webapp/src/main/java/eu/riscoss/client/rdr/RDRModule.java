@@ -29,6 +29,7 @@ import org.fusesource.restygwt.client.Method;
 import org.fusesource.restygwt.client.Resource;
 
 import com.google.gwt.cell.client.AbstractCell;
+import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -39,6 +40,8 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.CellList;
 import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.cellview.client.CellTable.Resources;
 import com.google.gwt.user.cellview.client.HasKeyboardPagingPolicy.KeyboardPagingPolicy;
@@ -82,9 +85,11 @@ public class RDRModule implements EntryPoint {
 
 	DockPanel						dock = new DockPanel();
 
-	List<String>					listEntities;
+	List<JSONObject>				listEntities;
+	ListDataProvider<JSONObject> 	dataProvider;
+	SimplePager 					pager = new SimplePager();
 
-	CellTable<String>				cellList;
+	CellTable<JSONObject>			cellList;
 	
 	VerticalPanel					page = new VerticalPanel();
 	HorizontalPanel					mainView = new HorizontalPanel();
@@ -108,35 +113,59 @@ public class RDRModule implements EntryPoint {
 			public void onSuccess(Method method, JSONValue response) {
 				listEntities = new ArrayList<>();
 				for (int i = 0; i < response.isArray().size(); ++i) {
-					listEntities.add(response.isArray().get(i).isObject().get("name").isString().stringValue());
+					listEntities.add(response.isArray().get(i).isObject());
 				}
 
-				cellList = new CellTable<String>(15, (Resources) GWT.create(TableResources.class));
+				cellList = new CellTable<JSONObject>(15, (Resources) GWT.create(TableResources.class));
 				cellList.setStyleName("list");
 				cellList.setPageSize(30);
 				cellList.setKeyboardPagingPolicy(KeyboardPagingPolicy.INCREASE_RANGE);
 				cellList.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.BOUND_TO_SELECTION);
 
-				final SingleSelectionModel<String> selectionModel = new SingleSelectionModel<String>();
+				final SingleSelectionModel<JSONObject> selectionModel = new SingleSelectionModel<JSONObject>();
 			    cellList.setSelectionModel(selectionModel);
 			    selectionModel.addSelectionChangeHandler(new Handler() {
 					@Override
 					public void onSelectionChange(SelectionChangeEvent arg0) {
-						ppg.setSelectedEntity( selectionModel.getSelectedObject() );
+						ppg.setSelectedEntity( selectionModel.getSelectedObject().get("name").isString().stringValue() );
 					}
 			    });
 			    
-			    TextColumn<String> t = new TextColumn<String>() {
+			    Column<JSONObject, String> t = new Column<JSONObject, String>(new TextCell()) {
 					@Override
-					public String getValue(String arg0) {
-						return arg0;
+					public String getValue(JSONObject arg0) {
+						return arg0.get("name").isString().stringValue();
+					}
+				};
+				
+				Column<JSONObject, String> t2 = new Column<JSONObject, String>(new TextCell()) {
+					@Override
+					public String getValue(JSONObject arg0) {
+						return arg0.get("layer").isString().stringValue();
 					}
 				};
 
-			    cellList.addColumn(t, "Entities");
+			    cellList.addColumn(t, "Entity");
+			    cellList.addColumn(t2, "Layer");
 			    cellList.setWidth("100%");
 			    
-			    cellList.setRowData(0, listEntities);
+			    if (listEntities.size() > 0) cellList.setRowData(0, listEntities);
+				else {
+					listEntities.add(new JSONObject());
+					cellList.setRowData(0, listEntities);
+					listEntities.remove(0);
+				}
+				cellList.setStyleName("table");
+				
+				dataProvider = new ListDataProvider<JSONObject>();
+				dataProvider.addDataDisplay( cellList );
+				
+				for( int i = 0; i < listEntities.size(); i++ ) {
+					dataProvider.getList().add( listEntities.get(i) );
+				}
+				
+				pager = new SimplePager();
+			    pager.setDisplay( cellList );
 			    
 				ppg = new EntityDataBox();
 				
@@ -158,6 +187,7 @@ public class RDRModule implements EntryPoint {
 				page.add(title);
 				
 				leftPanel.add(cellList);
+				leftPanel.add(pager);
 				rightPanel.add(ppg);
 				rightPanel.setWidth("90%");
 				mainView.add(leftPanel);

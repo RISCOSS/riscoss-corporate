@@ -38,8 +38,9 @@ public class RASModule implements EntryPoint {
 
 	DockPanel					panel = new DockPanel();
 	
-	CellTable<JRASInfo>			table;
-	ListDataProvider<JRASInfo>	dataProvider;
+	CellTable<JsonRiskAnalysis>			table;
+	ListDataProvider<JsonRiskAnalysis>	dataProvider;
+	SimplePager					pager = new SimplePager();
 	
 	VerticalPanel		page = new VerticalPanel();
 	HorizontalPanel		mainView = new HorizontalPanel();
@@ -57,27 +58,27 @@ public class RASModule implements EntryPoint {
 	public void onModuleLoad() {
 		exportJS();
 		
-		table = new CellTable<JRASInfo>(15, (Resources) GWT.create(TableResources.class));
+		table = new CellTable<JsonRiskAnalysis>(15, (Resources) GWT.create(TableResources.class));
 		
-		table.addColumn( new Column<JRASInfo,SafeHtml>(new SafeHtmlCell() ) {
+		table.addColumn( new Column<JsonRiskAnalysis,SafeHtml>(new SafeHtmlCell() ) {
 			@Override
-			public SafeHtml getValue(JRASInfo object) {
-				return new LinkHtml( object.getName(), "javascript:setSelectedRAS(\"" + object.getId() + "\")" ); };
-		}, "Risk Analysis Session");
-		Column<JRASInfo,String> c = new Column<JRASInfo,String>(new ButtonCell() ) {
+			public SafeHtml getValue(JsonRiskAnalysis object) {
+				return new LinkHtml( object.getName(), "javascript:setSelectedRAS(\"" + object.getID() + "\")" ); };
+		}, "Session name");
+		table.addColumn( new Column<JsonRiskAnalysis,SafeHtml>(new SafeHtmlCell() ) {
 			@Override
-			public String getValue(JRASInfo object) {
-				return "Delete";
-			}};
-			c.setFieldUpdater(new FieldUpdater<JRASInfo, String>() {
-				@Override
-				public void update(int index, JRASInfo object, String value) {
-					deleteRAS( object );
-				}
-			});
-		table.addColumn( c, "");
+			public SafeHtml getValue(JsonRiskAnalysis object) {
+				return new LinkHtml( object.getTarget(), "javascript:setSelectedRAS(\"" + object.getID() + "\")" ); };
+		}, "Entity");
+		table.addColumn( new Column<JsonRiskAnalysis,SafeHtml>(new SafeHtmlCell() ) {
+			@Override
+			public SafeHtml getValue(JsonRiskAnalysis object) {
+				return new LinkHtml( object.getRC(), "javascript:setSelectedRAS(\"" + object.getID() + "\")" ); };
+		}, "Risk configuration");
 		
-		dataProvider = new ListDataProvider<JRASInfo>();
+		
+		
+		dataProvider = new ListDataProvider<JsonRiskAnalysis>();
 		dataProvider.addDataDisplay( table );
 		
 		SimplePager pager = new SimplePager();
@@ -90,7 +91,6 @@ public class RASModule implements EntryPoint {
 		mainView.setStyleName("mainViewLayer");
 		//mainView.setWidth("100%");
 		leftPanel.setStyleName("leftPanelLayer");
-		leftPanel.setWidth("400px");
 		//leftPanel.setHeight("100%");
 		rightPanel.setStyleName("rightPanelLayer");
 		page.setWidth("100%");
@@ -103,13 +103,16 @@ public class RASModule implements EntryPoint {
 		page.add(title);
 		leftPanel.add(panel);
 		mainView.add(leftPanel);
-		mainView.add(rightPanel);
 		page.add(mainView);
 		
 		//RootPanel.get().add( panel );
 		RootPanel.get().add( page );
 		
 		loadRASList();
+	}
+	
+	private void loadData() {
+		
 	}
 	
 	public void loadRASList() {
@@ -128,7 +131,18 @@ public class RASModule implements EntryPoint {
 					CodecRASInfo codec = GWT.create( CodecRASInfo.class );
 					for( int i = 0; i < response.isArray().size(); i++ ) {
 						JRASInfo info = codec.decode( response.isArray().get( i ) );
-						dataProvider.getList().add( info );
+						RiscossJsonClient.getSessionSummary(info.getId(), new JsonCallback() {
+							@Override
+							public void onFailure(Method method,
+									Throwable exception) {
+								Window.alert(exception.getMessage());
+							}
+							@Override
+							public void onSuccess(Method method,
+									JSONValue response) {
+								dataProvider.getList().add( new JsonRiskAnalysis(response) );
+							}
+						});
 					}
 				}
 			}
