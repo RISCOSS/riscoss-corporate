@@ -95,6 +95,8 @@ public class EntitiesModule implements EntryPoint {
 	TreeWidget						entitiesTree = new TreeWidget();
 	TreeWidget						root = new TreeWidget();
 	
+	EntitiesListBox					b;
+	
 	public EntitiesModule() {
 	}
 	
@@ -197,7 +199,7 @@ public class EntitiesModule implements EntryPoint {
 		entitiesTree.asWidget().setWidth("100%");
 		
 		// entity filtering /////////////
-		HorizontalPanel filterPanel = new HorizontalPanel();
+		/*HorizontalPanel filterPanel = new HorizontalPanel();
 		leftPanel.add(filterPanel);
 		Label filterlabel = new Label("Search entities: ");
 		filterlabel.setStyleName("bold");
@@ -236,8 +238,10 @@ public class EntitiesModule implements EntryPoint {
 			}
 		});
 		
-		generateTree("", ""); //entityQueryString, filterLayer);
+		generateTree("", ""); //entityQueryString, filterLayer);*/
 		//leftPanel.add(entitiesTree.asWidget());
+		b = new EntitiesListBox(this);
+		leftPanel.add(b.getWidget());
 		mainView.add(leftPanel);
 		mainView.add(rightPanel);
 		page.add(mainView);
@@ -250,6 +254,8 @@ public class EntitiesModule implements EntryPoint {
 				saveEntityData();	
 			}
 		});
+		
+		
 		
 		RootPanel.get().add( page );
 
@@ -415,7 +421,7 @@ public class EntitiesModule implements EntryPoint {
 		});
 	}
 	
-	protected void setSelectedEntity( String entity ) {
+	public void setSelectedEntity( String entity ) {
 		this.selectedEntity = entity;
 		ppg.setSelectedEntity( entity );
 		
@@ -504,8 +510,9 @@ public class EntitiesModule implements EntryPoint {
 	}
 	
 	public void reloadData() {
-		entitiesTree.clear();
-		generateTree(entityQueryString, filterLayer);
+		//entitiesTree.clear();
+		b.reload();
+		//generateTree(entityQueryString, filterLayer);
 	}
 	
 	protected void createEntity() {

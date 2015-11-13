@@ -75,6 +75,11 @@ public class RASModule implements EntryPoint {
 			public SafeHtml getValue(JsonRiskAnalysis object) {
 				return new LinkHtml( object.getRC(), "javascript:setSelectedRAS(\"" + object.getID() + "\")" ); };
 		}, "Risk configuration");
+		table.addColumn( new Column<JsonRiskAnalysis,SafeHtml>(new SafeHtmlCell() ) {
+			@Override
+			public SafeHtml getValue(JsonRiskAnalysis object) {
+				return new LinkHtml( object.getDate(), "javascript:setSelectedRAS(\"" + object.getID() + "\")" ); };
+		}, "Execution time");
 		
 		
 		

@@ -160,11 +160,11 @@ public class RASPanel implements IsWidget {
 		}
 		{
 
-			Label aL = new Label("Analysis");
+			Label aL = new Label("Execution time");
 			aL.setStyleName("headTable");
 			aL.setWidth("130px");
 			grid.setWidget(3, 0, aL);
-			Label lastEx = new Label("Last execution: " + ras.getDate());
+			Label lastEx = new Label(ras.getDate());
 			lastEx.setStyleName("contentTable");
 			grid.setWidget(3, 1, lastEx);
 		}

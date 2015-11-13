@@ -852,6 +852,7 @@ public class EntityPropertyPage implements IsWidget {
 					
 				}
 			} );
+			if (i == tb.getRowCount()-1) saveParentyInfo();
 		}
 		if (tb.getRowCount() == 0) saveParentyInfo();
 	}
