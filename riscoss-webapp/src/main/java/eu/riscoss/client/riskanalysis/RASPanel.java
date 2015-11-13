@@ -223,11 +223,6 @@ public class RASPanel implements IsWidget {
 		vPanel.add(mainChart);
 		vPanel.add(report.asWidget());
 		
-		Label inputValues = new Label("Input values");
-		inputValues.setStyleName("subtitle");
-		vPanel.add(inputValues);
-		vPanel.add(inputTable);
-		
 		panel.setWidget( vPanel );
 		
 		RiscossJsonClient.getSessionResults( selectedRAS, new JsonCallback() {
@@ -242,8 +237,13 @@ public class RASPanel implements IsWidget {
 								sessionSummary,
 								response.isObject().get( "results" ).isArray(),
 								response.isObject().get( "argumentation" ) );
-					
-					inputDataInfo(response.isObject().get( "input" ));
+						if (report.getEvidence()) {
+							Label inputValues = new Label("Input values");
+							inputValues.setStyleName("subtitle");
+							vPanel.add(inputValues);
+							vPanel.add(inputTable);
+							inputDataInfo(response.isObject().get( "input" ));
+						}
 				}
 				catch( Exception ex ) {
 //					Window.alert( ex.getMessage() + "\n" + response );
@@ -392,7 +392,7 @@ public class RASPanel implements IsWidget {
 								response.isObject().get( "argumentation" ) );
 						buttons2.remove(running);
 					
-					inputDataInfo(response.isObject().get( "input" ));
+					if (report.getEvidence()) inputDataInfo(response.isObject().get( "input" ));
 				}
 			@Override
 			public void onFailure( Method method, Throwable exception ) {
@@ -451,7 +451,7 @@ public class RASPanel implements IsWidget {
 							response.isObject().get( "results" ).isArray(),
 							response.isObject().get( "argumentation" ) );
 					
-					inputDataInfo(response.isObject().get( "input" ));
+					if (report.getEvidence()) inputDataInfo(response.isObject().get( "input" ));
 				}
 				catch( Exception ex ) {
 					Window.alert( ex.getMessage() + "\n" + response );

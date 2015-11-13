@@ -105,6 +105,12 @@ public class RiskAnalysisReport implements IsWidget {
 	int 					counting;
 	ArrayList<Info> 		dataList;
 	
+	Boolean					evidence;
+	
+	public Boolean getEvidence() {
+		return evidence;
+	}
+	
 	public void initializeParameters() {
 		panels = new ArrayList<>();
 		riskSessions = new ArrayList<>();
@@ -126,7 +132,7 @@ public class RiskAnalysisReport implements IsWidget {
 		descriptions.clear();
 		mainChartPanel.setStyleName("margin-top");
 		this.response = response;
-		Boolean evidence = false;
+		evidence = false;
 		
 		Codec codec = GWT.create( Codec.class );
 		
