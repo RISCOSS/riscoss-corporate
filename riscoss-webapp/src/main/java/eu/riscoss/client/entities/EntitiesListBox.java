@@ -98,7 +98,7 @@ public class EntitiesListBox {
 	}
 	
 	private void initializeBox() {
-		changeList = new Button("Change to tree");
+		changeList = new Button("Change to tree view");
 		changeList.setStyleName("button");
 		changeList.addClickHandler(new ClickHandler() {
 			@Override
