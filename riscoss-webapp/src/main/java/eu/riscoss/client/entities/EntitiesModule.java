@@ -265,7 +265,7 @@ public class EntitiesModule implements EntryPoint {
 		ppg.saveEntityData();
 	}
 	
-	private void appendChilds(TreeWidget rootEnt, JSONArray children) {
+	/*private void appendChilds(TreeWidget rootEnt, JSONArray children) {
 		this.root = rootEnt;
 		for (int i = 0; i < children.size(); ++i) {
 			RiscossJsonClient.getEntityData(children.get(i).isString().stringValue(), new JsonCallback() {
@@ -334,11 +334,11 @@ public class EntitiesModule implements EntryPoint {
 //				}
 //			});
 		}
-	}
+	}*/
 	
 	public interface CodecEntityNodeList extends JsonEncoderDecoder<JEntityNode> {}
 	
-	private void generateTree(String query, String filterlayer) {
+	/*private void generateTree(String query, String filterlayer) {
 		//RiscossJsonClient.listEntities(new JsonCallback() {
 		RiscossJsonClient.searchEntities( query, filterlayer, new JsonCallback() {
 			@Override
@@ -419,10 +419,11 @@ public class EntitiesModule implements EntryPoint {
 //				}
 			}
 		});
-	}
+	}*/
 	
 	public void setSelectedEntity( String entity ) {
 		this.selectedEntity = entity;
+		ppg = new EntityPropertyPage(this);
 		ppg.setSelectedEntity( entity );
 		
 		RiscossJsonClient.getEntityData( entity, new JsonCallback() {
@@ -505,6 +506,9 @@ public class EntitiesModule implements EntryPoint {
 		buttons.add(delete);
 		rightPanel.add(buttons);
 		
+		
+		ppg = new EntityPropertyPage(this);
+		ppg.setSelectedEntity(selectedEntity);
 		rightPanel.add(ppg);
 		mainView.add(rightPanel);
 	}
@@ -552,19 +556,21 @@ public class EntitiesModule implements EntryPoint {
 	protected void updateContextualInfo( JLayerContextualInfo contextualInfo ) {
 		int k;
 		JSONArray array = new JSONArray();
-		for (k = 0; k < contextualInfo.getSize(); k++) {
-			JSONObject o = new JSONObject();
-			o.put( "id", new JSONString( contextualInfo.getContextualInfoElement(k).getId() ) );
-			o.put( "target", new JSONString( newEntity ) );
-			String value = contextualInfo.getContextualInfoElement(k).getDefval();
-			for (int i = 0; i < contextualInfo.getContextualInfoElement(k).getInfo().size(); ++i) {
-				value+=";"+contextualInfo.getContextualInfoElement(k).getInfo().get(i);
+		if (contextualInfo != null) {
+			for (k = 0; k < contextualInfo.getSize(); k++) {
+				JSONObject o = new JSONObject();
+				o.put( "id", new JSONString( contextualInfo.getContextualInfoElement(k).getId() ) );
+				o.put( "target", new JSONString( newEntity ) );
+				String value = contextualInfo.getContextualInfoElement(k).getDefval();
+				for (int i = 0; i < contextualInfo.getContextualInfoElement(k).getInfo().size(); ++i) {
+					value+=";"+contextualInfo.getContextualInfoElement(k).getInfo().get(i);
+				}
+				o.put( "value", new JSONString( value ) );
+				o.put( "type", new JSONString( "custom" ) );
+				o.put( "datatype", new JSONString( contextualInfo.getContextualInfoElement(k).getType()));
+				o.put( "origin", new JSONString( "user" ) );
+				array.set( k, o );
 			}
-			o.put( "value", new JSONString( value ) );
-			o.put( "type", new JSONString( "custom" ) );
-			o.put( "datatype", new JSONString( contextualInfo.getContextualInfoElement(k).getType()));
-			o.put( "origin", new JSONString( "user" ) );
-			array.set( k, o );
 		}
 		RiscossJsonClient.postRiskData( array, new JsonCallback() {
 			@Override
