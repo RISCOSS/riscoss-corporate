@@ -1,11 +1,11 @@
 package eu.riscoss.client.rma;
 
-import java.util.List;
-
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+
+import eu.riscoss.shared.JAHPResult;
 
 public class RMAOutputPanel implements IsWidget {
 	
@@ -16,12 +16,12 @@ public class RMAOutputPanel implements IsWidget {
 		return vp;
 	}
 	
-	public void setOutput( List<String> list ) {
+	public void setOutput( JAHPResult result ) {
 		
 		vp.clear();
 		
-		for( String item : list ) {
-			vp.add( new Label( item ) );
+		for( String item : result.values.keySet() ) {
+			vp.add( new Label( item + ": " + result.values.get( item ) ) );
 		}
 	}
 	

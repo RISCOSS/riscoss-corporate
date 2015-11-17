@@ -37,15 +37,20 @@ import eu.riscoss.db.RiscossDB;
 public class RDRManager {
 	
 	@POST @Path("/{domain}/store")
+	@Info("Stores Risk Data into the Risk Data Repository (RDR)")
 	@Consumes({"application/json"})
 	public void store( 
-			@PathParam("domain") String domain,
-			@HeaderParam("token") String token, 
-			String riskData ) {
+			@PathParam("domain") @Info("The selected domain")				String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token, 
+			String riskData 
+			) throws Exception {
+		
 		System.out.println("RiskData: "+ riskData );
+		
 		JsonArray json = (JsonArray)new JsonParser().parse( riskData );
-		RiscossDB db = DBConnector.openDB( domain, token );
+		RiscossDB db = null;
 		try {
+			db = DBConnector.openDB( domain, token );
 			for( int i = 0; i < json.size(); i++ ) {
 				JsonObject o = json.get( i ).getAsJsonObject();
 				try {
@@ -54,6 +59,9 @@ public class RDRManager {
 					e.printStackTrace();
 				}
 			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+			throw e1;
 		}
 		finally {
 			DBConnector.closeDB( db );

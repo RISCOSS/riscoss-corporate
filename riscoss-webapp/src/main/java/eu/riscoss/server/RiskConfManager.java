@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -51,15 +50,18 @@ public class RiskConfManager {
 	
 	@GET @Path( "/{domain}/list" )
 	public String list(
-			@DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, 
-			@DefaultValue("") @QueryParam("entity") String entity ) {
+			@PathParam("domain")		String domain,
+			@HeaderParam("token")		String token, 
+			@QueryParam("entity")		String entity 
+			) throws Exception {
 		
-		RiscossDB db = DBConnector.openDB( domain, token );
+		RiscossDB db = null;
 		
 		JsonArray a = new JsonArray();
 		
 		try {
+			
+			db = DBConnector.openDB( domain, token );
 			
 			if( entity != null ) {
 				if( !entity.equals( "" ) ) {
@@ -81,6 +83,9 @@ public class RiskConfManager {
 			}
 			
 		}
+		catch( Exception ex ) {
+			throw ex;
+		}
 		finally {
 			DBConnector.closeDB( db );
 		}
@@ -93,15 +98,21 @@ public class RiskConfManager {
 	 * @param domain
 	 * @param name
 	 * @return
+	 * @throws Exception 
 	 */
 	@GET @Path("/{domain}/{rc}/get")
-	public String getContent( @DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, @PathParam("rc") String name ) {
+	public String getContent( 
+			@PathParam("domain") String domain,
+			@HeaderParam("token") String token, 
+			@PathParam("rc") String name 
+			) throws Exception {
 		
 		JsonObject json = new JsonObject();
 		
-		RiscossDB db = DBConnector.openDB( domain, token );
+		RiscossDB db = null;
 		try {
+			db = DBConnector.openDB( domain, token );
+			
 			json.addProperty( "name", name );
 			json.addProperty( "type", "layered" );
 			{
@@ -132,6 +143,9 @@ public class RiskConfManager {
 			}
 			return json.toString();
 		}
+		catch( Exception ex ) {
+			throw ex;
+		}
 		finally {
 			DBConnector.closeDB( db );
 		}
@@ -145,15 +159,22 @@ public class RiskConfManager {
 	 * @param domain
 	 * @param name
 	 * @return
+	 * @throws Exception 
 	 */
 	@GET @Path("/{domain}/{rc}/get_new")
-	public String getContentNew( @DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, @PathParam("rc") String name ) {
+	public String getContentNew( 
+			@PathParam("domain")		String domain,
+			@HeaderParam("token")		String token, 
+			@PathParam("rc")			String name 
+			) throws Exception {
 		
 		JRiskConfiguration jrc = new JRiskConfiguration();
 		
-		RiscossDB db = DBConnector.openDB( domain, token );
+		RiscossDB db = null;
+		
 		try {
+			db = DBConnector.openDB( domain, token );
+			
 			jrc.name = name;
 			jrc.type = "layered";
 			{
@@ -176,19 +197,26 @@ public class RiskConfManager {
 			}
 			return new Gson().toJson( jrc );
 		}
+		catch( Exception ex ) {
+			throw ex;
+		}
 		finally {
 			DBConnector.closeDB( db );
 		}
 	}
 	
 	@POST @Path("/{domain}/{rc}/store")
-	public void setContent( @DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, 
-			@PathParam("rc") String name, String riskConfigs ) {
+	public void setContent( 
+			@PathParam("domain")		String domain,
+			@HeaderParam("token")		String token, 
+			@PathParam("rc")			String name, 
+			String riskConfigs 
+			) throws Exception {
 		
 		JsonObject json = (JsonObject)new JsonParser().parse( riskConfigs );
-		RiscossDB db = DBConnector.openDB( domain, token );
+		RiscossDB db = null;
 		try {
+			db = DBConnector.openDB( domain, token );
 			//String rc = json.get( "name" ).getAsString();
 			try {
 				List<String> list = new ArrayList<String>();
@@ -218,28 +246,29 @@ public class RiskConfManager {
 				ex.printStackTrace();
 			}
 		}
+		catch( Exception ex ) {
+			throw ex;
+		}
 		finally {
 			DBConnector.closeDB( db );
 		}
 	}
 	
 	@POST @Path("/{domain}/{rc}/store_new")
-	public void setContentNew( @DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, 
-			@PathParam("rc") String name, String riskConfigs ) {
+	public void setContentNew( 
+			@PathParam("domain")		String domain,
+			@HeaderParam("token")		String token, 
+			@PathParam("rc")			String name, 
+			String riskConfigs 
+			) throws Exception {
 		
 		JRiskConfiguration rc = new Gson().fromJson( riskConfigs, JRiskConfiguration.class ); // (JsonObject)new JsonParser().parse( riskConfigs );
-		RiscossDB db = DBConnector.openDB( domain, token );
+		RiscossDB db = null;
 		try {
+			db = DBConnector.openDB( domain, token );
+			
 			try {
 				db.setModelsFromRiskCfg( name, rc.models );
-				
-//				List<String> list = new ArrayList<String>();
-//				JsonArray array = json.get( "models" ).getAsJsonArray();
-//				for( int i = 0; i < array.size(); i++ ) {
-//					list.add( array.get( i ).getAsJsonObject().get( "name" ).getAsString() );
-//				}
-//				db.setModelsFromRiskCfg( name, list );
 			}
 			catch( Exception ex ) {}
 			try {
@@ -248,23 +277,13 @@ public class RiskConfManager {
 					map.put( rcli.name, rcli.models );
 				}
 				db.setRCModels( name, map );
-//				Map<String,ArrayList<String>> map = new HashMap<String,ArrayList<String>>();
-//				JsonArray jlayers = json.get( "layers" ).getAsJsonArray();
-//				for( int i = 0; i < jlayers.size(); i++ ) {
-//					JsonObject jlayer = jlayers.get( i ).getAsJsonObject();
-//					String layer = jlayer.get( "name" ).getAsString();
-//					JsonArray jmodels = jlayer.get( "models" ).getAsJsonArray();
-//					ArrayList<String> models = new ArrayList<String>();
-//					for( int m = 0; m < jmodels.size(); m++ ) {
-//						models.add( jmodels.get( m ).getAsString() );
-//					}
-//					map.put( layer, models );
-//				}
-//				db.setRCModels( name, map );
 			}
 			catch( Exception ex ) {
 				ex.printStackTrace();
 			}
+		}
+		catch( Exception ex ) {
+			throw ex;
 		}
 		finally {
 			DBConnector.closeDB( db );
@@ -272,16 +291,23 @@ public class RiskConfManager {
 	}
 	
 	@POST @Path("/{domain}/create")
-	public String createNew( @DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, @QueryParam("name") String name ) {
-		RiscossDB db = DBConnector.openDB( domain, token );
+	public String createNew( 
+			@PathParam("domain")		String domain,
+			@HeaderParam("token")		String token, 
+			@QueryParam("name")			String name 
+			) throws Exception {
+		RiscossDB db = null;
 		//attention:filename sanitation is not directly notified to the user
 		name = RiscossUtil.sanitize(name);
 		try {
+			db = DBConnector.openDB( domain, token );
 			db.createRiskConfiguration( name );
 			JsonObject o = new JsonObject();
 			o.addProperty( "name", name );
 			return o.toString();
+		}
+		catch( Exception ex ) {
+			throw ex;
 		}
 		finally {
 			DBConnector.closeDB( db );
@@ -289,14 +315,22 @@ public class RiskConfManager {
 	}
 	
 	@DELETE @Path("/{domain}/{rc}/delete")
-	public String delete( @DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, @PathParam("rc") String name ) {
-		RiscossDB db = DBConnector.openDB( domain, token );
+	public String delete( 
+			@PathParam("domain")		String domain,
+			@HeaderParam("token")		String token, 
+			@PathParam("rc")			String name 
+			) throws Exception {
+		
+		RiscossDB db = null;
 		try {
+			db = DBConnector.openDB( domain, token );
 			db.removeRiskConfiguration( name );
 			JsonObject o = new JsonObject();
 			o.addProperty( "name", name );
 			return o.toString();
+		}
+		catch( Exception ex ) {
+			throw ex;
 		}
 		finally {
 			DBConnector.closeDB( db );

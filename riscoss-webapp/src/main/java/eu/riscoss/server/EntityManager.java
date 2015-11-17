@@ -67,20 +67,28 @@ public class EntityManager {
 	@GET @Path("/{domain}/list")
 	@Info("Returns a list of the entities sotred in the given domain")
 	public String list(
-			@PathParam("domain") @Info("The selected domain") String domain,
-			@HeaderParam("token") @Info("The authentication token") String token ) {
+			@PathParam("domain") @Info("The selected domain")			String domain,
+			@HeaderParam("token") @Info("The authentication token")		String token 
+			) throws Exception {
 
 		JsonArray a = new JsonArray();
 
-		RiscossDB db = DBConnector.openDB(domain, token);
+		RiscossDB db = null;
 		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
 			for (String name : db.entities()) {
 				JsonObject o = new JsonObject();
 				o.addProperty("name", name);
 				o.addProperty("layer", db.layerOf(name));
 				a.add(o);
 			}
-		} finally {
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
 			DBConnector.closeDB(db);
 		}
 
@@ -94,26 +102,34 @@ public class EntityManager {
 	 * @param layer
 	 * @param token
 	 * @return
+	 * @throws Exception 
 	 */
 	@GET @Path("/{domain}/{layer}/list")
 	@Info("Returns the list of entities in a specific layer")
 	public String list(
-			@PathParam("domain") @Info("The selected domain") String domain,
-			@PathParam("layer") @Info("The selected layer") String layer, 
-			@HeaderParam("token") @Info("The authentication token") String token) {
+			@PathParam("domain") @Info("The selected domain")			String domain,
+			@PathParam("layer") @Info("The selected layer")				String layer, 
+			@HeaderParam("token") @Info("The authentication token")		String token
+			) throws Exception {
 
 		//TODO: check if layer exists!
 		JsonArray a = new JsonArray();
 
-		RiscossDB db = DBConnector.openDB(domain, token);
+		RiscossDB db = null;
 		try {
+			
+			db = DBConnector.openDB(domain, token);
 			for (String name : db.entities(layer)) {
 				JsonObject o = new JsonObject();
 				o.addProperty("name", name);
 				o.addProperty("layer", layer);
 				a.add(o);
 			}
-		} finally {
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
 			DBConnector.closeDB(db);
 		}
 
@@ -124,62 +140,33 @@ public class EntityManager {
 	@GET @Path("/{domain}/search") 
 	@Info("Returns a list of entities that match the specified parameters across all layers")
 	public String search(
-			@PathParam("domain") @Info("The selected domain") String domain, 
-			@HeaderParam("token") @Info("The authentication token") String token,
-			@DefaultValue("") @QueryParam("query") String query ) {
+			@PathParam("domain") @Info("The selected domain")			String domain, 
+			@HeaderParam("token") @Info("The authentication token")		String token,
+			@QueryParam("query")										String query
+			) throws Exception {
 		return searchNew( domain, token, "", query, "0", "0", "false", "" );
 	}
-	
-//	@GET @Path("/{domain}/{layer}/search_old") 
-//	public String search(
-//			@PathParam("domain") @Info("The selected domain") String domain, 
-//			@HeaderParam("token") @Info("The authentication token") String token,
-//			@DefaultValue("") @PathParam("layer") String layer, 
-//			@DefaultValue("") @QueryParam("query") String query, 
-//			@DefaultValue("0") @QueryParam("from") String strFrom,
-//			@DefaultValue("0") @QueryParam("max") String strMax,    //not used for now in client
-//			@DefaultValue("false") @QueryParam("h") String strHierarchy
-//		) {
-//		
-//		JsonArray a = new JsonArray();
-//		
-//		RiscossDB db = DBConnector.openDB( domain, token );
-//		try {
-//			SearchParams params = new SearchParams();
-//			params.setMax( strMax );
-//			params.setFrom( strFrom );
-//			params.setOptLoadHierarchy( strHierarchy );
-//			
-//			Collection<String> list = db.findEntities( layer, query, params );
-//			for (String name : list) {
-//				JsonObject o = new JsonObject();
-//				o.addProperty("name", name);
-//				o.addProperty("layer", db.layerOf(name));
-//				a.add(o);
-//			}
-//		} finally {
-//			DBConnector.closeDB(db);
-//		}
-//		return a.toString();
-//	}
 
 	@GET @Path("/{domain}/{layer}/search")
 	@Info("Returns a list of entities that match the specified parameters in a specified layer")
 	public String searchNew(
-			@PathParam("domain") @Info("The selected domain") String domain, 
-			@HeaderParam("token") @Info("The authentication token") String token,
-			@DefaultValue("") @PathParam("layer") String layer, 
-			@DefaultValue("") @QueryParam("query") String query, 
-			@DefaultValue("0") @QueryParam("from") String strFrom,
-			@DefaultValue("0") @QueryParam("max") String strMax, 
-			@DefaultValue("f") @QueryParam("h") String strHierarchy,
-			@DefaultValue("") @QueryParam("f") String flags
-		) {
+			@PathParam("domain") @Info("The selected domain")			String domain, 
+			@HeaderParam("token") @Info("The authentication token")		String token,
+			@DefaultValue("") @PathParam("layer")						String layer, 
+			@DefaultValue("") @QueryParam("query")						String query, 
+			@DefaultValue("0") @QueryParam("from")						String strFrom,
+			@DefaultValue("0") @QueryParam("max")						String strMax, 
+			@DefaultValue("f") @QueryParam("h")							String strHierarchy,
+			@DefaultValue("") @QueryParam("f")							String flags
+		) throws Exception {
 		
 		List<JEntityNode> result = new ArrayList<JEntityNode>();
 		
-		RiscossDB db = DBConnector.openDB( domain, token );
+		RiscossDB db = null;
 		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
 			SearchParams params = new SearchParams();
 			params.setMax( strMax );
 			params.setFrom( strFrom );
@@ -210,7 +197,11 @@ public class EntityManager {
 				
 			}
 			
-		} finally {
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
 			DBConnector.closeDB(db);
 		}
 		return new Gson().toJson( result );
@@ -280,8 +271,11 @@ public class EntityManager {
 		// attention:filename sanitation is not directly notified to the user
 		name = RiscossUtil.sanitize(name);
 
-		RiscossDB db = DBConnector.openDB(domain, token);
+		RiscossDB db = null;
 		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
 			JsonObject ret = new JsonObject();
 			db.addEntity(name, layer);
 			if (parent != null) {
@@ -299,7 +293,7 @@ public class EntityManager {
 									// MediaType.APPLICATION_JSON).build();
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			return ""; // Response.ok( "", MediaType.APPLICATION_JSON).build();
+			return "";
 		} finally {
 			DBConnector.closeDB(db);
 		}
@@ -308,13 +302,21 @@ public class EntityManager {
 	@DELETE @Path("/{domain}/{entity}/delete")
 	@Info("Deleted the specified entity")
 	public void deleteEntity(
-			@PathParam("domain") @Info("The selected domain") String domain,
-			@PathParam("entity") String entity,
-			@HeaderParam("token") @Info("The authentication token") String token ) {
-		RiscossDB db = DBConnector.openDB(domain, token);
+			@PathParam("domain") @Info("The selected domain")			String domain,
+			@PathParam("entity")										String entity,
+			@HeaderParam("token") @Info("The authentication token")		String token
+			) throws Exception {
+		RiscossDB db = null;
 		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
 			db.removeEntity(entity);
-		} finally {
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
 			DBConnector.closeDB(db);
 		}
 	}
@@ -322,11 +324,15 @@ public class EntityManager {
 	@GET @Path("/{domain}/{entity}/data")
 	@Info("Returns detailed information about the specified entity")
 	public String getEntityData(
-			@PathParam("domain") @Info("The selected domain") String domain,
-			@PathParam("entity") String entity,
-			@HeaderParam("token") @Info("The authentication token") String token ) {
-		RiscossDB db = DBConnector.openDB(domain, token);
+			@PathParam("domain") @Info("The selected domain")			String domain,
+			@PathParam("entity")										String entity,
+			@HeaderParam("token") @Info("The authentication token")		String token
+			) throws Exception {
+		RiscossDB db = null;
 		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
 			JsonObject json = new JsonObject();
 
 			json.addProperty("name", entity);
@@ -370,7 +376,11 @@ public class EntityManager {
 
 			System.out.println("Returning entity data: " + json.toString());
 			return json.toString();
-		} finally {
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
 			DBConnector.closeDB(db);
 		}
 	}
@@ -378,11 +388,16 @@ public class EntityManager {
 	//currently not used!
 	@GET @Path("/{domain}/{entity}/data_new")
 	public String getEntityData_new(
-			@PathParam("domain") @Info("The selected domain") String domain,
-			@PathParam("entity") String entity,
-			@HeaderParam("token") @Info("The authentication token") String token ) {
-		RiscossDB db = DBConnector.openDB(domain, token);
+			@PathParam("domain") @Info("The selected domain")		String domain,
+			@PathParam("entity")									String entity,
+			@HeaderParam("token") @Info("The authentication token")	String token
+			) throws Exception {
+		
+		RiscossDB db = null;
+		
 		try {
+			
+			db = DBConnector.openDB( domain, token );
 			
 			Gson gson = new Gson();
 			
@@ -432,7 +447,11 @@ public class EntityManager {
 			System.out.println("Returning: " + json );
 			
 			return json;
-		} finally {
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
 			DBConnector.closeDB(db);
 		}
 	}
@@ -441,12 +460,18 @@ public class EntityManager {
 	@Produces("application/json")
 	@Info("Sets the specified entity as the child for all the given parent entities")
 	public void setParents(
-			@PathParam("domain") @Info("The selected domain") String domain,
-			@PathParam("entity") String entity, 
-			String parents,
- 			@HeaderParam("token") @Info("The authentication token") String token ) {
-		RiscossDB db = DBConnector.openDB(domain, token);
+			@PathParam("domain") @Info("The selected domain")			String domain,
+			@PathParam("entity")										String entity, 
+			@HeaderParam("token") @Info("The authentication token")		String token,
+			String parents
+			) throws Exception {
+		
+		RiscossDB db = null;
+		
 		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
 			JsonObject json = (JsonObject) new JsonParser().parse(parents);
 			List<String> old_parents = db.getParents( entity );
 			for( String old_parent : old_parents ) {
@@ -457,7 +482,11 @@ public class EntityManager {
 				String parent = a.get(i).getAsString();
 				db.assignEntity(entity, parent);
 			}
-		} finally {
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
 			DBConnector.closeDB(db);
 		}
 	}
@@ -473,11 +502,17 @@ public class EntityManager {
 	 */
 	@Info("Returns a list of parents")
 	public String getParents(
-			@PathParam("domain") @Info("The selected domain") String domain,
-			@PathParam("entity") String entity,
-			@HeaderParam("token") @Info("The authentication token") String token ) {
-		RiscossDB db = DBConnector.openDB(domain, token);
+			@PathParam("domain") @Info("The selected domain")			String domain,
+			@PathParam("entity")										String entity,
+			@HeaderParam("token") @Info("The authentication token")		String token
+			) throws Exception {
+		
+		RiscossDB db = null;
+		
 		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
 			JsonObject json = new JsonObject();
 			JsonArray array = new JsonArray();
 			for (String e : db.getParents(entity)) {
@@ -485,7 +520,11 @@ public class EntityManager {
 			}
 			json.add("entities", array);
 			return json.toString();
-		} finally {
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
 			DBConnector.closeDB(db);
 		}
 	}
@@ -494,12 +533,18 @@ public class EntityManager {
 	@Produces("application/json")
 	@Info("Sets the given list of entities as children of the specified parent entity")
 	public void setChildren(
-			@PathParam("domain") @Info("The selected domain") String domain,
-			@PathParam("entity") String entity, 
-			String children,
-			@HeaderParam("token") @Info("The authentication token") String token ) {
-		RiscossDB db = DBConnector.openDB(domain, token);
+			@PathParam("domain") @Info("The selected domain")			String domain,
+			@PathParam("entity")										String entity, 
+			@HeaderParam("token") @Info("The authentication token")		String token,
+			String children
+			) throws Exception {
+		
+		RiscossDB db = null;
+		
 		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
 			JsonObject json = (JsonObject) new JsonParser().parse(children);
 			List<String> old_children = db.getChildren( entity );
 			for( String old_child : old_children ) {
@@ -515,7 +560,11 @@ public class EntityManager {
 				
 				db.assignEntity( child, entity );
 			}
-		} finally {
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
 			DBConnector.closeDB(db);
 		}
 	}
@@ -568,15 +617,19 @@ public class EntityManager {
 	 * @param entity
 	 * @param token
 	 * @return
+	 * @throws Exception 
 	 */
 	@GET	@Path("/{domain}/{entity}/hierarchy")
 	@Produces("application/json")
 	public String getHierarchyInfo(
 			@PathParam("domain") @Info("The selected domain") String domain,
 			@PathParam("entity") String entity,
-			@HeaderParam("token") @Info("The authentication token") String token) {
-		RiscossDB db = DBConnector.openDB(domain, token);
+			@HeaderParam("token") @Info("The authentication token") String token) throws Exception {
+		RiscossDB db = null;
 		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
 			JsonObject json = new JsonObject();
 			JsonArray array = new JsonArray();
 			for (String e : db.getParents(entity)) {
@@ -589,7 +642,11 @@ public class EntityManager {
 			}
 			json.add("children", array);
 			return json.toString();
-		} finally {
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
 			DBConnector.closeDB(db);
 		}
 	}
@@ -600,10 +657,13 @@ public class EntityManager {
 	public String listRDCs(
 			@PathParam("domain") @Info("The selected domain") String domain,
 			@PathParam("entity") String entityName,
-			@HeaderParam("token") @Info("The authentication token") String token ) {
+			@HeaderParam("token") @Info("The authentication token") String token ) throws Exception {
 		JsonObject o = new JsonObject();
-		RiscossDB db = DBConnector.openDB(domain, token);
+		RiscossDB db = null;
 		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
 			for (RDC rdc : RDCFactory.get().listRDCs()) {
 				String rdcName = rdc.getName();
 				boolean enabled = db.isRDCEnabled(entityName, rdcName);
@@ -620,7 +680,11 @@ public class EntityManager {
 			}
 			System.out.println("Returning enabled rdcs list: " + o.toString());
 			return o.toString();
-		} finally {
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
 			DBConnector.closeDB(db);
 		}
 	}
@@ -630,9 +694,12 @@ public class EntityManager {
 			@PathParam("domain") @Info("The selected domain") String domain,
 			@PathParam("entity") String entityName, 
 			@HeaderParam("token") @Info("The authentication token") String token,
-			String rdcmapString) {
-		RiscossDB db = DBConnector.openDB(domain, token);
+			String rdcmapString) throws Exception {
+		RiscossDB db = null;
 		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
 			System.out.println("Received: " + rdcmapString);
 			JsonObject json = (JsonObject) new JsonParser().parse(rdcmapString);
 			for (Map.Entry<String, JsonElement> entry : json.entrySet()) {
@@ -658,7 +725,11 @@ public class EntityManager {
 					}
 				}
 			}
-		} finally {
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
 			DBConnector.closeDB(db);
 		}
 	}
@@ -668,9 +739,12 @@ public class EntityManager {
 	public String runRDCS(
 			@PathParam("domain") @Info("The selected domain") String domain,
 			@PathParam("entity") String entityName,
-			@HeaderParam("token") @Info("The authentication token") String token ) {
-		RiscossDB db = DBConnector.openDB(domain, token);
+			@HeaderParam("token") @Info("The authentication token") String token ) throws Exception {
+		RiscossDB db = null;
 		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
 			JsonObject json = new JsonObject();
 			String msg = "Data successfully stored in the data repository";
 			for (RDC rdc : RDCFactory.get().listRDCs()) {
@@ -682,7 +756,9 @@ public class EntityManager {
 						rdc.setParameter(par.getName(), db.getRDCParmeter(entityName, rdcName, par.getName(), ""));
 					}
 					try {
+						DBConnector.closeDB( db );
 						Map<String, RiskData> values = rdc.getIndicators(entityName);
+						db = DBConnector.openDB(domain, token);
 						if (values == null) {
 							throw new Exception("The RDC '" + rdcName + "' returned an empty map for the entity '"
 									+ entityName + "'");
@@ -709,7 +785,11 @@ public class EntityManager {
 			json.addProperty("msg", msg);
 			System.out.println("Returning newrun: " + json.toString());
 			return json.toString();
-		} finally {
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
 			DBConnector.closeDB(db);
 		}
 	}
@@ -719,9 +799,12 @@ public class EntityManager {
 	public String getRiskData(
 			@PathParam("domain") @Info("The selected domain") String domain,
 			@PathParam("entity") String entity,
-			@HeaderParam("token") @Info("The authentication token") String token ) {
-		RiscossDB db = DBConnector.openDB(domain, token);
+			@HeaderParam("token") @Info("The authentication token") String token ) throws Exception {
+		RiscossDB db = null;
 		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
 			JsonObject json = new JsonObject();
 			JsonArray array = new JsonArray();
 			for (String id : db.listRiskData(entity)) {
@@ -730,6 +813,8 @@ public class EntityManager {
 			}
 			json.add("list", array);
 			return json.toString();
+		} catch (Exception e) {
+			throw e;
 		} finally {
 			DBConnector.closeDB(db);
 		}
@@ -740,11 +825,18 @@ public class EntityManager {
 	public String getRAD(
 			@PathParam("domain") @Info("The selected domain") String domain,
 			@PathParam("entity") String entity,
-			@HeaderParam("token") @Info("The authentication token") String token ) {
-		RiscossDB db = DBConnector.openDB(domain, token);
+			@HeaderParam("token") @Info("The authentication token") String token ) throws Exception {
+		RiscossDB db = null;
 		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
 			return db.readRASResult(entity);
-		} finally {
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
 			DBConnector.closeDB(db);
 		}
 	}
@@ -754,7 +846,7 @@ public class EntityManager {
 	public String getCandidateChildren( 
 			@PathParam("domain") @Info("The selected domain") String domain,
 			@PathParam("entity") @Info("The candidate parent entity") String entity,
-			@HeaderParam("token") @Info("The authentication token") String token ) {
+			@HeaderParam("token") @Info("The authentication token") String token ) throws Exception {
 		
 		RiscossDB db = null;
 		
@@ -780,7 +872,11 @@ public class EntityManager {
 			
 			return new Gson().toJson( entities );
 			
-		} finally {
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
 			DBConnector.closeDB(db);
 		}
 //		return "";
@@ -789,11 +885,14 @@ public class EntityManager {
 	@GET @Path("/{domain}/{entity}/candidateparents")
 	@Info("Returns a list of entities that can be set as parent of the given entity. Thi is useful to avoid circles.")
 	public String getCandidateParents( 
-			@PathParam("domain") @Info("The selected domain") String domain,
-			@PathParam("entity") @Info("The candidate child entity") String entity,
-			@HeaderParam("token") @Info("The authentication token") String token ) {
-		RiscossDB db = DBConnector.openDB(domain, token);
+			@PathParam("domain") @Info("The selected domain")				String domain,
+			@PathParam("entity") @Info("The candidate child entity")		String entity,
+			@HeaderParam("token") @Info("The authentication token")			String token 
+			) throws Exception {
+		RiscossDB db = null;
 		try {
+			
+			db = DBConnector.openDB( domain, token );
 			
 			Collection<String> layers = db.layerNames();
 			
@@ -819,10 +918,13 @@ public class EntityManager {
 			
 			return new Gson().toJson( entities );
 			
-		} finally {
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
 			DBConnector.closeDB(db);
 		}
-//		return "";
 	}
 	
 	static class EntityFinder extends TraverseCallback<String> {

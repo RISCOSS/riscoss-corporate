@@ -101,16 +101,19 @@ public class RiscossRESTClient {
 				
 				if( opt != null ) {
 					opt.applyTo( method );
+					System.out.print( "     PAYLOAD: " + opt.getValue() );
 				}
+				
+				System.out.println();
 				
 				HttpResponse response = client.execute( method );
 				if (response.getStatusLine().getStatusCode() == 200) {
 					HttpEntity entity = response.getEntity();
 					String ret = EntityUtils.toString(entity);
-					System.out.println( "     RETURNED: " + ret );
+					System.out.println( "      RETURNED: " + ret );
 					return ret;
 				} else {
-					System.out.println( "     RETURNED:");
+					System.out.println( "      RETURNED:");
 					// something has gone wrong...
 					return null; //response.getStatusLine().toString();
 				}
@@ -175,6 +178,10 @@ public class RiscossRESTClient {
 	
 	
 	Gson gson = new Gson();
+	
+	public RiscossRESTClient() {
+		this( "http://127.0.0.1:8888" );
+	}
 	
 	public RiscossRESTClient(String base_addr) {
 		this.addr = base_addr;

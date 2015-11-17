@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.fusesource.restygwt.client.JsonCallback;
+import org.fusesource.restygwt.client.JsonEncoderDecoder;
 import org.fusesource.restygwt.client.Method;
-import org.fusesource.restygwt.client.Resource;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -30,7 +30,6 @@ import com.google.gwt.user.client.ui.SimplePanel;
 
 import eu.riscoss.client.Callback;
 import eu.riscoss.client.Log;
-import eu.riscoss.client.RiscossCall;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecAHPInput;
 import eu.riscoss.client.codec.CodecChunkList;
@@ -40,6 +39,7 @@ import eu.riscoss.client.ui.ClickWrapper;
 import eu.riscoss.shared.EChunkType;
 import eu.riscoss.shared.JAHPComparison;
 import eu.riscoss.shared.JAHPInput;
+import eu.riscoss.shared.JAHPResult;
 import eu.riscoss.shared.JChunkItem;
 import eu.riscoss.shared.JChunkList;
 import eu.riscoss.shared.JStringList;
@@ -96,7 +96,9 @@ public class RMAModule implements EntryPoint {
 		h.add( a );
 		
 		dock.add( h, DockPanel.NORTH );
+		dock.setCellHeight( h, "1%" );
 		dock.add( contentPanel,DockPanel.CENTER );
+		dock.setCellVerticalAlignment( contentPanel, DockPanel.ALIGN_TOP );
 		dock.setSize( "100%", "100%" );
 		RootPanel.get().add( dock );
 		
@@ -152,13 +154,6 @@ public class RMAModule implements EntryPoint {
 			n++;
 		}
 		
-//		criteriaSelectionForm.setWidget( n, 0, new Button( "Evaluate", new ClickHandler() {
-//			@Override
-//			public void onClick( ClickEvent event ) {
-//				onEvaluateClicked();
-//			}
-//		} ) );
-		
 		criteriaSelectionForm.setWidth( "100%" );
 		
 		
@@ -187,6 +182,8 @@ public class RMAModule implements EntryPoint {
 		
 		contentPanel.setWidget( container );
 	}
+	
+	static interface ResultsDecoder extends JsonEncoderDecoder<JAHPResult> {}
 	
 	protected void onRun() {
 		Log.println( "Creating ahp input" );
@@ -220,9 +217,13 @@ public class RMAModule implements EntryPoint {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				Log.println( "" + response );
-				CodecStringList codec = GWT.create( CodecStringList.class );
-				JStringList list = codec.decode( response );
-				outputPanel.setOutput( list.list );
+//				CodecStringList codec = GWT.create( CodecStringList.class );
+//				JStringList list = codec.decode( response );
+//				outputPanel.setOutput( list.list );
+				JsonEncoderDecoder<JAHPResult> codec = 
+						GWT.create( ResultsDecoder.class );
+				JAHPResult result = codec.decode( response );
+				outputPanel.setOutput( result );
 			}
 			@Override
 			public void onFailure( Method method, Throwable exception ) {

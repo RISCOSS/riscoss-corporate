@@ -1,28 +1,44 @@
 package eu.riscoss.ram;
 
-
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class RiskAnalysisManager {
-
-	public RiskScenario apply( MitigationActivity ma, RiskScenario scenario ) {
-		// TODO Auto-generated method stub
-		return scenario;
+	
+	private static RiskAnalysisManager instance = new RiskAnalysisManager();
+	
+	public static RiskAnalysisManager get() {
+		return instance;
+	}
+	
+	private RiskAnalysisManager() {}
+	
+	Map<String,Class<?>> maClasses = new HashMap<String, Class<?>>();
+	
+	public void register( String maName, Class<? extends MitigationActivity> maClass ) {
+		maClasses.put( maName, maClass );
 	}
 
-	public void apply( RiskConfiguration ahpConf, RiskScenario scenario ) {
-		// TODO Auto-generated method stub
+	public MitigationActivity getMitigationTechniqueInstance( String name ) {
 		
-	}
-
-	public void register( String string, Class<? extends MitigationActivity> maClass ) {
-		// TODO Auto-generated method stub
+		Class<?> cls = maClasses.get( name );
 		
-	}
-
-	public RiskScenario createScenario( RiskConfiguration conf ) {
-		// TODO Auto-generated method stub
-		return null;
+		if( cls == null ) return null;
+		
+		MitigationActivity ma = null;
+		
+		try {
+			ma = (MitigationActivity) cls.newInstance();
+		} catch(InstantiationException e) {
+			e.printStackTrace();
+			return null;
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+			return null;
+		}
+		
+		return ma;
 	}
 	
 }

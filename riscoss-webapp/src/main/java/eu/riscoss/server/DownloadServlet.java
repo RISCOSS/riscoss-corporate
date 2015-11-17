@@ -16,8 +16,11 @@ public class DownloadServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String domain = request.getParameter("domain");
 		String token = request.getParameter("token");
-		RiscossDB db = DBConnector.openDB( domain, token );
+		RiscossDB db = null;
 		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
 			String modelName = request.getParameter("name");
 			String type = request.getParameter("type");
 			

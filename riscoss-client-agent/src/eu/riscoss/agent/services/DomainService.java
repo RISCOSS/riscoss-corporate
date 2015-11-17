@@ -36,5 +36,9 @@ public class DomainService extends RESTService {
 	public AnalysisService analysis() {
 		return new AnalysisService( rest );
 	}
+
+	public RDRService rdr() {
+		return new RDRService( rest );
+	}
 	
 }

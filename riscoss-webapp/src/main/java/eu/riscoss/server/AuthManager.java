@@ -67,9 +67,20 @@ public class AuthManager {
 	@GET @Path("token")
 	@Info("This function performs a validity check of the token and return successfully if the token is correct and not expired")
 	//TODO: change to POST?!
-	public String checkToken( @HeaderParam("token") String token ) {
-		RiscossDatabase db = DBConnector.openDatabase( token );
-		DBConnector.closeDB( db );
+	public String checkToken( 
+			@HeaderParam("token") String token
+			) throws Exception {
+		
+		RiscossDatabase db = null;
+		try {
+			db = DBConnector.openDatabase( token );
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
 		return new JsonPrimitive( "Ok" ).toString();
 	}
 	
@@ -121,9 +132,11 @@ public class AuthManager {
 	public String getUsername( 
 			@HeaderParam("token") String token ) {
 		
-		RiscossDatabase database = DBConnector.openDatabase( token );
+		RiscossDatabase database = null;
 		
 		try {
+			
+			database = DBConnector.openDatabase( token );
 			
 			String username = database.getUsername();
 			
@@ -133,8 +146,7 @@ public class AuthManager {
 			return new JsonPrimitive( "Error" ).toString();
 		}
 		finally {
-			if( database != null )
-				DBConnector.closeDB( database );
+			DBConnector.closeDB( database );
 		}
 		
 	}

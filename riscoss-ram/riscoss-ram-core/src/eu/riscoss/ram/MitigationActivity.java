@@ -1,11 +1,12 @@
 package eu.riscoss.ram;
 
-public class MitigationActivity {
+import eu.riscoss.db.RiskScenario;
 
-	void apply( RiskScenario scenario ) {
-		
-		
-		
-	}
-	
+
+public abstract class MitigationActivity {
+
+	public abstract String eval( String json );
+
+	public abstract void apply( String output, RiskScenario scenario );
+
 }

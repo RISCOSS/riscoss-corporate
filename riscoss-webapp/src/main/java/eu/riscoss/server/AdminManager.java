@@ -47,7 +47,7 @@ public class AdminManager {
 	@Info("Returns the map of the available UI pages")
 	public String getSitemap( 
 			@HeaderParam("token") @Info("The authentication token") String token, 
-			@PathParam("domain") @Info("The selected domain") String domain ) {
+			@PathParam("domain") @Info("The selected domain") String domain ) throws Exception {
 		
 		RiscossDatabase db = null;
 		
@@ -64,6 +64,9 @@ public class AdminManager {
 			sitemap.main = loadSection( "", "", sm, domain );
 			
 			return new Gson().toJson( sitemap );
+		}
+		catch( Exception ex ) {
+			throw ex;
 		}
 		finally {
 			
@@ -99,7 +102,7 @@ public class AdminManager {
 
 	@GET @Path("/roles/list")
 	@Info("Returns the list of registered Roles")
-	public String listRoles() {
+	public String listRoles() throws Exception {
 		
 		RiscossDatabase db = null;
 		
@@ -113,10 +116,11 @@ public class AdminManager {
 			}
 			return array.toString();
 		}
+		catch( Exception ex ) {
+			throw ex;
+		}
 		finally {
-			
-			if( db != null )
-				DBConnector.closeDB( db );
+			DBConnector.closeDB( db );
 		}
 	}
 	
@@ -124,7 +128,7 @@ public class AdminManager {
 	@Info("Creates a new domain")
 	public String createDomain( 
 			@HeaderParam("token") @Info("The authentication token") String token, 
-			@QueryParam("name") @Info("The name of the new domain") String name ) {
+			@QueryParam("name") @Info("The name of the new domain") String name ) throws Exception {
 		
 		RiscossDatabase db = null;
 		
@@ -142,10 +146,11 @@ public class AdminManager {
 			DBConnector.closeDB( domainDB );
 			return new JsonPrimitive( name ).toString();
 		}
+		catch( Exception ex ) {
+			throw ex;
+		}
 		finally {
-			
-			if( db != null )
-				DBConnector.closeDB( db );
+			DBConnector.closeDB( db );
 		}
 	}
 	
@@ -155,11 +160,13 @@ public class AdminManager {
 			@HeaderParam("token") @Info("The authentication token") String token,
 			@PathParam("domain") @Info("The selected domain") String domain, 
 			@QueryParam("name") @Info("Name of the new Role") String name,
-			@DefaultValue("Guest") @Info("Type") String parentRole ) {
+			@DefaultValue("Guest") @Info("Type") String parentRole ) throws Exception {
 		
-		RiscossDB db = DBConnector.openDB( token, domain );
+		RiscossDB db = null;
 		
 		try {
+			
+			db = DBConnector.openDB( token, domain );
 			
 			db.createRole( name );
 			
@@ -168,10 +175,11 @@ public class AdminManager {
 			return gson.toJson( info );
 			
 		}
+		catch( Exception ex ) {
+			throw ex;
+		}
 		finally {
-			
-			if( db != null )
-				DBConnector.closeDB( db );
+			DBConnector.closeDB( db );
 		}
 	}
 	
@@ -179,11 +187,13 @@ public class AdminManager {
 	@Info("Returns the list of available roles in a given domain")
 	public String listRoles( 
 			@HeaderParam("token") @Info("The authentication token") String token,
-			@PathParam("domain") @Info("The selected domain") String domain ) {
+			@PathParam("domain") @Info("The selected domain") String domain ) throws Exception {
 		
-		RiscossDB db = DBConnector.openDB( token, domain );
+		RiscossDB db = null;
 		
 		try {
+			
+			db = DBConnector.openDB( token, domain );
 			
 			JsonArray array = new JsonArray();
 			
@@ -196,10 +206,11 @@ public class AdminManager {
 			return array.toString();
 			
 		}
+		catch( Exception ex ) {
+			throw ex;
+		}
 		finally {
-			
-			if( db != null )
-				DBConnector.closeDB( db );
+			DBConnector.closeDB( db );
 		}
 	}
 	
@@ -209,7 +220,7 @@ public class AdminManager {
 			@HeaderParam("token") @Info("The authentication token") String token,
 			@DefaultValue("0") @Info("Index of the first item to return; for pagination support") @QueryParam("from") String from, 
 			@DefaultValue("100") @Info("Number of items to return; for pagination support") @QueryParam("max") String max,
-			@DefaultValue("") @Info("Search pattern") @QueryParam("pattern") String pattern ) {
+			@DefaultValue("") @Info("Search pattern") @QueryParam("pattern") String pattern ) throws Exception {
 		
 		RiscossDatabase db = null;
 		
@@ -230,11 +241,11 @@ public class AdminManager {
 			
 			return array.toString();
 			
+		} catch (Exception e) {
+			throw e;
 		}
 		finally {
-			
-			if( db != null )
-				DBConnector.closeDB( db );
+			DBConnector.closeDB( db );
 		}
 	}
 	
@@ -276,7 +287,7 @@ public class AdminManager {
 			@HeaderParam("token") @Info("The authentication token") String token,
 			@PathParam("domain") @Info("The selected domain") String domain,
 			@PathParam("user") @Info("Name of the user to be set") String user,
-			@QueryParam("role") @Info("Role name") String role ) {
+			@QueryParam("role") @Info("Role name") String role ) throws Exception {
 		
 		RiscossDB db = null;
 		
@@ -288,11 +299,11 @@ public class AdminManager {
 			
 			return gson.toJson( new JUserInfo( user ) ).toString();
 			
+		} catch (Exception e) {
+			throw e;
 		}
 		finally {
-			
-			if( db != null ) 
-				DBConnector.closeDB( db );
+			DBConnector.closeDB( db );
 		}
 	}
 	
@@ -300,7 +311,7 @@ public class AdminManager {
 	@Info("Returns the list of users subscribed to a certain domain")
 	public String listUsers(
 			@HeaderParam("token") @Info("The authentication token") String token,
-			@PathParam("domain") @Info("The selected domain") String domain ) {
+			@PathParam("domain") @Info("The selected domain") String domain ) throws Exception {
 		
 		RiscossDB db = null;
 		
@@ -315,11 +326,11 @@ public class AdminManager {
 			
 			return array.toString();
 			
+		} catch (Exception e) {
+			throw e;
 		}
 		finally {
-			
-			if( db != null ) 
-				DBConnector.closeDB( db );
+			DBConnector.closeDB( db );
 		}
 	}
 	
@@ -327,7 +338,7 @@ public class AdminManager {
 	@Info("Returns details about a domain")
 	public String getDomainIndo(
 			@HeaderParam("token") @Info("The authentication token") String token,
-			@PathParam("domain") @Info("The selected domain") String domain ) {
+			@PathParam("domain") @Info("The selected domain") String domain ) throws Exception {
 		
 		RiscossDatabase db = null;
 		
@@ -342,11 +353,11 @@ public class AdminManager {
 			
 			return gson.toJson( dinfo ).toString();
 			
+		} catch (Exception e) {
+			throw e;
 		}
 		finally {
-			
-			if( db != null )
-				DBConnector.closeDB( db );
+			DBConnector.closeDB( db );
 		}
 		
 	}
@@ -358,18 +369,19 @@ public class AdminManager {
 	 * @param token
 	 * @param username
 	 * @return
+	 * @throws Exception 
 	 */
 	@GET @Path("/domains/public")
 	@Info("Returns the list of domains available to a specific user; i.e., the list of public domains, plus the list of domain which have been granted to the user by an admin")
 	public String listAvailableDomains(
 			@HeaderParam("token") @Info("The authentication token") String token, 
-			@QueryParam("username") @Info("The user name") String username ) {
+			@QueryParam("username") @Info("The user name") String username ) throws Exception {
 		
 		return gson.toJson( listAvailableUserDomains(token, username ) ).toString();
 		
 	}
 	
-	public static Collection<String> listAvailableUserDomains( String token, String username ) {
+	public static Collection<String> listAvailableUserDomains( String token, String username ) throws Exception {
 		
 		Set<String> set = new HashSet<>();
 		{
@@ -384,10 +396,11 @@ public class AdminManager {
 					if( domain != null )
 						set.add( domain );
 				}
+			} catch (Exception e) {
+				throw e;
 			}
 			finally {
-				if( db != null )
-					DBConnector.closeDB( db );
+				DBConnector.closeDB( db );
 			}
 		}
 		
@@ -402,10 +415,11 @@ public class AdminManager {
 							set.add( domain );
 					}
 				}
+			} catch (Exception e) {
+				throw e;
 			}
 			finally {
-				if( db != null )
-					DBConnector.closeDB( db );
+				DBConnector.closeDB( db );
 			}
 		}
 		
@@ -418,7 +432,7 @@ public class AdminManager {
 	public void setPredefinedRole( 
 			@HeaderParam("token") @Info("The authentication token") String token,
 			@PathParam("domain") @Info("The selected domain") String domain,
-			@QueryParam("role") @Info("The role name") String value ) {
+			@QueryParam("role") @Info("The role name") String value ) throws Exception {
 		
 		RiscossDatabase db = null;
 		
@@ -428,11 +442,11 @@ public class AdminManager {
 			
 			db.setPredefinedRole( domain, value );
 			
+		} catch (Exception e) {
+			throw e;
 		}
 		finally {
-			
-			if( db != null )
-				DBConnector.closeDB( db );
+			DBConnector.closeDB( db );
 		}
 	}
 	
@@ -443,7 +457,7 @@ public class AdminManager {
 			@PathParam("domain") @Info("The selected domain") String domain,
 			@PathParam("user") @Info("The user name") String user,
 			@QueryParam("role") @Info("The role name") String role
-			) {
+			) throws Exception {
 		
 		RiscossDB domaindb = null;
 		
@@ -453,10 +467,11 @@ public class AdminManager {
 			
 			domaindb.setUserRole( user, role );
 		}
+		catch (Exception e) {
+			throw e;
+		}
 		finally {
-			
-			if( domaindb != null )
-				DBConnector.closeDB( domaindb );
+			DBConnector.closeDB( domaindb );
 		}
 	}
 	
@@ -464,7 +479,7 @@ public class AdminManager {
 	@Info("Checks whether the user is authorized to access a given domain")
 	public String setSessionSelectedDomain( 
 			@PathParam("domain") @Info("The selected domain") String domain, 
-			@HeaderParam("token") @Info("The authentication token") String token) {
+			@HeaderParam("token") @Info("The authentication token") String token) throws Exception {
 		
 		if( domain == null ) return null;
 		
@@ -488,15 +503,23 @@ public class AdminManager {
 			for( String d : domains ) {
 				if( d.equals( domain ) ) {
 					
-					RiscossDB domaindb = DBConnector.openDB( domain, token );
+					RiscossDB domaindb = null;
 					
-					String rolename = domaindb.getRole( username );
-					
-					if( rolename == null ) {
-						domaindb.setUserRole( username, db.getPredefinedRole( domain ) );
+					try {
+						domaindb = DBConnector.openDB( domain, token );
+						
+						String rolename = domaindb.getRole( username );
+						
+						if( rolename == null ) {
+							domaindb.setUserRole( username, db.getPredefinedRole( domain ) );
+						}
 					}
-					
-					DBConnector.closeDB( domaindb );
+					catch (Exception e) {
+						throw e;
+					}
+					finally {
+						DBConnector.closeDB( domaindb );
+					}
 					
 					return new JsonPrimitive( domain ).toString();
 				}
@@ -504,10 +527,11 @@ public class AdminManager {
 			
 			return null;
 		}
+		catch (Exception e) {
+			throw e;
+		}
 		finally {
-			
-			if( db != null )
-				DBConnector.closeDB( db );
+			DBConnector.closeDB( db );
 		}
 	}
 	

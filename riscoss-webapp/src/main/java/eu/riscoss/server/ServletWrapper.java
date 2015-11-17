@@ -13,11 +13,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-*/
+ */
 
 /**
  * @author 	Alberto Siena
-**/
+ **/
 
 package eu.riscoss.server;
 
@@ -39,6 +39,7 @@ import eu.riscoss.db.RiscossDB;
 import eu.riscoss.db.RiscossDBResource;
 import eu.riscoss.db.RiscossDatabase;
 import eu.riscoss.db.SiteManager;
+import eu.riscoss.ram.RiskAnalysisManager;
 import eu.riscoss.rdc.RDC;
 import eu.riscoss.rdc.RDCFactory;
 import eu.riscoss.rdc.RDCRunner;
@@ -58,6 +59,10 @@ public class ServletWrapper extends ServletContainer {
 		RiscossDatabase db = null;
 		
 		try {
+			
+			RiskAnalysisManager.get().register( "AHP", AHPAnalysis.class );
+			
+			
 			ServletContext sc = getServletContext();
 			
 			String dbaddr = sc.getInitParameter( "eu.riscoss.db.address" );
@@ -126,16 +131,16 @@ public class ServletWrapper extends ServletContainer {
 				sm.createPage( "/Configure", "Layers", "layers.jsp", new String[] { KnownRoles.Administrator.name() } );
 				sm.createPage( "/Configure", "Entities", "entities.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Producer.name(), KnownRoles.Modeler.name() } );
 				sm.createPage( "/Configure", "Models", "models.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Modeler.name() } );
-//				sm.createPage( "/Configure", "Edit Models", "editor.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Modeler.name() } );
+				//				sm.createPage( "/Configure", "Edit Models", "editor.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Modeler.name() } );
 				sm.createPage( "/Configure", "Risk Configurations", "riskconfs.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Modeler.name() } );
 				
 				sm.createSection( "/Run" );
-//				sm.createPage( "/Run", "One-layer Analysis", "analysis.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
+				//				sm.createPage( "/Run", "One-layer Analysis", "analysis.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
 				sm.createPage( "/Run", "Multi-layer Analysis", "riskanalysis.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
 				sm.createPage( "/Run", "What-if Analysis", "whatifanalysis.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
 				sm.createPage( "/Run", "AHP Session Analysis", "rma.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
-//				sm.createPage( "/Run", "CBRank Analysis", "analysis.jsp?type=cbrank", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
-//				sm.createPage( "/Run", "Genetic Algorithm Analysis", "analysis.jsp?type=ga", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
+				//				sm.createPage( "/Run", "CBRank Analysis", "analysis.jsp?type=cbrank", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
+				//				sm.createPage( "/Run", "Genetic Algorithm Analysis", "analysis.jsp?type=ga", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
 				
 				sm.createSection( "/Browse" );
 				sm.createPage( "/Browse", "Risk Data Repository", "rdr.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
@@ -160,51 +165,43 @@ public class ServletWrapper extends ServletContainer {
 			if( initString != null ) {
 				String[] tokens = initString.split( "[,]" );
 				for( String tok : tokens ) {
-					RiscossDB domainDB = DBConnector.openDB( tok, superadmin, superpwd );
-					for( KnownRoles r : KnownRoles.values() ) {
-						domainDB.createRole( r.name() );
-						for( Pair<DBResource,String> perm : r.permissions() ) {
-							domainDB.addPermissions( r.name(), RiscossDBResource.valueOf( perm.getLeft().name() ), perm.getRight() );
+					RiscossDB domainDB = null;
+					try {
+						domainDB = DBConnector.openDB( tok, superadmin, superpwd );
+						for( KnownRoles r : KnownRoles.values() ) {
+							domainDB.createRole( r.name() );
+							for( Pair<DBResource,String> perm : r.permissions() ) {
+								domainDB.addPermissions( r.name(), RiscossDBResource.valueOf( perm.getLeft().name() ), perm.getRight() );
+							}
+							db.setPredefinedRole( tok, KnownRoles.Administrator.name() );
 						}
-						db.setPredefinedRole( tok, KnownRoles.Administrator.name() );
 					}
-					DBConnector.closeDB( domainDB );
-//					domainDB.close();
+					catch( Exception ex ) {}
+					finally {
+						DBConnector.closeDB( domainDB );
+					}
 				}
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		finally {
-			if( db != null )
-				DBConnector.closeDB( db );
+			DBConnector.closeDB( db );
 		}
-			Reflections reflections = new Reflections( RDCRunner.class.getPackage().getName() );
-			
-			Set<Class<? extends RDC>> subTypes = reflections.getSubTypesOf(RDC.class);
-			
-			for( Class<? extends RDC> cls : subTypes ) {
-				try {
-					RDC rdc = (RDC)cls.newInstance();
-					RDCFactory.get().registerRDC( rdc );
-				}
-				catch( Exception ex ) {}
+		
+		Reflections reflections = new Reflections( RDCRunner.class.getPackage().getName() );
+		
+		Set<Class<? extends RDC>> subTypes = reflections.getSubTypesOf(RDC.class);
+		
+		for( Class<? extends RDC> cls : subTypes ) {
+			try {
+				RDC rdc = (RDC)cls.newInstance();
+				RDCFactory.get().registerRDC( rdc );
 			}
+			catch( Exception ex ) {}
+		}
 		
 	}
-	
-//	void storeSiteSection( String parentSection, JSiteSection section, SiteManager sm ) {
-//		
-//		sm.createSection( parentSection, section.getLabel() );
-//		
-//		for( JSitePage page : section.pages() ) {
-//			sm.createPage( parentSection, page.getLabel(), page.getUrl(), page.getRoles() );
-//		}
-//		
-//		for( JSiteSection subsection : section.subsections() ) {
-//			
-//			storeSiteSection( parentSection + "/" + section.getLabel(), subsection, sm );
-//			
-//		}
-//	}
 	
 	public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
 		

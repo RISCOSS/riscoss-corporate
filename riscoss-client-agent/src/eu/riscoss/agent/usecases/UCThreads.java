@@ -30,6 +30,7 @@ public class UCThreads {
 			}} );
 		
 		t1.start();
+		try { Thread.sleep( 1000 ); } catch (InterruptedException e) {}
 		t2.start();
 		
 	}

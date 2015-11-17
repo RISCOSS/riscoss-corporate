@@ -62,7 +62,7 @@ public class DBConnector {
 		ReentrantLock lock = locks.get( domain );
 		
 		if( lock == null ) {
-			lock = new ReentrantLock();
+			lock = new ReentrantLock( true );
 			locks.put( domain, lock );
 		}
 		
@@ -91,14 +91,14 @@ public class DBConnector {
 	 * @param password
 	 * @return
 	 */
-	public static RiscossDatabase openDatabase( String username, String password ) {
+	public static RiscossDatabase openDatabase( String username, String password ) throws Exception {
 		lock( "" );
 		try {
 			return new ORiscossDatabase( db_addr, username, password );
 		}
 		catch( Exception ex ) {
 			unlock( "" );
-			throw new RuntimeException( ex );
+			throw ex; //new RuntimeException( ex );
 		}
 	}
 	/**
@@ -106,14 +106,14 @@ public class DBConnector {
 	 * @param token
 	 * @return
 	 */
-	public static RiscossDatabase openDatabase( String token ) {
+	public static RiscossDatabase openDatabase( String token ) throws Exception {
 		lock( "" );
 		try {
 			return new ORiscossDatabase( db_addr, Base64.decodeBase64( token ) );
 		}
 		catch( Exception ex ) {
 			unlock( "" );
-			throw new RuntimeException( ex );
+			throw ex; //new RuntimeException( ex );
 		}
 	}
 	
@@ -125,14 +125,14 @@ public class DBConnector {
 	 * @param password
 	 * @return
 	 */
-	public static RiscossDB openDB( String domain, String username, String password ) {
+	public static RiscossDB openDB( String domain, String username, String password ) throws Exception {
 		try {
 			lock( domain );
 			return new ORiscossDomain( db_addr, URLEncoder.encode( domain, "UTF-8" ), username, password );
 		}
 		catch( Exception e ) {
 			unlock( domain );
-			throw new RuntimeException( e );
+			throw e; //new RuntimeException( e );
 		}
 	}
 	
@@ -141,14 +141,14 @@ public class DBConnector {
 	 * @param token
 	 * @return
 	 */
-	public static RiscossDB openDB( String domain, String token ) {
+	public static RiscossDB openDB( String domain, String token ) throws Exception {
 		try {
 			lock( domain );
 			return new ORiscossDomain( db_addr, URLEncoder.encode( domain, "UTF-8" ), Base64.decodeBase64( token ) );
 		}
 		catch( Exception e ) {
 			unlock( domain );
-			throw new RuntimeException( e );
+			throw e; // new RuntimeException( e );
 		}
 	}
 	
@@ -181,5 +181,5 @@ public class DBConnector {
 			unlock( "" );
 		}
 	}
-	
+
 }

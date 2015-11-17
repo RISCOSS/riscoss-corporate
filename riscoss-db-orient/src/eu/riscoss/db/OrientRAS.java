@@ -34,9 +34,6 @@ public class OrientRAS implements RiskAnalysisSession {
 					dom.createChild( eid, "inputs" );
 					inputs.put( dom.getName( eid, null ), oid );
 				}
-//				String e = dom.getName( eid, null );
-//				if( e != null ) {
-//				}
 			}
 			{
 				NodeID oid = dom.getChild( eid, "outputs" );
@@ -44,27 +41,22 @@ public class OrientRAS implements RiskAnalysisSession {
 					oid = dom.createChild( eid, "outputs" );
 				}
 				outputs.put( dom.getName( eid, null ), oid );
-//				String e = dom.getName( eid, null );
-//				if( e != null ) {
-//				}
 			}
 		}
-//		for( NodeID eid : dom.children( path() + "/entities/" ) ) {
-//		}
 	}
 	
-	private String path() {
+	protected String path() {
 		return "/ras/" + id;
 	}
 	
-	private String getAttribute( String path, String attribute, String def ) {
+	protected String getAttribute( String path, String attribute, String def ) {
 		NodeID id = dom.create( path );
 		String ret = dom.getAttribute( id, attribute, def );
 		if( ret == null ) ret = def;
 		return ret;
 	}
 	
-	private void setAttribute( String path, String key, String value ) {
+	protected void setAttribute( String path, String key, String value ) {
 		NodeID id = dom.create( path );
 		if( id != null ) {
 			dom.setAttribute( id, key, value );
@@ -333,5 +325,34 @@ public class OrientRAS implements RiskAnalysisSession {
 	public String getEntityAttribute( String entity, String key, String def ) {
 		return getAttribute( path() + "/entities/" + entity, key, def);
 	}
+
+	@Override
+	public RiskScenario getScenario( String name ) {
+		if( name == null ) {
+			throw new RuntimeException( "<name> can not be null" );
+		}
+		while( name.endsWith( "/" ) ) {
+			name = name.substring( 0, name.lastIndexOf( "/" ) );
+		}
+		while( name.startsWith( "/" ) ) {
+			name = name.substring( 1 );
+		}
+		return new ORiskScenario( this, name );
+	}
+
+//	private RiskScenario withScenario( String name ) {
+//		this.scenario = name;
+//		return this;
+//	}
+//	
+//	@Override
+//	public void set( String key, String value ) {
+//		setAttribute( path() + "/scenarios/" + this.scenario, key, value);
+//	}
+//
+//	@Override
+//	public String get( String key, String def ) {
+//		return getAttribute( path() + "/scenarios/" + this.scenario, key, def );
+//	}
 	
 }

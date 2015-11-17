@@ -3,12 +3,10 @@ package eu.riscoss.shared;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
-
 public class JAHPInput {
 	
-	int		ngoals = 0;
-	int		nrisks = 0;
+	public int		ngoals = 0;
+	public int		nrisks = 0;
 	
 	public List<JAHPComparison> goals = new ArrayList<JAHPComparison>();
 	public List<List<JAHPComparison>> risks = new ArrayList<List<JAHPComparison>>();
@@ -23,12 +21,10 @@ public class JAHPInput {
 		this.nrisks = n;
 	}
 	
-	@JsonIgnore
 	public int getGoalCount() {
 		return (int) this.ngoals;
 	}
 	
-	@JsonIgnore
 	public int getRiskCount() {
 		return (int) this.nrisks;
 	}

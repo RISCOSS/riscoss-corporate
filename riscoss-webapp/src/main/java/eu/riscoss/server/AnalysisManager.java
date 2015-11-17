@@ -21,20 +21,14 @@
 
 package eu.riscoss.server;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -45,12 +39,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-
-import org.python.core.PyList;
-import org.python.core.PySystemState;
-import org.python.util.PythonInterpreter;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -64,6 +53,9 @@ import eu.riscoss.dataproviders.RiskDataType;
 import eu.riscoss.db.RecordAbstraction;
 import eu.riscoss.db.RiscossDB;
 import eu.riscoss.db.RiskAnalysisSession;
+import eu.riscoss.db.RiskScenario;
+import eu.riscoss.ram.MitigationActivity;
+import eu.riscoss.ram.RiskAnalysisManager;
 import eu.riscoss.ram.algo.DownwardEntitySearch;
 import eu.riscoss.ram.algo.TraverseCallback;
 import eu.riscoss.ram.rae.Argument;
@@ -79,14 +71,11 @@ import eu.riscoss.reasoner.ReasoningLibrary;
 import eu.riscoss.reasoner.RiskAnalysisEngine;
 import eu.riscoss.shared.EAnalysisOption;
 import eu.riscoss.shared.EAnalysisResult;
-import eu.riscoss.shared.JAHPComparison;
-import eu.riscoss.shared.JAHPInput;
 import eu.riscoss.shared.JArgument;
 import eu.riscoss.shared.JArgumentation;
 import eu.riscoss.shared.JMissingData;
 import eu.riscoss.shared.JRASInfo;
 import eu.riscoss.shared.JRiskData;
-import eu.riscoss.shared.JStringList;
 import eu.riscoss.shared.JValueMap;
 
 @Path("analysis")
@@ -114,11 +103,17 @@ public class AnalysisManager {
 	
 	@GET @Path( "/{domain}/session/list")
 	public String listRAS(
-			@DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, @QueryParam("entity") String entity, @QueryParam("rc") String rc ) {
+			@PathParam("domain") String domain,
+			@HeaderParam("token") String token, 
+			@QueryParam("entity") String entity, 
+			@QueryParam("rc") String rc 
+			) throws Exception {
 		
-		RiscossDB db = DBConnector.openDB( domain, token );
+		RiscossDB db = null;
 		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
 			JsonObject json = new JsonObject();
 			JsonArray array = new JsonArray();
 			for( RecordAbstraction record : db.listRAS( entity,  rc ) ) {
@@ -128,6 +123,9 @@ public class AnalysisManager {
 			json.add( "list", array );
 			return json.toString();
 		}
+		catch( Exception ex ) {
+			throw ex;
+		}
 		finally {
 			DBConnector.closeDB( db );
 		}
@@ -136,12 +134,18 @@ public class AnalysisManager {
 	
 	@POST @Path("/{domain}/session/create")
 	public String createSession(
-			@DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, @QueryParam("rc") String rc,
-			@QueryParam("target") String target, @QueryParam("name") String name
-			) {
-		RiscossDB db = DBConnector.openDB( domain, token );
+			@PathParam("domain")			String domain,
+			@HeaderParam("token")			String token, 
+			@QueryParam("rc")				String rc,
+			@QueryParam("target")			String target, 
+			@QueryParam("name")				String name
+			) throws Exception {
+		
+		RiscossDB db = null;
+		
 		try {
+			
+			db = DBConnector.openDB( domain, token );
 			
 			// Create a new risk analysis session
 			RiskAnalysisSession ras = db.createRAS();
@@ -190,6 +194,9 @@ public class AnalysisManager {
 					new JRASInfo( ras.getId(), ras.getName() ) );
 			
 		}
+		catch( Exception ex ) {
+			throw ex;
+		}
 		finally {
 			DBConnector.closeDB( db );
 		}
@@ -199,16 +206,26 @@ public class AnalysisManager {
 	 * reads the required data from the rdr, and stores the data in the risk analysis session
 	 */
 	@GET @Path("/{domain}/session/{sid}/update-data")
-	public void updateSessionData( @DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, @PathParam("sid") String sid ) {
-		RiscossDB db = DBConnector.openDB( domain, token );
+	public void updateSessionData( 
+			@PathParam("domain") String domain,
+			@HeaderParam("token") String token, 
+			@PathParam("sid") String sid 
+			) throws Exception {
+		
+		RiscossDB db = null;
+		
 		try {
+			
+			db = DBConnector.openDB( domain, token );
 			
 			RiskAnalysisSession ras = db.openRAS( sid );
 			
 			cacheRDRData( ras, db );
 			
 			ras.setOption( "rdr-read-time", "" + new Date().getTime() );
+		}
+		catch( Exception ex ) {
+			throw ex;
 		}
 		finally {
 			DBConnector.closeDB( db );
@@ -243,12 +260,16 @@ public class AnalysisManager {
 	
 	@GET @Path("/{domain}/session/{sid}/missing-data")
 	public String getSessionMissingData(
-			@DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, @PathParam("sid") String sid
-			) {
-		RiscossDB db = DBConnector.openDB( domain, token );
+			@PathParam("domain")						String domain,
+			@HeaderParam("token")						String token, 
+			@PathParam("sid")							String sid
+			) throws Exception {
+		
+		RiscossDB db = null;
 		
 		try {
+			db = DBConnector.openDB( domain, token );
+			
 			// Sia i dati che mancano, sia quelli marcati come "user"
 			RiskAnalysisSession ras = db.openRAS( sid );
 			
@@ -258,6 +279,9 @@ public class AnalysisManager {
 			JMissingData md = rap.gatherMissingData( target );
 			
 			return gson.toJson( md );
+		}
+		catch( Exception ex ) {
+			throw ex;
 		}
 		finally {
 			DBConnector.closeDB( db );
@@ -270,10 +294,11 @@ public class AnalysisManager {
 			@HeaderParam("token") String token, 
 			@PathParam("sid") @Info("The risk session ID") String sid, 
 			String values
-	) {
+	) throws Exception {
 		JsonObject json = (JsonObject) new JsonParser().parse(values);
-		RiscossDB db = DBConnector.openDB(domain, token);
+		RiscossDB db = null;
 		try {
+			db = DBConnector.openDB( domain, token );
 			JValueMap valueMap = gson.fromJson(json, JValueMap.class);
 			RiskAnalysisSession ras = db.openRAS(sid);
 			for (String entity : valueMap.map.keySet()) {
@@ -282,18 +307,24 @@ public class AnalysisManager {
 					ras.saveInput(entity, rd.getId(), "user", gson.toJson(rd));
 				}
 			}
-		} finally {
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
 			DBConnector.closeDB(db);
 		}
 	}
 
 	@GET @Path("/{domain}/session/{sid}/summary")
 	public String getSessionSummary(
-			@DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, @PathParam("sid") String sid
-			) {
-		RiscossDB db = DBConnector.openDB( domain, token );
+			@PathParam("domain") String domain,
+			@HeaderParam("token") String token, 
+			@PathParam("sid") String sid
+			) throws Exception {
+		RiscossDB db = null;
 		try {
+			db = DBConnector.openDB( domain, token );
 			RiskAnalysisSession ras = db.openRAS( sid );
 			JsonObject json = new JsonObject();
 			json.addProperty( "id", ras.getId() );
@@ -308,6 +339,9 @@ public class AnalysisManager {
 			catch( Exception ex ) {}
 			return json.toString();
 		}
+		catch( Exception ex ) {
+			throw ex;
+		}
 		finally {
 			DBConnector.closeDB( db );
 		}
@@ -316,12 +350,18 @@ public class AnalysisManager {
 	@GET @Path("/{domain}/session/{sid}/results")
 	@Produces("application/json")
 	public String getRAD( 
-			@DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, @PathParam("sid") String sid ) {
-		RiscossDB db = DBConnector.openDB( domain, token );
+			@PathParam("domain") String domain,
+			@HeaderParam("token") String token, 
+			@PathParam("sid") String sid 
+			) throws Exception {
+		RiscossDB db = null;
 		try {
+			db = DBConnector.openDB( domain, token );
 			RiskAnalysisSession ras = db.openRAS( sid );
 			return ras.readResults();
+		}
+		catch( Exception ex ) {
+			throw ex;
 		}
 		finally {
 			DBConnector.closeDB( db );
@@ -329,11 +369,18 @@ public class AnalysisManager {
 	}
 	
 	@DELETE @Path("/{domain}/session/{sid}/delete")
-	public void deleteRiskAnalysis( @DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, @PathParam("sid") String sid ) {
-		RiscossDB db = DBConnector.openDB( domain, token );
+	public void deleteRiskAnalysis( 
+			@PathParam("domain")			String domain,
+			@HeaderParam("token")			String token, 
+			@PathParam("sid")				String sid 
+			) throws Exception {
+		RiscossDB db = null;
 		try {
+			db = DBConnector.openDB( domain, token );
 			db.destroyRAS( sid );
+		}
+		catch( Exception ex ) {
+			throw ex;
 		}
 		finally {
 			DBConnector.closeDB( db );
@@ -342,22 +389,21 @@ public class AnalysisManager {
 	
 	@POST @Path("/{domain}/session/{sid}/newrun")
 	public String runRiskAnalysis(
-			@DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, @PathParam("sid") String sid,
-			@DefaultValue("RunThrough") @QueryParam("opt") String strOpt /* See AnalysisOption.RunThrough */
-			) {
+			@PathParam("domain")							String domain,
+			@HeaderParam("token")							String token,
+			@PathParam("sid")								String sid,
+			@DefaultValue("RunThrough") @QueryParam("opt")	String strOpt /* See AnalysisOption.RunThrough */
+			) throws Exception {
 		
-		RiscossDB db = DBConnector.openDB( domain, token );
+		RiscossDB db = null;
 		
 		try {
 			
-//			TimeDiff.get().init();
-//			TimeDiff.get().log( "Initializing analysis" );
+			db = DBConnector.openDB( domain, token );
 			
 			// Create a new risk analysis session
 			RiskAnalysisSession ras = db.openRAS( sid );
 			
-//			TimeDiff.get().log( "Starting analysis process" );
 			RiskAnalysisProcess proc = new RiskAnalysisProcess();
 			
 			// Apply analysis algorithm
@@ -366,17 +412,13 @@ public class AnalysisManager {
 			// Save session (in case of in-memory sessions)
 			db.saveRAS( ras );
 			
-//			TimeDiff.get().log( "Encoding analysis results" );
 			JsonObject res = getAnalysisResults( ras );
 			
 			String ret = res.toString();
 			
-//			TimeDiff.get().log( "Caching analysis results" );
 			ras.saveResults( ret );
 			
 			ras.setTimestamp( new Date().getTime() );
-			
-//			TimeDiff.get().log( "Analysis done" );
 			
 			return ret;
 			
@@ -842,78 +884,157 @@ public class AnalysisManager {
 		return ret;
 	}
 	
-	@POST @Path("/{domain}/ahp")
-	public String runAHPAnalysis( 
-			@DefaultValue("Playground") @PathParam("domain") String domain,
-			@Context HttpServletRequest req ) throws IOException {
+	@GET @Path("/{domain}/session/{sid}/mt/list")
+	public String getAppliedMitigationTechniques(
+			@HeaderParam("token") @Info("The authentication token")							String token,
+			@PathParam("domain") @Info("The selected domain")								String domain,
+			@PathParam("sid") @Info("The risk session ID")									String sid
+			) throws Exception {
 		
-		String json = getBody(req );
+		RiscossDB db = null;
 		
-		System.out.println( "Received json: " + json );
+		try {
+			db = DBConnector.openDB( domain, token );
+			
+			RiskAnalysisSession ras = db.openRAS( sid );
+			
+		}
+		catch( Exception ex ) {
+			ex.printStackTrace();
+			throw ex;
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
 		
-		System.out.println( "Decoding AHP input" );
-		JAHPInput ahpInput = gson.fromJson( json, JAHPInput.class );
+		return "";
+	}
+	
+	@GET @Path("/{domain}/session/{sid}/mt/{mt}/input")
+	public String getMitigationTechniqueParameters(
+			@HeaderParam("token") @Info("The authentication token")							String token,
+			@PathParam("domain") @Info("The selected domain")								String domain,
+			@PathParam("sid") @Info("The risk session ID")									String sid,
+			@PathParam("mt") @Info("The name of the mitigation technique to be applied")	String mtName
+			) throws Exception {
 		
-		System.out.println( "Running AHP" );
+		RiscossDB db = null;
 		
 		try {
 			
-			Map<String,Integer> goal_map = mkIdMap( ahpInput.goals );
+			db = DBConnector.openDB( domain, token );
 			
-			String strList1 = mkList( ahpInput.goals, goal_map );
-			String[] strList2 = new String[ahpInput.risks.size()];
-			for( int i = 0; i < ahpInput.risks.size(); i++ ) {
-				List<JAHPComparison> list = ahpInput.risks.get( i );
-				Map<String,Integer> risk_map = mkIdMap( list );
-				strList2[i] = mkList( list, risk_map );
-			}
+			RiskAnalysisSession ras = db.openRAS( sid );
 			
-			System.out.println( "Preparing args" );
-			PySystemState stm = new PySystemState();
-			List<String> args = new ArrayList<String>();
+			RiskScenario scenario = ras.getScenario( mtName );
 			
-			args.add( "jython" );		// first argument in python is the program name
-			args.add( "" + ahpInput.getGoalCount() );
-			args.add( "" + ahpInput.getRiskCount() );
-			args.add( strList1 );
-			for( int i = 0; i < strList2.length; i++ ) {
-				args.add( strList2[i] );
-			}
+			String ret = scenario.get( "input", "" );
 			
-			stm.argv = new PyList( args );
+			return ret;
+		}
+		catch( Exception ex ) {
+			ex.printStackTrace();
+			throw ex;
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
+	}
+	
+	@GET @Path("/{domain}/session/{sid}/mt/{mt}/output")
+	public String getMitigationTechniqueResults(
+			@HeaderParam("token") @Info("The authentication token")							String token,
+			@PathParam("domain") @Info("The selected domain")								String domain,
+			@PathParam("sid") @Info("The risk session ID")									String sid,
+			@PathParam("mt") @Info("The name of the mitigation technique to be applied")	String mtName
+			) throws Exception {
+		
+		RiscossDB db = null;
+		
+		try {
 			
-			System.out.println( "Creating Jython object" );
-			PythonInterpreter jython =
-				    new PythonInterpreter( null, stm );
+			db = DBConnector.openDB( domain, token );
 			
-			System.out.println( "Seeting output stream" );
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			jython.setOut( out );
+			RiskAnalysisSession ras = db.openRAS( sid );
 			
-			System.out.println( "Executing" );
-			jython.execfile( AnalysisManager.class.getResource( "res/ahpNoEig_command.py" ).getFile() );
+			RiskScenario scenario = ras.getScenario( mtName );
 			
-			String output = out.toString();
+			String ret = scenario.get( "output", "" );
 			
-			System.out.println( "Output:" );
-			System.out.println( output );
+			return ret;
+		}
+		catch( Exception ex ) {
+			ex.printStackTrace();
+			throw ex;
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
+	}
+	
+	@POST @Path("/{domain}/session/{sid}/mt/{mt}/apply")
+	@Info("Applies a specified mitigation technique to current risk session")
+	public String applyMitigationTechnique(
+			@HeaderParam("token") @Info("The authentication token")							String token,
+			@PathParam("domain") @Info("The selected domain")								String domain,
+			@PathParam("sid") @Info("The risk session ID")									String sid,
+			@PathParam("mt") @Info("The name of the mitigation technique to be applied")	String mtName,
+			@Info("The configuration parameters for the selected mitigation technique")		String json
+			) throws Exception {
+		
+		RiscossDB db = null;
+		
+		try {
 			
-			try {
-				output = output.substring( 1, output.length() -2 );
-				String[] parts = output.split( "[,]" );
-				JStringList list = new JStringList();
-				for( String p : parts ) {
-					list.list.add( p.trim() );
-				}
-				return gson.toJson( list );
-			}
-			catch( Exception ex ) {
-				ex.printStackTrace();
-			}
-			finally {
-				if( jython != null )
-					jython.close();
-			}
+			db = DBConnector.openDB( domain, token );
+			
+			RiskAnalysisSession ras = db.openRAS( sid );
+			
+			RiskScenario scenario = ras.getScenario( mtName );
+			
+			MitigationActivity ma = RiskAnalysisManager.get().getMitigationTechniqueInstance( mtName );
+			
+			String output = ma.eval( json );
+			
+			scenario.set( "input", json );
+			scenario.set( "output", output );
+			
+			ma.apply( output, scenario );
+			
+			RiskAnalysisProcess proc = new RiskAnalysisProcess();
+			
+			proc.start( scenario );
+			
+			JsonObject res = getAnalysisResults( scenario );
+			
+			String ret = res.toString();
+			
+			scenario.saveResults( ret );
+			
+//			scenario.setTimestamp( new Date().getTime() );
+			
+			return ret;
+		}
+		catch( Exception ex ) {
+			ex.printStackTrace();
+			throw ex;
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
+	}
+	
+	@POST @Path("/{domain}/ahp")
+	public String runAHPAnalysis( 
+			@PathParam("domain") @Info("The selected domain")			String domain,
+			@Info("The AHP parameters")									String json
+			) throws IOException {
+		
+		try {
+			
+			AHPAnalysis ahp = new AHPAnalysis();
+			
+			return ahp.eval( json );
 			
 		}
 		catch( Exception ex ) {
@@ -923,66 +1044,4 @@ public class AnalysisManager {
 		return "";
 	}
 	
-	private Map<String,Integer> mkIdMap( List<JAHPComparison> list ) {
-		Map<String,Integer> goal_map = new HashMap<String,Integer>();
-		for( JAHPComparison c : list ) {
-			if( !goal_map.containsKey( c.getId1() ) ) {
-				goal_map.put( c.getId1(), goal_map.size() );
-			}
-			if( !goal_map.containsKey( c.getId2() ) ) {
-				goal_map.put( c.getId2(), goal_map.size() );
-			}
-		}
-		return goal_map;
-	}
-	
-	private String mkList( List<JAHPComparison> list, Map<String, Integer> id_map  ) {
-		final int[] numbers = new int[] { 9, 7, 5, 3, 1, 3, 5, 7, 9 };
-		String ret = "";
-		String sep = "";
-		for( JAHPComparison c : list ) {
-			if( c.value < 4 ) {
-				ret += sep + "[" + id_map.get( c.getId1() ) + "," + id_map.get( c.getId2() ) + "," + numbers[c.value] + "]";
-			}
-			else {
-				ret += sep + "[" + id_map.get( c.getId2() ) + "," + id_map.get( c.getId1() ) + "," + numbers[c.value] + "]";
-			}
-			sep = ",";
-		}
-		return "[" + ret + "]";
-	}
-	
-	public static String getBody(HttpServletRequest request) throws IOException {
-
-	    String body = null;
-	    StringBuilder stringBuilder = new StringBuilder();
-	    BufferedReader bufferedReader = null;
-
-	    try {
-	        InputStream inputStream = request.getInputStream();
-	        if (inputStream != null) {
-	            bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-	            char[] charBuffer = new char[128];
-	            int bytesRead = -1;
-	            while ((bytesRead = bufferedReader.read(charBuffer)) > 0) {
-	                stringBuilder.append(charBuffer, 0, bytesRead);
-	            }
-	        } else {
-	            stringBuilder.append("");
-	        }
-	    } catch (IOException ex) {
-	        throw ex;
-	    } finally {
-	        if (bufferedReader != null) {
-	            try {
-	                bufferedReader.close();
-	            } catch (IOException ex) {
-	                throw ex;
-	            }
-	        }
-	    }
-
-	    body = stringBuilder.toString();
-	    return body;
-	}
 }

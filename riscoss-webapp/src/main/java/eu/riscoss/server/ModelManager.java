@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -73,12 +72,14 @@ public class ModelManager {
 	@Info("Returns a list of models previously uploaded in the selected domain")
 	public String getList( 
 			@PathParam("domain") String domain,
-			@HeaderParam("token") String token ) {
+			@HeaderParam("token") String token 
+			) throws Exception {
 		
 		JsonArray a = new JsonArray();
 		
-		RiscossDB db = DBConnector.openDB( domain, token );
+		RiscossDB db = null;
 		try {
+			db = DBConnector.openDB( domain, token );
 			for( String model : db.getModelList() ) {
 				JsonObject o = new JsonObject();
 				o.addProperty( "name", model );
@@ -86,7 +87,7 @@ public class ModelManager {
 			}
 		}
 		catch( Exception ex ) {
-			ex.printStackTrace();
+			throw ex;
 		}
 		finally {
 			DBConnector.closeDB( db );
@@ -101,6 +102,7 @@ public class ModelManager {
 	 * @param token
 	 * @param models a list of models (JsonArray) in the body
 	 * @return
+	 * @throws Exception 
 	 */
 	@POST @Path("/{domain}/chunklist")
 	@Info("Returns a list of input and output chunks for the specified models; it also includes the type of the chunk (goal, risk, indicator)")
@@ -108,14 +110,18 @@ public class ModelManager {
 	public String getModelChunkList(
 			@PathParam("domain") String domain, 
 			@HeaderParam("token") String token,
-			@Info("A JSONized array of model names") String models ) {
+			@Info("A JSONized array of model names") String models 
+			) throws Exception {
 		
 		JsonArray json = (JsonArray)new JsonParser().parse( models );
 		
 		JChunkList list = new JChunkList();
 		
-		RiscossDB db = DBConnector.openDB( domain, token );
+		RiscossDB db = null;
+		
 		try {
+			
+			db = DBConnector.openDB( domain, token );
 			
 			for( int i = 0; i < json.size(); i++ ) {
 				
@@ -281,6 +287,9 @@ public class ModelManager {
 				}
 			}
 		}
+		catch (Exception e) {
+			throw e;
+		}
 		finally {
 			DBConnector.closeDB( db );
 		}
@@ -298,6 +307,7 @@ public class ModelManager {
 	 * @param token
 	 * @param models a list of models (JsonArray)
 	 * @return
+	 * @throws Exception 
 	 */
 	@POST 	@Path("/{domain}/chunks")
 	@Info("Returns a list of input and output chunks for the specified models")
@@ -306,7 +316,8 @@ public class ModelManager {
 	public String getModelChunks(
 			@PathParam("domain") String domain,
 			@HeaderParam("token") String token, 
-			@Info("A JSONized array of model names") String models ) {//@HeaderParam("json") String models ) {
+			@Info("A JSONized array of model names") String models 
+			) throws Exception {
 		
 		JsonArray json = (JsonArray)new JsonParser().parse( models );
 		
@@ -316,21 +327,23 @@ public class ModelManager {
 		ret.add( "inputs", inputs );
 		ret.add( "outputs", outputs );
 		
-		RiscossDB db = DBConnector.openDB( domain, token );
-		
-		RiskAnalysisEngine rae = ReasoningLibrary.get().createRiskAnalysisEngine();
-		
-		for( int i = 0; i < json.size(); i++ ) {
-			String modelName = json.get( i ).getAsString();
-			String blob = db.getModelBlob( modelName );
-			if( blob != null ) {
-				rae.loadModel( blob );
-			}
-		}
-		
-		Set<String> set = new HashSet<>();
+		RiscossDB db = null;
 		
 		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
+			RiskAnalysisEngine rae = ReasoningLibrary.get().createRiskAnalysisEngine();
+			
+			for( int i = 0; i < json.size(); i++ ) {
+				String modelName = json.get( i ).getAsString();
+				String blob = db.getModelBlob( modelName );
+				if( blob != null ) {
+					rae.loadModel( blob );
+				}
+			}
+			
+			Set<String> set = new HashSet<>();
 			
 			for( Chunk c : rae.queryModel( ModelSlice.INPUT_DATA ) ) {
 				JsonObject o = new JsonObject();
@@ -435,6 +448,9 @@ public class ModelManager {
 				}
 				outputs.add( o );
 			}
+		} 
+		catch (Exception e) {
+			throw e;
 		}
 		finally {
 			DBConnector.closeDB( db );
@@ -469,13 +485,17 @@ public class ModelManager {
 	
 	@GET @Path("/{domain}/{model}/get")
 	public String getInfo(
-			@PathParam("domain") String domain,
-			@HeaderParam("token") String token, 
-			@PathParam("model") String name ) {
+			@PathParam("domain")		String domain,
+			@HeaderParam("token")		String token, 
+			@PathParam("model")			String name 
+			) throws Exception {
 		
-		RiscossDB db = DBConnector.openDB( domain, token );
+		RiscossDB db = null;
 		
 		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
 			String filename = db.getModelFilename( name );  //modelfilename
 			String descfile = db.getModelDescFielname(name);
 			JsonObject o = new JsonObject();
@@ -485,21 +505,35 @@ public class ModelManager {
 			o.addProperty( "modeldescfilename", descfile);
 			return o.toString();
 		}
+		catch (Exception e) {
+			throw e;
+		}
 		finally {
 			DBConnector.closeDB( db );
 		}
 	}
 	
 	@GET @Path("/{domain}/{model}/blob")
-	public String getBlob( @DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, @PathParam("model") String name ) {
-		RiscossDB db = DBConnector.openDB( domain, token );
+	public String getBlob( 
+			@PathParam("domain")		String domain,
+			@HeaderParam("token")		String token, 
+			@PathParam("model")			String name 
+			) throws Exception {
+		
+		RiscossDB db = null;
+		
 		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
 			String blob = db.getModelBlob( name );
 			JsonObject o = new JsonObject();
 			o.addProperty( "name", name );
 			o.addProperty( "blob", blob );
 			return o.toString();
+		}
+		catch (Exception e) {
+			throw e;
 		}
 		finally {
 			DBConnector.closeDB( db );
@@ -507,11 +541,20 @@ public class ModelManager {
 	}
 	
 	@DELETE @Path("/{domain}/{model}/delete")
-	public void deleteModel( @DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, @PathParam("model") String name ) {
-		RiscossDB db = DBConnector.openDB( domain, token );
+	public void deleteModel( 
+			@PathParam("domain")		String domain,
+			@HeaderParam("token")		String token, 
+			@PathParam("model")			String name 
+			) throws Exception {
+		RiscossDB db = null;
 		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
 			db.removeModel( name );
+		} 
+		catch (Exception e) {
+			throw e;
 		}
 		finally {
 			DBConnector.closeDB( db );
@@ -520,20 +563,23 @@ public class ModelManager {
 	
 	@POST @Path("/{domain}/{model}/upload")
 	public void uploadModel(
-			@HeaderParam("token") String token, @PathParam("domain") String domain, @PathParam("model") String modelname, String content
+			@HeaderParam("token")		String token, 
+			@PathParam("domain")		String domain, 
+			@PathParam("model")			String modelname, 
+			String content
 			) {
 		
-		RiscossDB db = DBConnector.openDB( domain, token );
+		RiscossDB db = null;
 		
 		try {
+			db = DBConnector.openDB( domain, token );
+			
 			//attention:filename sanitation is not directly notified to the user
 			modelname = RiscossUtil.sanitize(modelname);
 			
 			for (String storedmodel : db.getModelList()) {
 				if (storedmodel.equals(modelname)){
 					return;
-					//							throw new RuntimeException(
-					//									"A model with this name was already uploaded. Please update this model on the model's properties page, change its name or delete it." );
 				}
 			}
 			db.storeModel( content, modelname );
@@ -541,47 +587,53 @@ public class ModelManager {
 		} catch (Exception e) {
 			throw new UploadActionException(e);
 		}
+		finally {
+			DBConnector.closeDB( db );
+		}
 		
-		DBConnector.closeDB( db );
 	}
 	
 	@POST @Path("/{domain}/{model}/rename")
-	public void changeModelName( @DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, @PathParam("model") String name, 
-			@QueryParam("newname") String newName ) throws RuntimeException{
-		RiscossDB db = DBConnector.openDB( domain, token );
+	public void changeModelName( 
+			@PathParam("domain")		String domain,
+			@HeaderParam("token")		String token, 
+			@PathParam("model")			String name, 
+			@QueryParam("newname")		String newName 
+			) throws Exception{
+		
+		RiscossDB db = null;
+		
 		boolean duplicate = false;
 		
 		//String response = "";
-		//try {
-		for (String storedmodel : db.getModelList()) {
-			// System.out.println(storedmodel);
-			if (storedmodel.equals(newName)) {
-				duplicate = true;
-				// response = "<response>\n" +
-				// "Duplicate model name. Please delete the stored model first."+
-				// "</response>\n";
-				//response = "Error: This name is already in use.";
-				throw new RuntimeException("Duplicate entry");
-				//break;
-				// throw new
-				// UploadActionException("Duplicate model name. Please delete the stored model first.");
+		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
+			for (String storedmodel : db.getModelList()) {
+				if (storedmodel.equals(newName)) {
+					duplicate = true;
+					throw new RuntimeException("Duplicate entry");
+				}
 			}
+			if (duplicate == false) {
+				db.changeModelName(name, newName);
+			}
+			
+		} catch (Exception e) {
+			throw e;
 		}
-		if (duplicate == false) {
-			db.changeModelName(name, newName);
-			//response = "Success";
+		finally {
+			DBConnector.closeDB(db);
 		}
-		
-		//} finally {
-		DBConnector.closeDB(db);
-		//}
-		//return response;
 	}
 	
 	@GET @Path("/{domain}/{name}/content")
 	public String getRiskModelContent(
-			@PathParam("domain") String domain, @HeaderParam("token") String token, @PathParam("name") String name ) {
+			@PathParam("domain")		String domain, 
+			@HeaderParam("token")		String token, 
+			@PathParam("name")			String name 
+			) throws Exception {
 		
 		RiscossDB db = null;
 		
@@ -621,6 +673,9 @@ public class ModelManager {
 			}
 			
 			return gson.toJson( jmodel );
+		}
+		catch (Exception e) {
+			throw e;
 		}
 		finally {
 			DBConnector.closeDB( db );

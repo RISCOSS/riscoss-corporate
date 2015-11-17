@@ -13,11 +13,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-*/
+ */
 
 /**
  * @author 	Alberto Siena
-**/
+ **/
 
 package eu.riscoss.server;
 
@@ -41,7 +41,7 @@ import org.apache.commons.fileupload.FileItem;
 public class UploadServiceImpl extends UploadAction {
 	
 	interface Action {
-		public String executeAction(HttpServletRequest request, List<FileItem> sessionFiles) throws UploadActionException;
+		public String executeAction(HttpServletRequest request, List<FileItem> sessionFiles) throws UploadActionException, Exception;
 	}
 	
 	private static final long serialVersionUID = 1L;
@@ -49,127 +49,158 @@ public class UploadServiceImpl extends UploadAction {
 	Map<String,Action> actions = new HashMap<String,Action>();
 	
 	class ModelUploader implements Action {
-
+		
 		@Override
-		public String executeAction(HttpServletRequest request,
-				List<FileItem> sessionFiles) throws UploadActionException {
+		public String executeAction(
+				HttpServletRequest request,
+				List<FileItem> sessionFiles 
+				) throws UploadActionException, Exception {
 			String response = "";
-
+			
 			String domain = request.getParameter("domain");
 			String token = request.getParameter("token");
-
-			RiscossDB db = DBConnector.openDB( domain, token );
-
-			for (FileItem item : sessionFiles) {
-				if (false == item.isFormField()) {
-					try {
-						String name = request.getParameter( "name" );
-						
-						if( name == null ) {
-							name = item.getName();
-						}
-						/// Create a temporary file placed in the default system temp folder
-//						File file = File.createTempFile("upload-", ".bin");
-						//System.out.println("Storing the Model "+name);
-					
-						//attention:filename sanitation is not directly notified to the user
-						name = RiscossUtil.sanitize(name);
-						
-						boolean duplicate = false;
-						for (String storedmodel : db.getModelList()) {
-							//System.out.println(storedmodel);
-							if (storedmodel.equals(name)){
-								duplicate = true;
-								//response = "<response>\n" + "Duplicate model name. Please delete the stored model first."+ "</response>\n";
-								response = "A model with this name was already uploaded. Please update this model on the model's properties page, change its name or delete it.";
-								break;
-								//throw new UploadActionException("Duplicate model name. Please delete the stored model first.");
+			
+			RiscossDB db = null;
+			
+			try {
+				db = DBConnector.openDB( domain, token );
+				
+				for (FileItem item : sessionFiles) {
+					if (false == item.isFormField()) {
+						try {
+							String name = request.getParameter( "name" );
+							
+							if( name == null ) {
+								name = item.getName();
 							}
+							/// Create a temporary file placed in the default system temp folder
+							//						File file = File.createTempFile("upload-", ".bin");
+							//System.out.println("Storing the Model "+name);
+							
+							//attention:filename sanitation is not directly notified to the user
+							name = RiscossUtil.sanitize(name);
+							
+							boolean duplicate = false;
+							for (String storedmodel : db.getModelList()) {
+								//System.out.println(storedmodel);
+								if (storedmodel.equals(name)){
+									duplicate = true;
+									//response = "<response>\n" + "Duplicate model name. Please delete the stored model first."+ "</response>\n";
+									response = "A model with this name was already uploaded. Please update this model on the model's properties page, change its name or delete it.";
+									break;
+									//throw new UploadActionException("Duplicate model name. Please delete the stored model first.");
+								}
+							}
+							if (duplicate == false){
+								db.storeModel( item.getString(), name );
+								response = "Success";
+							}
+							
+						} catch (Exception e) {
+							throw new UploadActionException(e);
 						}
-						if (duplicate == false){
-							db.storeModel( item.getString(), name );
-							response = "Success";
-						}
-
-					} catch (Exception e) {
-						throw new UploadActionException(e);
 					}
 				}
+				
+				DBConnector.closeDB( db );
+				
+				/// Remove files from session because we have a copy of them
+				removeSessionFileItems(request);
+				
+				/// Send information of the received files to the client.
+				return response;
+			} catch (Exception e1) {
+				throw e1;
 			}
-
-			DBConnector.closeDB( db );
-
-			/// Remove files from session because we have a copy of them
-			removeSessionFileItems(request);
-
-			/// Send information of the received files to the client.
-			return response;
+			finally {
+				DBConnector.closeDB( db );
+			}
 		}
-
+		
 	}
 	
 	class ModelDescUploader implements Action {
-
+		
 		@Override
-		public String executeAction(HttpServletRequest request,
-				List<FileItem> sessionFiles) throws UploadActionException {
+		public String executeAction(
+				HttpServletRequest request,
+				List<FileItem> sessionFiles
+				) throws Exception {
+			
 			String response = "";
 			
 			String domain = request.getParameter("domain");
 			String token = request.getParameter("token");
-
-			RiscossDB db = DBConnector.openDB( domain, token );
 			
-			String modelName = null;
-			for (FileItem item : sessionFiles) { //reads the hidden field in which the model name is passed
-				if (item.isFormField()){
-					if (item.getFieldName().startsWith("Modelname")){
-						modelName = item.getString();
-						break;
-					}
-				} 
-			}
+			RiscossDB db = null;
 			
-			for (FileItem item : sessionFiles) {
-				if (!item.isFormField()){
-					try {
-						String name = request.getParameter( "name" ); //the file name, used only to propose a filename when downloading
-						if( name == null ) {
-							name = item.getName();
+			try {
+				db = DBConnector.openDB( domain, token );
+				
+				String modelName = null;
+				for (FileItem item : sessionFiles) { //reads the hidden field in which the model name is passed
+					if (item.isFormField()){
+						if (item.getFieldName().startsWith("Modelname")){
+							modelName = item.getString();
+							break;
 						}
-						//attention:filename sanitation is not directly notified to the user
-						name = RiscossUtil.sanitize(name);
-						modelName = RiscossUtil.sanitize(modelName);
-						//store description for the model. Overwrites an existing description
-						db.storeModelDesc(modelName, name, item.get());
-						
-						response = name + " uploaded.";
-
-					} catch (Exception e) {
-						throw new UploadActionException(e);
+					} 
+				}
+				
+				for (FileItem item : sessionFiles) {
+					if (!item.isFormField()){
+						try {
+							String name = request.getParameter( "name" ); //the file name, used only to propose a filename when downloading
+							if( name == null ) {
+								name = item.getName();
+							}
+							//attention:filename sanitation is not directly notified to the user
+							name = RiscossUtil.sanitize(name);
+							modelName = RiscossUtil.sanitize(modelName);
+							//store description for the model. Overwrites an existing description
+							db.storeModelDesc(modelName, name, item.get());
+							
+							response = name + " uploaded.";
+							
+						} catch (Exception e) {
+							throw new UploadActionException(e);
+						}
 					}
 				}
+			} catch (Exception e1) {
+				e1.printStackTrace();
+				throw e1;
 			}
-
-			DBConnector.closeDB( db );
-			/// Remove files from session because we have a copy of them
-			removeSessionFileItems(request);
-			/// Send information of the received files to the client.
+			finally {
+				try {
+					/// Remove files from session because we have a copy of them
+					removeSessionFileItems(request);
+				} catch( Exception ex ) {}
+				
+				DBConnector.closeDB( db );
+			}
+			
 			return response;
 		}
-
+		
 	}
 	
 	class ModelUpdateUploader implements Action {
-
+		
 		@Override
-		public String executeAction(HttpServletRequest request,
-				List<FileItem> sessionFiles) throws UploadActionException {
+		public String executeAction(
+				HttpServletRequest request,
+				List<FileItem> sessionFiles
+				) throws Exception {
 			String response = "";
 			
 			String domain = request.getParameter("domain");
 			String token = request.getParameter("token");
-			RiscossDB db = DBConnector.openDB( domain, token );
+			
+			RiscossDB db = null;
+			
+			try {
+			db = DBConnector.openDB( domain, token );
 			
 			String modelName = null;
 			for (FileItem item : sessionFiles) { //reads the hidden field in which the model name is passed
@@ -196,20 +227,28 @@ public class UploadServiceImpl extends UploadAction {
 						db.updateModel(modelName, filename, item.getString());
 						
 						response = filename + " uploaded.";
-
+						
 					} catch (Exception e) {
 						throw new UploadActionException(e);
 					}
 				}
 			}
-
-			DBConnector.closeDB( db );
-			/// Remove files from session because we have a copy of them
-			removeSessionFileItems(request);
-			/// Send information of the received files to the client.
+			} catch (Exception e1) {
+				e1.printStackTrace();
+				throw e1;
+			}
+			finally {
+				/// Remove files from session because we have a copy of them
+				try {
+					removeSessionFileItems(request);
+				} catch( Exception ex ) {}
+				
+				DBConnector.closeDB( db );
+			}
+			
 			return response;
 		}
-
+		
 	}
 	
 	
@@ -227,10 +266,15 @@ public class UploadServiceImpl extends UploadAction {
 	public String executeAction(HttpServletRequest request, List<FileItem> sessionFiles) throws UploadActionException {
 		String actionType = request.getParameter( "t" );
 		if( actionType == null ) return null;
-
+		
 		Action action = actions.get( actionType );
 		if( action != null ) {
-			return action.executeAction(request, sessionFiles);
+			try {
+				return action.executeAction(request, sessionFiles);
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new RuntimeException( e );
+			}
 		}
 		return "";
 	}
@@ -239,18 +283,27 @@ public class UploadServiceImpl extends UploadAction {
 	 * Get the content of an uploaded file. (mm: Not used(??))
 	 */
 	@Override
-	public void getUploadedFile(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public void getUploadedFile(
+			HttpServletRequest request, 
+			HttpServletResponse response
+			) throws IOException {
+		
 		String fieldName = request.getParameter( UConsts.PARAM_SHOW );
 		String domain = request.getParameter("domain");		
 		String token = request.getParameter("token");
-
-		RiscossDB db = DBConnector.openDB( domain, token );
+		
+		RiscossDB db = null;
 		try {
+			db = DBConnector.openDB( domain, token );
 			//only for checking if empty?
 			String blob = db.getModelBlob( fieldName );
 			if( blob == null ) blob = "";
 			response.setContentType( "application/xml" );
 			copyFromInputStreamToOutputStream( new ByteArrayInputStream( blob.getBytes() ), response.getOutputStream());
+		} 
+		catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException( e );
 		}
 		finally {
 			DBConnector.closeDB( db );
@@ -264,10 +317,14 @@ public class UploadServiceImpl extends UploadAction {
 	public void removeItem( HttpServletRequest request, String fieldName )  throws UploadActionException {
 		String domain = request.getParameter("domain");		
 		String token = request.getParameter("token");
-
-		RiscossDB db = DBConnector.openDB( domain, token );
+		
+		RiscossDB db = null;
 		try {
+			db = DBConnector.openDB( domain, token );
 			db.removeModelBlob( fieldName );
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException( e );
 		}
 		finally {
 			DBConnector.closeDB( db );

@@ -24,7 +24,6 @@ package eu.riscoss.server;
 import java.util.List;
 
 import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -51,21 +50,27 @@ public class LayersManager {
 	@GET @Path("/{domain}/list")
 	public String list( 
 			@PathParam("domain") String domain,
-			@HeaderParam("token") String token ) {
+			@HeaderParam("token") String token 
+			) throws Exception {
 		
 		JsonArray a = new JsonArray();
 		
-		RiscossDB db = DBConnector.openDB( domain, token );
+		RiscossDB db = null;
 		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
 			for( String layer : db.layerNames() ) {
 				JsonObject o = new JsonObject();
 				o.addProperty( "name", layer );
 				a.add( o );
 			}
 		}
+		catch( Exception ex ) {
+			throw ex;
+		}
 		finally {
-			if( db != null )
-				DBConnector.closeDB( db );
+			DBConnector.closeDB( db );
 		}
 		
 		return a.toString();
@@ -78,16 +83,19 @@ public class LayersManager {
 			@HeaderParam("token") String token, 
 			@QueryParam("name") String name,
 			@QueryParam("parent") String parentName
-			) {
+			) throws Exception {
 		//attention:filename sanitation is not directly notified to the user
 		name = RiscossUtil.sanitize(name.trim());
 		
 		parentName = parentName.trim();
 		
-		RiscossDB db = DBConnector.openDB( domain, token );
-		try
-		{
+		RiscossDB db = null;
+		try {
+			db = DBConnector.openDB( domain, token );
 			db.addLayer( name, parentName );
+		}
+		catch( Exception ex ) {
+			throw ex;
 		}
 		finally {
 			DBConnector.closeDB( db );
@@ -100,16 +108,19 @@ public class LayersManager {
 			@HeaderParam("token") String token, 
 			@QueryParam("name") String name,
 			@QueryParam("parent") String parentName
-			) {
+			) throws Exception {
 		//attention:filename sanitation is not directly notified to the user
 		name = RiscossUtil.sanitize(name.trim());
 		
 		parentName = parentName.trim();
 		
-		RiscossDB db = DBConnector.openDB( domain, token );
-		try
-		{
+		RiscossDB db = null;
+		try {
+			db = DBConnector.openDB( domain, token );
 			db.addLayer( name, parentName );
+		}
+		catch( Exception ex ) {
+			throw ex;
 		}
 		finally {
 			DBConnector.closeDB( db );
@@ -123,12 +134,16 @@ public class LayersManager {
 			@PathParam("layer") String name
 			) throws Exception {
 		
-		RiscossDB db = DBConnector.openDB( domain, token );
+		RiscossDB db = null;
 		try {
+			db = DBConnector.openDB( domain, token );
 			if( db.entities( name ).size() > 0 ) {
 				throw new Exception( "You can not delete a layer that still contains entities. You must delete all the entities befor being able to delete this layer." );
 			}
 			db.removeLayer( name );
+		}
+		catch( Exception ex ) {
+			throw ex;
 		}
 		finally {
 			DBConnector.closeDB( db );
@@ -140,16 +155,21 @@ public class LayersManager {
 	public String getContextualInfo( 
 			@PathParam("domain") String domain, 
 			@HeaderParam("token") String token, 
-			@PathParam("layer") String layer ) {
+			@PathParam("layer") String layer
+			) throws Exception {
 		
-		RiscossDB db = DBConnector.openDB( domain, token );
+		RiscossDB db = null;
 		try {
+			db = DBConnector.openDB( domain, token );
 			String json = db.getLayerData( layer, "ci" );
 			if( json == null ) {
 				JLayerContextualInfo info = new JLayerContextualInfo();
 				json = gson.toJson( info );
 			}
 			return json;
+		}
+		catch( Exception ex ) {
+			throw ex;
 		}
 		finally {
 			DBConnector.closeDB( db );
@@ -162,11 +182,16 @@ public class LayersManager {
 			@PathParam("domain") String domain,
 			@HeaderParam("token") String token, 
 			@PathParam("layer") String layer, 
-			String json ) {
+			String json 
+			) throws Exception {
 		
-		RiscossDB db = DBConnector.openDB( domain, token );
+		RiscossDB db = null;
 		try {
+			db = DBConnector.openDB( domain, token );
 			db.setLayerData( layer, "ci", json );
+		}
+		catch( Exception ex ) {
+			throw ex;
 		}
 		finally {
 			DBConnector.closeDB( db );
@@ -179,11 +204,16 @@ public class LayersManager {
 			@PathParam("domain") String domain,
 			@HeaderParam("token") String token, 
 			@PathParam("layer") String name, 
-			@QueryParam("newname") String newName ) {
+			@QueryParam("newname") String newName
+			) throws Exception {
 		
-		RiscossDB db = DBConnector.openDB( domain, token );
+		RiscossDB db = null;
 		try {
+			db = DBConnector.openDB( domain, token );
 			db.renameLayer( name, newName );
+		}
+		catch( Exception ex ) {
+			throw ex;
 		}
 		finally {
 			DBConnector.closeDB( db );
@@ -195,12 +225,17 @@ public class LayersManager {
 	public String getScope( 
 			@PathParam("domain") String domain,
 			@HeaderParam("token") String token,
-			@PathParam("layer") String layer ) {
+			@PathParam("layer") String layer
+			) throws Exception {
 		
-		RiscossDB db = DBConnector.openDB( domain, token );
+		RiscossDB db = null;
 		try {
+			db = DBConnector.openDB( domain, token );
 			List<String> scope = db.getScope( layer );
 			return gson.toJson( scope );
+		}
+		catch( Exception ex ) {
+			throw ex;
 		}
 		finally {
 			DBConnector.closeDB( db );

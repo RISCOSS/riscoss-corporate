@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+
 public interface RiskAnalysisSession {
 	
 	void setLayers( Collection<String> layers );
@@ -77,5 +78,7 @@ public interface RiskAnalysisSession {
 	String getEntityAttribute( String target, String key, String def );
 	
 	List<String> listInputs( String entity );
+
+	RiskScenario getScenario( String name );
 	
 }
