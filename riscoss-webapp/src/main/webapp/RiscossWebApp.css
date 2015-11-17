@@ -88,7 +88,7 @@ body {
    
 .subMenu {
 	background-color: #7EAC30 !important;
-	
+}
 	.subMenu .gwt-MenuItem { 
       	background-color: #7EAC30; 
       	color: #F3F3F3 !important;
@@ -99,7 +99,6 @@ body {
       	text-decoration: underline !important;
       	color: #F3F3F3 !important;
    }
-}
 
 .tag {
 	font-size: 14px !important;

@@ -61,12 +61,14 @@ import com.google.gwt.view.client.SingleSelectionModel;
 
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecLayerContextualInfo;
+import eu.riscoss.client.codec.CodecRASInfo;
 import eu.riscoss.client.entities.EntityPropertyPage;
 import eu.riscoss.client.entities.TableResources;
 import eu.riscoss.client.ui.ClickWrapper;
 import eu.riscoss.client.ui.FramePanel;
 import eu.riscoss.client.ui.TreeWidget;
 import eu.riscoss.shared.JLayerContextualInfo;
+import eu.riscoss.shared.JRASInfo;
 import eu.riscoss.shared.RiscossUtil;
 
 public class LayersModule implements EntryPoint {
@@ -534,17 +536,22 @@ public class LayersModule implements EntryPoint {
 		delete.addClickHandler(new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
-							Boolean b = Window.confirm("Attention: entities associated to this layer cannot be re-associated to another layer and need to be deleted manually!");
-							if (b) {
-								RiscossJsonClient.deleteLayer(selectedLayer, new JsonCallback() {
-								@Override
-								public void onFailure(Method method,Throwable exception) {
-									Window.alert( exception.getMessage() );
+							if (entities.size() > 0) {
+								Window.alert("Layers with associated layers cannot be deleted");
+							}
+							else {
+								Boolean b = Window.confirm("Are you sure that you want to delete layer " + selectedLayer + "?");
+								if (b) {
+									RiscossJsonClient.deleteLayer(selectedLayer, new JsonCallback() {
+									@Override
+									public void onFailure(Method method,Throwable exception) {
+										Window.alert( exception.getMessage() );
+									}
+									@Override
+									public void onSuccess(Method method,JSONValue response) {
+										Window.Location.reload();
+									}} );
 								}
-								@Override
-								public void onSuccess(Method method,JSONValue response) {
-									Window.Location.reload();
-								}} );
 							}
 						}
 					} ) ;
@@ -747,36 +754,11 @@ public class LayersModule implements EntryPoint {
 			HorizontalPanel buttons = new HorizontalPanel();
 			Button delete = new Button("Delete");
 			delete.addClickHandler(new ClickHandler() {
-							@Override
-							public void onClick(ClickEvent event) {
-								Boolean b = Window.confirm("Are you sure you want to delete this entity?");
-								if (b) {
-									RiscossJsonClient.deleteEntity( selectedEntity, new JsonCallback() {
-										@Override
-										public void onFailure(Method method,Throwable exception) {
-											Window.alert( exception.getMessage() );
-										}
-										@Override
-										public void onSuccess(Method method,JSONValue response) {
-											mainView.remove(rightPanel);
-											RiscossJsonClient.listEntities(selectedLayer, new JsonCallback() {
-												@Override
-												public void onFailure(
-														Method method,
-														Throwable exception) {
-												}
-												@Override
-												public void onSuccess(
-														Method method,
-														JSONValue response) {
-													reloadEntityTable(response);
-												}
-											});
-										}
-									} );
-								}
-							}
-						} ) ;
+				@Override
+				public void onClick(ClickEvent event) {
+					hasRiskSessions();
+				}
+			} ) ;
 			delete.setStyleName("button");
 			Button saveEntity = new Button("Save");
 			saveEntity.setStyleName("button");
@@ -795,5 +777,53 @@ public class LayersModule implements EntryPoint {
 			mainView.add(rightPanel);
 		}
 	}
+
+	Boolean hasRisk;
 	
+	protected void hasRiskSessions() {
+		hasRisk = false;
+		RiscossJsonClient.listRiskAnalysisSessions(selectedEntity, "", new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());	
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				if (response.isObject().get("list").isArray().size() > 0) hasRisk = true;
+				deleteEntity();
+			}
+		});
+	}
+
+	protected void deleteEntity() {
+		if (hasRisk) Window.alert("Entities with associated risk sessions cannot be deleted");
+		else {
+			Boolean b = Window.confirm("Are you sure that you want to delete entity " + selectedEntity + "?");
+			if (b) {
+				RiscossJsonClient.deleteEntity( selectedEntity, new JsonCallback() {
+					@Override
+					public void onFailure(Method method,Throwable exception) {
+						Window.alert( exception.getMessage() );
+					}
+					@Override
+					public void onSuccess(Method method,JSONValue response) {
+						mainView.remove(rightPanel);
+						RiscossJsonClient.listEntities(selectedLayer, new JsonCallback() {
+							@Override
+							public void onFailure(
+									Method method,
+									Throwable exception) {
+							}
+							@Override
+							public void onSuccess(
+									Method method,
+									JSONValue response) {
+								reloadEntityTable(response);
+							}
+						});
+					}
+				} );
+			}
+		}
+	}
 }

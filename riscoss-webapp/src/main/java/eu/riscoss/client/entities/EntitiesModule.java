@@ -478,18 +478,7 @@ public class EntitiesModule implements EntryPoint {
 		delete.addClickHandler(new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
-							Boolean b = Window.confirm("Are you sure you want to delete this entity?");
-							if (b) {
-								RiscossJsonClient.deleteEntity( selectedEntity, new JsonCallback() {
-									@Override
-									public void onFailure(Method method,Throwable exception) {
-										Window.alert( exception.getMessage() );
-									}
-									@Override
-									public void onSuccess(Method method,JSONValue response) {
-										Window.Location.reload();
-									}} );
-							}
+							hasRiskSessions();
 						}
 					} ) ;
 		delete.setStyleName("button");
@@ -512,7 +501,7 @@ public class EntitiesModule implements EntryPoint {
 		rightPanel.add(ppg);
 		mainView.add(rightPanel);
 	}
-	
+
 	public void reloadData() {
 		//entitiesTree.clear();
 		b.reload();
@@ -638,6 +627,43 @@ public class EntitiesModule implements EntryPoint {
 			}
 		});
 
+	}
+	
+	Boolean hasRisk;
+	
+	protected void hasRiskSessions() {
+		hasRisk = false;
+		RiscossJsonClient.listRiskAnalysisSessions(selectedEntity, "", new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());	
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				if (response.isObject().get("list").isArray().size() > 0) hasRisk = true;
+				deleteEntity();
+			}
+		});
+	}
+
+	protected void deleteEntity() {
+		if (hasRisk) Window.alert("Entities with associated risk sessions cannot be deleted");
+		else {
+			Boolean b = Window.confirm("Are you sure that you want to delete entity " + selectedEntity + "?");
+			if (b) {
+				RiscossJsonClient.deleteEntity( selectedEntity, new JsonCallback() {
+					@Override
+					public void onFailure(Method method,Throwable exception) {
+						Window.alert( exception.getMessage() );
+					}
+					@Override
+					public void onSuccess(Method method,JSONValue response) {
+						mainView.remove(rightPanel);
+						reloadData();
+					}
+				} );
+			}
+		}
 	}
 	
 }

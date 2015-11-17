@@ -376,20 +376,7 @@ public class RiskConfsModule implements EntryPoint {
 				delete.addClickHandler(new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent arg0) {
-						Boolean b = Window.confirm("Are you sure you want to delete this risk configuration?");
-						if (b) {
-							RiscossJsonClient.deleteRC( selectedRC, new JsonCallback() {
-							@Override
-							public void onFailure( Method method, Throwable exception ) {
-								Window.alert( exception.getMessage() );
-							}
-
-							@Override
-							public void onSuccess( Method method, JSONValue response ) {
-								onRCSelected( null );
-								Window.Location.reload();
-							}} );	
-						}
+						hasRiskSessions();
 					}
 				});
 				buttons.add(save);
@@ -406,8 +393,43 @@ public class RiskConfsModule implements EntryPoint {
 				Window.alert( exception.getMessage() );
 			}
 		});
-		
-		
+	}
+	
+	Boolean hasRisk;
+	
+	protected void hasRiskSessions() {
+		hasRisk = false;
+		RiscossJsonClient.listRiskAnalysisSessions("", selectedRC	, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());	
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				if (response.isObject().get("list").isArray().size() > 0) hasRisk = true;
+				deleteRC();
+			}
+		});
+	}
+
+	protected void deleteRC() {
+		if (hasRisk) Window.alert("Risk configurations with associated risk sessions cannot be deleted");
+		else {
+			Boolean b = Window.confirm("Are you sure that you want to delete risk configuration " + selectedRC + "?");
+			if (b) {
+				RiscossJsonClient.deleteRC( selectedRC, new JsonCallback() {
+					@Override
+					public void onFailure(Method method,Throwable exception) {
+						Window.alert( exception.getMessage() );
+					}
+					@Override
+					public void onSuccess(Method method,JSONValue response) {
+						onRCSelected( null );
+						Window.Location.reload();
+					}
+				} );
+			}
+		}
 	}
 	
 }
