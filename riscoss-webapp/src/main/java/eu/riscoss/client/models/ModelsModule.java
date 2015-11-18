@@ -66,6 +66,8 @@ import eu.riscoss.client.JsonCallbackWrapper;
 import eu.riscoss.client.ModelInfo;
 import eu.riscoss.client.RiscossCall;
 import eu.riscoss.client.RiscossJsonClient;
+import eu.riscoss.client.SimpleRiskCconf;
+import eu.riscoss.client.codec.CodecLayerContextualInfo;
 import eu.riscoss.client.entities.TableResources;
 import eu.riscoss.client.riskanalysis.KeyValueGrid;
 import eu.riscoss.client.ui.LinkHtml;
@@ -586,62 +588,7 @@ public class ModelsModule implements EntryPoint {
 		delete.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent arg0) {
-				Boolean b = Window.confirm("Are you sure you want to delete this model?");
-				if (b) {
-					RiscossJsonClient.deleteModel(selectedModel, new JsonCallback() {
-						@Override
-						public void onFailure(Method method, Throwable exception) {
-							Window.alert(exception.getMessage());
-						}
-	
-						@Override
-						public void onSuccess(Method method, JSONValue response) {
-							//dataProvider.getList().remove(getValue());
-							mainView.remove(rightPanel);
-							table = new CellTable<ModelInfo>(15, (Resources) GWT.create(TableResources.class));
-	
-							table.addColumn(new Column<ModelInfo, SafeHtml>(new SafeHtmlCell()) {
-								@Override
-								public SafeHtml getValue(ModelInfo object) {
-									return new LinkHtml(object.getName(), "javascript:editModel(\"" + object.getName() + "\")");
-								};
-							}, "Model");
-	
-							dataProvider = new ListDataProvider<ModelInfo>();
-							dataProvider.addDataDisplay(table);
-							
-							RiscossJsonClient.listModels(new JsonCallback() {
-	
-								public void onSuccess(Method method, JSONValue response) {
-									GWT.log(response.toString());
-									if (response.isArray() != null) {
-										for (int i = 0; i < response.isArray().size(); i++) {
-											JSONObject o = (JSONObject) response.isArray().get(i);
-											dataProvider.getList().add(new ModelInfo(o.get("name").isString().stringValue()));
-										}
-									}
-								}
-	
-								public void onFailure(Method method, Throwable exception) {
-									Window.alert(exception.getMessage());
-								}
-							});
-							
-							SimplePager pager = new SimplePager();
-							pager.setDisplay(table);
-	
-							leftPanel.remove(tablePanel);
-							
-							tablePanel = new VerticalPanel();
-							tablePanel.add(table);
-							tablePanel.add(pager);
-							
-							leftPanel.add(tablePanel);
-							
-							
-						}
-					});
-				}
+				haveRiskConfs();
 			}
 		});
 		buttons.add(save);
@@ -655,4 +602,111 @@ public class ModelsModule implements EntryPoint {
 		mainView.add(rightPanel);
 		
 	}
+	
+	Boolean hasRiskConfs;
+	int ii;
+	int size;
+	
+	protected void haveRiskConfs() {
+		hasRiskConfs = false;
+		RiscossJsonClient.listRCs(new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				size = response.isArray().size();
+				for( int i = 0; i < size; i++ ) {
+					JSONObject o = (JSONObject)response.isArray().get( i );
+					ii = i;
+					RiscossJsonClient.getRCContent(o.get("name").isString().stringValue(), new JsonCallback() {
+						int iii = ii;
+						@Override
+						public void onFailure(Method method, Throwable exception) {
+							Window.alert(exception.getMessage());
+						}
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							SimpleRiskCconf rc = new SimpleRiskCconf(response);
+							for (int j = 0; j < rc.getLayerCount(); ++j) {
+								String layer = rc.getLayer(j);
+								for (int k = 0; k < rc.getModelList(layer).size(); ++k) {
+									if (rc.getModelList(layer).get(k).equals(selectedModel)) {
+										hasRiskConfs = true;
+									}
+								};
+								if (iii == size-1 && j == rc.getLayerCount()-1) deleteRC();
+							}
+						}
+					});
+				}
+			}
+		});
+	}
+	
+	protected void deleteRC() {
+		if (hasRiskConfs) {
+			Window.alert("Models with associated risk configurations cannot be deleted");
+		}
+		else {
+			Boolean b = Window.confirm("Are you sure that you want to delete model "  + selectedModel + "?");
+			if (b) {
+				RiscossJsonClient.deleteModel(selectedModel, new JsonCallback() {
+					@Override
+					public void onFailure(Method method, Throwable exception) {
+						Window.alert(exception.getMessage());
+					}
+	
+					@Override
+					public void onSuccess(Method method, JSONValue response) {
+						//dataProvider.getList().remove(getValue());
+						mainView.remove(rightPanel);
+						table = new CellTable<ModelInfo>(15, (Resources) GWT.create(TableResources.class));
+	
+						table.addColumn(new Column<ModelInfo, SafeHtml>(new SafeHtmlCell()) {
+							@Override
+							public SafeHtml getValue(ModelInfo object) {
+								return new LinkHtml(object.getName(), "javascript:editModel(\"" + object.getName() + "\")");
+							};
+						}, "Model");
+	
+						dataProvider = new ListDataProvider<ModelInfo>();
+						dataProvider.addDataDisplay(table);
+						
+						RiscossJsonClient.listModels(new JsonCallback() {
+	
+							public void onSuccess(Method method, JSONValue response) {
+								GWT.log(response.toString());
+								if (response.isArray() != null) {
+									for (int i = 0; i < response.isArray().size(); i++) {
+										JSONObject o = (JSONObject) response.isArray().get(i);
+										dataProvider.getList().add(new ModelInfo(o.get("name").isString().stringValue()));
+									}
+								}
+							}
+	
+							public void onFailure(Method method, Throwable exception) {
+								Window.alert(exception.getMessage());
+							}
+						});
+						
+						SimplePager pager = new SimplePager();
+						pager.setDisplay(table);
+	
+						leftPanel.remove(tablePanel);
+						
+						tablePanel = new VerticalPanel();
+						tablePanel.add(table);
+						tablePanel.add(pager);
+						
+						leftPanel.add(tablePanel);
+						
+						
+					}
+				});
+			}
+		}
+	}
 }
+
