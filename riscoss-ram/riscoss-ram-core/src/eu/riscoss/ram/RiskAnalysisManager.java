@@ -12,14 +12,14 @@ public class RiskAnalysisManager {
 		return instance;
 	}
 	
-	private RiskAnalysisManager() {}
+	public RiskAnalysisManager() {}
 	
 	Map<String,Class<?>> maClasses = new HashMap<String, Class<?>>();
 	
 	public void register( String maName, Class<? extends MitigationActivity> maClass ) {
 		maClasses.put( maName, maClass );
 	}
-
+	
 	public MitigationActivity getMitigationTechniqueInstance( String name ) {
 		
 		Class<?> cls = maClasses.get( name );

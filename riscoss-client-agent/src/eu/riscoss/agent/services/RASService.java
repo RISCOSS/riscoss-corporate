@@ -20,5 +20,9 @@ public class RASService extends RESTService {
 	public String applyMitigationTechnique( String mtName, String json ) {
 		return rest.post( "analysis/" + getDomain() + "/session/" + getId() + "/mt/" + mtName + "/apply" ).send( json );
 	}
+
+	public String getMitigationTechniqueParams( String mtName ) {
+		return rest.get( "analysis/" + getDomain() + "/session/" + getId() + "/mt/" + mtName + "/params" ).send();
+	}
 	
 }

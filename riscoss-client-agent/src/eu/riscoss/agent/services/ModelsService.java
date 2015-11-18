@@ -17,5 +17,9 @@ public class ModelsService extends RESTService {
 	public void upload( String fileName, String fileContent ) {
 		rest.post( "models/" + getDomain() + "/" + fileName + "/upload" ).send( fileContent );
 	}
+
+	public void delete( String filename ) {
+		rest.delete( "models/" + getDomain() + "/" + filename + "/delete" ).send();
+	}
 	
 }

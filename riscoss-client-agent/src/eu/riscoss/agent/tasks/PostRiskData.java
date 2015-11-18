@@ -18,12 +18,10 @@ public class PostRiskData implements TestTask {
 	public PostRiskData( String domain, RiskData riskData ) {
 		this.rd.add( riskData );
 		this.domain = domain;
-		if( this.domain == null )
-			this.domain = "";
 	}
 
 	public PostRiskData( RiskData riskData) {
-		this( "", riskData );
+		this( null, riskData );
 	}
 
 	@Override

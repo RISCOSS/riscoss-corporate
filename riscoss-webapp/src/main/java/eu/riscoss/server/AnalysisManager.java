@@ -972,6 +972,39 @@ public class AnalysisManager {
 		}
 	}
 	
+	@GET @Path("/{domain}/session/{sid}/mt/{mt}/params")
+	@Info("Returns the parameters used to apply a given mitigation technique")
+	public String getMitigationActivityParameters(
+			@HeaderParam("token") @Info("The authentication token")							String token,
+			@PathParam("domain") @Info("The selected domain")								String domain,
+			@PathParam("sid") @Info("The risk session ID")									String sid,
+			@PathParam("mt") @Info("The name of the mitigation technique to be retrieved")	String mtName
+			) throws Exception {
+		
+		RiscossDB db = null;
+		
+		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
+			RiskAnalysisSession ras = db.openRAS( sid );
+			
+			RiskScenario scenario = ras.getScenario( mtName );
+			
+			String ret = scenario.get( "input", "" );
+			
+			return ret;
+		}
+		catch( Exception ex ) {
+			ex.printStackTrace();
+			throw ex;
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
+	}
+	
+	
 	@POST @Path("/{domain}/session/{sid}/mt/{mt}/apply")
 	@Info("Applies a specified mitigation technique to current risk session")
 	public String applyMitigationTechnique(

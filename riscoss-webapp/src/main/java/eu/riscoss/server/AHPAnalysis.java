@@ -246,11 +246,49 @@ public class AHPAnalysis extends MitigationActivity {
 					
 					if( p == null ) continue;
 					
-					for( Relation r : p.in() ) {
+					List<Relation> new_rels = new ArrayList<Relation>();
+					List<Relation> old_rels = new ArrayList<Relation>();
+					
+					for( Relation r : cloneSet( p.in() ) ) {
 						if( !"increase".equals( r.getStereotype() ) ) continue;
-						float w = r.getWeight();
-						w = w / max;
-						r.setWeight( w );
+						if( "always".equals( r.getSources().get( 0 ).getId() ) ) {
+							float w = r.getWeight();
+							w = (float)(result.values.get( id ) * (w / max));
+							Proposition sit = e.getProgram().getModel().getProposition( "$custom" );
+							if( sit == null ) {
+								sit = new Proposition( "situation", "$custom" );
+								e.getProgram().getModel().addProposition( sit );
+								Proposition ind = new Proposition( "indicator", "$custom-indicator" )
+									.withProperty( "datatype", "integer" )
+									.withProperty( "input", "true" )
+									.withProperty( "default-value", "1" );
+								e.getProgram().getModel().addProposition( ind );
+								Relation indicate = new Relation( "indicate" );
+								indicate.setTarget( sit );
+								indicate.addSource( ind );
+								e.getProgram().getModel().addRelation( indicate );
+							}
+							Relation r2 = new Relation( "increase" );
+							r2.setTarget( r.getTarget() );
+							r2.addSource( sit );
+							r2.setWeight( w );
+							new_rels.add( r2 );
+							old_rels.add( r );
+						}
+						else {
+							float w = r.getWeight();
+							w = (float)(result.values.get( id ) * (w / max));
+							r.setWeight( w );
+						}
+					}
+					
+					for( Relation r : old_rels ) {
+						p.in().remove( r );
+						e.getProgram().getModel().removeRelation( r.getId() );
+					}
+					for( Relation r : new_rels ) {
+						p.in().add( r );
+						e.getProgram().getModel().addRelation( r );
 					}
 					
 				}
@@ -268,6 +306,12 @@ public class AHPAnalysis extends MitigationActivity {
 			}
 		}
 		
+	}
+
+	private List<Relation> cloneSet( List<Relation> list ) {
+		List<Relation> newlist = new ArrayList<Relation>();
+		newlist.addAll( list );
+		return newlist;
 	}
 	
 }
