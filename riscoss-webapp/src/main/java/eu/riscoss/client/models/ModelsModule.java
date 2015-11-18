@@ -378,7 +378,7 @@ public class ModelsModule implements EntryPoint {
 					String response = uploader.getServerMessage().getMessage();
 					if (!response.trim().startsWith("Error")){
 						//Window.confirm(response); //TODO change!
-						Window.Location.reload(); //TODO update on the fly without reloading
+						setSelectedModel(selectedModel);
 					} else
 						Window.alert("Error: " + response );
 				}
@@ -417,7 +417,7 @@ public class ModelsModule implements EntryPoint {
 					String response = uploader.getServerMessage().getMessage();
 					if (!response.trim().startsWith("Error")){
 						Window.confirm(response); //TODO change!
-						Window.Location.reload();
+						setSelectedModel(selectedModel);
 					}
 					else
 						Window.alert("Error: " + response );
