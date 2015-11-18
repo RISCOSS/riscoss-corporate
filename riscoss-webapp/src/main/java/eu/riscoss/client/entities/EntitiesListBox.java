@@ -81,7 +81,7 @@ public class EntitiesListBox {
 				layerList.addItem("all"); //"all" is considered as "" in the RiscossJsonClient method
 				for( int i = 0; i < response.isArray().size(); i++ ) {
 					JSONObject o = (JSONObject)response.isArray().get( i );
-					layerList.addItem( o.get( "name" ).isString().stringValue() );
+					if (!o.get("name").isString().stringValue().equals("")) layerList.addItem( o.get( "name" ).isString().stringValue() );
 				}
 				initializeBox();
 			}
@@ -186,7 +186,7 @@ public class EntitiesListBox {
 				entitiesList = new ArrayList<>();
 				for( int i = 0; i < response.isArray().size(); i++ ) {
 					JSONObject o = (JSONObject)response.isArray().get( i );
-					entitiesList.add(o);
+					if (!o.get("name").isString().stringValue().equals("-")) entitiesList.add(o);
 				}
 				
 				table = new CellTable<JSONObject>(15, (Resources) GWT.create(TableResources.class));
