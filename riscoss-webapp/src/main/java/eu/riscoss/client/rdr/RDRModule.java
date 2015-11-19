@@ -113,7 +113,7 @@ public class RDRModule implements EntryPoint {
 			public void onSuccess(Method method, JSONValue response) {
 				listEntities = new ArrayList<>();
 				for (int i = 0; i < response.isArray().size(); ++i) {
-					listEntities.add(response.isArray().get(i).isObject());
+					if (!response.isArray().get(i).isObject().get("name").isString().stringValue().equals("-")) listEntities.add(response.isArray().get(i).isObject());
 				}
 
 				cellList = new CellTable<JSONObject>(15, (Resources) GWT.create(TableResources.class));
