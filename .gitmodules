@@ -1,0 +1,6 @@
+[submodule "riscoss-data-collector"]
+	path = riscoss-data-collector
+	url = https://github.com/RISCOSS/riscoss-data-collector.git
+[submodule "riscoss-analyser"]
+	path = riscoss-analyser
+	url = https://github.com/RISCOSS/riscoss-analyser.git

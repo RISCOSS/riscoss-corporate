@@ -11,10 +11,10 @@
 	<name>RISCOSS Web App - Parent POM</name>
 
 	<modules>
-		<module>../riscoss-analyser/riscoss-platform-risk-analyser</module>
+		<module>riscoss-analyser/riscoss-platform-risk-analyser</module>
 		<module>riscoss-db</module>
 		<module>riscoss-db-orient</module>
-		<module>../riscoss-data-collector</module>
+		<module>riscoss-data-collector</module>
 		<module>riscoss-ram</module>
 		<module>riscoss-webapp</module>
 	</modules>
