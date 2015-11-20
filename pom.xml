@@ -11,7 +11,7 @@
 	<name>RISCOSS Web App - Parent POM</name>
 
 	<modules>
-		<module>riscoss-analyser/riscoss-platform-risk-analyser</module>
+		<module>riscoss-analyser</module>
 		<module>riscoss-db</module>
 		<module>riscoss-db-orient</module>
 		<module>riscoss-data-collector</module>
