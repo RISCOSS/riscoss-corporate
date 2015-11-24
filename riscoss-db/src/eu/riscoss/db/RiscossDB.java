@@ -112,5 +112,6 @@ public interface RiscossDB {
 	public abstract String							getRole( String username );
 	public abstract void							addPermissions( String name, RiscossDBResource res, String perm );
 	public abstract Collection<String>				findEntities( String layer, String query, SearchParams params );
+	public abstract void							removeRole( String name );
 	
 }

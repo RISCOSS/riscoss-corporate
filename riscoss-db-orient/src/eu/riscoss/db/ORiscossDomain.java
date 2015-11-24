@@ -898,5 +898,15 @@ public class ORiscossDomain implements RiscossDB {
 	public String getName() {
 		return dom.getRootName();
 	}
+
+	@Override
+	public void removeRole(String name) {
+	
+		String oldSpecificRole = getRoleOfUser( name );
+		
+		if( oldSpecificRole != null )
+			execute( "update ouser remove roles = (select from orole where name='" + oldSpecificRole + "') where name = '" + name + "'" );
+		
+	}
 	
 }

@@ -48,7 +48,7 @@ public class RolePropertyPage implements IsWidget {
 			}
 		} ) );
 		
-		userList = new UserList();
+		userList = new UserList("");
 		
 		DockPanel dock = new DockPanel();
 		dock.add( toolbar,DockPanel.NORTH );
@@ -75,10 +75,10 @@ public class RolePropertyPage implements IsWidget {
 					JSONArray array = response.isArray();
 					CodecUserInfo codec = GWT.create( CodecUserInfo.class );
 					userList.clear();
-					for( int i = 0; i < array.size(); i++ ) {
+					/*for( int i = 0; i < array.size(); i++ ) {
 						JUserInfo info = codec.decode( array.get( i ) );
 						userList.append( info );
-					}
+					}*/
 				}
 				@Override
 				public void onFailure( Method method, Throwable exception ) {
