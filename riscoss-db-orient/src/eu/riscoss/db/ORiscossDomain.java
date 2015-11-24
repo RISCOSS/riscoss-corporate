@@ -900,7 +900,7 @@ public class ORiscossDomain implements RiscossDB {
 	}
 
 	@Override
-	public void removeRole(String name) {
+	public void removeUserFromDomain(String name) {
 	
 		String oldSpecificRole = getRoleOfUser( name );
 		

@@ -464,7 +464,7 @@ public class AdminManager {
 			
 			domaindb = DBConnector.openDB( domain, token );
 			
-			domaindb.removeRole(user);
+			domaindb.removeUserFromDomain(user);
 		}
 		catch (Exception e) {
 			throw e;
