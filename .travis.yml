@@ -1,1 +1,11 @@
 language: java
+git:
+  submodules: true
+install: true
+cache:
+  directories:
+    - '$HOME/.m2/repository'
+install:
+  - git submodule add https://github.com/RISCOSS/riscoss-data-collector.git
+  - git submodule add https://github.com/RISCOSS/riscoss-githubanalyzer.git
+  - git submodule update --init --recursive
