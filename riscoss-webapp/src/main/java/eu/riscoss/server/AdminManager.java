@@ -450,6 +450,30 @@ public class AdminManager {
 		}
 	}
 	
+	@POST @Path("/{domain}/users/{user}/delete")
+	@Info("Deletes the role from user in specific domain")
+	public void removeRole(
+			@HeaderParam("token") @Info("The authentication token") String token,
+			@PathParam("domain") @Info("The selected domain") String domain,
+			@PathParam("user") @Info("The user name") String user
+			) throws Exception {
+		
+		RiscossDB domaindb = null;
+		
+		try {
+			
+			domaindb = DBConnector.openDB( domain, token );
+			
+			domaindb.removeUserFromDomain(user);
+		}
+		catch (Exception e) {
+			throw e;
+		}
+		finally {
+			DBConnector.closeDB( domaindb );
+		}
+	}
+	
 	@POST @Path("/{domain}/users/{user}/role")
 	@Info("Sets the role of a user in a given domain")
 	public void setUserRole(
@@ -466,6 +490,30 @@ public class AdminManager {
 			domaindb = DBConnector.openDB( domain, token );
 			
 			domaindb.setUserRole( user, role );
+		}
+		catch (Exception e) {
+			throw e;
+		}
+		finally {
+			DBConnector.closeDB( domaindb );
+		}
+	}
+	
+	@GET @Path("/{domain}/users/{user}/role")
+	@Info("Gets the role of a user in a given domain")
+	public String getUserRole(
+			@HeaderParam("token") @Info("The authentication token") String token,
+			@PathParam("domain") @Info("The selected domain") String domain,
+			@PathParam("user") @Info("The user name") String user
+			) throws Exception {
+		
+		RiscossDB domaindb = null;
+		
+		try {
+			
+			domaindb = DBConnector.openDB( domain, token );
+		
+			return gson.toJson(domaindb.getRole(user));
 		}
 		catch (Exception e) {
 			throw e;

@@ -126,11 +126,11 @@
 			<artifactId>riscoss-fbk</artifactId>
 			<version>0.24-SNAPSHOT</version>
 		</dependency>
-		<dependency>
-			<groupId>eu.riscoss</groupId>
-			<artifactId>riscoss-kpa</artifactId>
-			<version>0.24-SNAPSHOT</version>
-		</dependency> 
+<!-- 		<dependency> -->
+<!-- 			<groupId>eu.riscoss</groupId> -->
+<!-- 			<artifactId>riscoss-kpa</artifactId> -->
+<!-- 			<version>0.24-SNAPSHOT</version> -->
+<!-- 		</dependency>  -->
 		<!-- Smile.jar -->
 		<dependency>
 			<groupId>eu.riscoss</groupId>

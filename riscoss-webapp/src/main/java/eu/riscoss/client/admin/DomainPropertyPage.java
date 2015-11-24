@@ -19,6 +19,7 @@ import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -46,18 +47,20 @@ public class DomainPropertyPage implements IsWidget {
 	
 	HorizontalPanel panel = new HorizontalPanel();
 	
-	String selectedDomain;
+	String selectedDomain = "";
 	String selectedRole;
+	
+	String domainRole = "";
 	
 	
 	TabPanel tabPanel = new TabPanel();
 	
 //	RoleList			roleList;
-	UserList			userList;
+	UserList			userList = new UserList(selectedDomain);
 	
 	ListBox				roleBox;
 	
-	class UserSelectionDialog {
+	/*class UserSelectionDialog {
 		DialogBox dialog = new DialogBox( false, true );
 		
 		VerticalPanel list = new VerticalPanel();
@@ -108,29 +111,65 @@ public class DomainPropertyPage implements IsWidget {
 			});
 			
 		}
-	}
+	}*/
+	
+	ListBox newUserName = new ListBox();
+	ListBox newUserRole = new ListBox();
+	DockPanel dock = new DockPanel();
+	
+	HorizontalPanel main = new HorizontalPanel();
+	VerticalPanel leftPanel = new VerticalPanel();
+	VerticalPanel rightPanel = new VerticalPanel();
 	
 	public DomainPropertyPage() {
 		
+		generateButton();
+		
 //		exportJS();
+		tabPanel.add( main, "Users" );
+		//tabPanel.add( grid, "Properties" );
+		tabPanel.setWidth("100%");
 		
-		userList = new UserList();
+		tabPanel.selectTab( 0 );
 		
-		userList.asWidget().setHeight( "100%" );
+		panel.add( tabPanel );
+		panel.setWidth("100%");
 		
-		HorizontalPanel toolbar = new HorizontalPanel();
-		toolbar.add( new Button( "Add User", new ClickHandler() {
+		panel.setVisible( false );
+		
+		HorizontalPanel newUserData = new HorizontalPanel();
+		newUserData.setStyleName("layerData");
+		Label name = new Label("Name");
+		name.setStyleName("bold");
+		newUserData.add(name);
+		newUserName.setWidth("120px");
+		newUserName.setStyleName("layerNameField");
+		newUserData.add(newUserName);
+		
+		Label role = new Label("Role");
+		role.setStyleName("bold");
+		newUserData.add(role);
+		newUserRole.setWidth("120px");
+		newUserRole.setStyleName("layerNameField");
+		newUserData.add(newUserRole);
+		
+		Button newUser = new Button("Add User");
+		newUser.setStyleName("deleteButton");
+		newUser.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick( ClickEvent event ) {
 				onNewUserClicked();
 			}
-		} ) );
+		});
 		
-		DockPanel dock = new DockPanel();
-		dock.add( toolbar, DockPanel.NORTH );
-		dock.add( userList, DockPanel.CENTER );
+		VerticalPanel north = new VerticalPanel();
+		north.add(newUserData);
+		north.add(newUser);
 		
-		KeyValueGrid grid = new KeyValueGrid();
+		leftPanel.add(north);
+		//dock.add( userList, DockPanel.CENTER );
+		
+		/*KeyValueGrid grid = new KeyValueGrid();
 		
 		roleBox = new ListBox( false );
 		roleBox.addItem( "[none]" );
@@ -149,16 +188,74 @@ public class DomainPropertyPage implements IsWidget {
 				});
 			}
 		});
-		grid.add( "Default user role", roleBox );
+		grid.add( "Default user role", roleBox );*/
 		
-		tabPanel.add( dock, "Users" );
-		tabPanel.add( grid, "Properties" );
+		main.setStyleName("mainLayerPanel");
+		main.setWidth("100%");
+		leftPanel.setStyleName("leftLayerPanel");
+		leftPanel.setWidth("300px");
+		rightPanel.setWidth("100%");
+		rightPanel.setHeight("100%");
+		rightPanel.setStyleName("rightLayerPanel");
 		
-		tabPanel.selectTab( 0 );
+		main.add(leftPanel);
+		main.add(rightPanel);
 		
-		panel.add( tabPanel );
 		
-		panel.setVisible( false );
+		loadData();
+		
+	}
+	
+	Button delete;
+	
+	private void generateButton() {
+		delete = new Button("Delete");
+		delete.setStyleName("button");
+		delete.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent arg0) {
+				RiscossJsonClient.removeDomainUserRole(selectedDomain, selectedUser, new JsonCallback() {
+
+					@Override
+					public void onFailure(Method method, Throwable exception) {
+						Window.alert(exception.getMessage());
+					}
+					@Override
+					public void onSuccess(Method method, JSONValue response) {
+						loadData();
+						leftPanel.remove(userList);
+						userList = new UserList(selectedDomain);
+						setDPP();
+						leftPanel.add(userList);
+						rightPanel.clear();
+					}
+				});
+			}
+		});
+	}
+
+	public void loadData() {
+		newUserName.clear();
+		newUserRole.clear();
+		RiscossJsonClient.listUsers(new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage() );
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				JSONArray array = response.isArray();
+				CodecUserInfo codec = GWT.create( CodecUserInfo.class );
+				for( int i = 0; i < array.size(); i++ ) {
+					JUserInfo info = codec.decode( array.get( i ) );
+					newUserName.addItem(info.getUsername());
+				}
+			}
+		});
+		for (KnownRoles r : KnownRoles.values()) {
+			newUserRole.addItem(r.toString());
+		}
+	
 	}
 	
 	@Override
@@ -180,18 +277,13 @@ public class DomainPropertyPage implements IsWidget {
 				CodecDomainInfo codec = GWT.create( CodecDomainInfo.class );
 				JDomainInfo info = codec.decode( response );
 				Log.println( "" + response );
-				if( "".equals( info.predefinedRole ) ) {
-					roleBox.setSelectedIndex( 0 );
-				}
-				else {
-					for( int i = 0; i < roleBox.getItemCount(); i++ ) {
-						if( roleBox.getItemText( i ).equals( info.predefinedRole ) ) {
-							roleBox.setSelectedIndex( i );
-						}
-					}
-				}
 				
-				RiscossJsonClient.getDomainUsers(info.name, new JsonCallback() {
+				domainRole = info.predefinedRole;
+				leftPanel.remove(userList);
+				userList = new UserList(selectedDomain);
+				leftPanel.add(userList);
+				setDPP();
+				/*RiscossJsonClient.getDomainUsers(info.name, new JsonCallback() {
 					@Override
 					public void onSuccess( Method method, JSONValue response ) {
 						if( response == null ) return;
@@ -209,7 +301,7 @@ public class DomainPropertyPage implements IsWidget {
 					public void onFailure( Method method, Throwable exception ) {
 						Window.alert( exception.getMessage() );
 					}
-				});
+				});*/
 				
 			}
 		} );
@@ -218,19 +310,26 @@ public class DomainPropertyPage implements IsWidget {
 		
 	}
 	
-	protected void onNewUserClicked() {
-		new UserSelectionDialog().selectUsers();
+	protected void setDPP() {
+		userList.setDPP(this);
 	}
 	
-	void importUser( String user ) {
+	protected void onNewUserClicked() {
+		importUser(newUserName.getItemText(newUserName.getSelectedIndex()),
+				newUserRole.getItemText(newUserRole.getSelectedIndex()));
+	}
+	
+	void importUser( String user , String role) {
 		
 		if( user == null ) return;
-		RiscossJsonClient.setDomainUserRole(selectedDomain, user, KnownRoles.Guest.name(), new JsonCallback() {
+		RiscossJsonClient.setDomainUserRole(selectedDomain, user, role, new JsonCallback() {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
-				CodecUserInfo codec = GWT.create( JUserInfo.class );
-				JUserInfo info = codec.decode( response );
-				userList.append( info );
+				loadData();
+				leftPanel.remove(userList);
+				userList = new UserList(selectedDomain);
+				setDPP();
+				leftPanel.add(userList);
 			}
 			@Override
 			public void onFailure( Method method, Throwable exception ) {
@@ -240,6 +339,34 @@ public class DomainPropertyPage implements IsWidget {
 		
 		// TODO: assign user to role(s?)
 //		RiscossCall.fromCookies().withService( "admin" ).;
+	}
+	
+	public String getRole() {
+		return domainRole;
+	}
+	
+	public void save() {
+		userList.save();
+	}
+	
+	VerticalPanel userData = new VerticalPanel();
+	
+	String selectedUser;
+	
+	public void setSelectedUser(String user) {
+		rightPanel.remove(userData);
+		userData = new VerticalPanel();
+		//userData.setWidth("100%");
+		
+		selectedUser = user;
+		Label l = new Label(user);
+		l.setStyleName("smallTitle");
+		l.setWidth("100%");
+		userData.add(l);
+		
+		userData.add(delete);
+		
+		rightPanel.add(userData);
 	}
 	
 }

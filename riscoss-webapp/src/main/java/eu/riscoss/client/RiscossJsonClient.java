@@ -550,8 +550,20 @@ public class RiscossJsonClient {
 		RiscossCall.fromCookies().withDomain(domainname).admin().fx("users").list().get( cb );
 	}
 	
+	public static void getUserInfo( String domainname, String user, JsonCallback cb ) {
+		RiscossCall.fromCookies().withDomain(domainname).admin().fx("users").fx(user).fx("info").get( cb );
+	}
+	
 	public static void setDomainUserRole( String domainname, String user, String role, JsonCallback cb ) {
 		RiscossCall.fromCookies().withDomain(domainname).admin().fx("users").fx(user).fx("set").arg("role", role).post( cb );
+	}
+	
+	public static void getDomainUserRole( String domainname, String user, JsonCallback cb ) {
+		RiscossCall.fromCookies().withDomain(domainname).admin().fx("users").fx(user).fx("role").get( cb );
+	}
+	
+	public static void removeDomainUserRole( String domainname, String user, JsonCallback cb ) {
+		RiscossCall.fromCookies().withDomain(domainname).admin().fx("users").fx(user).fx("delete").post( cb );
 	}
 	
 	public static void listUsers( JsonCallback cb ) {
