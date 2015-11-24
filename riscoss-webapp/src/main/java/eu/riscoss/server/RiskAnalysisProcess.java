@@ -367,66 +367,6 @@ public class RiskAnalysisProcess {
 		return md;
 	}
 	
-//	private JMissingData fillMissingDataStructure( String entity ) {
-//		
-//		JMissingData md = new JMissingData( entity, ras.getLayer( entity ) );
-//		
-//		for( String child : ras.getChildren( entity ) ) {
-//			JMissingData childMD = fillMissingDataStructure( child );
-//			if( childMD != null ) {
-//				md.add( childMD );
-//			}
-//		}
-//		
-//		String layer = ras.getLayer( entity );
-//		RiskAnalysisEngine rae = ReasoningLibrary.get().createRiskAnalysisEngine();
-//		for( String model : ras.getModels( layer ) ) {
-//			String blob = ras.getStoredModelBlob( model );
-//			if( blob != null ) {
-//				rae.loadModel( blob );
-//			}
-//		}
-//		
-//		for( Chunk c : rae.queryModel( ModelSlice.INPUT_DATA ) ) {
-//			
-//			if( rae.getDefaultValue( c ) != null )
-//				continue;
-//			
-//			Field f = rae.getField( c, FieldType.INPUT_VALUE );
-//			
-//			String raw = ras.getInput( entity, c.getId() );
-//			if( raw == null ) {
-//				JDataItem item = new JDataItem();
-//				item.setDescription( (String)rae.getField( c, FieldType.DESCRIPTION ).getValue() );
-//				item.setLabel( (String)rae.getField( c, FieldType.LABEL ).getValue() );
-//				item.setId( c.getId() );
-//				item.setOrigin( EDataOrigin.RDR );
-//				item.setValue( "" );
-//				item.setType( EChunkDataType.valueOf( f.getDataType().name() ) );
-//				md.add( item );
-//			}
-//			else {
-//				JsonObject json = (JsonObject)new JsonParser().parse( raw );
-//				if( json.get( "origin" ) == null ) continue;
-//				String origin = json.get( "origin" ).getAsString();
-//				if( "user".equals( origin ) ) {
-//					JDataItem item = new JDataItem();
-//					item.setDescription( (String)rae.getField( c, FieldType.DESCRIPTION ).getValue() );
-//					item.setLabel( (String)rae.getField( c, FieldType.LABEL ).getValue() );
-//					item.setId( c.getId() );
-//					item.setOrigin( EDataOrigin.User );
-//					item.setValue( json.get("value").getAsString() );
-//					item.setType( EChunkDataType.valueOf( f.getDataType().name() ) );
-//					md.add( item );
-//				}
-//			}
-//			
-//		}
-//		
-//		return md;
-//		
-//	}
-	
 	private JMissingData fillMissingDataStructureNew( String entity ) {
 		return fillMissingDataStructureNew( entity, false, true, new String[] { "user" } );
 	}
@@ -492,19 +432,20 @@ public class RiskAnalysisProcess {
 			}
 			else {
 				JsonObject json = (JsonObject)new JsonParser().parse( raw );
-				if( json.get( "origin" ) == null ) continue;
-				String origin = json.get( "origin" ).getAsString();
-				if( includeRDR | origins.contains( origin ) ) {
-//				if( "user".equals( origin ) ) {
-					JDataItem item = new JDataItem();
-					item.setDescription( (String)rae.getField( c, FieldType.DESCRIPTION ).getValue() );
-					item.setLabel( (String)rae.getField( c, FieldType.LABEL ).getValue() );
-					item.setId( c.getId() );
-					item.setOrigin( EDataOrigin.User );
-					item.setValue( json.get("value").getAsString() );
-					item.setType( EChunkDataType.valueOf( f.getDataType().name() ) );
-					md.add( item );
+				if( json.get( "origin" ) != null ) {
+					String origin = json.get( "origin" ).getAsString();
+					if( !(includeRDR | origins.contains( origin ) ) ) {
+						continue;
+					}
 				}
+				JDataItem item = new JDataItem();
+				item.setDescription( (String)rae.getField( c, FieldType.DESCRIPTION ).getValue() );
+				item.setLabel( (String)rae.getField( c, FieldType.LABEL ).getValue() );
+				item.setId( c.getId() );
+				item.setOrigin( EDataOrigin.User );
+				item.setValue( json.get("value").getAsString() );
+				item.setType( EChunkDataType.valueOf( f.getDataType().name() ) );
+				md.add( item );
 			}
 			
 		}

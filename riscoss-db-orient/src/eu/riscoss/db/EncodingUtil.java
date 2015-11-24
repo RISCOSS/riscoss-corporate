@@ -29,7 +29,7 @@ public class EncodingUtil {
 		System.out.println("Decrypted password: " + decryptedPassword);
 	}
 	
-	private static String encrypt(String property) throws GeneralSecurityException, UnsupportedEncodingException {
+	public static String encrypt(String property) throws GeneralSecurityException, UnsupportedEncodingException {
 		SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
 		SecretKey key = keyFactory.generateSecret(new PBEKeySpec(PASSWORD));
 		Cipher pbeCipher = Cipher.getInstance("PBEWithMD5AndDES");
@@ -42,7 +42,7 @@ public class EncodingUtil {
 		return new Base64().encodeAsString( bytes );
 	}
 	
-	private static String decrypt(String property) throws GeneralSecurityException, IOException {
+	public static String decrypt(String property) throws GeneralSecurityException, IOException {
 		SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
 		SecretKey key = keyFactory.generateSecret(new PBEKeySpec(PASSWORD));
 		Cipher pbeCipher = Cipher.getInstance("PBEWithMD5AndDES");

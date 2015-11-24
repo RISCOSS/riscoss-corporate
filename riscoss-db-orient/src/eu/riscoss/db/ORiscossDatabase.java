@@ -26,7 +26,8 @@ import eu.riscoss.db.domdb.GDomContainer;
 public class ORiscossDatabase implements RiscossDatabase {
 	
 	private static final OServerParameterConfiguration[] I_PARAMS = new OServerParameterConfiguration[] { 
-		new OServerParameterConfiguration( OrientTokenHandler.SIGN_KEY_PAR, "any key")
+		new OServerParameterConfiguration( OrientTokenHandler.SIGN_KEY_PAR, "any key"),
+		new OServerParameterConfiguration( OrientTokenHandler.SESSION_LENGHT_PAR, "525600000" ) // ( 1000* 60 * 24 * 365 ) ) = 1 year
 	};
 	
 	static {

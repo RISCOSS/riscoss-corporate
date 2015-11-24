@@ -102,11 +102,14 @@ public class AnalysisManager {
 	}
 	
 	@GET @Path( "/{domain}/session/list")
+	@Info("Provides a list of all existing risk sessions")
 	public String listRAS(
-			@PathParam("domain") String domain,
-			@HeaderParam("token") String token, 
-			@QueryParam("entity") String entity, 
-			@QueryParam("rc") String rc 
+			@PathParam("domain") @Info("The work domain")				String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token, 
+			@QueryParam("entity") @Info("An entity name. If this field is specified, only the sessions targeting the entity are returned")
+																			String entity, 
+			@QueryParam("rc") @Info("A risk configuration name. If this field is specified, only the sessions that use this risk configuration are returned")
+																			String rc 
 			) throws Exception {
 		
 		RiscossDB db = null;
@@ -133,12 +136,15 @@ public class AnalysisManager {
 	}
 	
 	@POST @Path("/{domain}/session/create")
+	@Info("Creates a new risk analysis session")
 	public String createSession(
-			@PathParam("domain")			String domain,
-			@HeaderParam("token")			String token, 
-			@QueryParam("rc")				String rc,
-			@QueryParam("target")			String target, 
-			@QueryParam("name")				String name
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token, 
+			@QueryParam("rc") @Info("The risk configuration to be used")	String rc,
+			@QueryParam("target") @Info("The target entity; if working with entity hierarchy, it is typically the root of the hierarchy")
+																			String target, 
+			@QueryParam("name") @Info("The name of the risk analysis session")
+																			String name
 			) throws Exception {
 		
 		RiscossDB db = null;
@@ -206,10 +212,13 @@ public class AnalysisManager {
 	 * reads the required data from the rdr, and stores the data in the risk analysis session
 	 */
 	@GET @Path("/{domain}/session/{sid}/update-data")
+	@Info(
+			"This method goes through the hierarchy of entities in a given risk analysis session," +
+			"reads the required data from the rdr, and stores the data in the risk analysis session")
 	public void updateSessionData( 
-			@PathParam("domain") String domain,
-			@HeaderParam("token") String token, 
-			@PathParam("sid") String sid 
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token, 
+			@PathParam("sid") @Info("The risk session ID")					String sid 
 			) throws Exception {
 		
 		RiscossDB db = null;
@@ -259,10 +268,13 @@ public class AnalysisManager {
 	}
 	
 	@GET @Path("/{domain}/session/{sid}/missing-data")
+	@Info(
+			"Given a risk session, this method returns the list of ID of the indicators, " + 
+			"which still do not have a value")
 	public String getSessionMissingData(
-			@PathParam("domain")						String domain,
-			@HeaderParam("token")						String token, 
-			@PathParam("sid")							String sid
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token, 
+			@PathParam("sid") @Info("The risk session ID")					String sid
 			) throws Exception {
 		
 		RiscossDB db = null;
@@ -289,10 +301,11 @@ public class AnalysisManager {
 	}
 	
 	@POST @Path("/{domain}/session/{sid}/missing-data")
+	@Info("Set the value of the indicators that still do not have a value")
 	public void setSessionMissingData(
-			@PathParam("domain") String domain,
-			@HeaderParam("token") String token, 
-			@PathParam("sid") @Info("The risk session ID") String sid, 
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token, 
+			@PathParam("sid") @Info("The risk session ID")					String sid, 
 			String values
 	) throws Exception {
 		JsonObject json = (JsonObject) new JsonParser().parse(values);
@@ -317,6 +330,8 @@ public class AnalysisManager {
 	}
 
 	@GET @Path("/{domain}/session/{sid}/summary")
+	@Info(	"Returns some basic information about a risk session: " + 
+			"ID, target entity, risk configuration, name, timestamp" )	
 	public String getSessionSummary(
 			@PathParam("domain") String domain,
 			@HeaderParam("token") String token, 
@@ -349,10 +364,11 @@ public class AnalysisManager {
 	
 	@GET @Path("/{domain}/session/{sid}/results")
 	@Produces("application/json")
+	@Info( "Returns the results of a previously executed risk analysis" )
 	public String getRAD( 
-			@PathParam("domain") String domain,
-			@HeaderParam("token") String token, 
-			@PathParam("sid") String sid 
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token, 
+			@PathParam("sid") @Info("The risk session ID")					String sid 
 			) throws Exception {
 		RiscossDB db = null;
 		try {
@@ -369,10 +385,11 @@ public class AnalysisManager {
 	}
 	
 	@DELETE @Path("/{domain}/session/{sid}/delete")
+	@Info( "Removes a risk analysis session from the DB" )
 	public void deleteRiskAnalysis( 
-			@PathParam("domain")			String domain,
-			@HeaderParam("token")			String token, 
-			@PathParam("sid")				String sid 
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token, 
+			@PathParam("sid") @Info("The risk session ID")					String sid 
 			) throws Exception {
 		RiscossDB db = null;
 		try {
@@ -388,11 +405,16 @@ public class AnalysisManager {
 	}
 	
 	@POST @Path("/{domain}/session/{sid}/newrun")
+	@Info(	"Executes a risk analysis. This method only applies to a risk analysis session. " + 
+			"It loads the models stored in the analysis session, " + 
+			"takes the indicator values stored in the analysis session " + 
+			"and applies them to the stored entity trees" )
 	public String runRiskAnalysis(
-			@PathParam("domain")							String domain,
-			@HeaderParam("token")							String token,
-			@PathParam("sid")								String sid,
-			@DefaultValue("RunThrough") @QueryParam("opt")	String strOpt /* See AnalysisOption.RunThrough */
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token,
+			@PathParam("sid") @Info("The risk analysis sesison ID")			String sid,
+			@DefaultValue("RunThrough") @QueryParam("opt") @Info("A flag that tells what to do in case some data are missing. Can be left unset.")
+																			String strOpt /* See AnalysisOption.RunThrough */
 			) throws Exception {
 		
 		RiscossDB db = null;
@@ -508,7 +530,8 @@ public class AnalysisManager {
 		// TODO: read the whole set of input values
 //		json.add( "inputs", ras.getInputs() );
 		
-		JMissingData inputs = new RiskAnalysisProcess( ras ).fillMissingDataStructureNew( ras.getTarget(), false, true, (String[])null );
+		JMissingData inputs = new RiskAnalysisProcess( ras ).fillMissingDataStructureNew( 
+				ras.getTarget(), false, true, new String[] { "user" } );
 		
 		json.add( "input", gson.toJsonTree( inputs ) );
 		
