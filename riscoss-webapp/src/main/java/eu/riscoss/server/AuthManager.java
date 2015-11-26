@@ -28,7 +28,7 @@ public class AuthManager {
 	
 	private static final OServerParameterConfiguration[] I_PARAMS = new OServerParameterConfiguration[] { 
 		new OServerParameterConfiguration( OrientTokenHandler.SIGN_KEY_PAR, "any key"),
-//		new OServerParameterConfiguration( OrientTokenHandler.SESSION_LENGHT_PAR, "525600000" ) // = ( 60 * 24 * 365 ) ) = 1 year
+		new OServerParameterConfiguration( OrientTokenHandler.SESSION_LENGHT_PAR, "525600000" ) // ( 1000* 60 * 24 * 365 ) ) = 1 year
 	};
 	
 	/**
@@ -54,7 +54,7 @@ public class AuthManager {
 			
 //			System.out.println( "Login succeeded. Token:" );
 //			System.out.println( token );
-//			System.out.println( token.length() );
+//			System.out.println( EncodingUtil.encrypt( username + "\n" + password ) );
 			
 			return new JsonPrimitive( token ).toString();
 		}

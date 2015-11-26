@@ -454,9 +454,83 @@ public class AnalysisManager {
 		}
 	}
 	
+	private JsonObject getAnalysisResults( RiskAnalysisSession ras, String entityName ) {
+		
+		JsonObject jo = new JsonObject();
+		
+		JsonArray ret = new JsonArray();
+		
+		String layerName = ras.getLayer( entityName );
+		
+		for( String indicatorId : ras.getResults( layerName, entityName ) ) {
+			
+			JsonObject o = new JsonObject();
+			o.addProperty( "id", indicatorId );
+			DataType dt = DataType.valueOf( ras.getResult( layerName, entityName, indicatorId, "datatype", DataType.REAL.name() ) );
+			o.addProperty( "datatype", dt.name().toLowerCase() );
+			o.addProperty( "type", ras.getResult( layerName, entityName, indicatorId, "type", "" ) );
+			o.addProperty( "rank", ras.getResult( layerName, entityName, indicatorId, "rank", "0" ) );
+			switch( dt ) {
+			case EVIDENCE: {
+				JsonObject je = new JsonObject();
+				je.addProperty( "e", 
+						Double.parseDouble( ras.getResult( layerName, entityName, indicatorId, "e", "0" ) ) );
+				o.add( "e", je );
+				o.addProperty( "p", ras.getResult( layerName, entityName, indicatorId, "p", "0" ) );
+				o.addProperty( "m", ras.getResult( layerName, entityName, indicatorId, "m", "0" ) );
+				o.addProperty( "description", ras.getResult( layerName, entityName, indicatorId, "description", "" ) );
+				o.addProperty( "label", ras.getResult( layerName, entityName, indicatorId, "label", indicatorId ) );
+			}
+			break;
+			case DISTRIBUTION: {
+				String value = ras.getResult( layerName, entityName, indicatorId, "value", "" );
+				Distribution d = Distribution.unpack( value );
+				JsonArray values = new JsonArray();
+				for( int i = 0; i <  d.getValues().size(); i++ ) {
+					values.add( new JsonPrimitive( "" + d.getValues().get( i ) ) );
+				}
+				o.add( "value", values );
+			}
+			break;
+			case INTEGER:
+				o.addProperty( "value", ras.getResult( layerName, entityName, indicatorId, "value", "0" ) );
+				break;
+			case NaN:
+				break;
+			case REAL:
+				o.addProperty( "value", ras.getResult( layerName, entityName, indicatorId, "value", "0" ) );
+				break;
+			case STRING:
+				o.addProperty( "value", ras.getResult( layerName, entityName, indicatorId, "value", "" ) );
+				break;
+			default:
+				break;
+			}
+			ret.add( o );
+		}
+		
+		jo.addProperty( "entity", entityName );
+		jo.add( "results", ret );
+		
+		JsonArray children = new JsonArray();
+		
+		for( String child : ras.getChildren( entityName ) ) {
+			children.add( getAnalysisResults( ras, child ) );
+		}
+		
+		jo.add( "children", children );
+		
+		return jo;
+		
+	}
+	
 	private JsonObject getAnalysisResults( RiskAnalysisSession ras ) {
 		
 		JsonObject json = new JsonObject();
+		
+		JsonObject res = getAnalysisResults( ras, ras.getTarget() );
+		
+		json.add( "hresults", res );
 		
 		{
 			JsonArray ret = new JsonArray();
