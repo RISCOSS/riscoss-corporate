@@ -25,9 +25,11 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -524,13 +526,63 @@ public class AnalysisManager {
 		
 	}
 	
+	private JsonObject loadResult( RiskAnalysisSession ras, String indicatorId, String entityName, String layerName ) {
+		
+		JsonObject o = new JsonObject();
+		o.addProperty( "id", indicatorId );
+		DataType dt = DataType.valueOf( ras.getResult( layerName, entityName, indicatorId, "datatype", DataType.REAL.name() ) );
+		o.addProperty( "datatype", dt.name().toLowerCase() );
+		o.addProperty( "type", ras.getResult( layerName, entityName, indicatorId, "type", "" ) );
+		o.addProperty( "rank", ras.getResult( layerName, entityName, indicatorId, "rank", "0" ) );
+		switch( dt ) {
+		case EVIDENCE: {
+			JsonObject je = new JsonObject();
+			je.addProperty( "e", 
+					Double.parseDouble( ras.getResult( layerName, entityName, indicatorId, "e", "0" ) ) );
+			o.add( "e", je );
+			o.addProperty( "p", ras.getResult( layerName, entityName, indicatorId, "p", "0" ) );
+			o.addProperty( "m", ras.getResult( layerName, entityName, indicatorId, "m", "0" ) );
+			o.addProperty( "description", ras.getResult( layerName, entityName, indicatorId, "description", "" ) );
+			o.addProperty( "label", ras.getResult( layerName, entityName, indicatorId, "label", indicatorId ) );
+		}
+		break;
+		case DISTRIBUTION: {
+			String value = ras.getResult( layerName, entityName, indicatorId, "value", "" );
+			Distribution d = Distribution.unpack( value );
+			JsonArray values = new JsonArray();
+			for( int i = 0; i <  d.getValues().size(); i++ ) {
+				values.add( new JsonPrimitive( "" + d.getValues().get( i ) ) );
+			}
+			o.add( "value", values );
+		}
+		break;
+		case INTEGER:
+			o.addProperty( "value", ras.getResult( layerName, entityName, indicatorId, "value", "0" ) );
+			break;
+		case NaN:
+			break;
+		case REAL:
+			o.addProperty( "value", ras.getResult( layerName, entityName, indicatorId, "value", "0" ) );
+			break;
+		case STRING:
+			o.addProperty( "value", ras.getResult( layerName, entityName, indicatorId, "value", "" ) );
+			break;
+		default:
+			break;
+		}
+		return o;
+	}
+	
 	private JsonObject getAnalysisResults( RiskAnalysisSession ras ) {
 		
 		JsonObject json = new JsonObject();
 		
-		JsonObject res = getAnalysisResults( ras, ras.getTarget() );
+//		JsonObject res = getAnalysisResults( ras, ras.getTarget() );
+//		
+//		json.add( "hresults", res );
 		
-		json.add( "hresults", res );
+		JsonArray clusters = new JsonArray();
+		Set<String> done = new HashSet<String>();
 		
 		{
 			JsonArray ret = new JsonArray();
@@ -541,57 +593,30 @@ public class AnalysisManager {
 				
 				for( String entityName : ras.getEntities( layerName ) ) {
 					
+					if( done.contains( entityName ) ) continue;
+					
+					done.add( entityName );
+					
+					JsonObject jcluster = new JsonObject();
+					
+					jcluster.addProperty( "entity", entityName );
+					
 					for( String indicatorId : ras.getResults( layerName, entityName ) ) {
 						
-						JsonObject o = new JsonObject();
-						o.addProperty( "id", indicatorId );
-						DataType dt = DataType.valueOf( ras.getResult( layerName, entityName, indicatorId, "datatype", DataType.REAL.name() ) );
-						o.addProperty( "datatype", dt.name().toLowerCase() );
-						o.addProperty( "type", ras.getResult( layerName, entityName, indicatorId, "type", "" ) );
-						o.addProperty( "rank", ras.getResult( layerName, entityName, indicatorId, "rank", "0" ) );
-						switch( dt ) {
-						case EVIDENCE: {
-							JsonObject je = new JsonObject();
-							je.addProperty( "e", 
-									Double.parseDouble( ras.getResult( layerName, entityName, indicatorId, "e", "0" ) ) );
-							o.add( "e", je );
-							o.addProperty( "p", ras.getResult( layerName, entityName, indicatorId, "p", "0" ) );
-							o.addProperty( "m", ras.getResult( layerName, entityName, indicatorId, "m", "0" ) );
-							o.addProperty( "description", ras.getResult( layerName, entityName, indicatorId, "description", "" ) );
-							o.addProperty( "label", ras.getResult( layerName, entityName, indicatorId, "label", indicatorId ) );
-						}
-						break;
-						case DISTRIBUTION: {
-							String value = ras.getResult( layerName, entityName, indicatorId, "value", "" );
-							Distribution d = Distribution.unpack( value );
-							JsonArray values = new JsonArray();
-							for( int i = 0; i <  d.getValues().size(); i++ ) {
-								values.add( new JsonPrimitive( "" + d.getValues().get( i ) ) );
-							}
-							o.add( "value", values );
-						}
-						break;
-						case INTEGER:
-							o.addProperty( "value", ras.getResult( layerName, entityName, indicatorId, "value", "0" ) );
-							break;
-						case NaN:
-							break;
-						case REAL:
-							o.addProperty( "value", ras.getResult( layerName, entityName, indicatorId, "value", "0" ) );
-							break;
-						case STRING:
-							o.addProperty( "value", ras.getResult( layerName, entityName, indicatorId, "value", "" ) );
-							break;
-						default:
-							break;
-						}
+						JsonObject o = loadResult( ras, indicatorId, entityName, layerName );
+						
+						jcluster.add( "results", loadResult( ras, indicatorId, entityName, layerName ) );
+						
 						ret.add( o );
 					}
+					
+					clusters.add( jcluster );
 					
 				}
 			}
 			
 			json.add( "results", ret );
+			json.add( "cr", clusters );
 		}
 		
 		
@@ -600,9 +625,6 @@ public class AnalysisManager {
 		JsonObject info = new JsonObject();
 		info.addProperty( "entity", ras.getTarget() );
 		json.add( "info", info );
-		
-		// TODO: read the whole set of input values
-//		json.add( "inputs", ras.getInputs() );
 		
 		JMissingData inputs = new RiskAnalysisProcess( ras ).fillMissingDataStructureNew( 
 				ras.getTarget(), false, true, new String[] { "user" } );
