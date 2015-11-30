@@ -190,28 +190,27 @@ public class LayerPropertyPage implements IsWidget {
 			public void onClick(ClickEvent arg0) {
 				
 				if (id.getText().equals("") || name.getText().equals("")) {
-					simplePopup.setWidget(new Label("ID/name are mandatory"));
-					simplePopup.show();
+					Window.alert("ID and name are mandatory");
 					return;
+				}
+				
+				for (int i = 0; i < cInfo.size(); ++i) {
+					if (cInfo.get(i).equals(id.getText())) {
+						Window.alert("There is already an existing contextual information with this id for this layer");
+						return;
+					}
 				}
 				
 				int type = lBox.getSelectedIndex();
 				if (type == 0) {
-					if (min.getText().equals("") || max.getText().equals(""))  {
-						simplePopup.setWidget(new Label("Minimum/maximum values must be defined"));
-						simplePopup.show();
-						return;
-					}
-					if (Integer.parseInt(min.getText()) > Integer.parseInt(max.getText())) {
-						simplePopup.setWidget(new Label("Min cannot be greater than max"));
-						simplePopup.show();
+					if ((!min.getText().equals("") && !max.getText().equals("")) && Integer.parseInt(min.getText()) > Integer.parseInt(max.getText())) {
+						Window.alert("Minimum value cannot be greater than maximum value");
 						return;
 					}
 					defvaluestring = ((TextBox) defvalue.getWidget()).getText();
-					if (Integer.parseInt(defvaluestring) > Integer.parseInt(max.getText()) ||
-							Integer.parseInt(defvaluestring) < Integer.parseInt(min.getText())) {
-						simplePopup.setWidget(new Label("Value must be in limits"));
-						simplePopup.show();
+					if (!defvaluestring.equals("") && ((!max.getText().equals("") && Integer.parseInt(defvaluestring) > Integer.parseInt(max.getText())) ||
+							(!min.getText().equals("") && Integer.parseInt(defvaluestring) < Integer.parseInt(min.getText())))) {
+						Window.alert("Default value must be in limits");
 						return;
 					}
 					info.addContextualInfoInteger(id.getText(), name.getText(), description.getText(), defvaluestring, min.getText(), max.getText());
@@ -225,26 +224,31 @@ public class LayerPropertyPage implements IsWidget {
 				
 				else if (type == 2) {
 					Grid g = (Grid) ((Grid) defvalue.getWidget()).getWidget(1, 0);
-					if (((TextBox) (g.getWidget(0, 0))).getText().equals("") ||
+					/*if (((TextBox) (g.getWidget(0, 0))).getText().equals("") ||
 							((TextBox) (g.getWidget(0, 2))).getText().equals("") ||
 							((TextBox) (g.getWidget(0, 4))).getText().equals("")) {
 						simplePopup.setWidget(new Label("No field can be empty"));
 						simplePopup.show();
 						return;
+					}*/
+					if (!((TextBox) (g.getWidget(0, 0))).getText().equals("") &&
+							!((TextBox) (g.getWidget(0, 2))).getText().equals("") &&
+							!((TextBox) (g.getWidget(0, 4))).getText().equals("")) {
+						int hour = Integer.parseInt(((TextBox) (g.getWidget(0, 0))).getText());
+						int minute = Integer.parseInt(((TextBox) (g.getWidget(0, 2))).getText());
+						int second = Integer.parseInt(((TextBox) (g.getWidget(0, 4))).getText());
+						((TextBox) (g.getWidget(0, 0))).setText("");
+						((TextBox) (g.getWidget(0, 2))).setText("");
+						((TextBox) (g.getWidget(0, 4))).setText("");
+						Date date = dateBox.getValue();
+						date.setHours(hour);
+						date.setMinutes(minute);
+						date.setSeconds(second);
+						
+						DateTimeFormat fmt = DateTimeFormat.getFormat("yyyy-MM-dd:HH-mm-ss");
+					    defvaluestring = fmt.format(date);
 					}
-					int hour = Integer.parseInt(((TextBox) (g.getWidget(0, 0))).getText());
-					int minute = Integer.parseInt(((TextBox) (g.getWidget(0, 2))).getText());
-					int second = Integer.parseInt(((TextBox) (g.getWidget(0, 4))).getText());
-					((TextBox) (g.getWidget(0, 0))).setText("");
-					((TextBox) (g.getWidget(0, 2))).setText("");
-					((TextBox) (g.getWidget(0, 4))).setText("");
-					Date date = dateBox.getValue();
-					date.setHours(hour);
-					date.setMinutes(minute);
-					date.setSeconds(second);
-					
-					DateTimeFormat fmt = DateTimeFormat.getFormat("yyyy-MM-dd:HH-mm-ss");
-				    defvaluestring = fmt.format(date);
+					else defvaluestring = "";
 					
 					info.addContextualInfoCalendar(id.getText(), name.getText(), description.getText(), defvaluestring);
 				}
@@ -576,20 +580,17 @@ public class LayerPropertyPage implements IsWidget {
 	    selectionModel.addSelectionChangeHandler(new Handler() {
 			@Override
 			public void onSelectionChange(SelectionChangeEvent arg0) {
-				int k = 0;
-				for (int i = 0; i < cInfoName.size(); ++i) {
-					if (selectionModel.getSelectedObject().equals(cInfoName.get(i))) k = i;
-				}
-				contextualInfoPanel(cInfo.get(k));
+				contextualInfoPanel(selectionModel.getSelectedObject());
 			}
 	    });
 		
 		table.addColumn(t, "Contextual Information");
 		
-		if (cInfo.size() > 0) table.setRowData(0, cInfoName);
+		if (cInfo.size() > 0) table.setRowData(0, cInfo);
 		else {
 			cInfo.add("");
 			table.setRowData(0, cInfo);
+			cInfo.remove(0);
 		}
 		table.setStyleName("table");
 		table.setWidth("300px");
@@ -613,8 +614,10 @@ public class LayerPropertyPage implements IsWidget {
 	TextBox newMinute = new TextBox();
 	TextBox newSecond = new TextBox();
 	int element;
+	String selectedContextualInfo;
 	
 	private void contextualInfoPanel(String contextualInfo) {
+		selectedContextualInfo = contextualInfo;
 		jElement = null;
 		for (int i = 0; i < info.getSize(); ++i) {
 			if (info.getContextualInfoElement(i).getId().equals(contextualInfo)) {
@@ -626,7 +629,7 @@ public class LayerPropertyPage implements IsWidget {
 		main.remove(vPanel);
 		vPanel = new VerticalPanel();
 		
-		Label title = new Label(jElement.getName());
+		Label title = new Label(jElement.getId());
 		title.setStyleName("smallTitle");
 		vPanel.add(title);
 		
@@ -636,6 +639,16 @@ public class LayerPropertyPage implements IsWidget {
 		save.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
+				if (newId.getText().equals("") || newName.getText().equals("")) {
+					Window.alert("ID and name are mandatory");
+					return;
+				}
+				for (int i = 0; i < cInfo.size(); ++i) {
+					if (cInfo.get(i).equals(newId.getText()) && !newId.getText().equals(selectedContextualInfo)) {
+						Window.alert("There is already an existing contextual information with this id for this layer");
+						return;
+					}
+				}
 				jElement.setId(newId.getText());
 				jElement.setName(newName.getText());
 				jElement.setDescription(newDescription.getText());
@@ -793,26 +806,30 @@ public class LayerPropertyPage implements IsWidget {
 		    VerticalPanel dfval = new VerticalPanel();
 		    
 			dfval.add(newDate);
-			
 			String inf[] = jElement.getDefval().split(":");
-			String date[] = inf[0].split("-");
-			String time[] = inf[1].split("-");
 			
-			int year = Integer.parseInt(date[0]) - 1900;
-			int month = Integer.parseInt(date[1]) - 1;
-			if (month == 0) {month = 12;--year;}
-			int day = Integer.parseInt(date[2]);
-			Date d = new Date(year, month, day);
-			newDate.setValue(d);
+			if (inf.length > 1) {
+				String date[] = inf[0].split("-");
+				String time[] = inf[1].split("-");
+				int year = Integer.parseInt(date[0]) - 1900;
+				int month = Integer.parseInt(date[1]) - 1;
+				if (month == 0) {month = 12;--year;}
+				int day = Integer.parseInt(date[2]);
+				Date d = new Date(year, month, day);
+				newDate.setValue(d);
+				newHour.setText(String.valueOf(time[0]));
+				newMinute.setText(String.valueOf(time[1]));
+				newSecond.setText(String.valueOf(time[2]));
+			}
 			
 			HorizontalPanel timePanel = new HorizontalPanel();
-			newHour.setText(String.valueOf(time[0]));
+			
 			timePanel.add(newHour);
 			timePanel.add(new Label("hh"));
-			newMinute.setText(String.valueOf(time[1]));
+			
 			timePanel.add(newMinute);
 			timePanel.add(new Label("mm"));
-			newSecond.setText(String.valueOf(time[2]));
+			
 			timePanel.add(newSecond);
 			timePanel.add(new Label("ss"));
 			

@@ -701,19 +701,29 @@ public class EntityPropertyPage implements IsWidget {
 					g.setWidget(0, 0, dateBox);
 					
 					String inf[] = contextualInfo[0].split(":");
-					String date[] = inf[0].split("-");
-					String time[] = inf[1].split("-");
-					
-					int year = Integer.parseInt(date[0]) - 1900;
-					int month = Integer.parseInt(date[1]) - 1;
-					if (month == 0) {month = 12;--year;}
-					int day = Integer.parseInt(date[2]);
-					Date d = new Date(year, month, day);
-					dateBox.setValue(d);
 					
 					TextBox t = new TextBox();
+					TextBox t2 = new TextBox();
+					TextBox t3 = new TextBox();
+					
+					if (inf.length > 1) {
+						String date[] = inf[0].split("-");
+						String time[] = inf[1].split("-");
+						
+						int year = Integer.parseInt(date[0]) - 1900;
+						int month = Integer.parseInt(date[1]) - 1;
+						if (month == 0) {month = 12;--year;}
+						int day = Integer.parseInt(date[2]);
+						Date d = new Date(year, month, day);
+						dateBox.setValue(d);
+						
+						t.setText(String.valueOf(time[0]));
+						t2.setText(String.valueOf(time[1]));
+						t3.setText(String.valueOf(time[2]));
+					}
+					
 					t.setWidth("30px");
-					t.setText(String.valueOf(time[0]));
+					
 					t.addValueChangeHandler(new ValueChangeHandler<String>() {
 						@Override
 						public void onValueChange(ValueChangeEvent<String> event) {
@@ -722,9 +732,9 @@ public class EntityPropertyPage implements IsWidget {
 					});
 					g.setWidget(0, 1, t);
 					g.setWidget(0, 2, new Label("hh"));
-					TextBox t2 = new TextBox();
+					
 					t2.setWidth("30px");
-					t2.setText(String.valueOf(time[1]));
+					
 					t2.addValueChangeHandler(new ValueChangeHandler<String>() {
 						@Override
 						public void onValueChange(ValueChangeEvent<String> event) {
@@ -733,9 +743,9 @@ public class EntityPropertyPage implements IsWidget {
 					});
 					g.setWidget(0, 3, t2);
 					g.setWidget(0, 4, new Label("mm"));
-					TextBox t3 = new TextBox();
+					
 					t3.setWidth("30px");
-					t3.setText(String.valueOf(time[2]));
+					
 					t3.addValueChangeHandler(new ValueChangeHandler<String>() {
 						@Override
 						public void onValueChange(ValueChangeEvent<String> event) {
