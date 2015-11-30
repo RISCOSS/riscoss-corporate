@@ -580,13 +580,17 @@ public class LayerPropertyPage implements IsWidget {
 	    selectionModel.addSelectionChangeHandler(new Handler() {
 			@Override
 			public void onSelectionChange(SelectionChangeEvent arg0) {
-				contextualInfoPanel(selectionModel.getSelectedObject());
+				int k = 0;
+				for (int i = 0; i < cInfoName.size(); ++i) {
+					if (selectionModel.getSelectedObject().equals(cInfoName.get(i))) k = i;
+				}
+				contextualInfoPanel(cInfo.get(k));
 			}
 	    });
 		
 		table.addColumn(t, "Contextual Information");
 		
-		if (cInfo.size() > 0) table.setRowData(0, cInfo);
+		if (cInfo.size() > 0) table.setRowData(0, cInfoName);
 		else {
 			cInfo.add("");
 			table.setRowData(0, cInfo);
@@ -614,22 +618,22 @@ public class LayerPropertyPage implements IsWidget {
 	TextBox newMinute = new TextBox();
 	TextBox newSecond = new TextBox();
 	int element;
-	String selectedContextualInfo;
+	String selectedCI;
 	
 	private void contextualInfoPanel(String contextualInfo) {
-		selectedContextualInfo = contextualInfo;
 		jElement = null;
 		for (int i = 0; i < info.getSize(); ++i) {
 			if (info.getContextualInfoElement(i).getId().equals(contextualInfo)) {
 				count = i;
 				jElement = info.getContextualInfoElement(i);
+				selectedCI = info.getContextualInfoElement(i).getId();
 			}
 		}
 		//cInfoPanel.remove(vPanel);
 		main.remove(vPanel);
 		vPanel = new VerticalPanel();
 		
-		Label title = new Label(jElement.getId());
+		Label title = new Label(jElement.getName());
 		title.setStyleName("smallTitle");
 		vPanel.add(title);
 		
@@ -644,7 +648,7 @@ public class LayerPropertyPage implements IsWidget {
 					return;
 				}
 				for (int i = 0; i < cInfo.size(); ++i) {
-					if (cInfo.get(i).equals(newId.getText()) && !newId.getText().equals(selectedContextualInfo)) {
+					if (cInfo.get(i).equals(newId.getText()) && !newId.getText().equals(selectedCI)) {
 						Window.alert("There is already an existing contextual information with this id for this layer");
 						return;
 					}
