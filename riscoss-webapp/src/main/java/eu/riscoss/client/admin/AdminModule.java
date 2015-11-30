@@ -46,6 +46,7 @@ public class AdminModule implements EntryPoint {
 	VerticalPanel		rightPanel = new VerticalPanel();
 	
 	TextBox 			newDomainName = new TextBox();
+	ListBox				roleList = new ListBox();
 	
 	DomainList			domainList;
 	
@@ -56,11 +57,15 @@ public class AdminModule implements EntryPoint {
 		
 		exportJS();
 		
+		for(KnownRoles r: KnownRoles.values()) {
+			roleList.addItem(r.name());
+		}
+		
 //		HorizontalPanel vp = new HorizontalPanel();
 		mainView.setStyleName("mainViewLayer");
 		mainView.setWidth("100%");
 		leftPanel.setStyleName("leftPanelLayer");
-		leftPanel.setWidth("400px");
+		leftPanel.setWidth("450px");
 		rightPanel.setStyleName("rightPanelLayer");
 		page.setWidth("100%");
 //		{
@@ -101,6 +106,12 @@ public class AdminModule implements EntryPoint {
 		newDomainName.setStyleName("layerNameField");
 		newDomainData.add(newDomainName);
 		
+		Label role = new Label("Default role");
+		role.setStyleName("bold");
+		newDomainData.add(role);
+		newDomainData.add(roleList);
+		
+		
 		leftPanel.add(newDomainData);
 		leftPanel.add(newDomain);
 		leftPanel.add(domainList);
@@ -135,21 +146,50 @@ public class AdminModule implements EntryPoint {
 		});
 	}
 	
+	String		newName;
+	
 	protected void onNewDomainClicked() {
 		String name = newDomainName.getText().trim();
 		if( name == null || name.trim().equals("") ) 
 			return;
-		RiscossJsonClient.createDomain(name,  new JsonCallback() {
-				@Override
-				public void onSuccess( Method method, JSONValue response ) {
-					domainList.append( response.isString().stringValue() );
+		newName = name;
+		RiscossJsonClient.listDomainsForUser(null, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				for (int i = 0; i < response.isArray().size(); ++i) {
+					if (response.isArray().get(i).isString().stringValue().equals(newName)) {
+						Window.alert("Domain name already in use. Please write another name");
+						return;
+					}
 				}
-				
-				@Override
-				public void onFailure( Method method, Throwable exception ) {
-					Window.alert( exception.getMessage() );
-				}
-			});
+				RiscossJsonClient.createDomain(newName,  new JsonCallback() {
+					@Override
+					public void onSuccess( Method method, JSONValue response ) {
+						RiscossCall.fromCookies().withDomain(newName).admin().fx("default-role")
+						.arg("role", roleList.getItemText( roleList.getSelectedIndex() ) ).post( new JsonCallback() {
+							@Override
+							public void onSuccess( Method method, JSONValue response ) {
+								newDomainName.setText("");
+								roleList.setSelectedIndex(0);
+								setSelectedDomain(newName);
+								domainList.append( newName );
+							}
+							@Override
+							public void onFailure( Method method, Throwable exception ) {}
+						});
+					}
+					
+					@Override
+					public void onFailure( Method method, Throwable exception ) {
+						Window.alert( exception.getMessage() );
+					}
+				});
+			}
+		});
 	}
 	
 	ListBox roleBox;
@@ -166,7 +206,6 @@ public class AdminModule implements EntryPoint {
 		rightPanel.add(subtitle);
 		
 		roleBox = new ListBox( false );
-		roleBox.addItem( "[none]" );
 		for( KnownRoles r : KnownRoles.values() ) {
 			roleBox.addItem( r.name() );
 		}
@@ -205,6 +244,7 @@ public class AdminModule implements EntryPoint {
 		domainData.add(roleBox);
 		rightPanel.add(domainData);
 		
+		HorizontalPanel buttons = new HorizontalPanel();
 		Button save = new Button("Save");
 		save.setStyleName("button");
 		save.addClickHandler(new ClickHandler() {
@@ -213,7 +253,17 @@ public class AdminModule implements EntryPoint {
 				save();
 			}
 		});
-		rightPanel.add(save);
+		Button delete = new Button("Delete");
+		delete.setStyleName("button");
+		delete.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent arg0) {
+				deleteDomain();
+			}
+		});
+		buttons.add(save);
+		buttons.add(delete);
+		rightPanel.add(buttons);
 		
 		rightPanel.add(domainPPG);
 	}
@@ -235,6 +285,35 @@ public class AdminModule implements EntryPoint {
 	
 	private void savePropertyPageChanges() {
 		domainPPG.save();
+	}
+	
+	private void deleteDomain() {
+		RiscossJsonClient.getDomainUsers(selectedDomain, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				if (response.isArray().size() > 0) Window.alert("Domains with associated users cannot be deleted");
+				else {
+					if (Window.confirm("Are you sure that you want to delete the domain " + selectedDomain + "?")) {
+						RiscossJsonClient.deleteDomain(selectedDomain, new JsonCallback() {
+							@Override
+							public void onFailure(Method method,
+									Throwable exception) {
+								Window.alert(exception.getMessage());
+							}
+							@Override
+							public void onSuccess(Method method,
+									JSONValue response) {
+								Window.Location.reload();
+							}
+						});
+					}
+				}
+			}
+		});
 	}
 	
 }

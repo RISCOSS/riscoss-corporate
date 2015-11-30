@@ -98,6 +98,29 @@ public class GDomContainer {
 		}
 		
 	}
+	
+	public void deleteDom( String domainName ) {
+		
+		GDomDB g = getDom(domainName);
+		
+		new GAuthDom( g ).deleteRoles();
+		
+		List<String> l = new GAuthDom( g ).listRoles();
+		
+		for (String s : l) {
+			System.out.println(s);
+		}
+		
+		
+		Vertex v = getRoot( domainName );
+		
+		if (v != null) {
+			graph.removeVertex(v);
+			graph.commit();
+		}
+		
+	}
+	
 	public List<String> domList() {
 		List<ODocument> list = query( "SELECT FROM " + GDomConfig.global().getRootClass() );
 		return new GenericNodeCollection<String>( list, new NameAttributeProvider() );

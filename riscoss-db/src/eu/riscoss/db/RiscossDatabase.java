@@ -13,6 +13,8 @@ public interface RiscossDatabase {
 	public void close();
 
 	public void createDomain( String domainName );
+	
+	public void deleteDomain( String domainName );
 
 	public String getRole();
 

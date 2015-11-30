@@ -43,6 +43,7 @@ import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.CellTable.Resources;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
@@ -63,6 +64,7 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DateBox;
+import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SelectionChangeEvent.Handler;
 import com.google.gwt.view.client.SingleSelectionModel;
@@ -73,6 +75,7 @@ import eu.riscoss.client.JsonRiskDataList;
 import eu.riscoss.client.Log;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecRASInfo;
+import eu.riscoss.client.layers.LayersModule;
 import eu.riscoss.client.rdr.EntityDataBox;
 import eu.riscoss.client.report.RiskAnalysisReport;
 import eu.riscoss.client.riskanalysis.RASPanel;
@@ -325,6 +328,12 @@ public class EntityPropertyPage implements IsWidget {
 	JsonEntitySummary info;
 	
 	
+	ListDataProvider<String> parentDataProvider;
+	SimplePager pager;
+	ListDataProvider<String> childrenDataProvider;
+	SimplePager childrenPager;
+	
+	
 	protected void loadProperties( JSONValue response ) {
 		rasLoaded = false;
 		info = new JsonEntitySummary( response );
@@ -409,6 +418,7 @@ public class EntityPropertyPage implements IsWidget {
 						public void onClick(ClickEvent event) {
 							parentList.remove(selectionModel.getSelectedObject());
 							parents.remove(parentsTable);
+							parents.remove(pager);
 							parentsTable = new CellTable<String>(15, (Resources) GWT.create(TableResources.class));
 							parentsTable.setWidth("100%");
 							 parentsTable.setSelectionModel(selectionModel);
@@ -426,8 +436,21 @@ public class EntityPropertyPage implements IsWidget {
 								parentList.remove(0);
 							}
 							parentsTable.setStyleName("table");
-							parents.remove(deleteParent);
+							
+							parentDataProvider = new ListDataProvider<String>();
+							parentDataProvider.addDataDisplay( parentsTable );
+							
+							for( int i = 0; i < parentList.size(); i++ ) {
+								parentDataProvider.getList().add( parentList.get(i) );
+							}
+							
+							pager = new SimplePager();
+						    pager.setDisplay( parentsTable );
+							
 							parents.add(parentsTable);
+							parents.add(pager);
+							
+							parents.remove(deleteParent);
 							changedData = true;
 						}
 					});
@@ -444,7 +467,19 @@ public class EntityPropertyPage implements IsWidget {
 				parentList.remove(0);
 			}
 			parentsTable.setStyleName("table");
+			
+			parentDataProvider = new ListDataProvider<String>();
+			parentDataProvider.addDataDisplay( parentsTable );
+			
+			for( int i = 0; i < parentList.size(); i++ ) {
+				parentDataProvider.getList().add( parentList.get(i) );
+			}
+			
+			pager = new SimplePager();
+		    pager.setDisplay( parentsTable );
+			
 			parents.add(parentsTable);
+			parents.add(pager);
 			
 			HorizontalPanel data2 = new HorizontalPanel();
 			
@@ -495,6 +530,7 @@ public class EntityPropertyPage implements IsWidget {
 						public void onClick(ClickEvent event) {
 							childrenList.remove(selectionModel2.getSelectedObject());
 							children.remove(childrenTable);
+							children.remove(childrenPager);
 							childrenTable = new CellTable<String>(15, (Resources) GWT.create(TableResources.class));
 							childrenTable.setWidth("100%");
 							childrenTable.setSelectionModel(selectionModel2);
@@ -512,8 +548,21 @@ public class EntityPropertyPage implements IsWidget {
 								childrenList.remove(0);
 							}
 							childrenTable.setStyleName("table");
-							children.remove(deleteChildren);
+							
+							childrenDataProvider = new ListDataProvider<String>();
+							childrenDataProvider.addDataDisplay( childrenTable );
+							
+							for( int i = 0; i < childrenList.size(); i++ ) {
+								childrenDataProvider.getList().add( childrenList.get(i) );
+							}
+							
+							childrenPager = new SimplePager();
+						    childrenPager.setDisplay( childrenTable );
+							
 							children.add(childrenTable);
+							children.add(childrenPager);
+							
+							children.remove(deleteChildren);
 							changedData = true;
 						}
 					});
@@ -530,7 +579,19 @@ public class EntityPropertyPage implements IsWidget {
 				childrenList.remove(0);
 			}
 			childrenTable.setStyleName("table");
+			
+			childrenDataProvider = new ListDataProvider<String>();
+			childrenDataProvider.addDataDisplay( childrenTable );
+			
+			for( int i = 0; i < childrenList.size(); i++ ) {
+				childrenDataProvider.getList().add( childrenList.get(i) );
+			}
+			
+			childrenPager = new SimplePager();
+		    childrenPager.setDisplay( childrenTable );
+			
 			children.add(childrenTable);
+			children.add(childrenPager);
 			
 			hPanel.setWidth("100%");
 			hPanel.add(parents);
@@ -943,18 +1004,25 @@ public class EntityPropertyPage implements IsWidget {
 		
 	}
 	
+	LayersModule l;
 	
+	public void setLayerModule(LayersModule l) {
+		this.l = l;
+	}
 	
 	private void setSelectedRiskSes(String name, int k) {
-		module.setSelectedRiskSes(list.get(k).getId(), this);
+		if (l != null) l.setSelectedRiskSes(list.get(k).getId(), this);
+		else module.setSelectedRiskSes(list.get(k).getId(), this);
 	}
 
-	public void back() {
-		module.back();
+	public void back(Boolean entityB) {
+		if (entityB) module.back();
+		else l.back();
 	}
 	
-	public void delete(String ras) {
-		module.deleteRiskSes(ras);
+	public void delete(String ras, Boolean entityB) {
+		if (entityB) module.deleteRiskSes(ras);
+		else l.deleteRiskSes(ras);
 	}
 	
 	/*protected void loadRAS( JSONValue response ) {

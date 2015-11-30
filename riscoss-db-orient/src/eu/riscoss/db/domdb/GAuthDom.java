@@ -207,6 +207,10 @@ public class GAuthDom {
 			}} );
 	}
 	
+	public void deleteRoles() {
+		execute ("DELETE FROM orole WHERE domain.tag='" + dom.getRootName() + "'");
+	}
+	
 	/**
 	 * Sets the permission of a 'local' role - e.g., Administrator-DomainX, Guest-DomainX, etc.
 	 * @param rolename

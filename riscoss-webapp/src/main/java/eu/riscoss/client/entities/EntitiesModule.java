@@ -607,7 +607,7 @@ public class EntitiesModule implements EntryPoint {
 	
 	public void setSelectedRiskSes(String risk, EntityPropertyPage p) {
 		rasPanelResult = new RASPanel(null);
-		rasPanelResult.setEppg(p);
+		rasPanelResult.setEppg(p, true);
 		rasPanelResult.loadRAS(risk);
 		
 		RiscossJsonClient.getSessionSummary(risk, new JsonCallback() {

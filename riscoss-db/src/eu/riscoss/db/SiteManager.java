@@ -6,6 +6,8 @@ import java.util.List;
 public interface SiteManager {
 
 	void createPage( String sectionName, String label, String url, String ... roles );
+	
+	void deletePage( String sectionName, String label );
 
 	void createSection( String sectionName );
 	

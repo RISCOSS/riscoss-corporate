@@ -154,6 +154,28 @@ public class AdminManager {
 		}
 	}
 	
+	@POST @Path("{domain}/delete")
+	@Info("Deletes a domain")
+	public void deleteDomain( 
+			@HeaderParam("token") @Info("The authentication token") String token,
+			@PathParam("domain") @Info("The selected domain") String domain) throws Exception {
+		
+		RiscossDatabase db = null;
+		
+		try {
+			
+			db = DBConnector.openDatabase( token );
+			db.deleteDomain( domain );
+			
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
+	}
+	
 	@POST @Path("/{domain}/roles/create")
 	@Info("Creates a new Role")
 	public String createRole( 
@@ -452,7 +474,7 @@ public class AdminManager {
 	
 	@POST @Path("/{domain}/users/{user}/delete")
 	@Info("Deletes the role from user in specific domain")
-	public void removeRole(
+	public void removeUserFromDomain(
 			@HeaderParam("token") @Info("The authentication token") String token,
 			@PathParam("domain") @Info("The selected domain") String domain,
 			@PathParam("user") @Info("The user name") String user

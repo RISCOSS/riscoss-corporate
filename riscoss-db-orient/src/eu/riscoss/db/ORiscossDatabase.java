@@ -111,6 +111,11 @@ public class ORiscossDatabase implements RiscossDatabase {
 	}
 	
 	@Override
+	public void deleteDomain( String domainName ) {
+		container.deleteDom( domainName );
+	}
+	
+	@Override
 	public String getRole() {
 		
 		return container.getGraph().getRawGraph().getMetadata().getSecurity().getRole( username ).getName();

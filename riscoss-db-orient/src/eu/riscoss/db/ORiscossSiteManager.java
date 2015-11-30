@@ -52,7 +52,6 @@ public class ORiscossSiteManager implements SiteManager {
 		NodeID id = dom.create( sectionPathAndName + "/" + label );
 		dom.setAttribute( id, "url", url );
 		dom.setAttribute( id, "type", "page" );
-		
 		// Custom access management
 		HashSet<String> set = new HashSet<>();
 		for( String role : roles ) set.add( role );
@@ -69,6 +68,12 @@ public class ORiscossSiteManager implements SiteManager {
 //		GAuthDom auth = new GAuthDom( dom );
 //		for( String rolename : roles )
 //			auth.setGlobalNodePermission( rolename, sectionPathAndName + "/" + label, "r" );
+	}
+	
+	@Override
+	public void deletePage( String sectionName, String label ) {
+		NodeID id = dom.get(sectionName + "/" + label );
+		if (id != null) dom.deleteVertex(id);
 	}
 	
 	@Override

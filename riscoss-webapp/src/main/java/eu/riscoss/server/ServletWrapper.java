@@ -136,6 +136,7 @@ public class ServletWrapper extends ServletContainer {
 				
 				sm.createSection( "/Run" );
 				//				sm.createPage( "/Run", "One-layer Analysis", "analysis.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
+				sm.deletePage( "/Run", "One-layer Analysis");
 				sm.createPage( "/Run", "Multi-layer Analysis", "riskanalysis.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
 				sm.createPage( "/Run", "What-if Analysis", "whatifanalysis.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
 				sm.createPage( "/Run", "AHP Session Analysis", "rma.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
@@ -147,7 +148,9 @@ public class ServletWrapper extends ServletContainer {
 				sm.createPage( "/Browse", "Risk Analysis Sessions", "ras.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
 				
 				sm.createSection( "/Admin" );
-				sm.createPage( "/Admin", "Users and Roles", "admin.jsp", new String[] { KnownRoles.Administrator.name() } );
+				sm.deletePage( "/Admin", "Users and Roles" );
+				sm.createPage( "/Admin", "Domains", "admin.jsp", new String[] { KnownRoles.Administrator.name() } );
+				sm.createPage( "/Admin", "Roles", "roles.jsp", new String[] {KnownRoles.Administrator.name() } );
 			}
 			
 			

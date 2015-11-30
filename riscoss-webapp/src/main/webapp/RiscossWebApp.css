@@ -273,6 +273,14 @@ body {
 	border: 1px solid #E6E6E6 !important;
 }
 
+.headerGrid {
+	background-color: #E6E6E6 !important;
+}
+
+.cellGrid {
+	border: 1px solid #E6E6E6 !important;
+}
+
 .headerTable {
 	margin: 0 !important;
 	padding: 3px 4px !important;

@@ -164,15 +164,13 @@ public class RiscossWebApp implements EntryPoint {
 			submenu.setAnimationEnabled(true);
 			menu.addItem( subsection.getLabel(), submenu);
 			for( JSitePage page : subsection.pages() ) {
-				if (page.getLabel() != "One-layer Analysis") {
-					access.add(page.getLabel());
-					submenu.addItem( page.getLabel(), new MenuCommand( page.getUrl() ) {
-						@Override
-						public void execute() {
-							loadPanel( getUrl() );
-						}
-					});
-				}
+				access.add(page.getLabel());
+				submenu.addItem( page.getLabel(), new MenuCommand( page.getUrl() ) {
+					@Override
+					public void execute() {
+						loadPanel( getUrl() );
+					}
+				});
 			}
 		}
 		
@@ -201,7 +199,7 @@ public class RiscossWebApp implements EntryPoint {
 		Image logo = new Image( "resources/logo_riscoss_DSP.png" );
 		north.add( logo );
 		north.setHeight("5%"); // any value here seems to resolve the firefox problem of showing only a small frame on the right side
-		Label version = new Label("v0.5.1");
+		Label version = new Label("v0.5.2");
 		version.setStyleName("version");
 		north.add(version);
 		//north.setWidth("100%");

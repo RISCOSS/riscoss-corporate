@@ -530,6 +530,10 @@ public class RiscossJsonClient {
 		//new Resource( GWT.getHostPageBaseURL() + "api/admin/domains/create" )
 	}	
 	
+	public static void deleteDomain( String name, JsonCallback cb ) {
+		RiscossCall.fromToken(getToken()).admin().fx(name).fx("delete").post(cb);
+	}
+	
 	public static void listDomainsForUser( String username, JsonCallback cb ) {
 		if( username != null )
 			RiscossCall.fromToken(getToken()).admin().fx("domains/public").arg("username", username).get( cb );

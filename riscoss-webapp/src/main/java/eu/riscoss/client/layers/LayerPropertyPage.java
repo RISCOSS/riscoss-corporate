@@ -189,8 +189,8 @@ public class LayerPropertyPage implements IsWidget {
 			@Override
 			public void onClick(ClickEvent arg0) {
 				
-				if (id.getText().equals("") || name.getText().equals("") || description.getText().equals("")) {
-					simplePopup.setWidget(new Label("No field can be empty"));
+				if (id.getText().equals("") || name.getText().equals("")) {
+					simplePopup.setWidget(new Label("ID/name are mandatory"));
 					simplePopup.show();
 					return;
 				}
@@ -198,7 +198,7 @@ public class LayerPropertyPage implements IsWidget {
 				int type = lBox.getSelectedIndex();
 				if (type == 0) {
 					if (min.getText().equals("") || max.getText().equals(""))  {
-						simplePopup.setWidget(new Label("No field can be empty"));
+						simplePopup.setWidget(new Label("Minimum/maximum values must be defined"));
 						simplePopup.show();
 						return;
 					}

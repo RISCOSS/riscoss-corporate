@@ -83,9 +83,11 @@ public class RASPanel implements IsWidget {
 	}
 	
 	EntityPropertyPage 	eppg = null;
+	Boolean entityB;
 	
-	public void setEppg(EntityPropertyPage eppg) {
+	public void setEppg(EntityPropertyPage eppg, Boolean entityB) {
 		if (eppg != null) this.eppg = eppg;
+		this.entityB = entityB;
 	}
 		
 	public void loadRAS( String selectedRAS ) {
@@ -204,10 +206,20 @@ public class RASPanel implements IsWidget {
 			buttons2.add(backupUpdate);
 			buttons2.add(backupRun);
 		}
-		//If RASPanel
-		else if (eppg != null) {
+		//If RASPanel is in entity
+		else if (eppg != null && entityB) {
 			buttons.add(entityBack);
 			buttons.add(entityDelete);
+			buttons2.add(update);
+			buttons2.add(run);
+			buttons2.add(empty);
+			buttons2.add(backupUpdate);
+			buttons2.add(backupRun);
+		}
+		//If RASPanel is in layer
+		else {
+			buttons.add(layerBack);
+			buttons.add(layerDelete);
 			buttons2.add(update);
 			buttons2.add(run);
 			buttons2.add(empty);
@@ -263,6 +275,8 @@ public class RASPanel implements IsWidget {
 	Button 		browseDelete;
 	Button		entityBack;
 	Button		entityDelete;
+	Button  	layerBack;
+	Button		layerDelete;
 	Button		save;
 	
 	protected void generateButtons() {
@@ -344,7 +358,7 @@ public class RASPanel implements IsWidget {
 		entityBack.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent arg0) {
-				eppg.back();
+				eppg.back(entityB);
 			}
 		});
 		
@@ -353,7 +367,25 @@ public class RASPanel implements IsWidget {
 		entityDelete.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent arg0) {
-				eppg.delete(sessionSummary.getID());
+				eppg.delete(sessionSummary.getID(), entityB);
+			}
+		});
+		
+		layerBack = new Button("Back");
+		layerBack.setStyleName("deleteButton");
+		layerBack.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent arg0) {
+				eppg.back(entityB);
+			}
+		});
+		
+		layerDelete = new Button("Delete");
+		layerDelete.setStyleName("deleteButton");
+		layerDelete.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent arg0) {
+				eppg.delete(sessionSummary.getID(), entityB);
 			}
 		});
 		

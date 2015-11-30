@@ -64,6 +64,8 @@ import eu.riscoss.client.codec.CodecLayerContextualInfo;
 import eu.riscoss.client.codec.CodecRASInfo;
 import eu.riscoss.client.entities.EntityPropertyPage;
 import eu.riscoss.client.entities.TableResources;
+import eu.riscoss.client.riskanalysis.JsonRiskAnalysis;
+import eu.riscoss.client.riskanalysis.RASPanel;
 import eu.riscoss.client.ui.ClickWrapper;
 import eu.riscoss.client.ui.FramePanel;
 import eu.riscoss.client.ui.TreeWidget;
@@ -724,6 +726,7 @@ public class LayersModule implements EntryPoint {
 			rightPanel.add(l);
 			
 			ppgEnt = new EntityPropertyPage(null);
+			ppgEnt.setLayerModule(this);
 			ppgEnt.setSelectedEntity(selectedEntity);
 			
 			Grid grid = new Grid(5,1);
@@ -825,5 +828,62 @@ public class LayersModule implements EntryPoint {
 				} );
 			}
 		}
+	}
+	
+	RASPanel rasPanelResult;
+	
+	public void setSelectedRiskSes(String risk, EntityPropertyPage p) {
+		rasPanelResult = new RASPanel(null);
+		rasPanelResult.setEppg(p, false);
+		rasPanelResult.loadRAS(risk);
+		
+		RiscossJsonClient.getSessionSummary(risk, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				page.clear();
+				page.setStyleName("leftPanelLayer");
+				JsonRiskAnalysis json = new JsonRiskAnalysis( response );
+				Label title = new Label(json.getName());
+				title.setStyleName("subtitle");
+				page.add(title);
+				page.add(rasPanelResult);
+			}
+		});
+
+	}
+	
+	public void back() {
+		page.clear();
+		page.setStyleName("");
+		Label title = new Label("Entity management");
+		title.setStyleName("title");
+		page.add(title);
+		page.add(mainView);
+		upload();
+	}
+	
+	public void deleteRiskSes(String ras) {
+		RiscossJsonClient.deleteRiskAnalysisSession(ras, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				back();
+				upload();
+			}
+		});
+	}
+	
+	private void upload() {
+		ppgEnt = new EntityPropertyPage(null);
+		ppgEnt.setSelectedEntity(selectedEntity);
+		ppgEnt.setSelectedTab(4);
+		//loadProperties();
 	}
 }

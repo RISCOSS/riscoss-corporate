@@ -119,7 +119,6 @@ public class DomainPropertyPage implements IsWidget {
 	
 	HorizontalPanel main = new HorizontalPanel();
 	VerticalPanel leftPanel = new VerticalPanel();
-	VerticalPanel rightPanel = new VerticalPanel();
 	
 	public DomainPropertyPage() {
 		
@@ -161,12 +160,9 @@ public class DomainPropertyPage implements IsWidget {
 				onNewUserClicked();
 			}
 		});
+		newUserData.add(newUser);
 		
-		VerticalPanel north = new VerticalPanel();
-		north.add(newUserData);
-		north.add(newUser);
-		
-		leftPanel.add(north);
+		leftPanel.add(newUserData);
 		//dock.add( userList, DockPanel.CENTER );
 		
 		/*KeyValueGrid grid = new KeyValueGrid();
@@ -193,13 +189,9 @@ public class DomainPropertyPage implements IsWidget {
 		main.setStyleName("mainLayerPanel");
 		main.setWidth("100%");
 		leftPanel.setStyleName("leftLayerPanel");
-		leftPanel.setWidth("300px");
-		rightPanel.setWidth("100%");
-		rightPanel.setHeight("100%");
-		rightPanel.setStyleName("rightLayerPanel");
+		leftPanel.setWidth("100%");
 		
 		main.add(leftPanel);
-		main.add(rightPanel);
 		
 		
 		loadData();
@@ -224,10 +216,10 @@ public class DomainPropertyPage implements IsWidget {
 					public void onSuccess(Method method, JSONValue response) {
 						loadData();
 						leftPanel.remove(userList);
+						leftPanel.remove(delete);
 						userList = new UserList(selectedDomain);
 						setDPP();
 						leftPanel.add(userList);
-						rightPanel.clear();
 					}
 				});
 			}
@@ -349,24 +341,17 @@ public class DomainPropertyPage implements IsWidget {
 		userList.save();
 	}
 	
-	VerticalPanel userData = new VerticalPanel();
-	
 	String selectedUser;
 	
 	public void setSelectedUser(String user) {
-		rightPanel.remove(userData);
-		userData = new VerticalPanel();
-		//userData.setWidth("100%");
 		
 		selectedUser = user;
-		Label l = new Label(user);
-		l.setStyleName("smallTitle");
-		l.setWidth("100%");
-		userData.add(l);
 		
-		userData.add(delete);
+		leftPanel.remove(delete);
+		delete.setText("Delete " + user + " from " + selectedDomain);
+		leftPanel.add(delete);
 		
-		rightPanel.add(userData);
+		//rightPanel.add(userData);
 	}
 	
 }
