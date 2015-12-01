@@ -7,6 +7,7 @@ import java.util.List;
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
 
+import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -24,6 +25,8 @@ import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.CellTable.Resources;
+import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
@@ -41,6 +44,7 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DateBox;
+import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SelectionChangeEvent.Handler;
 import com.google.gwt.view.client.SingleSelectionModel;
@@ -51,6 +55,7 @@ import eu.riscoss.client.codec.CodecLayerContextualInfo;
 import eu.riscoss.client.entities.TableResources;
 import eu.riscoss.shared.JLayerContextualInfo;
 import eu.riscoss.shared.JLayerContextualInfoElement;
+import eu.riscoss.shared.Pair;
 import eu.riscoss.shared.RiscossUtil;
 
 public class LayerPropertyPage implements IsWidget {
@@ -91,7 +96,7 @@ public class LayerPropertyPage implements IsWidget {
 	
 	ListBox				lBox;
 	
-	CellTable<String>	table = new CellTable<String>(15, (Resources) GWT.create(TableResources.class));
+	CellTable<Pair<String, String>>	table = new CellTable<Pair<String, String>>(15, (Resources) GWT.create(TableResources.class));
 	
 	JLayerContextualInfo			info;
 	JLayerContextualInfoElement 	jElement;
@@ -194,8 +199,8 @@ public class LayerPropertyPage implements IsWidget {
 					return;
 				}
 				
-				for (int i = 0; i < cInfo.size(); ++i) {
-					if (cInfo.get(i).equals(id.getText())) {
+				for (int i = 0; i < cInfoData.size(); ++i) {
+					if (cInfoData.get(i).getLeft().equals(id.getText())) {
 						Window.alert("There is already an existing contextual information with this id for this layer");
 						return;
 					}
@@ -494,13 +499,13 @@ public class LayerPropertyPage implements IsWidget {
 		name.setWidth("150px");
 		description.setWidth("150px");
 		
-		Label type = new Label("Type");
+		Label type = new Label("Type *");
 		type.setStyleName("bold2");
 
-		Label idL = new Label("ID");
+		Label idL = new Label("ID *");
 		idL.setStyleName("bold2");
 
-		Label nameTag = new Label("Name");
+		Label nameTag = new Label("Name *");
 		nameTag.setStyleName("bold2");
 		
 		Label descriptionL = new Label("Description");
@@ -555,51 +560,62 @@ public class LayerPropertyPage implements IsWidget {
 		
 	}
 	
-	List<String> cInfo; 
-	List<String> cInfoName;
+	List<Pair<String,String>> cInfoData = new ArrayList<>();
+	ListDataProvider<Pair<String,String>>	dataProvider;
+	SimplePager								pager;
 	
 	public void reloadData() {
 		
-		cInfo = new ArrayList<>();
-		cInfoName = new ArrayList<>();
+		cInfoData = new ArrayList<>();
 		for (int i = 0; i < info.getSize(); ++i) {
-			cInfo.add(info.getContextualInfoElement(i).getId());
-			cInfoName.add(info.getContextualInfoElement(i).getName());
+			cInfoData.add(new Pair<String, String>(info.getContextualInfoElement(i).getId(), info.getContextualInfoElement(i).getName()));
 		}
 		
-		table = new CellTable<String>(15, (Resources) GWT.create(TableResources.class));
-		TextColumn<String> t = new TextColumn<String>() {
+		table = new CellTable<Pair<String,String>>(15, (Resources) GWT.create(TableResources.class));
+		Column<Pair<String, String>, String> t = new Column<Pair<String, String>, String>(new TextCell()) {
 			@Override
-			public String getValue(String arg0) {
-				return arg0;
+			public String getValue(Pair<String, String> arg0) {
+				return arg0.getLeft();
+			}
+		};
+		Column<Pair<String, String>, String> t2 = new Column<Pair<String, String>, String>(new TextCell()) {
+			@Override
+			public String getValue(Pair<String, String> arg0) {
+				return arg0.getRight();
 			}
 		};
 		
-		final SingleSelectionModel<String> selectionModel = new SingleSelectionModel<String>();
+		final SingleSelectionModel<Pair<String, String>> selectionModel = new SingleSelectionModel<Pair<String, String>>();
 	    table.setSelectionModel(selectionModel);
 	    selectionModel.addSelectionChangeHandler(new Handler() {
 			@Override
 			public void onSelectionChange(SelectionChangeEvent arg0) {
-				int k = 0;
-				for (int i = 0; i < cInfoName.size(); ++i) {
-					if (selectionModel.getSelectedObject().equals(cInfoName.get(i))) k = i;
-				}
-				contextualInfoPanel(cInfo.get(k));
+				contextualInfoPanel(selectionModel.getSelectedObject().getLeft());
 			}
 	    });
+	    
+		table.addColumn(t, "ID");
+		table.addColumn(t2, "Name");
 		
-		table.addColumn(t, "Contextual Information");
+		dataProvider = new ListDataProvider<Pair<String,String>>();
+		dataProvider.addDataDisplay( table );
 		
-		if (cInfo.size() > 0) table.setRowData(0, cInfoName);
-		else {
-			cInfo.add("");
-			table.setRowData(0, cInfo);
-			cInfo.remove(0);
+		for( int i = 0; i < cInfoData.size(); i++ ) {
+			dataProvider.getList().add( cInfoData.get(i) );
 		}
+		
+		pager = new SimplePager();
+	    pager.setDisplay( table );
+		
 		table.setStyleName("table");
 		table.setWidth("300px");
+		
+		VerticalPanel tablePanel = new VerticalPanel();
+		tablePanel.add(table);
+		tablePanel.add(pager);
+		
 		cInfoPanel = new HorizontalPanel();
-		cInfoPanel.add(table);
+		cInfoPanel.add(tablePanel);
 		ciList.setWidget(0, 0, cInfoPanel);
 		
 	}
@@ -647,8 +663,8 @@ public class LayerPropertyPage implements IsWidget {
 					Window.alert("ID and name are mandatory");
 					return;
 				}
-				for (int i = 0; i < cInfo.size(); ++i) {
-					if (cInfo.get(i).equals(newId.getText()) && !newId.getText().equals(selectedCI)) {
+				for (int i = 0; i < cInfoData.size(); ++i) {
+					if (cInfoData.get(i).getLeft().equals(newId.getText()) && !newId.getText().equals(selectedCI)) {
 						Window.alert("There is already an existing contextual information with this id for this layer");
 						return;
 					}
@@ -695,61 +711,63 @@ public class LayerPropertyPage implements IsWidget {
 			String idEnt = jElement.getId();
 			int i = count;
 			@Override
-			public void onClick(ClickEvent arg0) {
-					
-				RiscossJsonClient.listEntities(layer, new JsonCallback() {
-					public void onSuccess(Method method, JSONValue response) {
-						if( response.isArray() != null ) {
-							
-							for( int k = 0; k < response.isArray().size(); k++ ) {
+				public void onClick(ClickEvent arg0) {
+					Boolean b = Window.confirm("Are you sure that you want to delete the contextual information " + jElement.getName() + "?");
+					if (b) {
+					RiscossJsonClient.listEntities(layer, new JsonCallback() {
+						public void onSuccess(Method method, JSONValue response) {
+							if( response.isArray() != null ) {
 								
-								JSONObject ent = (JSONObject)response.isArray().get( k );
-								String entity = ent.get( "name" ).isString().stringValue();
+								for( int k = 0; k < response.isArray().size(); k++ ) {
+									
+									JSONObject ent = (JSONObject)response.isArray().get( k );
+									String entity = ent.get( "name" ).isString().stringValue();
+									
+									JSONObject o = new JSONObject();
+									o.put( "id", new JSONString( idEnt ) );
+									o.put( "target", new JSONString( entity ) );
+									JSONArray array = new JSONArray();
+									array.set( 0, o );
+									RiscossJsonClient.postRiskData( array,  new JsonCallbackWrapper<String>( idEnt ) {
+										@Override
+										public void onSuccess( Method method, JSONValue response ) {
+											
+										}
+										@Override
+										public void onFailure( Method method, Throwable exception ) {
+											Window.alert( exception.getMessage() );
+										}
+									});
+								}
 								
-								JSONObject o = new JSONObject();
-								o.put( "id", new JSONString( idEnt ) );
-								o.put( "target", new JSONString( entity ) );
-								JSONArray array = new JSONArray();
-								array.set( 0, o );
-								RiscossJsonClient.postRiskData( array,  new JsonCallbackWrapper<String>( idEnt ) {
-									@Override
-									public void onSuccess( Method method, JSONValue response ) {
-										
-									}
-									@Override
-									public void onFailure( Method method, Throwable exception ) {
-										Window.alert( exception.getMessage() );
-									}
-								});
 							}
-							
+							vPanel.clear();
 						}
-						vPanel.clear();
-					}
+						
+						public void onFailure(Method method, Throwable exception) {
+							Window.alert( exception.getMessage() );
+						}
+					});
 					
-					public void onFailure(Method method, Throwable exception) {
-						Window.alert( exception.getMessage() );
-					}
-				});
-				
-				info.deleteContextualInfoElement(i);
-				CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
-				JSONValue json = codec.encode( info );
-				RiscossJsonClient.setLayerContextualInfo(layer, json, new JsonCallback() {
-
-					@Override
-					public void onFailure(Method method,
-							Throwable exception) {
-						Window.alert( exception.getMessage());
-					}
-
-					@Override
-					public void onSuccess(Method method,
-							JSONValue response) {
-						reloadData();
-					}
-					
-				});	
+					info.deleteContextualInfoElement(i);
+					CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
+					JSONValue json = codec.encode( info );
+					RiscossJsonClient.setLayerContextualInfo(layer, json, new JsonCallback() {
+	
+						@Override
+						public void onFailure(Method method,
+								Throwable exception) {
+							Window.alert( exception.getMessage());
+						}
+	
+						@Override
+						public void onSuccess(Method method,
+								JSONValue response) {
+							reloadData();
+						}
+						
+					});	
+				}
 			}
 		});
 		
