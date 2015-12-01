@@ -474,44 +474,53 @@ public class RASPanel implements IsWidget {
 
 	
 	protected void onUpdateIsClicked() {
-		buttons2.add(running);
-		RiscossJsonClient.rerunRiskAnalysisSession(selectedRAS, "", new RiscossJsonClient.JsonWaitWrapper(
-				new JsonCallback() {
+		RiscossJsonClient.updateSessionData(selectedRAS, new JsonCallback() {
 			@Override
-			public void onSuccess( Method method, JSONValue response ) {
-//				Window.alert( "" + response );
-				try {
-					RiscossJsonClient.getSessionSummary( selectedRAS, new JsonCallback() {
-						@Override
-						public void onSuccess( Method method, JSONValue response ) {
-							loadRASSummary( new JsonRiskAnalysis( response ) );
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				buttons2.add(running);
+				RiscossJsonClient.rerunRiskAnalysisSession(selectedRAS, "", new RiscossJsonClient.JsonWaitWrapper(
+						new JsonCallback() {
+					@Override
+					public void onSuccess( Method method, JSONValue response ) {
+//						Window.alert( "" + response );
+						try {
+							RiscossJsonClient.getSessionSummary( selectedRAS, new JsonCallback() {
+								@Override
+								public void onSuccess( Method method, JSONValue response ) {
+									loadRASSummary( new JsonRiskAnalysis( response ) );
+								}
+								@Override
+								public void onFailure( Method method, Throwable exception ) {
+									Window.alert( exception.getMessage() );
+								}
+							});
+							report.showResults( 
+									sessionSummary,
+									response.isObject().get( "results" ).isArray(),
+									response.isObject().get( "argumentation" ) );
+							
+							if (report.getEvidence()) inputDataInfo(response.isObject().get( "input" ));
 						}
-						@Override
-						public void onFailure( Method method, Throwable exception ) {
-							Window.alert( exception.getMessage() );
+						catch( Exception ex ) {
+							Window.alert( ex.getMessage() + "\n" + response );
 						}
-					});
-					report.showResults( 
-							sessionSummary,
-							response.isObject().get( "results" ).isArray(),
-							response.isObject().get( "argumentation" ) );
+					}
 					
-					if (report.getEvidence()) inputDataInfo(response.isObject().get( "input" ));
-				}
-				catch( Exception ex ) {
-					Window.alert( ex.getMessage() + "\n" + response );
-				}
+					@Override
+					public void onFailure( Method method, Throwable exception ) {
+						Window.alert( exception.getMessage() );
+					}
+				} ) );
 			}
-			
-			@Override
-			public void onFailure( Method method, Throwable exception ) {
-				Window.alert( exception.getMessage() );
-			}
-		} ) );
+		});
 	}
 	
 	protected void onRunIsClicked() {
-		RiscossJsonClient.updateSessionData(selectedRAS, new JsonCallback() {
+		RiscossJsonClient.runRDCs(entity, new JsonCallback() {
 			@Override
 			public void onFailure(Method method, Throwable exception) {
 				Window.alert(exception.getMessage());
@@ -539,17 +548,37 @@ public class RASPanel implements IsWidget {
 			public void onSuccess(Method method, JSONValue response) {
 				JsonRiskAnalysis ras =  new JsonRiskAnalysis( response );
 				id = ras.getID();
-				RiscossJsonClient.rerunRiskAnalysisSession(id, "", new JsonCallback() {
-
+				CodecRiskData crd = GWT.create( CodecRiskData.class );
+				newValues = crd.encode( inputForm.getValueMap() );
+				RiscossJsonClient.setAnalysisMissingData(id, newValues, new JsonCallback() {
 					@Override
 					public void onFailure(Method method, Throwable exception) {
 						Window.alert(exception.getMessage());
 					}
 					@Override
 					public void onSuccess(Method method, JSONValue response) {
-						loadRAS(id);
-						risk.generateRiskTree();
-						risk.setTitle(name);
+						RiscossJsonClient.updateSessionData(id, new JsonCallback() {
+							@Override
+							public void onFailure(Method method, Throwable exception) {
+								Window.alert(exception.getMessage());
+							}
+							@Override
+							public void onSuccess(Method method, JSONValue response) {
+								RiscossJsonClient.rerunRiskAnalysisSession(id, "", new JsonCallback() {
+
+									@Override
+									public void onFailure(Method method, Throwable exception) {
+										Window.alert(exception.getMessage());
+									}
+									@Override
+									public void onSuccess(Method method, JSONValue response) {
+										loadRAS(id);
+										risk.generateRiskTree();
+										risk.setTitle(name);
+									}
+								});
+							}
+						});
 					}
 				});
 			}
@@ -569,24 +598,44 @@ public class RASPanel implements IsWidget {
 			public void onSuccess(Method method, JSONValue response) {
 				JsonRiskAnalysis ras =  new JsonRiskAnalysis( response );
 				id = ras.getID();
-				RiscossJsonClient.updateSessionData(id, new JsonCallback() {
+				CodecRiskData crd = GWT.create( CodecRiskData.class );
+				newValues = crd.encode( inputForm.getValueMap() );
+				RiscossJsonClient.setAnalysisMissingData(id, newValues, new JsonCallback() {
 					@Override
 					public void onFailure(Method method, Throwable exception) {
 						Window.alert(exception.getMessage());
 					}
 					@Override
 					public void onSuccess(Method method, JSONValue response) {
-						RiscossJsonClient.rerunRiskAnalysisSession(id, "", new JsonCallback() {
-
+						RiscossJsonClient.runRDCs(entity, new JsonCallback() {
 							@Override
 							public void onFailure(Method method, Throwable exception) {
 								Window.alert(exception.getMessage());
 							}
 							@Override
 							public void onSuccess(Method method, JSONValue response) {
-								loadRAS(id);
-								risk.generateRiskTree();
-								risk.setTitle(name);
+								RiscossJsonClient.updateSessionData(id, new JsonCallback() {
+									@Override
+									public void onFailure(Method method, Throwable exception) {
+										Window.alert(exception.getMessage());
+									}
+									@Override
+									public void onSuccess(Method method, JSONValue response) {
+										RiscossJsonClient.rerunRiskAnalysisSession(id, "", new JsonCallback() {
+
+											@Override
+											public void onFailure(Method method, Throwable exception) {
+												Window.alert(exception.getMessage());
+											}
+											@Override
+											public void onSuccess(Method method, JSONValue response) {
+												loadRAS(id);
+												risk.generateRiskTree();
+												risk.setTitle(name);
+											}
+										});
+									}
+								});
 							}
 						});
 					}

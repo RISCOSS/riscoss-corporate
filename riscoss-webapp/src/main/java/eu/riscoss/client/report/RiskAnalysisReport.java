@@ -362,7 +362,8 @@ public class RiskAnalysisReport implements IsWidget {
 		}
 		
 		public String getStringDate() {
-			String s = date.getDate() + "-" + date.getMonth() + "-" + date.getYear() + " " + date.getHours() + "."  + date.getMinutes() + "." + date.getSeconds();
+			String p = String.valueOf(date.getMonth() + 1);
+			String s = date.getDate() + "-" + p + "-" + date.getYear() + " " + date.getHours() + "."  + date.getMinutes() + "." + date.getSeconds();
 			return s;
 		}
 		
@@ -427,7 +428,7 @@ public class RiskAnalysisReport implements IsWidget {
 		String hour[] = info[1].split("\\.");
 		Date d = new Date();
 		d.setDate(Integer.parseInt(day[0]));
-		d.setMonth(Integer.parseInt(day[1]));
+		d.setMonth(Integer.parseInt(day[1])-1);
 		d.setYear(Integer.parseInt(day[2]));
 		d.setHours(Integer.parseInt(hour[0]));
 		d.setMinutes(Integer.parseInt(hour[1]));
