@@ -428,6 +428,7 @@ public class LayersModule implements EntryPoint {
 	private void reloadPage() {
 		layerData.remove(parentName);
 		parentName = new ListBox();
+		ppg = new LayerPropertyPage();
 		bottom.setUrl("entities.html?layer=" + selectedLayer);
 		ppg.setParent(selectedParent);
 		//layerName.setText("");
@@ -458,6 +459,7 @@ public class LayersModule implements EntryPoint {
 
 							@Override
 							public void onClick(ClickEvent event) {
+								ppg = new LayerPropertyPage();
 								bottom.setUrl("entities.html?layer=" + getValue());
 								ppg.setParent(parent);
 								selectedParent = parent;
