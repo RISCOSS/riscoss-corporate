@@ -548,39 +548,65 @@ public class RASPanel implements IsWidget {
 			public void onSuccess(Method method, JSONValue response) {
 				JsonRiskAnalysis ras =  new JsonRiskAnalysis( response );
 				id = ras.getID();
-				CodecRiskData crd = GWT.create( CodecRiskData.class );
-				newValues = crd.encode( inputForm.getValueMap() );
-				RiscossJsonClient.setAnalysisMissingData(id, newValues, new JsonCallback() {
-					@Override
-					public void onFailure(Method method, Throwable exception) {
-						Window.alert(exception.getMessage());
-					}
-					@Override
-					public void onSuccess(Method method, JSONValue response) {
-						RiscossJsonClient.updateSessionData(id, new JsonCallback() {
-							@Override
-							public void onFailure(Method method, Throwable exception) {
-								Window.alert(exception.getMessage());
-							}
-							@Override
-							public void onSuccess(Method method, JSONValue response) {
-								RiscossJsonClient.rerunRiskAnalysisSession(id, "", new JsonCallback() {
+				if (report.getEvidence()) {
+					CodecRiskData crd = GWT.create( CodecRiskData.class );
+					newValues = crd.encode( inputForm.getValueMap() );
+					RiscossJsonClient.setAnalysisMissingData(id, newValues, new JsonCallback() {
+						@Override
+						public void onFailure(Method method, Throwable exception) {
+							Window.alert(exception.getMessage());
+						}
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							RiscossJsonClient.updateSessionData(id, new JsonCallback() {
+								@Override
+								public void onFailure(Method method, Throwable exception) {
+									Window.alert(exception.getMessage());
+								}
+								@Override
+								public void onSuccess(Method method, JSONValue response) {
+									RiscossJsonClient.rerunRiskAnalysisSession(id, "", new JsonCallback() {
 
-									@Override
-									public void onFailure(Method method, Throwable exception) {
-										Window.alert(exception.getMessage());
-									}
-									@Override
-									public void onSuccess(Method method, JSONValue response) {
-										loadRAS(id);
-										risk.generateRiskTree();
-										risk.setTitle(name);
-									}
-								});
-							}
-						});
-					}
-				});
+										@Override
+										public void onFailure(Method method, Throwable exception) {
+											Window.alert(exception.getMessage());
+										}
+										@Override
+										public void onSuccess(Method method, JSONValue response) {
+											loadRAS(id);
+											risk.generateRiskTree();
+											risk.setTitle(name);
+										}
+									});
+								}
+							});
+						}
+					});
+				}
+				else {
+					RiscossJsonClient.updateSessionData(id, new JsonCallback() {
+						@Override
+						public void onFailure(Method method, Throwable exception) {
+							Window.alert(exception.getMessage());
+						}
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							RiscossJsonClient.rerunRiskAnalysisSession(id, "", new JsonCallback() {
+
+								@Override
+								public void onFailure(Method method, Throwable exception) {
+									Window.alert(exception.getMessage());
+								}
+								@Override
+								public void onSuccess(Method method, JSONValue response) {
+									loadRAS(id);
+									risk.generateRiskTree();
+									risk.setTitle(name);
+								}
+							});
+						}
+					});
+				}
 			}
 		});
 	}
@@ -598,48 +624,83 @@ public class RASPanel implements IsWidget {
 			public void onSuccess(Method method, JSONValue response) {
 				JsonRiskAnalysis ras =  new JsonRiskAnalysis( response );
 				id = ras.getID();
-				CodecRiskData crd = GWT.create( CodecRiskData.class );
-				newValues = crd.encode( inputForm.getValueMap() );
-				RiscossJsonClient.setAnalysisMissingData(id, newValues, new JsonCallback() {
-					@Override
-					public void onFailure(Method method, Throwable exception) {
-						Window.alert(exception.getMessage());
-					}
-					@Override
-					public void onSuccess(Method method, JSONValue response) {
-						RiscossJsonClient.runRDCs(entity, new JsonCallback() {
-							@Override
-							public void onFailure(Method method, Throwable exception) {
-								Window.alert(exception.getMessage());
-							}
-							@Override
-							public void onSuccess(Method method, JSONValue response) {
-								RiscossJsonClient.updateSessionData(id, new JsonCallback() {
-									@Override
-									public void onFailure(Method method, Throwable exception) {
-										Window.alert(exception.getMessage());
-									}
-									@Override
-									public void onSuccess(Method method, JSONValue response) {
-										RiscossJsonClient.rerunRiskAnalysisSession(id, "", new JsonCallback() {
+				if (report.getEvidence()) {
+					CodecRiskData crd = GWT.create( CodecRiskData.class );
+					newValues = crd.encode( inputForm.getValueMap() );
+					RiscossJsonClient.setAnalysisMissingData(id, newValues, new JsonCallback() {
+						@Override
+						public void onFailure(Method method, Throwable exception) {
+							Window.alert(exception.getMessage());
+						}
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							RiscossJsonClient.runRDCs(entity, new JsonCallback() {
+								@Override
+								public void onFailure(Method method, Throwable exception) {
+									Window.alert(exception.getMessage());
+								}
+								@Override
+								public void onSuccess(Method method, JSONValue response) {
+									RiscossJsonClient.updateSessionData(id, new JsonCallback() {
+										@Override
+										public void onFailure(Method method, Throwable exception) {
+											Window.alert(exception.getMessage());
+										}
+										@Override
+										public void onSuccess(Method method, JSONValue response) {
+											RiscossJsonClient.rerunRiskAnalysisSession(id, "", new JsonCallback() {
 
-											@Override
-											public void onFailure(Method method, Throwable exception) {
-												Window.alert(exception.getMessage());
-											}
-											@Override
-											public void onSuccess(Method method, JSONValue response) {
-												loadRAS(id);
-												risk.generateRiskTree();
-												risk.setTitle(name);
-											}
-										});
-									}
-								});
-							}
-						});
-					}
-				});
+												@Override
+												public void onFailure(Method method, Throwable exception) {
+													Window.alert(exception.getMessage());
+												}
+												@Override
+												public void onSuccess(Method method, JSONValue response) {
+													loadRAS(id);
+													risk.generateRiskTree();
+													risk.setTitle(name);
+												}
+											});
+										}
+									});
+								}
+							});
+						}
+					});
+				}
+				else {
+					RiscossJsonClient.runRDCs(entity, new JsonCallback() {
+						@Override
+						public void onFailure(Method method, Throwable exception) {
+							Window.alert(exception.getMessage());
+						}
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							RiscossJsonClient.updateSessionData(id, new JsonCallback() {
+								@Override
+								public void onFailure(Method method, Throwable exception) {
+									Window.alert(exception.getMessage());
+								}
+								@Override
+								public void onSuccess(Method method, JSONValue response) {
+									RiscossJsonClient.rerunRiskAnalysisSession(id, "", new JsonCallback() {
+
+										@Override
+										public void onFailure(Method method, Throwable exception) {
+											Window.alert(exception.getMessage());
+										}
+										@Override
+										public void onSuccess(Method method, JSONValue response) {
+											loadRAS(id);
+											risk.generateRiskTree();
+											risk.setTitle(name);
+										}
+									});
+								}
+							});
+						}
+					});
+				}
 			}
 		});
 	}
