@@ -440,7 +440,7 @@ public class RiskAnalysisReport implements IsWidget {
 	private String[] getRandomColors(int n) {
 		
         String colors[] = new String[n];
-        Random rand = new Random();
+        Random rand = new Random(0);
         for (int i = 0; i < n; ++i) {
         	int r = rand.nextInt() % 256;
         	if (r < 0) r = r*(-1);
