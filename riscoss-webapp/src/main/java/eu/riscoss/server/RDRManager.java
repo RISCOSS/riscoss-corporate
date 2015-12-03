@@ -42,7 +42,7 @@ public class RDRManager {
 	public void store( 
 			@PathParam("domain") @Info("The selected domain")				String domain,
 			@HeaderParam("token") @Info("The authentication token")			String token, 
-			String riskData 
+			@Info("An array of serialized RiskData objects")				String riskData 
 			) throws Exception {
 		
 		System.out.println("RiskData: "+ riskData );

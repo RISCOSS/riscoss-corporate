@@ -71,8 +71,8 @@ public class ModelManager {
 	@GET @Path("/{domain}/list")
 	@Info("Returns a list of models previously uploaded in the selected domain")
 	public String getList( 
-			@PathParam("domain") String domain,
-			@HeaderParam("token") String token 
+			@PathParam("domain") @Info("The work domain")				String domain,
+			@HeaderParam("token") @Info("The authentication token")		String token 
 			) throws Exception {
 		
 		JsonArray a = new JsonArray();
@@ -105,12 +105,13 @@ public class ModelManager {
 	 * @throws Exception 
 	 */
 	@POST @Path("/{domain}/chunklist")
-	@Info("Returns a list of input and output chunks for the specified models; it also includes the type of the chunk (goal, risk, indicator)")
+	@Info("Returns a list of input and output chunks for the specified models; " + 
+	"it also includes the type of the chunk (goal, risk, indicator)")
 	//returns also the type of each object (goal/risk/...) and is used in AHP
 	public String getModelChunkList(
-			@PathParam("domain") String domain, 
-			@HeaderParam("token") String token,
-			@Info("A JSONized array of model names") String models 
+			@PathParam("domain") @Info("The work domain")				String domain, 
+			@HeaderParam("token") @Info("The authentication token")		String token,
+			@Info("A JSONized array of model names")					String models 
 			) throws Exception {
 		
 		JsonArray json = (JsonArray)new JsonParser().parse( models );
@@ -314,9 +315,9 @@ public class ModelManager {
 	//used in the whatifanalysis, and in the ModelsModule (for showing the content)
 	//returns various info, but not the types.
 	public String getModelChunks(
-			@PathParam("domain") String domain,
-			@HeaderParam("token") String token, 
-			@Info("A JSONized array of model names") String models 
+			@PathParam("domain") @Info("The work domain")				String domain,
+			@HeaderParam("token") @Info("The authentication token")		String token, 
+			@Info("A JSONized array of model names")					String models 
 			) throws Exception {
 		
 		JsonArray json = (JsonArray)new JsonParser().parse( models );
@@ -484,10 +485,11 @@ public class ModelManager {
 	}
 	
 	@GET @Path("/{domain}/{model}/get")
+	@Info("Returns information about a stored model")
 	public String getInfo(
-			@PathParam("domain")		String domain,
-			@HeaderParam("token")		String token, 
-			@PathParam("model")			String name 
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token, 
+			@PathParam("model") @Info("The name of the model")				String name 
 			) throws Exception {
 		
 		RiscossDB db = null;
@@ -514,10 +516,11 @@ public class ModelManager {
 	}
 	
 	@GET @Path("/{domain}/{model}/blob")
+	@Info("Reutrn the actual content of a stored model, e.g., of a previously uploaded xml file")
 	public String getBlob( 
-			@PathParam("domain")		String domain,
-			@HeaderParam("token")		String token, 
-			@PathParam("model")			String name 
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token, 
+			@PathParam("model") @Info("The model name")						String name 
 			) throws Exception {
 		
 		RiscossDB db = null;
@@ -541,10 +544,11 @@ public class ModelManager {
 	}
 	
 	@DELETE @Path("/{domain}/{model}/delete")
+	@Info("Deletes a model from the database")
 	public void deleteModel( 
-			@PathParam("domain")		String domain,
-			@HeaderParam("token")		String token, 
-			@PathParam("model")			String name 
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token, 
+			@PathParam("model") @Info("The model name")						String name 
 			) throws Exception {
 		RiscossDB db = null;
 		try {
@@ -562,10 +566,11 @@ public class ModelManager {
 	}
 	
 	@POST @Path("/{domain}/{model}/upload")
+	@Info("Stores a model into the database")
 	public void uploadModel(
-			@HeaderParam("token")		String token, 
-			@PathParam("domain")		String domain, 
-			@PathParam("model")			String modelname, 
+			@HeaderParam("token") @Info("The authentication token")			String token, 
+			@PathParam("domain") @Info("The work domain")					String domain, 
+			@PathParam("model") @Info("The model name")						String modelname, 
 			String content
 			) {
 		
@@ -594,11 +599,12 @@ public class ModelManager {
 	}
 	
 	@POST @Path("/{domain}/{model}/rename")
+	@Info("Changes the name of a model")
 	public void changeModelName( 
-			@PathParam("domain")		String domain,
-			@HeaderParam("token")		String token, 
-			@PathParam("model")			String name, 
-			@QueryParam("newname")		String newName 
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("Then authentication token")		String token, 
+			@PathParam("model") @Info("The name of an existing model")		String name, 
+			@QueryParam("newname") @Info("The new name of the model")		String newName 
 			) throws Exception{
 		
 		RiscossDB db = null;
@@ -629,10 +635,11 @@ public class ModelManager {
 	}
 	
 	@GET @Path("/{domain}/{name}/content")
+	@Info("Experimental. Returns a structured representation of the content of a RiskML model")
 	public String getRiskModelContent(
-			@PathParam("domain")		String domain, 
-			@HeaderParam("token")		String token, 
-			@PathParam("name")			String name 
+			@PathParam("domain") @Info("The work domain")					String domain, 
+			@HeaderParam("token") @Info("The authentication token")			String token, 
+			@PathParam("name") @Info("The name of the model")				String name 
 			) throws Exception {
 		
 		RiscossDB db = null;

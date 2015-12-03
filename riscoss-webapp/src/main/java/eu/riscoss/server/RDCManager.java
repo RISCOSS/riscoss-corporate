@@ -40,6 +40,7 @@ import eu.riscoss.rdc.RDCParameter;
 public class RDCManager {
 	
 	@GET @Path("/list")
+	@Info("Returns a list of availabl risk data collectors")
 	public String listRDCs() {
 		
 		JsonObject o = new JsonObject();

@@ -48,9 +48,10 @@ public class LayersManager {
 	}
 	
 	@GET @Path("/{domain}/list")
+	@Info("Returns a list of existing layers")
 	public String list( 
-			@PathParam("domain") String domain,
-			@HeaderParam("token") String token 
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token 
 			) throws Exception {
 		
 		JsonArray a = new JsonArray();
@@ -76,38 +77,40 @@ public class LayersManager {
 		return a.toString();
 	}
 	
-	//@POST @Path("{domain}/new")
-	@Deprecated
-	public void createNew_old(
-			@PathParam("domain") String domain,
-			@HeaderParam("token") String token, 
-			@QueryParam("name") String name,
-			@QueryParam("parent") String parentName
-			) throws Exception {
-		//attention:filename sanitation is not directly notified to the user
-		name = RiscossUtil.sanitize(name.trim());
-		
-		parentName = parentName.trim();
-		
-		RiscossDB db = null;
-		try {
-			db = DBConnector.openDB( domain, token );
-			db.addLayer( name, parentName );
-		}
-		catch( Exception ex ) {
-			throw ex;
-		}
-		finally {
-			DBConnector.closeDB( db );
-		}
-	}
+//	//@POST @Path("{domain}/new")
+//	@Deprecated
+//	public void createNew_old(
+//			@PathParam("domain") String domain,
+//			@HeaderParam("token") String token, 
+//			@QueryParam("name") String name,
+//			@QueryParam("parent") String parentName
+//			) throws Exception {
+//		//attention:filename sanitation is not directly notified to the user
+//		name = RiscossUtil.sanitize(name.trim());
+//		
+//		parentName = parentName.trim();
+//		
+//		RiscossDB db = null;
+//		try {
+//			db = DBConnector.openDB( domain, token );
+//			db.addLayer( name, parentName );
+//		}
+//		catch( Exception ex ) {
+//			throw ex;
+//		}
+//		finally {
+//			DBConnector.closeDB( db );
+//		}
+//	}
 	
 	@POST @Path("{domain}/create")
+	@Info("Creates a new layer")
 	public void createNew(
-			@PathParam("domain") String domain,
-			@HeaderParam("token") String token, 
-			@QueryParam("name") String name,
-			@QueryParam("parent") String parentName
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token, 
+			@QueryParam("name") @Info("The name of the layer")				String name,
+			@QueryParam("parent") @Info("The name of the layer immediately above the new one, or an empty string if the new layer has to be the topmost one")
+																			String parentName
 			) throws Exception {
 		//attention:filename sanitation is not directly notified to the user
 		name = RiscossUtil.sanitize(name.trim());
@@ -128,10 +131,11 @@ public class LayersManager {
 	}
 	
 	@DELETE @Path("{domain}/{layer}/delete")
+	@Info("Deltes an existing layer")
 	public void deleteLayer( 
-			@PathParam("domain") String domain, 
-			@HeaderParam("token") String token, 
-			@PathParam("layer") String name
+			@PathParam("domain") @Info("The work domain")					String domain, 
+			@HeaderParam("token") @Info("The authentication token")			String token, 
+			@PathParam("layer") @Info("The name of the layer to delete")	String name
 			) throws Exception {
 		
 		RiscossDB db = null;
@@ -152,10 +156,11 @@ public class LayersManager {
 	}
 	
 	@GET @Path( "{domain}/{layer}/ci" )
+	@Info("Returns the contextual information associated to a layer")
 	public String getContextualInfo( 
-			@PathParam("domain") String domain, 
-			@HeaderParam("token") String token, 
-			@PathParam("layer") String layer
+			@PathParam("domain") @Info("The work domain")					String domain, 
+			@HeaderParam("token") @Info("The authentication token")			String token, 
+			@PathParam("layer") @Info("The name of the layer")				String layer
 			) throws Exception {
 		
 		RiscossDB db = null;
@@ -178,10 +183,11 @@ public class LayersManager {
 	}
 	
 	@POST @Path( "{domain}/{layer}/ci" )
+	@Info("Associates contextual information to a layer")
 	public void setContextualInfo( 
-			@PathParam("domain") String domain,
-			@HeaderParam("token") String token, 
-			@PathParam("layer") String layer, 
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token, 
+			@PathParam("layer") @Info("The name of the layer")				String layer, 
 			String json 
 			) throws Exception {
 		
@@ -200,11 +206,12 @@ public class LayersManager {
 	}
 	
 	@POST @Path("{domain}/{layer}/rename")
+	@Info("Changes the name of a layer")
 	public void editLayer( 
-			@PathParam("domain") String domain,
-			@HeaderParam("token") String token, 
-			@PathParam("layer") String name, 
-			@QueryParam("newname") String newName
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token, 
+			@PathParam("layer") @Info("The name of an existing layer")		String name, 
+			@QueryParam("newname") @Info("The new name of the layer")		String newName
 			) throws Exception {
 		
 		RiscossDB db = null;
@@ -223,9 +230,9 @@ public class LayersManager {
 	@GET @Path("/{domain}/{layer}/scope")
 	@Info("Returns the scope of a layer; a scope is an ordered set that contains the target layer and its sub-layers")
 	public String getScope( 
-			@PathParam("domain") String domain,
-			@HeaderParam("token") String token,
-			@PathParam("layer") String layer
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token,
+			@PathParam("layer") @Info("The name of an existing layer")		String layer
 			) throws Exception {
 		
 		RiscossDB db = null;

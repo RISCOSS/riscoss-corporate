@@ -49,10 +49,13 @@ import eu.riscoss.shared.RiscossUtil;
 public class RiskConfManager {
 	
 	@GET @Path( "/{domain}/list" )
+	@Info("Returns a list of existing risk configurations")
 	public String list(
-			@PathParam("domain")		String domain,
-			@HeaderParam("token")		String token, 
-			@QueryParam("entity")		String entity 
+			@PathParam("domain") @Info("The work domain")				String domain,
+			@HeaderParam("token") @Info("The authentication token")		String token, 
+			@QueryParam("entity") @Info("En entity name; if specified, only the risk configurations" + 
+											" targeting this entity will be listed.")
+																		String entity 
 			) throws Exception {
 		
 		RiscossDB db = null;
@@ -101,10 +104,11 @@ public class RiskConfManager {
 	 * @throws Exception 
 	 */
 	@GET @Path("/{domain}/{rc}/get")
+	@Info("For a risk configuration name, returns json with list of associated models")
 	public String getContent( 
-			@PathParam("domain") String domain,
-			@HeaderParam("token") String token, 
-			@PathParam("rc") String name 
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token, 
+			@PathParam("rc") @Info("The name of a risk configuration")		String name 
 			) throws Exception {
 		
 		JsonObject json = new JsonObject();
@@ -162,10 +166,11 @@ public class RiskConfManager {
 	 * @throws Exception 
 	 */
 	@GET @Path("/{domain}/{rc}/get_new")
+	@Info("For a risk configuration name, returns json with list of associated models")
 	public String getContentNew( 
-			@PathParam("domain")		String domain,
-			@HeaderParam("token")		String token, 
-			@PathParam("rc")			String name 
+			@PathParam("domain") @Info("The work domain")							String domain,
+			@HeaderParam("token") @Info("The authentication token")					String token, 
+			@PathParam("rc") @Info("The name of the risk configuration")			String name 
 			) throws Exception {
 		
 		JRiskConfiguration jrc = new JRiskConfiguration();
@@ -206,11 +211,12 @@ public class RiskConfManager {
 	}
 	
 	@POST @Path("/{domain}/{rc}/store")
+	@Info("Saves a risk configuration")
 	public void setContent( 
-			@PathParam("domain")		String domain,
-			@HeaderParam("token")		String token, 
-			@PathParam("rc")			String name, 
-			String riskConfigs 
+			@PathParam("domain") @Info("The work domain")							String domain,
+			@HeaderParam("token") @Info("The authentication token")					String token, 
+			@PathParam("rc") @Info("The name of the risk configuration")			String name, 
+			@Info("A JSON Object containing a list of models for each layer")		String riskConfigs 
 			) throws Exception {
 		
 		JsonObject json = (JsonObject)new JsonParser().parse( riskConfigs );
@@ -255,10 +261,11 @@ public class RiskConfManager {
 	}
 	
 	@POST @Path("/{domain}/{rc}/store_new")
+	@Info("Saves a risk configuration (this version uses an automatically serialized json object)")
 	public void setContentNew( 
-			@PathParam("domain")		String domain,
-			@HeaderParam("token")		String token, 
-			@PathParam("rc")			String name, 
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token, 
+			@PathParam("rc") @Info("The name of the risk configuration")	String name, 
 			String riskConfigs 
 			) throws Exception {
 		
@@ -291,10 +298,11 @@ public class RiskConfManager {
 	}
 	
 	@POST @Path("/{domain}/create")
+	@Info("Creates a new risk configuration")
 	public String createNew( 
-			@PathParam("domain")		String domain,
-			@HeaderParam("token")		String token, 
-			@QueryParam("name")			String name 
+			@PathParam("domain") @Info("The work domain")							String domain,
+			@HeaderParam("token") @Info("The authentication token")					String token, 
+			@QueryParam("name") @Info("The name 0f the risk configuration")			String name 
 			) throws Exception {
 		RiscossDB db = null;
 		//attention:filename sanitation is not directly notified to the user
@@ -315,10 +323,11 @@ public class RiskConfManager {
 	}
 	
 	@DELETE @Path("/{domain}/{rc}/delete")
+	@Info("Deletes a risk configuration")
 	public String delete( 
-			@PathParam("domain")		String domain,
-			@HeaderParam("token")		String token, 
-			@PathParam("rc")			String name 
+			@PathParam("domain") @Info("The work domain")							String domain,
+			@HeaderParam("token") @Info("The authentication token")					String token, 
+			@PathParam("rc") @Info("The name of the risk configuration")			String name 
 			) throws Exception {
 		
 		RiscossDB db = null;

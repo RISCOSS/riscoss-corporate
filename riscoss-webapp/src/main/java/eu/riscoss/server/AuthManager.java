@@ -68,7 +68,7 @@ public class AuthManager {
 	@Info("This function performs a validity check of the token and return successfully if the token is correct and not expired")
 	//TODO: change to POST?!
 	public String checkToken( 
-			@HeaderParam("token") String token
+			@HeaderParam("token") @Info("The authentication token") 			String token
 			) throws Exception {
 		
 		RiscossDatabase db = null;
@@ -130,7 +130,7 @@ public class AuthManager {
 	@GET @Path("/username")
 	@Info("Returns the user name corresponding to the given token (if valid)")
 	public String getUsername( 
-			@HeaderParam("token") String token ) {
+			@HeaderParam("token") @Info("The authentication token")			String token ) {
 		
 		RiscossDatabase database = null;
 		
