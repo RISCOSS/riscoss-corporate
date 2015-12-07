@@ -59,6 +59,7 @@ public class DomainPropertyPage implements IsWidget {
 	UserList			userList = new UserList(selectedDomain);
 	
 	ListBox				roleBox;
+	Boolean				isPublic;
 	
 	/*class UserSelectionDialog {
 		DialogBox dialog = new DialogBox( false, true );
@@ -271,6 +272,8 @@ public class DomainPropertyPage implements IsWidget {
 				Log.println( "" + response );
 				
 				domainRole = info.predefinedRole;
+				if (domainRole.equals("")) isPublic = false;
+				else isPublic = true;
 				leftPanel.remove(userList);
 				userList = new UserList(selectedDomain);
 				leftPanel.add(userList);
@@ -347,9 +350,11 @@ public class DomainPropertyPage implements IsWidget {
 		
 		selectedUser = user;
 		
-		leftPanel.remove(delete);
-		delete.setText("Delete " + user + " from " + selectedDomain);
-		leftPanel.add(delete);
+		if (!isPublic) {
+			leftPanel.remove(delete);
+			delete.setText("Delete " + user + " from " + selectedDomain);
+			leftPanel.add(delete);
+		}
 		
 		//rightPanel.add(userData);
 	}

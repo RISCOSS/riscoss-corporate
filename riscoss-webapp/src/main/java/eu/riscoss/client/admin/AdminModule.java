@@ -233,43 +233,63 @@ public class AdminModule implements EntryPoint {
 			public void onSuccess(Method method, JSONValue response) {
 				CodecDomainInfo codec = GWT.create( CodecDomainInfo.class );
 				JDomainInfo info = codec.decode( response );
-				roleBox.setSelectedIndex(0);
-				for (int i = 0; i < roleBox.getItemCount(); ++i) {
-					if (info.predefinedRole.equals(roleBox.getItemText(i))) roleBox.setSelectedIndex(i);
+				if (info.predefinedRole.equals("")) roleBox.setSelectedIndex(0);
+				else {
+					for (int i = 0; i < roleBox.getItemCount(); ++i) {
+						if (info.predefinedRole.equals(roleBox.getItemText(i))) roleBox.setSelectedIndex(i);
+					}
 				}
+				
+				HorizontalPanel domainData = new HorizontalPanel();
+				domainData.setStyleName("layerData");
+				
+				Label publicDomain = new Label("Is it a public domain?");
+				publicDomain.setStyleName("bold");
+				domainData.add(publicDomain);
+				
+				if (info.predefinedRole.equals("")) {
+					Label answer = new Label("No");
+					domainData.add(answer);
+				}
+				else {
+					Label answer = new Label("Yes");
+					domainData.add(answer);
+					HorizontalPanel space = new HorizontalPanel();
+					space.setWidth("50px");
+					domainData.add(space);
+					Label name = new Label("Default role");
+					name.setStyleName("bold");
+					domainData.add(name);
+					domainData.add(roleBox);
+				}
+				
+				rightPanel.add(domainData);
+				
+				HorizontalPanel buttons = new HorizontalPanel();
+				Button save = new Button("Save");
+				save.setStyleName("button");
+				save.addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent arg0) {
+						save();
+					}
+				});
+				Button delete = new Button("Delete");
+				delete.setStyleName("button");
+				delete.addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent arg0) {
+						deleteDomain();
+					}
+				});
+				buttons.add(save);
+				buttons.add(delete);
+				rightPanel.add(buttons);
+				
+				rightPanel.add(domainPPG);
 			}
 		});
 		
-		HorizontalPanel domainData = new HorizontalPanel();
-		domainData.setStyleName("layerData");
-		Label name = new Label("Default role");
-		name.setStyleName("bold");
-		domainData.add(name);
-		domainData.add(roleBox);
-		rightPanel.add(domainData);
-		
-		HorizontalPanel buttons = new HorizontalPanel();
-		Button save = new Button("Save");
-		save.setStyleName("button");
-		save.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent arg0) {
-				save();
-			}
-		});
-		Button delete = new Button("Delete");
-		delete.setStyleName("button");
-		delete.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent arg0) {
-				deleteDomain();
-			}
-		});
-		buttons.add(save);
-		buttons.add(delete);
-		rightPanel.add(buttons);
-		
-		rightPanel.add(domainPPG);
 	}
 	
 	private void save() {
