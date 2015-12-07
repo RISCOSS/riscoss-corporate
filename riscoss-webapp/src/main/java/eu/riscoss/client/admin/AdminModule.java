@@ -57,6 +57,7 @@ public class AdminModule implements EntryPoint {
 		
 		exportJS();
 		
+		roleList.addItem("[none]");
 		for(KnownRoles r: KnownRoles.values()) {
 			roleList.addItem(r.name());
 		}
@@ -128,7 +129,7 @@ public class AdminModule implements EntryPoint {
 		
 		RootPanel.get().add( page );
 		
-		RiscossJsonClient.listDomainsForUser( null, new JsonCallback() {
+		RiscossJsonClient.listAllDomains(new JsonCallback() {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				if( response == null ) return;
@@ -153,7 +154,7 @@ public class AdminModule implements EntryPoint {
 		if( name == null || name.trim().equals("") ) 
 			return;
 		newName = name;
-		RiscossJsonClient.listDomainsForUser(null, new JsonCallback() {
+		RiscossJsonClient.listAllDomains(new JsonCallback() {
 			@Override
 			public void onFailure(Method method, Throwable exception) {
 				Window.alert(exception.getMessage());
@@ -206,9 +207,11 @@ public class AdminModule implements EntryPoint {
 		rightPanel.add(subtitle);
 		
 		roleBox = new ListBox( false );
+		roleBox.addItem("[none]");
 		for( KnownRoles r : KnownRoles.values() ) {
 			roleBox.addItem( r.name() );
 		}
+		
 		/*roleBox.addChangeHandler( new ChangeHandler() {
 			@Override
 			public void onChange( ChangeEvent event ) {
@@ -230,6 +233,7 @@ public class AdminModule implements EntryPoint {
 			public void onSuccess(Method method, JSONValue response) {
 				CodecDomainInfo codec = GWT.create( CodecDomainInfo.class );
 				JDomainInfo info = codec.decode( response );
+				roleBox.setSelectedIndex(0);
 				for (int i = 0; i < roleBox.getItemCount(); ++i) {
 					if (info.predefinedRole.equals(roleBox.getItemText(i))) roleBox.setSelectedIndex(i);
 				}

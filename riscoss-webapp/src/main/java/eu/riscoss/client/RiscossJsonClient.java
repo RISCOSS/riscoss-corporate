@@ -534,6 +534,10 @@ public class RiscossJsonClient {
 		RiscossCall.fromToken(getToken()).admin().fx(name).fx("delete").post(cb);
 	}
 	
+	public static void listAllDomains(JsonCallback cb) {
+		RiscossCall.fromToken(getToken()).admin().fx("domains/list").get(cb);
+	}
+	
 	public static void listDomainsForUser( String username, JsonCallback cb ) {
 		if( username != null )
 			RiscossCall.fromToken(getToken()).admin().fx("domains/public").arg("username", username).get( cb );

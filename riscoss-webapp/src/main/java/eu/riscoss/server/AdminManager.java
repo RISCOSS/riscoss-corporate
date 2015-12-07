@@ -403,6 +403,34 @@ public class AdminManager {
 		
 	}
 	
+	@GET @Path("/domains/list")
+	@Info("Returns the list of all domains")
+	public String listDomains(
+			@HeaderParam("token") @Info("The authentication token") String token) throws Exception {
+		
+		return gson.toJson( listAllDomains(token) ).toString();
+	}
+	
+	public static Collection<String> listAllDomains(String token) throws Exception {
+		Set<String> set = new HashSet<>();
+		{
+			RiscossDatabase db = null;
+			
+			try {
+				db = DBConnector.openDatabase(null,null);
+				for (String domain : db.listDomains()) {
+					if (domain != null)
+						set.add(domain);
+				}
+			} catch (Exception e) {
+				throw e;
+			} finally {
+				DBConnector.closeDB(db);
+			}
+		}
+		return set;
+	}
+	
 	public static Collection<String> listAvailableUserDomains( String token, String username ) throws Exception {
 		
 		Set<String> set = new HashSet<>();
