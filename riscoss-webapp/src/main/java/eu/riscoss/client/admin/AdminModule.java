@@ -194,6 +194,10 @@ public class AdminModule implements EntryPoint {
 	}
 	
 	ListBox roleBox;
+	ListBox answer;
+	HorizontalPanel domainData;
+	HorizontalPanel defaultRolePanel;
+	Boolean isPublic;
 	
 	public void setSelectedDomain( String domainName ) {
 		domainPPG = new DomainPropertyPage();
@@ -207,7 +211,6 @@ public class AdminModule implements EntryPoint {
 		rightPanel.add(subtitle);
 		
 		roleBox = new ListBox( false );
-		roleBox.addItem("[none]");
 		for( KnownRoles r : KnownRoles.values() ) {
 			roleBox.addItem( r.name() );
 		}
@@ -240,27 +243,45 @@ public class AdminModule implements EntryPoint {
 					}
 				}
 				
-				HorizontalPanel domainData = new HorizontalPanel();
+				domainData = new HorizontalPanel();
 				domainData.setStyleName("layerData");
 				
 				Label publicDomain = new Label("Is it a public domain?");
 				publicDomain.setStyleName("bold");
 				domainData.add(publicDomain);
+				answer = new ListBox();
+				answer.addItem("Yes");
+				answer.addItem("No");
+				answer.addChangeHandler(new ChangeHandler() {
+					@Override
+					public void onChange(ChangeEvent arg0) {
+						if (answer.getSelectedIndex() == 0) {
+							domainData.add(defaultRolePanel);
+						}
+						else {
+							domainData.remove(defaultRolePanel);
+						}
+					}
+				});
+				domainData.add(answer);
+				
+				defaultRolePanel = new HorizontalPanel();
+				HorizontalPanel space = new HorizontalPanel();
+				space.setWidth("50px");
+				defaultRolePanel.add(space);
+				Label name = new Label("Default role");
+				name.setStyleName("bold");
+				defaultRolePanel.add(name);
+				defaultRolePanel.add(roleBox);
 				
 				if (info.predefinedRole.equals("")) {
-					Label answer = new Label("No");
-					domainData.add(answer);
+					answer.setSelectedIndex(1);
+					isPublic = false;
 				}
 				else {
-					Label answer = new Label("Yes");
-					domainData.add(answer);
-					HorizontalPanel space = new HorizontalPanel();
-					space.setWidth("50px");
-					domainData.add(space);
-					Label name = new Label("Default role");
-					name.setStyleName("bold");
-					domainData.add(name);
-					domainData.add(roleBox);
+					isPublic = true;
+					answer.setSelectedIndex(0);
+					domainData.add(defaultRolePanel);
 				}
 				
 				rightPanel.add(domainData);
@@ -293,17 +314,30 @@ public class AdminModule implements EntryPoint {
 	}
 	
 	private void save() {
+		if (answer.getSelectedIndex() == 0) {
+			isPublic = true;
+			domainPPG.setPublic(true);
+		}
+		else {
+			isPublic = false;
+			domainPPG.setPublic(false);
+		}
 		saveDefaultRole();
 		savePropertyPageChanges();
 	}
 
 	private void saveDefaultRole() {
+		String role;
+		if (isPublic) role = roleBox.getItemText(roleBox.getSelectedIndex());
+		else role = "[none]";
 		RiscossCall.fromCookies().withDomain(selectedDomain).admin().fx("default-role")
-		.arg("role", roleBox.getItemText( roleBox.getSelectedIndex() ) ).post( new JsonCallback() {
+		.arg("role", role ).post( new JsonCallback() {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {}
 			@Override
-			public void onFailure( Method method, Throwable exception ) {}
+			public void onFailure( Method method, Throwable exception ) {
+				Window.alert(exception.getMessage());
+			}
 		});
 	}
 	

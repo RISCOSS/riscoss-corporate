@@ -359,4 +359,8 @@ public class DomainPropertyPage implements IsWidget {
 		//rightPanel.add(userData);
 	}
 	
+	public void setPublic (Boolean b) {
+		isPublic = b;
+		leftPanel.remove(delete);
+	}
 }
