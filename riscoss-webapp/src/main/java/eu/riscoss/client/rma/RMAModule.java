@@ -27,15 +27,19 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.Widget;
 
 import eu.riscoss.client.Callback;
 import eu.riscoss.client.Log;
 import eu.riscoss.client.RiscossJsonClient;
+import eu.riscoss.client.SimpleRiskCconf;
 import eu.riscoss.client.codec.CodecAHPInput;
 import eu.riscoss.client.codec.CodecChunkList;
 import eu.riscoss.client.codec.CodecStringList;
+import eu.riscoss.client.riskanalysis.JsonRiskAnalysis;
 import eu.riscoss.client.riskconfs.ModelSelectionDialog;
 import eu.riscoss.client.ui.ClickWrapper;
+import eu.riscoss.client.ui.FramePanel;
 import eu.riscoss.shared.EChunkType;
 import eu.riscoss.shared.JAHPComparison;
 import eu.riscoss.shared.JAHPInput;
@@ -62,9 +66,12 @@ public class RMAModule implements EntryPoint {
 	ArrayList<JAHPComparison>				goalComparisons = new ArrayList<JAHPComparison>();
 	Map<String,ArrayList<JAHPComparison>>	riskComparisons = new HashMap<String,ArrayList<JAHPComparison>>();
 	
+	String 			rasID;
+	
 	@Override
 	public void onModuleLoad() {
-		
+		if (Window.Location.getParameter("id") != null) rasID = Window.Location.getParameter("id");
+		else rasID = "";
 		HorizontalPanel h = new HorizontalPanel();
 		Anchor a = new Anchor( "Select models..." );
 		a.addClickHandler( new ClickHandler() {
@@ -93,6 +100,7 @@ public class RMAModule implements EntryPoint {
 				});
 			}
 		});
+		if (!rasID.equals("")) loadRASInfo();
 		h.add( a );
 		
 		dock.add( h, DockPanel.NORTH );
@@ -102,6 +110,50 @@ public class RMAModule implements EntryPoint {
 		dock.setSize( "100%", "100%" );
 		RootPanel.get().add( dock );
 		
+	}
+	
+	public void loadRASInfo() {
+		RiscossJsonClient.getSessionSummary(rasID, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				JsonRiskAnalysis ras = new JsonRiskAnalysis( response );
+				RiscossJsonClient.getRCContent(ras.getRC(), new JsonCallback() {
+					@Override
+					public void onFailure(Method method, Throwable exception) {
+						Window.alert(exception.getMessage());
+					}
+					@Override
+					public void onSuccess(Method method, JSONValue response) {
+						SimpleRiskCconf rc = new SimpleRiskCconf( response );
+						ArrayList<String> mList = new ArrayList<>();
+						for (int i = 0; i < rc.getLayerCount(); ++i) {
+							for (String s : rc.getModelList(rc.getLayer(i))) {
+								mList.add(s);
+							}
+						}
+						models = mList;
+						RiscossJsonClient.listChunkslist(mList, new JsonCallback() {
+							@Override
+							public void onSuccess( Method method, JSONValue response ) {
+								loadModel( response );
+								}
+							@Override
+							public void onFailure( Method method, Throwable exception ) {
+								Window.alert( exception.getMessage() );
+								}
+						} );
+					}
+				});
+			}
+		});
+	}
+	
+	public Widget getWidget() {
+		return dock;
 	}
 	
 	protected void loadModel( JSONValue response ) {
@@ -158,11 +210,41 @@ public class RMAModule implements EntryPoint {
 		
 		
 		DockPanel outputContainer = new DockPanel();
-		outputContainer.add( new Button( "Run", new ClickHandler() {
-			@Override
-			public void onClick( ClickEvent event ) {
-				onRun();
-			}} ), DockPanel.NORTH );
+		
+		if (rasID.equals("")) {
+			Button run = new Button("Run");
+			run.setStyleName("deleteButton");
+			run.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent arg0) {
+					onRun();
+				}
+			});
+			outputContainer.add(run, DockPanel.NORTH);
+		}
+		else {
+			Button apply = new Button("Apply");
+			apply.setStyleName("deleteButton");
+			apply.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent arg0) {
+					RiscossJsonClient.applyMitigation(rasID, "AHP", new JsonCallback() {
+						@Override
+						public void onFailure(Method method, Throwable exception) {
+							Window.alert(exception.getMessage());
+						}
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							FramePanel p = new FramePanel("riskanalysis.jsp?id=" + rasID);
+							RootPanel.get().clear();
+							RootPanel.get().add(p.getWidget());
+							p.activate();
+						}
+					});
+				}
+			});
+			outputContainer.add(apply, DockPanel.NORTH);
+		}
 		outputContainer.add( outputPanel, DockPanel.CENTER );
 		
 		

@@ -444,7 +444,6 @@ public class RiscossWebApp implements EntryPoint {
 	}
 	
 	protected void loadPanel( String url ) {
-		
 		if( currentPanel != null ) {
 			RootPanel.get().remove( currentPanel.getWidget() );
 			currentPanel = null;

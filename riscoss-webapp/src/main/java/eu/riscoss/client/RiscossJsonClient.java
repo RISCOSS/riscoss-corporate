@@ -471,6 +471,10 @@ public class RiscossJsonClient {
 		RiscossCall.fromCookies().analysis().fx("session").fx(riskAnalysisSession).fx("newrun").arg("opt",strOpt).post(cb);
 	}
 	
+	public static void applyMitigation( String riskAnalysisSession, String mt, JsonCallback cb ) {
+		RiscossCall.fromCookies().analysis().fx("session").fx(riskAnalysisSession).fx("mt").fx(mt).fx("apply").post(cb);
+	}
+	
 	/////Analysis////////
 	public static void runAnalysis( String target, String rc, String verbosity, EAnalysisOption opt, JSONObject values, JsonCallback cb ) {
 		//TODO:convert to new format!!
@@ -577,6 +581,5 @@ public class RiscossJsonClient {
 	public static void listUsers( JsonCallback cb ) {
 		RiscossCall.fromToken(getToken()).admin().fx("users").list().get( cb );
 	}
-	
 	
 }

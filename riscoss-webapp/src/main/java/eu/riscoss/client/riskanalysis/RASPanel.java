@@ -36,6 +36,7 @@ import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -46,6 +47,8 @@ import eu.riscoss.client.codec.CodecRiskData;
 import eu.riscoss.client.entities.EntityPropertyPage;
 import eu.riscoss.client.ras.RASModule;
 import eu.riscoss.client.report.RiskAnalysisReport;
+import eu.riscoss.client.rma.RMAModule;
+import eu.riscoss.client.ui.FramePanel;
 import eu.riscoss.shared.JMissingData;
 
 public class RASPanel implements IsWidget {
@@ -180,19 +183,22 @@ public class RASPanel implements IsWidget {
 		buttons = new HorizontalPanel();
 		buttons2 = new HorizontalPanel();
 		HorizontalPanel empty = new HorizontalPanel();
+		HorizontalPanel empty2 = new HorizontalPanel();
 		
 		buttons.addStyleName("margin-top");
 		buttons2.setStyleName("margin-top");
 		empty.setWidth("12px");
+		empty2.setWidth("12px");
 		
 		//If RASPanel placed in multi-layer analysis
 		if (risk != null) {
 			buttons.add(risk.getBack());
 			buttons.add(remove);
-			
+			buttons.add(empty);
+			buttons.add(mitigation);
 			buttons2.add(update);
 			buttons2.add(run);
-			buttons2.add(empty);
+			buttons2.add(empty2);
 			buttons2.add(backupUpdate);
 			buttons2.add(backupRun);
 		}
@@ -200,9 +206,11 @@ public class RASPanel implements IsWidget {
 		else if (rasModule != null) {
 			buttons.add(browseBack);
 			buttons.add(browseDelete);
+			buttons.add(empty);
+			buttons.add(mitigation);
 			buttons2.add(update);
 			buttons2.add(run);
-			buttons2.add(empty);
+			buttons2.add(empty2);
 			buttons2.add(backupUpdate);
 			buttons2.add(backupRun);
 		}
@@ -210,9 +218,11 @@ public class RASPanel implements IsWidget {
 		else if (eppg != null && entityB) {
 			buttons.add(entityBack);
 			buttons.add(entityDelete);
+			buttons.add(empty);
+			buttons.add(mitigation);
 			buttons2.add(update);
 			buttons2.add(run);
-			buttons2.add(empty);
+			buttons2.add(empty2);
 			buttons2.add(backupUpdate);
 			buttons2.add(backupRun);
 		}
@@ -220,9 +230,11 @@ public class RASPanel implements IsWidget {
 		else {
 			buttons.add(layerBack);
 			buttons.add(layerDelete);
+			buttons.add(empty);
+			buttons.add(mitigation);
 			buttons2.add(update);
 			buttons2.add(run);
-			buttons2.add(empty);
+			buttons2.add(empty2);
 			buttons2.add(backupUpdate);
 			buttons2.add(backupRun);
 		}
@@ -279,6 +291,7 @@ public class RASPanel implements IsWidget {
 	Button		layerDelete;
 	Button		save;
 	Button		backupSave;
+	Button		mitigation;
 	
 	protected void generateButtons() {
 		
@@ -416,6 +429,15 @@ public class RASPanel implements IsWidget {
 			@Override
 			public void onClick(ClickEvent arg0) {
 				onBackupSaveClicked();
+			}
+		});
+		
+		mitigation = new Button("Apply mitigation");
+		mitigation.setStyleName("deleteButton");
+		mitigation.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent arg0) {
+				applyMitigation();	
 			}
 		});
 	}
@@ -755,6 +777,13 @@ public class RASPanel implements IsWidget {
 				});
 			}
 		});
+	}
+	
+	private void applyMitigation() {
+		FramePanel p = new FramePanel("rma.jsp?id=" + selectedRAS);
+		RootPanel.get().clear();
+		RootPanel.get().add(p.getWidget());
+		p.activate();
 	}
 	
 	private String getDate() {

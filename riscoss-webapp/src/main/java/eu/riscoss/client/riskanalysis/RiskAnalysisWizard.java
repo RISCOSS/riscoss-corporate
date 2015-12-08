@@ -163,6 +163,8 @@ public class RiskAnalysisWizard implements EntryPoint {
 			
 			Window.alert( ex.getMessage() );
 		}
+		
+		if (Window.Location.getParameter("id") != null) setSelectedRAS();
 	}
 	
 	private void newRiskSession() {
@@ -439,6 +441,34 @@ public class RiskAnalysisWizard implements EntryPoint {
 		vPanel.add(rasPanel);
 		title.setText(selectedRiskSession);
 		mainView.add(vPanel);
+	}
+	
+	private void setSelectedRAS() {
+		newName.setText("");
+		g.setWidget(2, 0, null);
+		g.setWidget(2, 1, null);
+		g.setWidget(2, 2, null);
+		mainView.clear();
+		top.remove(g);
+		vPanel = new VerticalPanel();
+		vPanel.setStyleName("leftPanelLayer");
+		rasPanel = new RASPanel(this);
+		String id = Window.Location.getParameter("id");
+		rasPanel.loadRAS(id);
+		vPanel.add(rasPanel);
+		RiscossJsonClient.getSessionSummary(id, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				JsonRiskAnalysis j = new JsonRiskAnalysis( response );
+				title.setText(j.getName());
+				mainView.add(vPanel);
+			}
+		});
+		
 	}
 	
 	private void reloadPage() {
