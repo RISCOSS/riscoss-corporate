@@ -336,7 +336,9 @@ public class RASPanel implements IsWidget {
 		remove.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent arg0) {
-				risk.remove(selectedRAS);
+				Boolean b = Window.confirm("Are you sure that you want to delete risk session " + rasName + "?");
+				if (b)
+					risk.remove(selectedRAS);
 			}
 		});
 		
@@ -354,16 +356,19 @@ public class RASPanel implements IsWidget {
 		browseDelete.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent arg0) {
-				RiscossJsonClient.deleteRiskAnalysisSession(sessionSummary.getID(), new JsonCallback() {
-					@Override
-					public void onFailure(Method method, Throwable exception) {
-						Window.alert(exception.getMessage());
-					}
-					@Override
-					public void onSuccess(Method method, JSONValue response) {
-						rasModule.back();
-					}
-				});
+				Boolean b = Window.confirm("Are you sure that you want to delete risk session " + rasName + "?");
+				if (b) {
+					RiscossJsonClient.deleteRiskAnalysisSession(sessionSummary.getID(), new JsonCallback() {
+						@Override
+						public void onFailure(Method method, Throwable exception) {
+							Window.alert(exception.getMessage());
+						}
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							rasModule.back();
+						}
+					});
+				}
 			}
 		});
 		
@@ -381,7 +386,9 @@ public class RASPanel implements IsWidget {
 		entityDelete.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent arg0) {
-				eppg.delete(sessionSummary.getID(), entityB);
+				Boolean b = Window.confirm("Are you sure that you want to delete risk session " + rasName + "?");
+				if (b)
+					eppg.delete(sessionSummary.getID(), entityB);
 			}
 		});
 		
@@ -399,7 +406,9 @@ public class RASPanel implements IsWidget {
 		layerDelete.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent arg0) {
-				eppg.delete(sessionSummary.getID(), entityB);
+				Boolean b = Window.confirm("Are you sure that you want to delete risk session " + rasName + "?");
+				if (b)
+					eppg.delete(sessionSummary.getID(), entityB);
 			}
 		});
 		
