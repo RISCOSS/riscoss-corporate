@@ -916,16 +916,18 @@ public class EntityPropertyPage implements IsWidget {
 				else value += "0";
 			}
 			else if (datatype.equals("Date")) {
-				int hour = Integer.parseInt(((TextBox) ((Grid) tb.getWidget(i, 1)).getWidget(0, 1)).getText());
-				int minute = Integer.parseInt(((TextBox) ((Grid) tb.getWidget(i, 1)).getWidget(0, 3)).getText());
-				int second = Integer.parseInt(((TextBox) ((Grid) tb.getWidget(i, 1)).getWidget(0, 5)).getText());
-				Date date = ((DateBox) ((Grid) tb.getWidget(i,1)).getWidget(0, 0)).getValue();
-				date.setHours(hour);
-				date.setMinutes(minute);
-				date.setSeconds(second);
-				
-				DateTimeFormat fmt = DateTimeFormat.getFormat("yyyy-MM-dd:HH-mm-ss");
-			    value += fmt.format(date);
+				if (!((TextBox) ((Grid) tb.getWidget(i, 1)).getWidget(0, 1)).getText().equals("")) {
+					int hour = Integer.parseInt(((TextBox) ((Grid) tb.getWidget(i, 1)).getWidget(0, 1)).getText());
+					int minute = Integer.parseInt(((TextBox) ((Grid) tb.getWidget(i, 1)).getWidget(0, 3)).getText());
+					int second = Integer.parseInt(((TextBox) ((Grid) tb.getWidget(i, 1)).getWidget(0, 5)).getText());
+					Date date = ((DateBox) ((Grid) tb.getWidget(i,1)).getWidget(0, 0)).getValue();
+					date.setHours(hour);
+					date.setMinutes(minute);
+					date.setSeconds(second);
+					
+					DateTimeFormat fmt = DateTimeFormat.getFormat("yyyy-MM-dd:HH-mm-ss");
+				    value += fmt.format(date);
+				}
 			}
 			else {
 				value += ((ListBox) tb.getWidget(i, 1)).getSelectedIndex();
