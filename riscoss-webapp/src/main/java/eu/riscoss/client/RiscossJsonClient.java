@@ -215,6 +215,13 @@ public class RiscossJsonClient {
 		//				.post().header( "entities", json.toString() ).send( cb );
 	}
 	
+	public static void getCandidateChildren( String entity, JsonCallback cb ) {
+		RiscossCall.fromCookies().entities().item(entity).fx("candidatechildren").get(cb);
+	}
+	
+	public static void getCandidateParents( String entity, JsonCallback cb ) {
+		RiscossCall.fromCookies().entities().item(entity).fx("candidateparents").get(cb);
+	}
 //	public static void getParents(...){
 //		... if needed
 //	} 

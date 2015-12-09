@@ -368,12 +368,36 @@ public class EntityPropertyPage implements IsWidget {
 			Label l = new Label("Parent");
 			l.setStyleName("bold");
 			data.add(l);
-			for (int i = 0; i < entitiesList.size(); ++i) {
+			RiscossJsonClient.getCandidateChildren(entity, new JsonCallback() {
+				@Override
+				public void onFailure(Method method, Throwable exception) {
+					Window.alert(exception.getMessage());
+				}
+				@Override
+				public void onSuccess(Method method, JSONValue response) {
+					for (int i = 0; i < response.isArray().size(); ++i) {
+						childrenListbox.addItem(response.isArray().get(i).isString().stringValue());
+					}
+					RiscossJsonClient.getCandidateParents(entity, new JsonCallback() {
+						@Override
+						public void onFailure(Method method, Throwable exception) {
+							Window.alert(exception.getMessage());
+						}
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							for (int i = 0; i < response.isArray().size(); ++i) {
+								parentsListbox.addItem(response.isArray().get(i).isString().stringValue());
+							}
+						}
+					});
+				}
+			});
+			/*for (int i = 0; i < entitiesList.size(); ++i) {
 				if (!entitiesList.get(i).equals(entity)) {
 					parentsListbox.addItem(entitiesList.get(i));
 					childrenListbox.addItem(entitiesList.get(i));
 				}
-			}
+			}*/
 			data.add(parentsListbox);
 			Button b = new Button("Add parent", new ClickHandler() {
 				@Override
