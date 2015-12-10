@@ -53,6 +53,8 @@ public class PreferenceMatrix implements IsWidget {
 	
 	SimplePanel container = new SimplePanel();
 	
+	ArrayList<JAHPComparison> preferences;
+	
 	@Override
 	public Widget asWidget() {
 		return container;
@@ -79,7 +81,12 @@ public class PreferenceMatrix implements IsWidget {
 			
 			i++;
 		}
+		this.preferences = list;
 		container.setWidget( grid );
+	}
+	
+	public ArrayList<JAHPComparison> getValues() {
+		return this.preferences;
 	}
 	
 	public void insertRow (JAHPComparison c) {
