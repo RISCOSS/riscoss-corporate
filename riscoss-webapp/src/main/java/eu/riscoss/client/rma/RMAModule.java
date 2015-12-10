@@ -377,7 +377,11 @@ public class RMAModule implements EntryPoint {
 		ahp.setRiskCount( risks.size() );
 		
 		Log.println( "Creating goal comparison list" );
-		ahp.goals = createComparisonList( selection );
+		ahp.goals = preferenceMatrix.getValues();
+		if( ahp.goals == null ) {
+			Window.alert("YYEY");
+			ahp.goals = createComparisonList( selection );
+		}
 		
 		Log.println( "Creating risk comparison matrix" );
 		for( String id : selection ) {
