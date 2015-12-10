@@ -73,36 +73,40 @@ public class RMAModule implements EntryPoint {
 		if (Window.Location.getParameter("id") != null) rasID = Window.Location.getParameter("id");
 		else rasID = "";
 		HorizontalPanel h = new HorizontalPanel();
-		Anchor a = new Anchor( "Select models..." );
-		a.addClickHandler( new ClickHandler() {
-			@Override
-			public void onClick( ClickEvent event ) {
-				ModelSelectionDialog dialog = new ModelSelectionDialog();
-				dialog.show( new Callback<List<String>>() {
-					@Override
-					public void onError( Throwable t ) {
-						// Do nothing
-					}
-					@Override
-					public void onDone( List<String> list ) {
-						models = list;
-						RiscossJsonClient.listChunkslist(list, new JsonCallback() {
-							@Override
-							public void onSuccess( Method method, JSONValue response ) {
-								loadModel( response );
-								}
-							@Override
-							public void onFailure( Method method, Throwable exception ) {
-								Window.alert( exception.getMessage() );
-								}
-						} );
-					}
-				});
-			}
-		});
-		if (!rasID.equals("")) loadRASInfo();
-		h.add( a );
 		
+		if (rasID.equals("")) {
+			Anchor a = new Anchor( "Select models..." );
+			a.addClickHandler( new ClickHandler() {
+				@Override
+				public void onClick( ClickEvent event ) {
+					ModelSelectionDialog dialog = new ModelSelectionDialog();
+					dialog.show( new Callback<List<String>>() {
+						@Override
+						public void onError( Throwable t ) {
+							// Do nothing
+						}
+						@Override
+						public void onDone( List<String> list ) {
+							models = list;
+							RiscossJsonClient.listChunkslist(list, new JsonCallback() {
+								@Override
+								public void onSuccess( Method method, JSONValue response ) {
+									loadModel( response );
+									}
+								@Override
+								public void onFailure( Method method, Throwable exception ) {
+									Window.alert( exception.getMessage() );
+									}
+							} );
+						}
+					});
+				}
+			});
+			h.add(a);
+		}
+		else {
+			loadRASInfo();
+		}
 		dock.add( h, DockPanel.NORTH );
 		dock.setCellHeight( h, "1%" );
 		dock.add( contentPanel,DockPanel.CENTER );
@@ -140,11 +144,12 @@ public class RMAModule implements EntryPoint {
 							@Override
 							public void onSuccess( Method method, JSONValue response ) {
 								loadModel( response );
-								}
+								setParams();
+							}
 							@Override
 							public void onFailure( Method method, Throwable exception ) {
 								Window.alert( exception.getMessage() );
-								}
+							}
 						} );
 					}
 				});
@@ -155,6 +160,8 @@ public class RMAModule implements EntryPoint {
 	public Widget getWidget() {
 		return dock;
 	}
+	
+	Grid criteriaSelectionForm;
 	
 	protected void loadModel( JSONValue response ) {
 		
@@ -179,7 +186,7 @@ public class RMAModule implements EntryPoint {
 			}
 		}
 		
-		Grid criteriaSelectionForm = new Grid( goals.size() +1, 2 );
+		criteriaSelectionForm = new Grid( goals.size() +1, 2 );
 		
 		int n = 0;
 		for( JChunkItem chunk : goals ) {
@@ -211,18 +218,19 @@ public class RMAModule implements EntryPoint {
 		
 		DockPanel outputContainer = new DockPanel();
 		
+		Button run = new Button("Run");
+		run.setStyleName("deleteButton");
+		run.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent arg0) {
+				onRun();
+			}
+		});
 		if (rasID.equals("")) {
-			Button run = new Button("Run");
-			run.setStyleName("deleteButton");
-			run.addClickHandler(new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent arg0) {
-					onRun();
-				}
-			});
 			outputContainer.add(run, DockPanel.NORTH);
 		}
 		else {
+			run.setText("What-if");
 			Button apply = new Button("Apply");
 			apply.setStyleName("deleteButton");
 			apply.addClickHandler(new ClickHandler() {
@@ -231,7 +239,19 @@ public class RMAModule implements EntryPoint {
 					onApply();
 				}
 			});
-			outputContainer.add(apply, DockPanel.NORTH);
+			Button cancel = new Button("Cancel");
+			cancel.setStyleName("deleteButton");
+			cancel.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent arg0) {
+					back();
+				}
+			});
+			HorizontalPanel p = new HorizontalPanel();
+			p.add(run);
+			p.add(apply);
+			p.add(cancel);
+			outputContainer.add(p, DockPanel.NORTH);
 		}
 		outputContainer.add( outputPanel, DockPanel.CENTER );
 		
@@ -254,6 +274,50 @@ public class RMAModule implements EntryPoint {
 	}
 	
 	static interface ResultsDecoder extends JsonEncoderDecoder<JAHPResult> {}
+	
+	protected void setParams() {
+		RiscossJsonClient.getMitigationActivityParameters(rasID, "AHP", new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				CodecAHPInput codec = GWT.create( CodecAHPInput.class );
+				Log.println("Decoding");
+				JAHPInput input = codec.decode(response);
+				
+				for (JAHPComparison ahp : input.goals) {
+					goalComparisons.add(ahp);
+					if (!selection.contains(ahp.getId1())) {
+						selection.add(ahp.getId1());
+						check(ahp.getId1());
+					}
+					if (!selection.contains(ahp.getId2())) {
+						selection.add(ahp.getId2());
+						check(ahp.getId2());
+					}
+					preferenceMatrix.insertRow(ahp);
+				}
+
+				int i = 0;
+				for (String s : selection) {
+					riskComparisons.put(s, (ArrayList<JAHPComparison>) input.risks.get(i));
+					++i;
+				}
+			}
+		});
+	}
+	
+	protected void check(String id) {
+		for (int i = 0; i < criteriaSelectionForm.getRowCount()-1; ++i) {
+			String s = ((Anchor)criteriaSelectionForm.getWidget( i, 1 )).getText();
+			if (s.equals(id)) {
+				CheckBox c = ((CheckBox)criteriaSelectionForm.getWidget(i, 0));
+				c.setChecked(true);
+			};
+		}
+	}
 	
 	protected void onRun() {
 		Log.println( "Creating ahp input" );
@@ -330,30 +394,24 @@ public class RMAModule implements EntryPoint {
 		String json = codec.encode( ahp ).toString();
 		
 		Log.println( "Calling" );
-		RiscossJsonClient.runAHP( json, new JsonCallback() {
+		RiscossJsonClient.applyMitigation(json, rasID, "AHP", new JsonCallback() {
 			@Override
-			public void onSuccess( Method method, JSONValue response ) {
-				Log.println( "" + response );
-				RiscossJsonClient.applyMitigation(rasID, "AHP", new JsonCallback() {
-					@Override
-					public void onFailure(Method method, Throwable exception) {
-						Window.alert(exception.getMessage());
-					}
-					@Override
-					public void onSuccess(Method method, JSONValue response) {
-						Log.println( "" + response );
-						FramePanel p = new FramePanel("riskanalysis.jsp?id=" + rasID);
-						RootPanel.get().clear();
-						RootPanel.get().add(p.getWidget());
-						p.activate();
-					}
-				});
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
 			}
 			@Override
-			public void onFailure( Method method, Throwable exception ) {
-				Window.alert( exception.getMessage() );
+			public void onSuccess(Method method, JSONValue response) {
+				Log.println( "" + response );
+				back();
 			}
 		});
+	}
+	
+	protected void back() {
+		FramePanel p = new FramePanel("riskanalysis.jsp?id=" + rasID);
+		RootPanel.get().clear();
+		RootPanel.get().add(p.getWidget());
+		p.activate();
 	}
 	
 	protected void setSelectedGoal( String value ) {

@@ -478,8 +478,16 @@ public class RiscossJsonClient {
 		RiscossCall.fromCookies().analysis().fx("session").fx(riskAnalysisSession).fx("newrun").arg("opt",strOpt).post(cb);
 	}
 	
-	public static void applyMitigation( String riskAnalysisSession, String mt, JsonCallback cb ) {
-		RiscossCall.fromCookies().analysis().fx("session").fx(riskAnalysisSession).fx("mt").fx(mt).fx("apply").post(cb);
+	public static void applyMitigation( String values, String riskAnalysisSession, String mt, JsonCallback cb ) {
+		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + getDomain() + "/session/" + riskAnalysisSession + "/mt/"
+				+ mt + "/apply")
+		.post().header( "token", RiscossCall.getToken() )
+		.text( values ).send( cb ); 
+//		RiscossCall.fromCookies().analysis().fx("session").fx(riskAnalysisSession).fx("mt").fx(mt).fx("apply").post(cb);
+	}
+	
+	public static void getMitigationActivityParameters( String riskAnalysisSession, String mt, JsonCallback cb ) {
+		RiscossCall.fromCookies().analysis().fx("session").fx(riskAnalysisSession).fx("mt").fx(mt).fx("params").get(cb);
 	}
 	
 	/////Analysis////////

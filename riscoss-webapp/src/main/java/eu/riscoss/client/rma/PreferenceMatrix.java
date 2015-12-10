@@ -82,4 +82,15 @@ public class PreferenceMatrix implements IsWidget {
 		container.setWidget( grid );
 	}
 	
+	public void insertRow (JAHPComparison c) {
+		Grid grid = (Grid) container.getWidget();
+		int i = grid.getRowCount();
+		grid.resize(grid.getRowCount() + 1, 3);
+		
+		ComparisonRow row = new ComparisonRow( c );
+		grid.setWidget( i, 0, row.getLeftWidget() );
+		grid.setWidget( i, 1, row.getSlider() );
+		grid.setWidget( i, 2, row.getRightWidget() );
+	}
+	
 }
