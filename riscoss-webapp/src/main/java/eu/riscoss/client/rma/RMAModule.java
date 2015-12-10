@@ -228,19 +228,7 @@ public class RMAModule implements EntryPoint {
 			apply.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent arg0) {
-					RiscossJsonClient.applyMitigation(rasID, "AHP", new JsonCallback() {
-						@Override
-						public void onFailure(Method method, Throwable exception) {
-							Window.alert(exception.getMessage());
-						}
-						@Override
-						public void onSuccess(Method method, JSONValue response) {
-							FramePanel p = new FramePanel("riskanalysis.jsp?id=" + rasID);
-							RootPanel.get().clear();
-							RootPanel.get().add(p.getWidget());
-							p.activate();
-						}
-					});
+					onApply();
 				}
 			});
 			outputContainer.add(apply, DockPanel.NORTH);
@@ -306,6 +294,60 @@ public class RMAModule implements EntryPoint {
 						GWT.create( ResultsDecoder.class );
 				JAHPResult result = codec.decode( response );
 				outputPanel.setOutput( result );
+			}
+			@Override
+			public void onFailure( Method method, Throwable exception ) {
+				Window.alert( exception.getMessage() );
+			}
+		});
+	}
+	
+	protected void onApply() {
+		Log.println( "Creating ahp input" );
+		JAHPInput ahp = new JAHPInput();
+		
+		ahp.setGoalCount( selection.size() );
+		ahp.setRiskCount( risks.size() );
+		
+		Log.println( "Creating goal comparison list" );
+		ahp.goals = createComparisonList( selection );
+		
+		Log.println( "Creating risk comparison matrix" );
+		for( String id : selection ) {
+			Log.println( "Creating risk comparison list for goal " + id );
+			List<JAHPComparison> comp = riskComparisons.get( id );
+			if( comp == null ) {
+				Log.println( "Creating empty list for goal " + id );
+				comp = createComparisonListFromChunks( risks );
+			}
+			ahp.risks.add( comp );
+		}
+		
+		Log.println( "Creating codec" );
+		CodecAHPInput codec = GWT.create( CodecAHPInput.class );
+		
+		Log.println( "Serializing" );
+		String json = codec.encode( ahp ).toString();
+		
+		Log.println( "Calling" );
+		RiscossJsonClient.runAHP( json, new JsonCallback() {
+			@Override
+			public void onSuccess( Method method, JSONValue response ) {
+				Log.println( "" + response );
+				RiscossJsonClient.applyMitigation(rasID, "AHP", new JsonCallback() {
+					@Override
+					public void onFailure(Method method, Throwable exception) {
+						Window.alert(exception.getMessage());
+					}
+					@Override
+					public void onSuccess(Method method, JSONValue response) {
+						Log.println( "" + response );
+						FramePanel p = new FramePanel("riskanalysis.jsp?id=" + rasID);
+						RootPanel.get().clear();
+						RootPanel.get().add(p.getWidget());
+						p.activate();
+					}
+				});
 			}
 			@Override
 			public void onFailure( Method method, Throwable exception ) {
