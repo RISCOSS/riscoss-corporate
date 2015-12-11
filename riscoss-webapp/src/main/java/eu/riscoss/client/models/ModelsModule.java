@@ -617,6 +617,7 @@ public class ModelsModule implements EntryPoint {
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
 				size = response.isArray().size();
+				if (size == 0) deleteRC();
 				for( int i = 0; i < size; i++ ) {
 					JSONObject o = (JSONObject)response.isArray().get( i );
 					ii = i;
@@ -636,8 +637,8 @@ public class ModelsModule implements EntryPoint {
 										hasRiskConfs = true;
 									}
 								};
-								if (iii == size-1 && j == rc.getLayerCount()-1) deleteRC();
 							}
+							if (iii == size-1) deleteRC();
 						}
 					});
 				}
