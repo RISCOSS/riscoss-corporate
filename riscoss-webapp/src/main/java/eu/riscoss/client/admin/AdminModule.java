@@ -57,16 +57,17 @@ public class AdminModule implements EntryPoint {
 		
 		exportJS();
 		
-		roleList.addItem("[none]");
+		
 		for(KnownRoles r: KnownRoles.values()) {
 			roleList.addItem(r.name());
 		}
+		roleList.addItem("Private domain");
 		
 //		HorizontalPanel vp = new HorizontalPanel();
 		mainView.setStyleName("mainViewLayer");
 		mainView.setWidth("100%");
 		leftPanel.setStyleName("leftPanelLayer");
-		leftPanel.setWidth("450px");
+		leftPanel.setWidth("460px");
 		rightPanel.setStyleName("rightPanelLayer");
 		page.setWidth("100%");
 //		{
