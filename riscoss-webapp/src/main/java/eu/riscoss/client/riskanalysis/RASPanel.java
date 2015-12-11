@@ -42,6 +42,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import eu.riscoss.client.RiscossJsonClient;
+import eu.riscoss.client.RiscossWebApp;
 import eu.riscoss.client.codec.CodecMissingData;
 import eu.riscoss.client.codec.CodecRiskData;
 import eu.riscoss.client.entities.EntityPropertyPage;
@@ -789,10 +790,12 @@ public class RASPanel implements IsWidget {
 	}
 	
 	private void applyMitigation() {
-		FramePanel p = new FramePanel("rma.jsp?id=" + selectedRAS);
-		RootPanel.get().clear();
-		RootPanel.get().add(p.getWidget());
-		p.activate();
+//		RiscossWebApp.loadPanel("rma.jsp?id=" + selectedRAS);
+//		FramePanel p = new FramePanel("rma.jsp?id=" + selectedRAS);
+//		RootPanel.get().clear();
+//		RootPanel.get().add(p.getWidget());
+//		p.activate();
+		Window.Location.replace("rma.jsp?id=" + selectedRAS);
 	}
 	
 	private String getDate() {

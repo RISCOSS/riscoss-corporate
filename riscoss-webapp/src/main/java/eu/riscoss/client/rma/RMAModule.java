@@ -32,6 +32,7 @@ import com.google.gwt.user.client.ui.Widget;
 import eu.riscoss.client.Callback;
 import eu.riscoss.client.Log;
 import eu.riscoss.client.RiscossJsonClient;
+import eu.riscoss.client.RiscossWebApp;
 import eu.riscoss.client.SimpleRiskCconf;
 import eu.riscoss.client.codec.CodecAHPInput;
 import eu.riscoss.client.codec.CodecChunkList;
@@ -415,10 +416,12 @@ public class RMAModule implements EntryPoint {
 	}
 	
 	protected void back() {
-		FramePanel p = new FramePanel("riskanalysis.jsp?id=" + rasID);
-		RootPanel.get().clear();
-		RootPanel.get().add(p.getWidget());
-		p.activate();
+//		RiscossWebApp.loadPanel("riskanalysis.jsp?id=" + rasID);
+//		FramePanel p = new FramePanel("riskanalysis.jsp?id=" + rasID);
+//		RootPanel.get().clear();
+//		RootPanel.get().add(p.getWidget());
+//		p.activate();
+		Window.Location.replace("riskanalysis.jsp?id=" + rasID);
 	}
 	
 	protected void setSelectedGoal( String value ) {

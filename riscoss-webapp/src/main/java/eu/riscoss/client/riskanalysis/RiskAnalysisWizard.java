@@ -95,12 +95,13 @@ public class RiskAnalysisWizard implements EntryPoint {
 	Label 					title;
 	
 	public void onModuleLoad() {
-		
+
 		try {
 			
 			mainView.setStyleName("mainViewLayer");
 			mainView.setWidth("100%");
 			page.setWidth("100%");
+			
 			leftPanel.setStyleName("leftPanelLayer");
 			leftPanel.setWidth("100%");
 			rightPanel.setStyleName("leftPanelLayer");
