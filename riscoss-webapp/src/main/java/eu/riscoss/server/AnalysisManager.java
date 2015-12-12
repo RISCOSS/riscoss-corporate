@@ -71,6 +71,7 @@ import eu.riscoss.reasoner.FieldType;
 import eu.riscoss.reasoner.ModelSlice;
 import eu.riscoss.reasoner.ReasoningLibrary;
 import eu.riscoss.reasoner.RiskAnalysisEngine;
+import eu.riscoss.server.ma.AHPAnalysis;
 import eu.riscoss.shared.EAnalysisOption;
 import eu.riscoss.shared.EAnalysisResult;
 import eu.riscoss.shared.JArgument;
@@ -577,9 +578,9 @@ public class AnalysisManager {
 		
 		JsonObject json = new JsonObject();
 		
-//		JsonObject res = getAnalysisResults( ras, ras.getTarget() );
-//		
-//		json.add( "hresults", res );
+		JsonObject res = getAnalysisResults( ras, ras.getTarget() );
+		
+		json.add( "hresults", res );
 		
 		JsonArray clusters = new JsonArray();
 		Set<String> done = new HashSet<String>();
@@ -616,7 +617,7 @@ public class AnalysisManager {
 			}
 			
 			json.add( "results", ret );
-			json.add( "cr", clusters );
+//			json.add( "cr", clusters );
 		}
 		
 		
@@ -1123,6 +1124,31 @@ public class AnalysisManager {
 		}
 	}
 	
+	@GET @Path("/{domain}/session/{sid}/scenarios/list")
+	@Info("Returns a list of the scenarios that have been created in a given risk session")
+	public String getScenarioList(
+			@HeaderParam("token") @Info("The authentication token")							String token,
+			@PathParam("domain") @Info("The selected domain")								String domain,
+			@PathParam("sid") @Info("The risk session ID")									String sid
+			) {
+		
+		RiscossDB db = null;
+		
+		try {
+			
+		}
+		catch( Exception ex ) {
+			ex.printStackTrace();
+			throw ex;
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
+		
+		return "";
+	}
+	
+	
 	
 	@POST @Path("/{domain}/session/{sid}/mt/{mt}/apply")
 	@Info("Applies a specified mitigation technique to current risk session")
@@ -1162,8 +1188,6 @@ public class AnalysisManager {
 			String ret = res.toString();
 			
 			scenario.saveResults( ret );
-			
-//			scenario.setTimestamp( new Date().getTime() );
 			
 			return ret;
 		}
