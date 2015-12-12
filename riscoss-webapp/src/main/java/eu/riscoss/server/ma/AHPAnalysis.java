@@ -1,4 +1,4 @@
-package eu.riscoss.server;
+package eu.riscoss.server.ma;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -129,83 +129,7 @@ public class AHPAnalysis extends MitigationActivity {
 		
 		return null;
 	}
-//	
-//	public Map<String,Double> run( ) {
-//		
-//		System.out.println( "Running AHP" );
-//		
-//		try {
-//			
-//			Map<String,Integer> goal_map = goals.getIdOrder(); //mkIdMap( goals );
-//			
-//			Map<Integer,String> rmap = new HashMap<Integer,String>();
-//			
-//			String strList1 = mkList( goals, goal_map );
-//			String[] strList2 = new String[risks.size()];
-//			for( int i = 0; i < risks.size(); i++ ) {
-//				List<JAHPComparison> list = risks.get( i );
-//				Map<String,Integer> risk_map = mkIdMap( list );
-//				for( String k : risk_map.keySet() ) {
-//					rmap.put( risk_map.get( k ), k );
-//				}
-//				strList2[i] = mkList( list, risk_map );
-//			}
-//			
-//			System.out.println( "Preparing args" );
-//			PySystemState stm = new PySystemState();
-//			List<String> args = new ArrayList<String>();
-//			
-//			args.add( "jython" );		// first argument in python is the program name
-//			args.add( "" + goals.size() );
-//			args.add( "" + risks.size() );
-//			args.add( strList1 );
-//			for( int i = 0; i < strList2.length; i++ ) {
-//				args.add( strList2[i] );
-//			}
-//			
-//			stm.argv = new PyList( args );
-//			
-//			System.out.println( "Creating Jython object" );
-//			PythonInterpreter jython =
-//					new PythonInterpreter( null, stm );
-//			
-//			System.out.println( "Seeting output stream" );
-//			ByteArrayOutputStream out = new ByteArrayOutputStream();
-//			jython.setOut( out );
-//			
-//			System.out.println( "Executing" );
-//			jython.execfile( Resources.class.getResource( "ahpNoEig_command.py" ).getFile() );
-//			
-//			String output = out.toString();
-//			
-//			System.out.println( "Output:" );
-//			System.out.println( output );
-//			
-//			try {
-//				output = output.substring( 1, output.length() -2 );
-//				String[] parts = output.split( "[,]" );
-//				Map<String,Double> result = new HashMap<String,Double>();
-//				for( int i = 0; i < parts.length; i++ ) {
-//					result.put( rmap.get( i ), Double.parseDouble( parts[i] ) );
-//				}
-//				return result;
-//			}
-//			catch( Exception ex ) {
-//				ex.printStackTrace();
-//			}
-//			finally {
-//				if( jython != null )
-//					jython.close();
-//			}
-//			
-//		}
-//		catch( Exception ex ) {
-//			ex.printStackTrace();
-//		}
-//		
-//		return null;
-//	}
-//	
+	
 	public String eval( String value ) {
 		
 		JAHPInput ahpInput = new Gson().fromJson( value, JAHPInput.class );

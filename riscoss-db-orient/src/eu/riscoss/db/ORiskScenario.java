@@ -3,14 +3,24 @@ package eu.riscoss.db;
 public class ORiskScenario extends OrientRAS implements RiskScenario {
 	
 	String scenario = "";
+	private OrientRAS ras;
 	
 	public ORiskScenario( OrientRAS ras, String name ) {
 		super( ras.dom, ras.id );
+		this.ras = ras;
 		this.scenario = name;
 	}
 	
+	public RiskAnalysisSession getSession() {
+		return this.ras;
+	}
+	
+	protected String scenarioPath() {
+		return super.path() + "/scenarios/" + scenario;
+	}
+	
 	protected String path() {
-		String scenarioPath = super.path() + "/scenarios/" + scenario;
+		String scenarioPath = scenarioPath();
 		if( dom.get( scenarioPath ) != null )
 			return scenarioPath;
 		else
@@ -21,7 +31,7 @@ public class ORiskScenario extends OrientRAS implements RiskScenario {
 	public void set( String key, String value ) {
 		setAttribute( path(), key, value);
 	}
-
+	
 	@Override
 	public String get( String key, String def ) {
 		return getAttribute( path(), key, def );
