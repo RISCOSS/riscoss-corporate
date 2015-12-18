@@ -46,6 +46,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
+import eu.riscoss.client.Log;
 import eu.riscoss.dataproviders.RiskData;
 import eu.riscoss.db.RiscossDB;
 import eu.riscoss.db.SearchParams;
@@ -447,6 +448,30 @@ public class EntityManager {
 			System.out.println("Returning: " + json );
 			
 			return json;
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
+			DBConnector.closeDB(db);
+		}
+	}
+	
+	@POST @Path("/{domain}/{entity}/rename")
+	@Info("Rename the specified entity")
+	public void renameEntity(
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token, 
+			@PathParam("entity") @Info("The name of an existing entity")	String name, 
+			@QueryParam("newname") @Info("The new name of the entity")		String newName
+			) throws Exception {
+		
+		RiscossDB db = null;
+		
+		try {
+			
+			db = DBConnector.openDB( domain, token );
+			db.renameEntity(name, newName);
 		}
 		catch( Exception ex ) {
 			throw ex;

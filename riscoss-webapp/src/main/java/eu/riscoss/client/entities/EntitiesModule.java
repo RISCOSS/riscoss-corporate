@@ -421,6 +421,8 @@ public class EntitiesModule implements EntryPoint {
 		});
 	}*/
 	
+	TextBox newName;
+	
 	public void setSelectedEntity( String entity ) {
 		this.selectedEntity = entity;
 		ppg = new EntityPropertyPage(this);
@@ -457,9 +459,9 @@ public class EntitiesModule implements EntryPoint {
 		nameL.setStyleName("bold");
 		grid.setWidget(0,0,nameL);
 		
-		Label nameLy = new Label(selectedEntity);
-		nameLy.setStyleName("tag");
-		grid.setWidget(0, 1, nameLy);
+		newName = new TextBox();
+		newName.setText(selectedEntity);
+		grid.setWidget(0, 1, newName);
 		
 		grid.setWidget(0, 2, space);
 		

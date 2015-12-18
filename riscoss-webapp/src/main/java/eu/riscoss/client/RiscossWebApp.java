@@ -130,7 +130,7 @@ public class RiscossWebApp implements EntryPoint {
 	}
 	
 	void showUI( JSiteMap sitemap) {
-		
+				
 		Log.println( "Loading UI for domain " + sitemap.domain );
 		
 		MenuBar menu = new MenuBar();

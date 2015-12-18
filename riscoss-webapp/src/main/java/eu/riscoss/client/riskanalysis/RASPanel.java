@@ -21,36 +21,40 @@
 
 package eu.riscoss.client.riskanalysis;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dev.json.JsonObject;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import eu.riscoss.client.RiscossJsonClient;
-import eu.riscoss.client.RiscossWebApp;
 import eu.riscoss.client.codec.CodecMissingData;
+import eu.riscoss.client.codec.CodecRASInfo;
 import eu.riscoss.client.codec.CodecRiskData;
 import eu.riscoss.client.entities.EntityPropertyPage;
 import eu.riscoss.client.ras.RASModule;
 import eu.riscoss.client.report.RiskAnalysisReport;
-import eu.riscoss.client.rma.RMAModule;
-import eu.riscoss.client.ui.FramePanel;
+import eu.riscoss.client.report.RiskAnalysisResults;
 import eu.riscoss.shared.JMissingData;
+import eu.riscoss.shared.JRASInfo;
 
 public class RASPanel implements IsWidget {
 	
@@ -61,9 +65,15 @@ public class RASPanel implements IsWidget {
 	HorizontalPanel		mainChart = new HorizontalPanel();
 	JsonRiskAnalysis	sessionSummary;		
 	
+	//NEW RASPANEL
+	RiskAnalysisResults r = new RiskAnalysisResults();
+	
 	private String		rasName;
 	private String 		riskConf;
 	private String		entity;
+	private String 		date;
+	private String		RASID;
+	Date currentDate;
 	
 	RiskAnalysisWizard 	risk = null;
 	
@@ -120,6 +130,9 @@ public class RASPanel implements IsWidget {
 		riskConf = ras.getRC();
 		entity = ras.getTarget();
 		rasName = ras.getName();
+		date = ras.getDate();
+		RASID = ras.getID();
+		currentDate = getDate(date);
 		
 		vPanel = new VerticalPanel();
 		Grid grid = new Grid(4,4);
@@ -241,10 +254,13 @@ public class RASPanel implements IsWidget {
 		}
 		buttonPanel.add(buttons);
 		buttonPanel.add(buttons2);
+		checkLastRiskSession();
 		vPanel.add(buttonPanel);
 		Label resultsTitle = new Label("Risk analysis results");
 		resultsTitle.setStyleName("subtitle");
 		vPanel.add(resultsTitle);
+		
+		vPanel.add(r);
 		vPanel.add(mainChart);
 		vPanel.add(report.asWidget());
 		
@@ -258,11 +274,13 @@ public class RASPanel implements IsWidget {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				try {
-						report.showResults( 
-								sessionSummary,
-								response.isObject().get( "results" ).isArray(),
-								response.isObject().get( "argumentation" ) );
-						if (report.getEvidence()) {
+						
+							vPanel.remove(mainChart);
+							vPanel.remove(report.asWidget());
+							r.showResults(sessionSummary, 
+								response.isObject());
+
+						if (r.getEvidence()) {
 							Label inputValues = new Label("Input values");
 							inputValues.setStyleName("subtitle");
 							vPanel.add(inputValues);
@@ -277,6 +295,56 @@ public class RASPanel implements IsWidget {
 			
 		} );
 		
+	}
+	
+	String mostCurrentSession;
+	
+	public void checkLastRiskSession() {
+		RiscossJsonClient.listRiskAnalysisSessions(entity, riskConf, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				if( response == null ) return;
+				if( response.isObject() == null ) return;
+				response = response.isObject().get( "list" );
+				CodecRASInfo codec = GWT.create( CodecRASInfo.class );
+				if( response.isArray() != null ) {
+					for( int i = 0; i < response.isArray().size(); i++ ) {
+						JRASInfo info = codec.decode( response.isArray().get( i ) );
+						RiscossJsonClient.getSessionSummary(info.getId(), new JsonCallback(){
+							@Override
+							public void onFailure(Method method, Throwable exception) {
+								Window.alert(exception.getMessage());
+							}
+							@Override
+							public void onSuccess(Method method, JSONValue response) {
+								JsonRiskAnalysis ras = new JsonRiskAnalysis( response );
+								Date d = getDate(ras.getDate());
+								if (d.after(currentDate) && !ras.getID().equals(RASID)) {
+									mostCurrentSession = ras.getID();
+									buttons2.clear();
+									buttons.remove(mitigation);
+									if (inputButtons != null) inputButtons.clear();
+									Label l = new Label("Current session is not the last one.");
+									Anchor a = new Anchor("Click here to see last execution results.");
+									buttons2.add(l);
+									buttons2.add(a);
+									a.addClickHandler(new ClickHandler() {
+										@Override
+										public void onClick(ClickEvent arg0) {
+											Window.Location.replace("riskanalysis.jsp?id=" + mostCurrentSession);
+										}
+									});
+								}
+							}
+						});
+					}
+				}
+			}
+		});
 	}
 	
 	Button		update;
@@ -460,13 +528,13 @@ public class RASPanel implements IsWidget {
 				new JsonCallback() {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
-						report.showResults( 
-								sessionSummary,
-								response.isObject().get( "results" ).isArray(),
-								response.isObject().get( "argumentation" ) );
+					
+						report = new RiskAnalysisReport();
+						r.showResults(sessionSummary, 
+							response.isObject());
 						buttons2.remove(running);
 					
-					if (report.getEvidence()) inputDataInfo(response.isObject().get( "input" ));
+					if (r.getEvidence()) inputDataInfo(response.isObject().get( "input" ));
 				}
 			@Override
 			public void onFailure( Method method, Throwable exception ) {
@@ -490,6 +558,7 @@ public class RASPanel implements IsWidget {
 	}
 	
 	MultiLayerInputForm inputForm;
+	HorizontalPanel inputButtons;
 	
 	protected void inputDataInfo(JSONValue input) {
 		CodecMissingData codec = GWT.create( CodecMissingData.class );
@@ -498,10 +567,10 @@ public class RASPanel implements IsWidget {
 		inputForm.load(md);
 		inputTable.clear();
 		inputTable.add(inputForm);
-		HorizontalPanel buttons = new HorizontalPanel();
-		buttons.add(save);
-		buttons.add(backupSave);
-		inputTable.add(buttons);
+		inputButtons = new HorizontalPanel();
+		inputButtons.add(save);
+		inputButtons.add(backupSave);
+		inputTable.add(inputButtons);
 	}
 
 	
@@ -530,12 +599,11 @@ public class RASPanel implements IsWidget {
 									Window.alert( exception.getMessage() );
 								}
 							});
-							report.showResults( 
-									sessionSummary,
-									response.isObject().get( "results" ).isArray(),
-									response.isObject().get( "argumentation" ) );
+								report = new RiskAnalysisReport();
+								r.showResults(sessionSummary, 
+									response.isObject());
 							
-							if (report.getEvidence()) inputDataInfo(response.isObject().get( "input" ));
+							if (r.getEvidence()) inputDataInfo(response.isObject().get( "input" ));
 						}
 						catch( Exception ex ) {
 							Window.alert( ex.getMessage() + "\n" + response );
@@ -570,7 +638,9 @@ public class RASPanel implements IsWidget {
 	protected void onBackupUpdateClicked() {
 		buttons2.add(running);
 		String date = getDate();
-		name = rasName + " (" + date + ")";
+		String split[] = rasName.split("\\(");
+		if (split.length > 0 )name = split[0] + "(" + date + ")";
+		else name = rasName + "(" + date + ")";
 		RiscossJsonClient.creteRiskAnalysisSession(name, riskConf, entity, new JsonCallback() {
 			@Override
 			public void onFailure(Method method, Throwable exception) {
@@ -580,7 +650,7 @@ public class RASPanel implements IsWidget {
 			public void onSuccess(Method method, JSONValue response) {
 				JsonRiskAnalysis ras =  new JsonRiskAnalysis( response );
 				id = ras.getID();
-				if (report.getEvidence()) {
+				if (r.getEvidence()) {
 					CodecRiskData crd = GWT.create( CodecRiskData.class );
 					newValues = crd.encode( inputForm.getValueMap() );
 					RiscossJsonClient.setAnalysisMissingData(id, newValues, new JsonCallback() {
@@ -646,7 +716,9 @@ public class RASPanel implements IsWidget {
 	protected void onBackupRunClicked() {
 		buttons2.add(running);
 		String date = getDate();
-		name = rasName + " (" + date + ")";
+		String split[] = rasName.split("\\(");
+		if (split.length > 0 )name = split[0] + "(" + date + ")";
+		else name = rasName + "(" + date + ")";
 		RiscossJsonClient.creteRiskAnalysisSession(name, riskConf, entity, new JsonCallback() {
 			@Override
 			public void onFailure(Method method, Throwable exception) {
@@ -656,7 +728,7 @@ public class RASPanel implements IsWidget {
 			public void onSuccess(Method method, JSONValue response) {
 				JsonRiskAnalysis ras =  new JsonRiskAnalysis( response );
 				id = ras.getID();
-				if (report.getEvidence()) {
+				if (r.getEvidence()) {
 					CodecRiskData crd = GWT.create( CodecRiskData.class );
 					newValues = crd.encode( inputForm.getValueMap() );
 					RiscossJsonClient.setAnalysisMissingData(id, newValues, new JsonCallback() {
@@ -723,6 +795,7 @@ public class RASPanel implements IsWidget {
 										}
 										@Override
 										public void onSuccess(Method method, JSONValue response) {
+											
 											loadRAS(id);
 											risk.generateRiskTree();
 											risk.setTitle(name);
@@ -744,7 +817,9 @@ public class RASPanel implements IsWidget {
 		newValues = crd.encode( inputForm.getValueMap() );
 		buttons2.add(running);
 		String date = getDate();
-		name = rasName + " (" + date + ")";
+		String split[] = rasName.split("\\(");
+		if (split.length > 0 )name = split[0] + "(" + date + ")";
+		else name = rasName + "(" + date + ")";
 		RiscossJsonClient.creteRiskAnalysisSession(name, riskConf, entity, new JsonCallback() {
 			@Override
 			public void onFailure(Method method, Throwable exception) {
@@ -807,6 +882,21 @@ public class RASPanel implements IsWidget {
 			++y;
 		}
 		return c.getDate() + "-" + m + "-" + y + " " + c.getHours() + "." + c.getMinutes() + "." + c.getSeconds();
+	}
+	
+	private Date getDate (String date) {
+		String info[] = date.split(" ");
+		String day[] = info[0].split("-");
+		String hour[] = info[1].split("\\.");
+		Date d = new Date();
+		d.setDate(Integer.parseInt(day[0]));
+		d.setMonth(Integer.parseInt(day[1])-1);
+		d.setYear(Integer.parseInt(day[2]));
+		d.setHours(Integer.parseInt(hour[0]));
+		d.setMinutes(Integer.parseInt(hour[1]));
+		d.setSeconds(Integer.parseInt(hour[2]));
+		return d;
+		
 	}
 		
 }
