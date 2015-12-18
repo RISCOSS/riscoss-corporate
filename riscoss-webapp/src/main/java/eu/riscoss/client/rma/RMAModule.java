@@ -25,8 +25,10 @@ import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import eu.riscoss.client.Callback;
@@ -69,8 +71,20 @@ public class RMAModule implements EntryPoint {
 	
 	String 			rasID;
 	
+	VerticalPanel		page = new VerticalPanel();
+	HorizontalPanel		mainView = new HorizontalPanel();
+	VerticalPanel 		leftPanel = new VerticalPanel();
+	HorizontalPanel 	buttons = new HorizontalPanel();
+	
 	@Override
 	public void onModuleLoad() {
+		
+		mainView.setStyleName("mainViewLayer");
+		mainView.setWidth("100%");
+		leftPanel.setStyleName("leftPanelLayer");
+		
+		
+		
 		if (Window.Location.getParameter("id") != null) rasID = Window.Location.getParameter("id");
 		else rasID = "";
 		HorizontalPanel h = new HorizontalPanel();
@@ -113,7 +127,24 @@ public class RMAModule implements EntryPoint {
 		dock.add( contentPanel,DockPanel.CENTER );
 		dock.setCellVerticalAlignment( contentPanel, DockPanel.ALIGN_TOP );
 		dock.setSize( "100%", "100%" );
-		RootPanel.get().add( dock );
+		
+		Label title ;
+		if (!rasID.equals("")) title = new Label("Apply mitigation");
+		else title = new Label("AHP session analysis");
+		title.setStyleName("title");
+		
+		leftPanel.add(buttons);
+		leftPanel.add(dock);
+		leftPanel.setWidth("100%");
+		mainView.setWidth("100%");
+		mainView.add(leftPanel);
+		
+		page.add(title);
+		page.add(mainView);
+		
+		page.setWidth("100%");
+		
+		RootPanel.get().add( page );
 		
 	}
 	
@@ -227,8 +258,10 @@ public class RMAModule implements EntryPoint {
 				onRun();
 			}
 		});
+		VerticalPanel space = new VerticalPanel();
+		space.setHeight("40px");
 		if (rasID.equals("")) {
-			outputContainer.add(run, DockPanel.NORTH);
+			buttons.add(run);
 		}
 		else {
 			run.setText("What-if");
@@ -249,10 +282,9 @@ public class RMAModule implements EntryPoint {
 				}
 			});
 			HorizontalPanel p = new HorizontalPanel();
-			p.add(run);
-			p.add(apply);
-			p.add(cancel);
-			outputContainer.add(p, DockPanel.NORTH);
+			buttons.add(run);
+			buttons.add(apply);
+			buttons.add(cancel);
 		}
 		outputContainer.add( outputPanel, DockPanel.CENTER );
 		
@@ -262,8 +294,8 @@ public class RMAModule implements EntryPoint {
 		container.getColumnFormatter().setWidth( 0, "50%" );
 		
 		container.setWidget( 0, 0, criteriaSelectionForm );
-		container.setWidget( 0, 1, riskForm );
-		container.setWidget( 1, 0, preferenceMatrix );
+		container.setWidget( 1, 0, riskForm );
+		container.setWidget( 0, 1, preferenceMatrix );
 		container.setWidget( 1, 1, outputContainer );
 		
 		container.getCellFormatter().setVerticalAlignment( 1, 0, HasVerticalAlignment.ALIGN_TOP );
