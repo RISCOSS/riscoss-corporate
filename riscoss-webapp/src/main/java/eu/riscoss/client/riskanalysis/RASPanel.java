@@ -60,7 +60,7 @@ public class RASPanel implements IsWidget {
 	
 	SimplePanel 		panel = new SimplePanel();
 	private String 		selectedRAS;
-	RiskAnalysisReport 	report = new RiskAnalysisReport();
+//	RiskAnalysisReport 	report = new RiskAnalysisReport();
 	VerticalPanel		 inputTable = new VerticalPanel();
 	HorizontalPanel		mainChart = new HorizontalPanel();
 	JsonRiskAnalysis	sessionSummary;		
@@ -262,7 +262,7 @@ public class RASPanel implements IsWidget {
 		
 		vPanel.add(r);
 		vPanel.add(mainChart);
-		vPanel.add(report.asWidget());
+//		vPanel.add(report.asWidget());
 		
 		panel.setWidget( vPanel );
 		
@@ -276,7 +276,7 @@ public class RASPanel implements IsWidget {
 				try {
 						
 							vPanel.remove(mainChart);
-							vPanel.remove(report.asWidget());
+//							vPanel.remove(report.asWidget());
 							r.showResults(sessionSummary, 
 								response.isObject());
 
@@ -529,7 +529,7 @@ public class RASPanel implements IsWidget {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 					
-						report = new RiskAnalysisReport();
+//						report = new RiskAnalysisReport();
 						r.showResults(sessionSummary, 
 							response.isObject());
 						buttons2.remove(running);
@@ -599,7 +599,7 @@ public class RASPanel implements IsWidget {
 									Window.alert( exception.getMessage() );
 								}
 							});
-								report = new RiskAnalysisReport();
+//								report = new RiskAnalysisReport();
 								r.showResults(sessionSummary, 
 									response.isObject());
 							
