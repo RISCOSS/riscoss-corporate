@@ -473,14 +473,18 @@ public class RiskAnalysisWizard implements EntryPoint {
 	}
 	
 	private void reloadPage() {
-		mainView.clear();
-		mainView.add(leftPanel);
-		mainView.add(rightPanel);
-		top.add(g);
-		selectedRiskConf = "";
-		selectedRiskSession = "";
-		title.setText("Multi-layer Analysis");
-		g.setWidget(1, 1, new Label(" - "));
+		String or = Window.Location.getParameter("or");
+		if (or == null) {
+			mainView.clear();
+			mainView.add(leftPanel);
+			mainView.add(rightPanel);
+			top.add(g);
+			selectedRiskConf = "";
+			selectedRiskSession = "";
+			title.setText("Multi-layer Analysis");
+			g.setWidget(1, 1, new Label(" - "));
+		}
+		else Window.Location.replace("dashboard.jsp");
 	}
 	
 	public Button getBack() {

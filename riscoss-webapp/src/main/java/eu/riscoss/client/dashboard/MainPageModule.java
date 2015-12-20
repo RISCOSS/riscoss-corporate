@@ -1,6 +1,7 @@
 package eu.riscoss.client.dashboard;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.fusesource.restygwt.client.JsonCallback;
@@ -28,8 +29,10 @@ import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.gwt.view.client.SelectionChangeEvent.Handler;
 
 import eu.riscoss.client.RiscossJsonClient;
+import eu.riscoss.client.codec.CodecRASInfo;
 import eu.riscoss.client.entities.TableResources;
 import eu.riscoss.client.riskanalysis.JsonRiskAnalysis;
+import eu.riscoss.shared.JRASInfo;
 import eu.riscoss.shared.Pair;
 
 public class MainPageModule implements EntryPoint {
@@ -38,6 +41,8 @@ public class MainPageModule implements EntryPoint {
 	VerticalPanel page = new VerticalPanel();
 	HorizontalPanel v = new HorizontalPanel();
 	Image logo;
+	
+	VerticalPanel tablePanel = new VerticalPanel();
 	
 	@Override
 	public void onModuleLoad() {
@@ -50,8 +55,11 @@ public class MainPageModule implements EntryPoint {
 		logo = new Image( "resources/main_view.jpg" );
 		logo.setStyleName("mainImageLogo");
 		v.add(logo);
-		
+		tablePanel.setWidth("100%");
+		tablePanel.setStyleName("leftPanelLayer");
 		page.add(v);
+		page.add(tablePanel);
+		
 		
 		getInfo();
 		
@@ -106,20 +114,78 @@ public class MainPageModule implements EntryPoint {
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
 				for (int i = 0; i < response.isArray().size(); ++i) {
-					
-					RiscossJsonClient.listRCs(response.isArray().get(i).isObject().get("name").isString().stringValue(), new JsonCallback() {
+					nextEntity = response.isArray().get(i).isObject().get("name").isString().stringValue();
+					if (!nextEntity.equals("-"))
+					RiscossJsonClient.listRCs(nextEntity, new JsonCallback() {
+						String entity = nextEntity;
 						@Override
 						public void onFailure(Method method, Throwable exception) {
 							Window.alert(exception.getMessage());
 						}
 						@Override
 						public void onSuccess(Method method, JSONValue response) {
-							//RiscossJsonClient.listRiskAnalysisSessions(entity, rc, cb);
+							for (int i = 0; i < response.isArray().size(); ++i) {
+								nextRC = response.isArray().get(i).isObject().get("name").isString().stringValue();
+								RiscossJsonClient.listRiskAnalysisSessions(entity, nextRC, new JsonCallback() {
+									@Override
+									public void onFailure(Method method,
+											Throwable exception) {
+										Window.alert(exception.getMessage());
+									}
+									@Override
+									public void onSuccess(Method method,
+											JSONValue response) {
+										getLastRiskSession(response);
+									}
+								});
+							}
 						}
 					});
 				}
 			}
 		});
+	}
+	
+	public void getLastRiskSession(JSONValue response) {
+		if( response == null ) return;
+		if( response.isObject() == null ) return;
+		response = response.isObject().get( "list" );
+		List<JRASInfo> riskSessions = new ArrayList<>();
+		CodecRASInfo codec = GWT.create( CodecRASInfo.class );
+		if( response.isArray() != null ) {
+			for( int i = 0; i < response.isArray().size(); i++ ) {
+				JRASInfo info = codec.decode( response.isArray().get( i ) );
+				riskSessions.add( info );
+			}
+		}
+		for (int i = 0; i < riskSessions.size(); ++i) {
+			RiscossJsonClient.getSessionSummary(riskSessions.get(i).getId(), new JsonCallback() {
+				@Override
+				public void onFailure(Method method, Throwable exception) {
+					Window.alert(exception.getMessage());
+				}
+				@Override
+				public void onSuccess(Method method, JSONValue response) {
+					JsonRiskAnalysis j = new JsonRiskAnalysis( response );
+					boolean contains = false;
+					for (int i = 0; i < sessions.size(); ++i) {
+						if (sessions.get(i).getTarget().equals(j.getTarget())
+								&& sessions.get(i).getRC().equals(j.getRC())
+								&& getDate(sessions.get(i).getDate()).before(getDate(j.getDate()))) {
+							sessions.remove(i);
+							sessions.add(j);
+							return;
+						}
+						else if (sessions.get(i).getTarget().equals(j.getTarget())
+								&& sessions.get(i).getRC().equals(j.getRC())) {
+							contains = true;
+						}
+					}
+					if (!contains) sessions.add(j);
+					generateRiskSessionsChart();
+				}
+			});
+		}
 	}
 	
 	public void generateRiskSessionsChart() {
@@ -160,11 +226,50 @@ public class MainPageModule implements EntryPoint {
 				List<JsonRiskAnalysis> l = dataProvider.getList();
 				for (int i = 0; i < l.size(); ++i) {
 					if (selectionModel.isSelected(l.get(i))) {
-						Window.Location.replace("riskanalysis.jsp?id" + l.get(i).getID());
+						Window.Location.replace("riskanalysis.jsp?or=main&id=" + l.get(i).getID());
 					}
 				}
 			}
 	    });
+	    
+	    table.addColumn(name, "Session name");
+	    table.addColumn(entity, "Entity");
+	    table.addColumn(risk, "Risk configuration");
+	    table.addColumn(date, "Execution time");
+		
+		dataProvider = new ListDataProvider<JsonRiskAnalysis>();
+		dataProvider.addDataDisplay( table );
+		
+		for( int i = 0; i < sessions.size(); i++ ) {
+			dataProvider.getList().add( sessions.get(i) );
+		}
+		
+		pager = new SimplePager();
+	    pager.setDisplay( table );
+	    
+	    table.setWidth("100%");
+	    
+	    tablePanel.clear();
+		tablePanel.add( table );
+		tablePanel.add( pager );
+		
+//		table.setWidth("400px");
+//		tablePanel.setWidth("400px");
+		
+	}
+	
+	private Date getDate (String date) {
+		String info[] = date.split(" ");
+		String day[] = info[0].split("-");
+		String hour[] = info[1].split("\\.");
+		Date d = new Date();
+		d.setDate(Integer.parseInt(day[0]));
+		d.setMonth(Integer.parseInt(day[1])-1);
+		d.setYear(Integer.parseInt(day[2]));
+		d.setHours(Integer.parseInt(hour[0]));
+		d.setMinutes(Integer.parseInt(hour[1]));
+		d.setSeconds(Integer.parseInt(hour[2]));
+		return d;
 		
 	}
 

@@ -406,8 +406,13 @@ public class RASPanel implements IsWidget {
 			@Override
 			public void onClick(ClickEvent arg0) {
 				Boolean b = Window.confirm("Are you sure that you want to delete risk session " + rasName + "?");
-				if (b)
-					risk.remove(selectedRAS);
+				if (b) {
+					String or = Window.Location.getParameter("or");
+					if (or == null) {
+						risk.remove(selectedRAS);
+					}
+					else Window.Location.replace("dashboard.jsp");
+				}
 			}
 		});
 		
@@ -416,7 +421,7 @@ public class RASPanel implements IsWidget {
 		browseBack.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent arg0) {
-				rasModule.back();
+					rasModule.back();
 			}
 		});
 		
