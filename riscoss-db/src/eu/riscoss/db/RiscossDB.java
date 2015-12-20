@@ -113,5 +113,6 @@ public interface RiscossDB {
 	public abstract void							addPermissions( String name, RiscossDBResource res, String perm );
 	public abstract Collection<String>				findEntities( String layer, String query, SearchParams params );
 	public abstract void							removeUserFromDomain( String name );
+	public abstract void 							renameEntity(String entity, String newName);
 	
 }

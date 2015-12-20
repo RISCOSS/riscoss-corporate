@@ -83,6 +83,7 @@ import eu.riscoss.client.ui.CustomizableForm;
 import eu.riscoss.client.ui.CustomizableForm.CustomField;
 import eu.riscoss.client.ui.TreeWidget;
 import eu.riscoss.shared.JRASInfo;
+import eu.riscoss.shared.RiscossUtil;
 
 public class EntityPropertyPage implements IsWidget {
 	
@@ -867,11 +868,56 @@ public class EntityPropertyPage implements IsWidget {
 		ciPanel.setWidget( vPanel );
 	}
 	
-	public void saveEntityData() {
+	String newN;
+	
+	public void saveEntityData(String newName) {
 		//if (changedData || confDialog.changedData()) {
-			saveContextualInfo();
-			changedData = false;
-			confDialog.setChangedData();
+		if (!newName.equals(entity)) {
+			newN = newName;
+			if (newName == null || newName.equals("") ) 
+				return;
+			
+			//String s = RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
+			if (!RiscossUtil.sanitize(newName).equals(newName)){
+				//info: firefox has some problem with this window, and fires assertion errors in dev mode
+				Window.alert("Name contains prohibited characters (##,@,\") \nPlease re-enter name");
+				return;
+			}
+			
+			RiscossJsonClient.listEntities(new JsonCallback() {
+				@Override
+				public void onFailure(Method method, Throwable exception) {	
+				}
+				@Override
+				public void onSuccess(Method method, JSONValue response) {
+					for(int i=0; i<response.isArray().size(); i++){
+						JSONObject o = (JSONObject)response.isArray().get(i);
+						if (newN.equals(o.get( "name" ).isString().stringValue())){
+							//info: firefox has some problem with this window, and fires assertion errors in dev mode
+							Window.alert("Layer name already in use.\nPlease re-enter name.");
+							return;
+						}
+					}
+					RiscossJsonClient.renameEntity(entity, newN, new JsonCallback() {
+						@Override
+						public void onFailure(Method method, Throwable exception) {
+							Window.alert(exception.getMessage());
+						}
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							entity = newN;
+							confDialog.setSelectedEntity(newN);
+							saveContextualInfo();
+							changedData = false;
+							confDialog.setChangedData();
+						}
+					});	
+				}
+			});
+		}
+		saveContextualInfo();
+		changedData = false;
+		confDialog.setChangedData();
 		//}
 	}
 	

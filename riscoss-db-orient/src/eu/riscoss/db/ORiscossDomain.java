@@ -380,6 +380,14 @@ public class ORiscossDomain implements RiscossDB {
 	}
 	
 	@Override
+	public void renameEntity(String name, String newName) {
+		NodeID id = dom.getVertex( "/entities/" + name );
+		if (id != null) {
+			dom.setAttribute( id, "tag", newName );
+		}
+	}
+	
+	@Override
 	public void setModelsFromRiskCfg(String rcName, List<String> list) {
 		dom.rmlinks( "/risk-configurations/" + rcName, "contains" );
 		for( String modelName : list ) {

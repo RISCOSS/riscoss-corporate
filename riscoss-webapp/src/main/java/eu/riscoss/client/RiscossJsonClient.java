@@ -123,6 +123,10 @@ public class RiscossJsonClient {
 		//new Resource( GWT.getHostPageBaseURL() + "api/entities/" + getDomain() + "/list" ).get().send( cb );
 	}
 	
+	public static void renameEntity(String name, String newName, JsonCallback cb) {
+		RiscossCall.fromCookies().entities().item( name ).rename(newName).post( cb );;
+	}
+	
 	/**
 	 * Lists all entities for layer. Note: if layer = "", returns the list of all entities.
 	 * call: ("/{domain}/{layer}/list")

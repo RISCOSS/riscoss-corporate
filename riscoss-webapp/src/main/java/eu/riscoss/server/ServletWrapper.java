@@ -43,6 +43,7 @@ import eu.riscoss.ram.RiskAnalysisManager;
 import eu.riscoss.rdc.RDC;
 import eu.riscoss.rdc.RDCFactory;
 import eu.riscoss.rdc.RDCRunner;
+import eu.riscoss.server.ma.AHPAnalysis;
 import eu.riscoss.shared.DBResource;
 import eu.riscoss.shared.KnownRoles;
 import eu.riscoss.shared.Pair;
@@ -126,6 +127,7 @@ public class ServletWrapper extends ServletContainer {
 				}
 				
 				sm.createPage( "/", "RISCOSS Web App", "index.jsp", new String[] { KnownRoles.Administrator.name() } );
+				sm.createPage( "/", "Dashboard", "dashboard.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() });
 				
 				sm.createSection( "/Configure" );
 				sm.createPage( "/Configure", "Layers", "layers.jsp", new String[] { KnownRoles.Administrator.name() } );

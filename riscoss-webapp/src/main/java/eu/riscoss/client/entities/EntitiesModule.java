@@ -107,6 +107,8 @@ public class EntitiesModule implements EntryPoint {
 		});
 	}-*/;
 	
+	
+	
 	public void onModuleLoad() {
 		
 		exportJS();
@@ -262,164 +264,11 @@ public class EntitiesModule implements EntryPoint {
 	}
 	
 	public void saveEntityData() {
-		ppg.saveEntityData();
+		ppg.saveEntityData(newName.getText());
+		t.setText(newName.getText());
 	}
-	
-	/*private void appendChilds(TreeWidget rootEnt, JSONArray children) {
-		this.root = rootEnt;
-		for (int i = 0; i < children.size(); ++i) {
-			RiscossJsonClient.getEntityData(children.get(i).isString().stringValue(), new JsonCallback() {
-				TreeWidget rootWidget = root;
-				@Override
-				public void onFailure(Method method, Throwable exception) {
-					Window.alert(exception.getMessage());
-				}
-				@Override
-				public void onSuccess(Method method, JSONValue response) {
-					JsonEntitySummary entityElement = new JsonEntitySummary(response);
-					nextEntityName = entityElement.getEntityName();
-					Anchor a = new Anchor(nextEntityName + " (" + entityElement.getLayer() + ")");
-					a.setWidth("100%");
-					a.setStyleName("font");
-					a.addClickHandler(new ClickHandler() {
-						String name = nextEntityName;
-						@Override
-						public void onClick(ClickEvent event) {
-							setSelectedEntity(name);
-						}
-					});
-					HorizontalPanel cPanel = new HorizontalPanel();
-					cPanel.setStyleName("tree");
-					cPanel.setWidth("100%");
-					cPanel.add(a);
-					TreeWidget c = new TreeWidget(cPanel);
-					rootWidget.addChild(c);
-					if (entityElement.getChildrenList().size() > 0) appendChilds(c, entityElement.getChildrenList()); 
-				}
-			});
-		}
-	}
-	
-	private void appendChildren( TreeWidget rootEnt, List<JEntityNode> children ) {
-		this.root = rootEnt;
-		for (int i = 0; i < children.size(); ++i) {
-//			RiscossJsonClient.getEntityData(children.get(i).isString().stringValue(), new JsonCallback() {
-//				TreeWidget rootWidget = root;
-//				@Override
-//				public void onFailure(Method method, Throwable exception) {
-//					Window.alert(exception.getMessage());
-//				}
-//				@Override
-//				public void onSuccess(Method method, JSONValue response) {
-//					JsonEntitySummary entityElement = new JsonEntitySummary(response);
-					JEntityNode child = children.get( i );
-					nextEntityName = child.name;
-					Anchor a = new Anchor(nextEntityName + " (" + child.layer + ")");
-					a.setWidth("100%");
-					a.setStyleName("font");
-					a.addClickHandler(new ClickHandler() {
-						String name = nextEntityName;
-						@Override
-						public void onClick(ClickEvent event) {
-							setSelectedEntity(name);
-						}
-					});
-					HorizontalPanel cPanel = new HorizontalPanel();
-					cPanel.setStyleName("tree");
-					cPanel.setWidth("100%");
-					cPanel.add(a);
-					TreeWidget c = new TreeWidget(cPanel);
-					root.addChild(c);
-					if( child.children.size() > 0) appendChildren( c, child.children );
-//				}
-//			});
-		}
-	}*/
 	
 	public interface CodecEntityNodeList extends JsonEncoderDecoder<JEntityNode> {}
-	
-	/*private void generateTree(String query, String filterlayer) {
-		//RiscossJsonClient.listEntities(new JsonCallback() {
-		RiscossJsonClient.searchEntities( query, filterlayer, new JsonCallback() {
-			@Override
-			public void onFailure(Method method, Throwable exception) {
-				Window.alert(exception.getMessage());
-			}
-			@Override
-			public void onSuccess(Method method, JSONValue response) {
-				leftPanel.remove(entitiesTree);
-				Log.println( "" + response );
-				JSONArray array = response.isArray();
-				if( array == null ) {
-					Window.alert( "Not an array" );
-					return;
-				}
-				CodecEntityNodeList codec = GWT.create( CodecEntityNodeList.class );
-				for( int i = 0; i < array.size(); i++ ) {
-					Log.println( "" + array.get(i) );
-					JEntityNode node = codec.decode( array.get( i ) );
-					nextEntityName = node.name;
-					Anchor a = new Anchor(nextEntityName  + " (" + node.layer + ")");
-					a.setWidth("100%");
-					a.setStyleName("font");
-					a.addClickHandler(new ClickHandler() {
-						String name = nextEntityName;
-						@Override
-						public void onClick(ClickEvent event) {
-							setSelectedEntity(name);
-						}
-					});
-					HorizontalPanel cPanel = new HorizontalPanel();
-					cPanel.setStyleName("tree");
-					cPanel.setWidth("100%");
-					cPanel.add(a);
-					TreeWidget c = new TreeWidget(cPanel);
-					entitiesTree.addChild(c);
-					if( node.children.size() > 0) {
-						appendChildren( c, node.children );
-					}
-				}
-				leftPanel.add(entitiesTree);
-				
-//				for (int i = 0; i < response.isArray().size(); ++i) {
-//					RiscossJsonClient.getEntityData( response.isArray().get(i).isObject().get("name").isString().stringValue(), new JsonCallback() {
-//						@Override
-//						public void onFailure(Method method, Throwable exception) {
-//							Window.alert( exception.getMessage() );
-//						}
-//						@Override
-//						public void onSuccess(Method method, JSONValue response) {
-//							leftPanel.remove(entitiesTree);
-							
-//							JsonEntitySummary entityElement = new JsonEntitySummary(response);
-//							if (entityElement.getParentList().size() == 0) {
-//								nextEntityName = entityElement.getEntityName();
-//								Anchor a = new Anchor(nextEntityName  + " (" + entityElement.getLayer() + ")");
-//								a.setWidth("100%");
-//								a.setStyleName("font");
-//								a.addClickHandler(new ClickHandler() {
-//									String name = nextEntityName;
-//									@Override
-//									public void onClick(ClickEvent event) {
-//										setSelectedEntity(name);
-//									}
-//								});
-//								HorizontalPanel cPanel = new HorizontalPanel();
-//								cPanel.setStyleName("tree");
-//								cPanel.setWidth("100%");
-//								cPanel.add(a);
-//								TreeWidget c = new TreeWidget(cPanel);
-//								entitiesTree.addChild(c);
-//								if (entityElement.getChildrenList().size() > 0) {
-//									appendChilds(c, entityElement.getChildrenList());
-//								}
-//							}
-//							leftPanel.add(entitiesTree);
-//						}} );
-//				}
-			}
-		});
-	}*/
 	
 	TextBox newName;
 	
@@ -442,15 +291,17 @@ public class EntitiesModule implements EntryPoint {
 		
 	}
 	
+	Label t;
+	
 	private void loadProperties() {
 		mainView.remove(rightPanel);
 		rightPanel = new VerticalPanel();
 		rightPanel.setWidth("80%");
 		rightPanel.setStyleName("rightPanelLayer");
 		
-		Label title = new Label(selectedEntity);
-		title.setStyleName("subtitle");
-		rightPanel.add(title);
+		t = new Label(selectedEntity);
+		t.setStyleName("subtitle");
+		rightPanel.add(t);
 		
 		grid = new Grid(1,5);
 		grid.setStyleName("properties");

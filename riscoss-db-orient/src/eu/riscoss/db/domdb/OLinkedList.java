@@ -182,5 +182,14 @@ public class OLinkedList {
 		
 		return list;
 	}
+
+	public void renameEntity(String name, String newName) {
+		NodeID id = dom.getVertex( this.rootPath + "/" + name );
+		
+		if( id == null ) 
+			return;
+		
+		dom.setAttribute(id, "tag", newName);
+	}
 	
 }
