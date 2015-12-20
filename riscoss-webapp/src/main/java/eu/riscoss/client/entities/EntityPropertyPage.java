@@ -840,10 +840,11 @@ public class EntityPropertyPage implements IsWidget {
 				o.put( "target", new JSONString( EntityPropertyPage.this.entity ) );
 				JSONArray array = new JSONArray();
 				array.set( 0, o );
+				userForm.removeField( field );
 				RiscossJsonClient.postRiskData( array,  new JsonCallbackWrapper<String>( field.getName() ) {
 					@Override
 					public void onSuccess( Method method, JSONValue response ) {
-						userForm.removeField( getValue() );
+						
 					}
 					@Override
 					public void onFailure( Method method, Throwable exception ) {
