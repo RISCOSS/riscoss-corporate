@@ -297,11 +297,10 @@ public class CustomizableForm implements IsWidget {
 		addField( "", "" );
 	}
 	
-	public void removeField( String key ) {
-		CustomField field = getField( key );
+	public void removeField( CustomField field ) {
 		if( field != null ) {
 			field.asWidget().removeFromParent();
-			fields.remove( key );
+			fields.remove( field.getName() );
 		}
 	}
 	

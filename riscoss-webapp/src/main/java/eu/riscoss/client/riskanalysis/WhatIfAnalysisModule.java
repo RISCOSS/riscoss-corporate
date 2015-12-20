@@ -68,6 +68,7 @@ public class WhatIfAnalysisModule implements EntryPoint {
 //	Map<String,RiskWidget> riskWidgets = new HashMap<String,RiskWidget>();
 	Map<String,IndicatorWidget> riskWidgets = new HashMap<String,IndicatorWidget>();
 	
+	HorizontalPanel buttons = new HorizontalPanel();
 	
 	public void onModuleLoad() {
 		
@@ -117,7 +118,7 @@ public class WhatIfAnalysisModule implements EntryPoint {
 		page.add(title);
 		mainView.setStyleName("mainViewPage");
 		
-		Button selectModels = new Button("SELECT MODELS...");
+		Button selectModels = new Button("Select models...");
 		selectModels.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent arg0) {
@@ -149,7 +150,8 @@ public class WhatIfAnalysisModule implements EntryPoint {
 			}
 		});
 		selectModels.setStyleName("button");
-		mainView.add(selectModels);
+		buttons.add(selectModels);
+		mainView.add(buttons);
 		mainView.add(contentPanel);
 		
 		page.add(mainView);
@@ -250,10 +252,15 @@ public class WhatIfAnalysisModule implements EntryPoint {
 		ready = true;
 	}
 
+	Label running = new Label("Running...");
 	
 	protected void runAnalysis() {
+		buttons.add(running);
 		
-		if( !ready ) return;
+		if( !ready ) {
+			buttons.remove(running);
+			return;
+		}
 		
 		ready = false;
 		
@@ -283,6 +290,7 @@ public class WhatIfAnalysisModule implements EntryPoint {
 						rw.setValue( v );
 					}
 				}
+				buttons.remove(running);
 			}} );
 	}
 	
