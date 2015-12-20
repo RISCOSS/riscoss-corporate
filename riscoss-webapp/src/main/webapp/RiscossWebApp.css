@@ -486,3 +486,12 @@ body {
 .cellTableEvenRow {
   background-color: #F2F2F2 !important;
 }
+
+.mainImage {
+	text-align: center;
+}
+
+.mainImageLogo {
+	border-bottom: 3px solid #7EAC30 !important;
+	background-color: #EEEEEE !important;
+}

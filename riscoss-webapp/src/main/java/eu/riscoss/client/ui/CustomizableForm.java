@@ -298,7 +298,7 @@ public class CustomizableForm implements IsWidget {
 	}
 	
 	public void removeField( CustomField field ) {
-		if( field != null ) {
+		if( field != null && !field.getName().equals("")) {
 			field.asWidget().removeFromParent();
 			fields.remove( field.getName() );
 		}
