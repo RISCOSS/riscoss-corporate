@@ -77,6 +77,10 @@ public class MainPageModule implements EntryPoint {
 	    			  execute();
 	    			  return;
 	    		  }
+	    		  if (totalWidth < Window.getClientWidth()) {
+	    			  execute();
+	    			  return;
+	    		  }
 	    		  
 	    		  HorizontalPanel h1 = new HorizontalPanel();
 	    		  HorizontalPanel h2 = new HorizontalPanel();
