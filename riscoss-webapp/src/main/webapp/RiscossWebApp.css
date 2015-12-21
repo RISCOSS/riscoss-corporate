@@ -489,6 +489,8 @@ body {
 
 .mainImage {
 	text-align: center;
+	background-color: #EEEEEE !important;
+	border-bottom: 3px solid #7EAC30 !important;
 }
 
 .mainImageLogo {
