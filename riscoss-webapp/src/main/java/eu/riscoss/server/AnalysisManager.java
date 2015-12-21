@@ -214,6 +214,36 @@ public class AnalysisManager {
 	/* This method goes through the hierarchy of entities in a given risk analysis session,
 	 * reads the required data from the rdr, and stores the data in the risk analysis session
 	 */
+	@GET @Path("/{domain}/session/{sid}/edit-target/{target}")
+	@Info("Edits the entity name of a risk session")
+	public void editSessionTarget( 
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token, 
+			@PathParam("sid") @Info("The risk session ID")					String sid ,
+			@PathParam("target") @Info("The new entity name")				String name
+			) throws Exception {
+		
+		RiscossDB db = null;
+		
+		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
+			RiskAnalysisSession ras = db.openRAS( sid );
+			
+			ras.setTarget(name);
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
+	}
+	
+	/* This method goes through the hierarchy of entities in a given risk analysis session,
+	 * reads the required data from the rdr, and stores the data in the risk analysis session
+	 */
 	@GET @Path("/{domain}/session/{sid}/update-data")
 	@Info(
 			"This method goes through the hierarchy of entities in a given risk analysis session," +

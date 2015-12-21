@@ -443,6 +443,10 @@ public class RiscossJsonClient {
 		RiscossCall.fromCookies().analysis().fx("session").create(name).arg("rc",riskConf).arg("target", target).post(cb);
 	}
 	
+	public static void editSessionTarget(String riskAnalysisSession, String target, JsonCallback cb) {
+		RiscossCall.fromCookies().analysis().fx("session").fx(riskAnalysisSession).fx("edit-target").fx(target).post(cb);
+	}
+	
 	public static void updateSessionData(String riskAnalysisSession, JsonCallback cb){
 		//new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() +
 		//"/session/" + selectedRAS + "/update-data" ).get().send( new JsonCallback() {
