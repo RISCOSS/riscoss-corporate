@@ -496,7 +496,7 @@ public class RASPanel implements IsWidget {
 				RiscossJsonClient.setAnalysisMissingData(selectedRAS, values, new JsonCallback() {
 					@Override
 					public void onSuccess( Method method, JSONValue response ) {
-						onUpdatedIndicatorsClicked();
+						onSaveAndRunClicked();
 					}
 					@Override
 					public void onFailure( Method method, Throwable exception ) {
@@ -526,6 +526,42 @@ public class RASPanel implements IsWidget {
 	}
 	
 	Label running = new Label("  Running...");
+	
+	public void onSaveAndRunClicked() {
+		buttons2.add(running);
+		RiscossJsonClient.rerunRiskAnalysisSession(selectedRAS, "", new RiscossJsonClient.JsonWaitWrapper(
+				new JsonCallback() {
+			@Override
+			public void onSuccess( Method method, JSONValue response ) {
+//				Window.alert( "" + response );
+				try {
+					RiscossJsonClient.getSessionSummary( selectedRAS, new JsonCallback() {
+						@Override
+						public void onSuccess( Method method, JSONValue response ) {
+							loadRASSummary( new JsonRiskAnalysis( response ) );
+						}
+						@Override
+						public void onFailure( Method method, Throwable exception ) {
+							Window.alert( exception.getMessage() );
+						}
+					});
+//						report = new RiskAnalysisReport();
+						r.showResults(sessionSummary, 
+							response.isObject());
+					
+					if (r.getEvidence()) inputDataInfo(response.isObject().get( "input" ));
+				}
+				catch( Exception ex ) {
+					Window.alert( ex.getMessage() + "\n" + response );
+				}
+			}
+			
+			@Override
+			public void onFailure( Method method, Throwable exception ) {
+				Window.alert( exception.getMessage() );
+			}
+		} ) );
+	}
 	
 	public void reloadPanel() {
 		buttons2.add(running);
@@ -837,26 +873,17 @@ public class RASPanel implements IsWidget {
 				RiscossJsonClient.setAnalysisMissingData(id, newValues, new JsonCallback() {
 					@Override
 					public void onSuccess( Method method, JSONValue response ) {
-						RiscossJsonClient.updateSessionData(id, new JsonCallback() {
+						RiscossJsonClient.rerunRiskAnalysisSession(id, "", new JsonCallback() {
+
 							@Override
 							public void onFailure(Method method, Throwable exception) {
 								Window.alert(exception.getMessage());
 							}
 							@Override
 							public void onSuccess(Method method, JSONValue response) {
-								RiscossJsonClient.rerunRiskAnalysisSession(id, "", new JsonCallback() {
-
-									@Override
-									public void onFailure(Method method, Throwable exception) {
-										Window.alert(exception.getMessage());
-									}
-									@Override
-									public void onSuccess(Method method, JSONValue response) {
-										loadRAS(id);
-										risk.generateRiskTree();
-										risk.setTitle(name);
-									}
-								});
+								loadRAS(id);
+								risk.generateRiskTree();
+								risk.setTitle(name);
 							}
 						});
 					}
