@@ -281,12 +281,20 @@ public class RiskAnalysisResults implements IsWidget {
 		
 		risks = new ArrayList<>();
 		goals = new ArrayList<>();
-		for (int i = 0; i < nbSeries; ++i) {
-			if (entityResults.get(i).isObject().get("datatype").isString().stringValue().equals("evidence")
-					&& entityResults.get(i).isObject().get("type").isString().stringValue().equals("Risk")) risks.add(entityResults.get(i).isObject());
-			else if (entityResults.get(i).isObject().get("datatype").isString().stringValue().equals("evidence")) goals.add(entityResults.get(i).isObject());
-		}
 		
+		for (int i = 0; i < nbSeries; ++i) {
+			if (entityResults.get(i).isObject().get("datatype").isString().stringValue().equals("evidence")) {
+				if (entityResults.get(i).isObject().get("type") == null) {
+					risks.add(entityResults.get(i).isObject());
+				}
+				else if (entityResults.get(i).isObject().get("type").isString().stringValue().equals("Risk")) {
+					risks.add(entityResults.get(i).isObject());
+				}
+				else {
+					goals.add(entityResults.get(i).isObject());
+				}
+			}
+		}
         PlotModel model = new PlotModel();
         PlotOptions plotOptions = PlotOptions.create();
 
@@ -520,9 +528,8 @@ public class RiskAnalysisResults implements IsWidget {
 										JsonRiskResult result = new JsonRiskResult( v );
 										switch( result.getDataType() ) {
 											case EVIDENCE: {
-												String ss[] = v.get("id").isString().stringValue().split("-");
-												if (ss[0].equals("GOAL")) goals.add(v.get( "e" ).isObject().get( "e" ).isNumber().doubleValue());
-												else risks.add(v.get( "e" ).isObject().get( "e" ).isNumber().doubleValue());
+												if (v.get("type").isString().stringValue().equals("Goal")) goals.add(v.get( "e" ).isObject().get( "e" ).isNumber().doubleValue());
+												else if (v.get("type").isString().stringValue().equals("Risk")) risks.add(v.get( "e" ).isObject().get( "e" ).isNumber().doubleValue());
 											}
 											default: break;
 										}
@@ -532,7 +539,6 @@ public class RiskAnalysisResults implements IsWidget {
 									dataList.add(inf);
 									++counting;
 									if (counting == count) {
-										
 										sortByDate();
 									}
 								}
