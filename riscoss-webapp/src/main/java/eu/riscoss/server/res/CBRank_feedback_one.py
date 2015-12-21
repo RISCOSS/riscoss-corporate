@@ -22,8 +22,11 @@ def CBRank(F,n,epsilon,maxCycle,policy):
     #print 'Pairs: ', pairs
     print '\n=========> Cicle: ', count, ' ================'
     pairs, pairsSet = selectInitialPairs(candidatePairs,n)
-    valuedPairs = userFeedback(pairs)
-    Phi = initialisePhi(valuedPairs,n)
+    #valuedPairs = userFeedback(pairs)
+    #valuedPairs = userFeedback_get_all(pairs)
+    valuedPairs = eval(sys.argv[5])
+    #Phi = initialisePhi(valuedPairs,n)
+    Phi = valuedPairs
     D = initialiseD(Phi)
     F_feed = [(n-sum(Phi[i]))*10.0 for i in range(n)]
     F.append(F_feed)
@@ -272,6 +275,11 @@ def userFeedback(pairs):
     return valuedPairs
 
 
+# User feedback Simulation from command line
+def userFeedback_get_all(pairs):
+    return eval(sys.argv[5])
+
+
 # Compute the linear combination of H
 def computeH(alpha,h):
     H = [0 for i in range(len(h[0]))]
@@ -320,15 +328,17 @@ def computeWeakLearner(F, istar, Thetastar, qstar):
 
 def main ():
     #n = input('number: ')
-    #n = eval(sys.argv[1])
-    #F = eval(sys.argv[2])
-    #maxCycle = eval(sys.argv[3])
-    #epsilon = eval(sys.argv[4])
-    
-    n = 3
-    candidatePairs = [[0,1],[0,2],[1,2]]
-    epsilon = 0.0001
-    maxCycle = 2
+
+    #example of input from command line: 3 [[10.0, 6.0, 'NaN'], [40.0, 20.0, 1.0]] 1 0.001 [[0,1,1], [-1,0,1], [-1,-1,0]]
+    n = eval(sys.argv[1])
+    F = eval(sys.argv[2])
+    maxCycle = eval(sys.argv[3])
+    epsilon = eval(sys.argv[4])
+
+    #n = 3
+    #candidatePairs = [[0,1],[0,2],[1,2]]
+    #epsilon = 0.0001
+    #maxCycle = 2
     policy = "RND"
     H = []
     #F = [[6.0, 6.0, 5.0], [40.0, 20.0, 1.0]] #'NaN']]
@@ -348,7 +358,7 @@ def main ():
     #F = [[20.0, 'NaN', 30.0],['NaN', 100.0, 200.0]]
     #F = [[20.0, 'NaN', 30.0],['NaN', 'NaN', 200.0]]
     #F = [[30.0, 20.0, 10.0]]
-    F = [[1.0, 20.0, 'NaN'],[1.0, 30.0, 60.0] ]
+    #F = [[1.0, 20.0, 'NaN'],[1.0, 30.0, 60.0] ]
     #F = [[40.0, 20.0, 1.0],[10.0, 6.0, 'NaN'] ]
     #F = [[10.0, 6.0, 'NaN'], [40.0, 20.0, 1.0] ]
     #F = [[10.0, 5.0, 'NaN'], [40.0, 20.0, 10.0] ]

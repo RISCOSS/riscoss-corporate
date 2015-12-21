@@ -1,19 +1,28 @@
 package eu.riscoss.ram.rae.ml;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class JMissingData {
-
-	public JMissingData(String entity, String string) {
-		// TODO Auto-generated constructor stub
+	
+	String entity = "";
+	String layer = "";
+	
+	List<JDataItem> items = new ArrayList<>();
+	
+	List<JMissingData> children = new ArrayList<>();
+	
+	public JMissingData( String entity, String layer ) {
+		this.entity = entity;
+		this.layer = layer;
 	}
-
+	
 	public void add( JMissingData childMD ) {
-		// TODO Auto-generated method stub
-		
+		this.children.add( childMD );
 	}
-
+	
 	public void add( JDataItem item ) {
-		// TODO Auto-generated method stub
-		
+		this.items.add( item );
 	}
 	
 }

@@ -2,6 +2,8 @@ package eu.riscoss.ram.ga;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.uma.jmetal.problem.impl.AbstractDoubleProblem;
@@ -21,21 +23,52 @@ public class InputOptimizationProblem extends AbstractDoubleProblem {
 	
 	RiskEvaluation			analysis = null;
 	
-	ArrayList<Proposition>  inputs;
-	Map<String, Object>     outputs;
+	ArrayList<Proposition>	inputs = new ArrayList<>();
+	Map<String,Double>		constraints = new HashMap<>();
+	
+	Map<String, Evidence>	outputs = new HashMap<>();
 	
 	
-	public InputOptimizationProblem( Program program, Map<String, Object> outputs ) {
+	public InputOptimizationProblem( Program program, Map<String, Evidence> objectives ) {
 		
+		this( program );
+		
+		setObjectives( objectives );
+		
+	}
+	
+	public InputOptimizationProblem( Program program ) {
 		// Filters the input nodes and stores them in the `inputs` list
 		inputs = new ArrayList<Proposition>(program.getModel().getPropositionCount());
 		for (Proposition p : program.getModel().propositions())
 			if (p.getProperty("input", "false").equalsIgnoreCase("true"))
 				inputs.add(p);
 		
-		super.setNumberOfObjectives( 1 );
-		super.setNumberOfVariables( inputs.size() );
+		this.program = program;
 		
+		super.setNumberOfObjectives( 1 );
+		setFixedVariables( new HashMap<String,Double>() );
+//		super.setNumberOfVariables( inputs.size() );
+		
+	}
+	
+	public void setFixedVariables( Map<String,Double> idMap ) {
+		if( this.program == null ) {
+			throw new RuntimeException( "Program not set" );
+		}
+		inputs = new ArrayList<Proposition>();
+		constraints.clear();
+		for( Proposition p : program.getModel().propositions() ) {
+			if( idMap.get( p.getId() ) != null ) {
+				this.constraints.put( p.getId(), idMap.get( p.getId() ) );
+			}
+			else {
+				if( p.getProperty("input", "false").equalsIgnoreCase("true") ) {
+					inputs.add( p );
+				}
+			}
+		}
+		super.setNumberOfVariables( inputs.size() );
 		{
 			Double[] lowers = new Double[inputs.size()];
 			Arrays.fill( lowers, 0.0 );
@@ -46,10 +79,25 @@ public class InputOptimizationProblem extends AbstractDoubleProblem {
 			Arrays.fill( uppers, 1.0 );
 			super.setUpperLimit( Arrays.asList( uppers ) );
 		}
-		
-		this.program = program;
-		this.outputs = outputs;
-		
+	}
+	
+	public Map<String,Double> getFixedVariables() {
+		return this.constraints;
+	}
+	
+	public void setObjectives( Map<String, Evidence> objectives ) {
+		this.outputs = objectives;
+	}
+	
+	public List<String> getVariableList() {
+		List<String> list = new ArrayList<>();
+		for( Proposition p : inputs ) {
+			list.add( p.getId() );
+		}
+		for( String id : constraints.keySet() ) {
+			list.add( id );
+		}
+		return list;
 	}
 	
 
@@ -58,6 +106,8 @@ public class InputOptimizationProblem extends AbstractDoubleProblem {
 		analysis = new RiskEvaluation();
 		
 		program.getScenario().clear();
+		
+		System.out.print( solution.getNumberOfVariables() + " " );
 		
 		for( int var = 0; var < solution.getNumberOfVariables(); var++ ) {
 			
@@ -81,6 +131,35 @@ public class InputOptimizationProblem extends AbstractDoubleProblem {
 				break;
 			case EVIDENCE: {
 				program.getScenario().addConstraint(inputs.get(var).getId(), "st", solution.getVariableValue( var ) + "");
+			}
+				break;
+			default:
+				break;
+			}
+		}
+		
+		for( String id : constraints.keySet() ) {
+			
+			Proposition p = program.getModel().getProposition( id );
+			DataType dt = DataType.valueOf( p.getProperty( "datatype", "evidence" ).toUpperCase() );
+			
+			System.out.print( "Const( " + p.getId() + ":" + constraints.get( id ) + ") " );
+			switch( dt ) {
+			case REAL:
+				program.getScenario().addConstraint( p.getId(), "st", constraints.get( id ) + "");
+				break;
+			case INTEGER: {
+				int max = Integer.parseInt( p.getProperty( "max", "100" ) ) +1;
+				int min = Integer.parseInt( p.getProperty( "min", "0" ) );
+				double d = constraints.get( id );
+				int val = ((int)(d * (max - min) ) + min);
+				if( val > max ) val = max;
+				if( val < min ) val = min;
+				program.getScenario().addConstraint( p.getId(), "st", val + "" );
+			}
+				break;
+			case EVIDENCE: {
+				program.getScenario().addConstraint( p.getId(), "st", constraints.get( id ) + "");
 			}
 				break;
 			default:

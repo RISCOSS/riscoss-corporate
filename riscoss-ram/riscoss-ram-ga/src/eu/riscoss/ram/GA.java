@@ -1,6 +1,6 @@
 package eu.riscoss.ram;
 
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,18 +17,23 @@ import org.uma.jmetal.util.evaluator.impl.SequentialSolutionListEvaluator;
 
 import eu.riscoss.fbk.language.Program;
 import eu.riscoss.ram.ga.InputOptimizationProblem;
+import eu.riscoss.reasoner.Evidence;
 
 public class GA {
 	
-	public void run( Program program, Map<String,Object> map ) {
+	
+	public Map<String,Double> run( Program program, Map<String,Evidence> objectives, Map<String,Double> fixedVariables ) {
 		
-		CrossoverOperator<DoubleSolution>		crossover = new SBXCrossover( 0.1, 0.1 ); // BLXAlphaCrossover( 0.5 );
-		MutationOperator<DoubleSolution>		mutation = new NonUniformMutation( 0.2,  0.3, 10 ); // SimpleRandomMutation( 0.5 );
-		SelectionOperator<List<DoubleSolution>, DoubleSolution> selection = new BinaryTournamentSelection<DoubleSolution>();
-		SolutionListEvaluator<DoubleSolution>	evaluator = new SequentialSolutionListEvaluator<DoubleSolution>();
+		CrossoverOperator<DoubleSolution>		crossover					= new SBXCrossover( 0.1, 0.1 ); // BLXAlphaCrossover( 0.5 );
+		MutationOperator<DoubleSolution>		mutation					= new NonUniformMutation( 0.2,  0.3, 10 ); // SimpleRandomMutation( 0.5 );
+		SelectionOperator<List<DoubleSolution>, DoubleSolution> selection	= new BinaryTournamentSelection<DoubleSolution>();
+		SolutionListEvaluator<DoubleSolution>	evaluator					= new SequentialSolutionListEvaluator<DoubleSolution>();
 		
 		
-		InputOptimizationProblem  				problem = new InputOptimizationProblem( program, map );
+		InputOptimizationProblem  				problem = new InputOptimizationProblem( program );
+		
+		problem.setFixedVariables( fixedVariables );
+		problem.setObjectives( objectives );
 		
 		NSGAII<DoubleSolution>					algorithm = new NSGAII<DoubleSolution>( problem, 10, 10, crossover, mutation, selection, evaluator );
 		
@@ -37,19 +42,29 @@ public class GA {
 		
 		List<DoubleSolution> result = algorithm.getResult();
 		
-		for( Iterator<DoubleSolution> it = result.iterator(); it.hasNext(); ) {
-			DoubleSolution s = it.next();
-			System.out.print( "Variables: " );
-			for( int i = 0; i < s.getNumberOfVariables(); i++ ) {
-				System.out.print( "\t" + round( s.getVariableValue(i).doubleValue() ) );
+		Map<String,Double> output = new HashMap<String,Double>();
+		
+		if( result.size() > 0 ) {
+			
+			System.out.println( problem.getVariableList().size() );
+			
+			for( String id : problem.getVariableList() ) {
+				
+				if( program.getScenario().getConstraint( id, "st" ) != null ) {
+					output.put( id, 
+							Double.parseDouble(
+									program.getScenario().getConstraint( id, "st" ) ) );
+				}
+//				else {
+//					output.put( id, Double.NaN );
+//				}
 			}
-			System.out.print( "\t" + "Objectives: " );
-			for( int i = 0; i < s.getNumberOfObjectives(); i++ ) {
-				System.out.print( "\t" + round( s.getObjective( i ) ) );
-			}
-			System.out.println();
+			
+			
 		}
-		System.out.println();
+		
+		return output;
+		
 	}
 	
 	static double round( double value ) {

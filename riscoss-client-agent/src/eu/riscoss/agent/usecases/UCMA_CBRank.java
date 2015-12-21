@@ -23,16 +23,17 @@ import eu.riscoss.fbk.language.Proposition;
 import eu.riscoss.fbk.language.Relation;
 import eu.riscoss.shared.JAHPComparison;
 import eu.riscoss.shared.JAHPInput;
+import eu.riscoss.shared.JCBRankInput;
 import eu.riscoss.shared.JRASInfo;
 import eu.riscoss.shared.JRiskAnalysisResult;
 import eu.riscoss.shared.JRiskAnalysisResultItem;
 
-public class UCMitigationActivity implements UseCase {
+public class UCMA_CBRank implements UseCase {
 
 	Gson gson = new Gson();
 	
 	public static void main( String[] args ) throws Exception {
-		new UCMitigationActivity().run( new RiscossRESTClient() );
+		new UCMA_CBRank().run( new RiscossRESTClient() );
 	}
 	
 	@Override
@@ -46,8 +47,9 @@ public class UCMitigationActivity implements UseCase {
 		
 		w.execute( new EnsureDomainExistence( domain ) );
 		w.execute( new SelectDomain( domain ) );
-		w.execute( new EnsureLayerStructure( domain, new String[] { "OSSComponent" } ) );
+		w.execute( new EnsureLayerStructure( domain, new String[] { "Project", "OSSComponent" } ) );
 		
+		w.execute( new EnsureEntityExistence( "Project", "p1" ) );
 		w.execute( new EnsureEntityExistence( "OSSComponent", "c1" ) );
 		w.execute( new EnsureEntityExistence( "OSSComponent", "c2" ) );
 		
@@ -61,8 +63,10 @@ public class UCMitigationActivity implements UseCase {
 			model.addProposition( new Proposition( "situation", "s1" ) );
 			model.addProposition( new Proposition( "event", "e1" ).withProperty( "output", "true" ) );
 			model.addProposition( new Proposition( "event", "e2" ).withProperty( "output", "true" ) );
+			model.addProposition( new Proposition( "event", "e3" ).withProperty( "output", "true" ) );
 			model.addProposition( new Proposition( "goal", "g1" ).withProperty( "output", "true" ) );
 			model.addProposition( new Proposition( "goal", "g2" ).withProperty( "output", "true" ) );
+			model.addProposition( new Proposition( "goal", "g3" ).withProperty( "output", "true" ) );
 			model.addRelation( new Relation( "indicate" )
 					.withSource( model.getProposition( "i1" ) )
 					.withTarget( model.getProposition( "s1" ) ) );
@@ -107,22 +111,29 @@ public class UCMitigationActivity implements UseCase {
 				System.out.println( r.id + " = " + r.value );
 			}
 			
-			JAHPInput ahpInput = new JAHPInput();
-			ahpInput.ngoals = 2;
-			ahpInput.nrisks = 2;
-			ahpInput.goals.add( new JAHPComparison( "g1", "g2", 3 ) );
-			{
-				List<JAHPComparison> list = new ArrayList<JAHPComparison>();
-				list.add( new JAHPComparison( "e1", "e2", 1 ) );
-				ahpInput.risks.add( list );
-			}
-			{
-				List<JAHPComparison> list = new ArrayList<JAHPComparison>();
-				list.add( new JAHPComparison( "e1", "e2", 1 ) );
-				ahpInput.risks.add( list );
-			}
+			JCBRankInput cbrankInput = new JCBRankInput();
+			cbrankInput.setNumberOfAlternatives( 2 );
 			
-			ret = rest.domain( domain ).analysis().session( ras.getId() ).applyMitigationTechnique( "AHP", new Gson().toJson( ahpInput ) );
+			List<Integer> row1 = new ArrayList<Integer>();
+			row1.add( 0 );
+			row1.add( 1 );
+//			row1.add( 1 );
+			List<Integer> row2 = new ArrayList<Integer>();
+			row2.add( -1 );
+			row2.add( 0 );
+//			row2.add( 1 );
+//			List<Integer> row3 = new ArrayList<Integer>();
+//			row3.add( -1 );
+//			row3.add( -1 );
+//			row3.add( 0 );
+			List<List<Integer>> preferences = new ArrayList<List<Integer>>();
+			preferences.add( row1 );
+			preferences.add( row2 );
+//			preferences.add( row3 );
+			
+			cbrankInput.setPreferences( preferences );
+			
+			ret = rest.domain( domain ).analysis().session( ras.getId() ).applyMitigationTechnique( "CBRank", new Gson().toJson( cbrankInput ) );
 			
 			result = gson.fromJson( ret, JRiskAnalysisResult.class );
 			
@@ -130,7 +141,7 @@ public class UCMitigationActivity implements UseCase {
 				System.out.println( r.id + " = " + r.value );
 			}
 			
-			System.out.println( rest.domain( domain ).analysis().session( ras.getId() ).getMitigationTechniqueParams( "AHP" ) );
+			System.out.println( rest.domain( domain ).analysis().session( ras.getId() ).getMitigationTechniqueParams( "CBRank" ) );
 			
 		}
 		

@@ -130,7 +130,7 @@ public class AHPAnalysis extends MitigationActivity {
 		return null;
 	}
 	
-	public String eval( String value ) {
+	public String eval( String value , RiskScenario context  ) {
 		
 		JAHPInput ahpInput = new Gson().fromJson( value, JAHPInput.class );
 		

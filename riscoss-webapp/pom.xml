@@ -126,11 +126,11 @@
 			<artifactId>riscoss-fbk</artifactId>
 			<version>0.24-SNAPSHOT</version>
 		</dependency>
-<!-- 		<dependency> -->
-<!-- 			<groupId>eu.riscoss</groupId> -->
-<!-- 			<artifactId>riscoss-kpa</artifactId> -->
-<!-- 			<version>0.24-SNAPSHOT</version> -->
-<!-- 		</dependency>  -->
+		<!-- <dependency> -->
+		<!-- <groupId>eu.riscoss</groupId> -->
+		<!-- <artifactId>riscoss-kpa</artifactId> -->
+		<!-- <version>0.24-SNAPSHOT</version> -->
+		<!-- </dependency> -->
 		<!-- Smile.jar -->
 		<dependency>
 			<groupId>eu.riscoss</groupId>
@@ -185,7 +185,7 @@
 			<artifactId>riscoss-rdc-omm</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>eu.riscoss</groupId>
 			<artifactId>riscoss-ram-core</artifactId>
@@ -199,6 +199,16 @@
 		<dependency>
 			<groupId>eu.riscoss</groupId>
 			<artifactId>riscoss-ram-ahp</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.riscoss</groupId>
+			<artifactId>riscoss-ram-cbrank</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.riscoss</groupId>
+			<artifactId>riscoss-ram-ga</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 
@@ -233,14 +243,14 @@
 			<resource>
 				<directory>src/main/resources</directory>
 			</resource>
-      <resource>
-        <directory>src/main/resources</directory>
-        <includes>
-          <include>smile.jar</include>
-        </includes>
-        <targetPath>../lib/</targetPath>
-      </resource>
-    
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>smile.jar</include>
+				</includes>
+				<targetPath>../lib/</targetPath>
+			</resource>
+
 		</resources>
 
 		<plugins>
@@ -284,9 +294,9 @@
 							<include>**/png</include>
 						</includes>
 					</resource>
-	
-					
-					
+
+
+
 					<!-- ????? -->
 					<!-- <modules> -->
 					<!-- <module>eu.riscoss.analysis</module> -->

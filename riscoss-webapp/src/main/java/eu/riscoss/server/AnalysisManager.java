@@ -1172,7 +1172,7 @@ public class AnalysisManager {
 			
 			MitigationActivity ma = RiskAnalysisManager.get().getMitigationTechniqueInstance( mtName );
 			
-			String output = ma.eval( json );
+			String output = ma.eval( json, scenario );
 			
 			scenario.set( "input", json );
 			scenario.set( "output", output );
@@ -1210,7 +1210,7 @@ public class AnalysisManager {
 			
 			AHPAnalysis ahp = new AHPAnalysis();
 			
-			return ahp.eval( json );
+			return ahp.eval( json, null );
 			
 		}
 		catch( Exception ex ) {

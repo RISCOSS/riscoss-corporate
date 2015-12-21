@@ -20,15 +20,22 @@ public class GATest {
 		loader.load( convertStreamToString( 
 				GATest.class.getResourceAsStream( "cenatic.xml" ) ), program );
 		
-		Map<String,Object>						map = new HashMap<String,Object>();
+		Map<String,Evidence>						map = new HashMap<String,Evidence>();
 		
 		map.put( "Affinity Risk", new Evidence( 0.33, 0 ) );
 		
+		Map<String,Double> input = new HashMap<>();
 		
+		input.put( "#s:MIT", 1.0 );
 		
 		GA ga = new GA();
 		
-		ga.run( program, map );
+		Map<String,Double> output =
+				ga.run( program, map, input );
+		
+		for( String id : output.keySet() ) {
+			System.out.println( id + ": " + output.get( id ) );
+		}
 		
 	}
 	

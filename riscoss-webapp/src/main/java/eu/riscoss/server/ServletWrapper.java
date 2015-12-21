@@ -44,6 +44,8 @@ import eu.riscoss.rdc.RDC;
 import eu.riscoss.rdc.RDCFactory;
 import eu.riscoss.rdc.RDCRunner;
 import eu.riscoss.server.ma.AHPAnalysis;
+import eu.riscoss.server.ma.CBRankAnalysis;
+import eu.riscoss.server.ma.GAAnalysis;
 import eu.riscoss.shared.DBResource;
 import eu.riscoss.shared.KnownRoles;
 import eu.riscoss.shared.Pair;
@@ -62,6 +64,8 @@ public class ServletWrapper extends ServletContainer {
 		try {
 			
 			RiskAnalysisManager.get().register( "AHP", AHPAnalysis.class );
+			RiskAnalysisManager.get().register( "CBRank", CBRankAnalysis.class );
+			RiskAnalysisManager.get().register( "GA", GAAnalysis.class );
 			
 			
 			ServletContext sc = getServletContext();

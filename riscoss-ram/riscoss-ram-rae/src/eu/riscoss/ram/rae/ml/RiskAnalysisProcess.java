@@ -52,6 +52,8 @@ public class RiskAnalysisProcess {
 	
 	Gson gson = new Gson();
 	
+	boolean runThrough = true;
+	
 	public RiskAnalysisProcess() {
 	}
 	
@@ -106,7 +108,7 @@ public class RiskAnalysisProcess {
 			rae.loadModel( blob );
 		}
 		
-		List<MissingDataItem> missingFields = new ArrayList<MissingDataItem>();
+		List<JDataItem> missingFields = new ArrayList<>();
 		
 		// Setting indicators
 		
@@ -133,7 +135,7 @@ public class RiskAnalysisProcess {
 				}
 				if( str == null ) {
 					// Return?
-					MissingDataItem item = new MissingDataItem();
+					JDataItem item = new JDataItem();
 					item.id = c.getId();
 					Field field = rae.getField( c, FieldType.DESCRIPTION );
 					item.description = (field != null ? (String)field.getValue() : null);
@@ -207,13 +209,15 @@ public class RiskAnalysisProcess {
 		}
 		
 		if( missingFields.size() > 0 ) {
-			if( EAnalysisOption.valueOf( session.getOption( "AnalysisOption", EAnalysisOption.RunThrough.name() ) ) == EAnalysisOption.RequestMissingData ) {
+//			if( EAnalysisOption.valueOf( session.getOption( "AnalysisOption", EAnalysisOption.RunThrough.name() ) ) == EAnalysisOption.RequestMissingData ) {
+			if( this.runThrough == false ) {
+				// TODO: specify the runThrough option in the calling method
 				JsonObject ret = new JsonObject();
-				ret.addProperty( "result", EAnalysisResult.DataMissing.name() );
+				ret.addProperty( "result", "DataMissing" );
 				JsonObject md = new JsonObject();
 				ret.add( "missingData", md );
 				JsonArray array = new JsonArray();
-				for( MissingDataItem missingItem : missingFields ) {
+				for( JDataItem missingItem : missingFields ) {
 					JsonObject item = new JsonObject();
 					item.addProperty( "id", missingItem.id ); // mandatory
 					item.addProperty( "type", missingItem.type );  // mandatory
@@ -227,7 +231,7 @@ public class RiskAnalysisProcess {
 					array.add( item );
 				}
 				md.add( "list", array );
-				session.setOption( "status", EAnalysisResult.DataMissing.name() );
+				session.setOption( "status", "DataMissing" );
 				session.setOption( "missing-data", ret.toString() );
 				return;
 			}
@@ -289,7 +293,8 @@ public class RiskAnalysisProcess {
 			ras.setEntityAttribute( target, "argumentation", json );
 		}
 		
-		session.setStatus( target, EAnalysisResult.Done.name() );
+		// TODO: replace with better architectural config
+		session.setStatus( target, "Done" );
 	}
 	
 	RiskData field2RiskData( String id, String target, Field f ) {
