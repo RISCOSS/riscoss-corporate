@@ -46,13 +46,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
-import eu.riscoss.client.Log;
 import eu.riscoss.dataproviders.RiskData;
 import eu.riscoss.db.RiscossDB;
 import eu.riscoss.db.SearchParams;
 import eu.riscoss.ram.algo.DownwardEntitySearch;
-import eu.riscoss.ram.algo.TraverseCallback;
 import eu.riscoss.ram.algo.DownwardEntitySearch.DIRECTION;
+import eu.riscoss.ram.algo.TraverseCallback;
 import eu.riscoss.rdc.RDC;
 import eu.riscoss.rdc.RDCFactory;
 import eu.riscoss.rdc.RDCParameter;
@@ -151,14 +150,14 @@ public class EntityManager {
 	@GET @Path("/{domain}/{layer}/search")
 	@Info("Returns a list of entities that match the specified parameters in a specified layer")
 	public String searchNew(
-			@PathParam("domain") @Info("The selected domain")			String domain, 
-			@HeaderParam("token") @Info("The authentication token")		String token,
-			@DefaultValue("") @PathParam("layer")						String layer, 
-			@DefaultValue("") @QueryParam("query")						String query, 
-			@DefaultValue("0") @QueryParam("from")						String strFrom,
-			@DefaultValue("0") @QueryParam("max")						String strMax, 
-			@DefaultValue("f") @QueryParam("h")							String strHierarchy,
-			@DefaultValue("") @QueryParam("f")							String flags
+			@PathParam("domain") @Info("The selected domain")											String domain, 
+			@HeaderParam("token") @Info("The authentication token")										String token,
+			@DefaultValue("") @PathParam("layer") @Info("The layer to search in")						String layer, 
+			@DefaultValue("") @QueryParam("query") @Info("The actual query (on the entity name")		String query, 
+			@DefaultValue("0") @QueryParam("from") @Info("Index of the firs entity (for pagination")	String strFrom,
+			@DefaultValue("0") @QueryParam("max") @Info("Amount of entities to search")					String strMax, 
+			@DefaultValue("f") @QueryParam("h") @Info("Tells the server to load the entity's hierarchy")String strHierarchy,
+			@DefaultValue("") @QueryParam("f") @Info("Search flags")									String flags
 		) throws Exception {
 		
 		List<JEntityNode> result = new ArrayList<JEntityNode>();
@@ -263,11 +262,12 @@ public class EntityManager {
 	@Produces("application/json")
 	//TODO: remove parent. Extra call for adding parents.
 	public String createEntity(
-			@PathParam("domain") @Info("The selected domain") String domain,
-			@QueryParam("name") String name, 
-			@QueryParam("layer") String layer, 
-			@QueryParam("parent") String parent,
-			@HeaderParam("token") @Info("The authentication token") String token ) {
+			@PathParam("domain") @Info("The selected domain")			String domain,
+			@QueryParam("name") @Info("The selected entity")			String name, 
+			@QueryParam("layer") @Info("The layer name")				String layer, 
+			@QueryParam("parent") @Info("A parent entity")				String parent,
+			@HeaderParam("token") @Info("The authentication token") 	String token 
+			) {
 
 		// attention:filename sanitation is not directly notified to the user
 		name = RiscossUtil.sanitize(name);
@@ -304,7 +304,7 @@ public class EntityManager {
 	@Info("Deleted the specified entity")
 	public void deleteEntity(
 			@PathParam("domain") @Info("The selected domain")			String domain,
-			@PathParam("entity")										String entity,
+			@PathParam("entity") @Info("The selected entity")			String entity,
 			@HeaderParam("token") @Info("The authentication token")		String token
 			) throws Exception {
 		RiscossDB db = null;
@@ -326,7 +326,7 @@ public class EntityManager {
 	@Info("Returns detailed information about the specified entity")
 	public String getEntityData(
 			@PathParam("domain") @Info("The selected domain")			String domain,
-			@PathParam("entity")										String entity,
+			@PathParam("entity") @Info("The selected entity")			String entity,
 			@HeaderParam("token") @Info("The authentication token")		String token
 			) throws Exception {
 		RiscossDB db = null;
@@ -389,9 +389,9 @@ public class EntityManager {
 	//currently not used!
 	@GET @Path("/{domain}/{entity}/data_new")
 	public String getEntityData_new(
-			@PathParam("domain") @Info("The selected domain")		String domain,
-			@PathParam("entity")									String entity,
-			@HeaderParam("token") @Info("The authentication token")	String token
+			@PathParam("domain") @Info("The selected domain")			String domain,
+			@PathParam("entity") @Info("The selected entity")			String entity,
+			@HeaderParam("token") @Info("The authentication token")		String token
 			) throws Exception {
 		
 		RiscossDB db = null;
@@ -486,7 +486,7 @@ public class EntityManager {
 	@Info("Sets the specified entity as the child for all the given parent entities")
 	public void setParents(
 			@PathParam("domain") @Info("The selected domain")			String domain,
-			@PathParam("entity")										String entity, 
+			@PathParam("entity") @Info("The selected entity")			String entity, 
 			@HeaderParam("token") @Info("The authentication token")		String token,
 			String parents
 			) throws Exception {
@@ -518,17 +518,10 @@ public class EntityManager {
 	
 	@GET @Path("/{domain}/{entity}/parents")
 	@Produces("application/json")
-	/**
-	 * Returns a list of parents. 
-	 * @param domain
-	 * @param entity
-	 * @param token
-	 * @return
-	 */
 	@Info("Returns a list of parents")
 	public String getParents(
 			@PathParam("domain") @Info("The selected domain")			String domain,
-			@PathParam("entity")										String entity,
+			@PathParam("entity") @Info("The selected entity")			String entity,
 			@HeaderParam("token") @Info("The authentication token")		String token
 			) throws Exception {
 		
@@ -559,7 +552,7 @@ public class EntityManager {
 	@Info("Sets the given list of entities as children of the specified parent entity")
 	public void setChildren(
 			@PathParam("domain") @Info("The selected domain")			String domain,
-			@PathParam("entity")										String entity, 
+			@PathParam("entity") @Info("The selected entity")			String entity, 
 			@HeaderParam("token") @Info("The authentication token")		String token,
 			String children
 			) throws Exception {
@@ -595,11 +588,13 @@ public class EntityManager {
 	}
 	
 	@GET @Path("/{domain}/{entity}/candidatechild")
+	@Info("Checks whether the specified entity could legally be set as child of another given entity (e.g., no cycles)")
 	public String isCandidateChild(
-			@PathParam("domain") @Info("The selected domain") String domain,
-			@PathParam("entity") String entity, 
-			@QueryParam("child") String child,
-			@HeaderParam("token") @Info("The authentication token") String token ) throws Exception {
+			@PathParam("domain") @Info("The selected domain")					String domain,
+			@PathParam("entity") @Info("The selected entity")					String entity, 
+			@QueryParam("child") @Info("The candidate child")					String child,
+			@HeaderParam("token") @Info("The authentication token")				String token 
+			) throws Exception {
 		
 		RiscossDB db = null;
 		try {
@@ -616,11 +611,13 @@ public class EntityManager {
 	}
 	
 	@GET @Path("/{domain}/{entity}/candidateparent")
+	@Info("Checks whether the specified entity could legally be set as parent of another given entity (e.g., no cycles)")
 	public String isCandidateParent(
-			@PathParam("domain") @Info("The selected domain") String domain,
-			@PathParam("entity") String entity, 
-			@QueryParam("child") String child,
-			@HeaderParam("token") @Info("The authentication token") String token ) throws Exception {
+			@PathParam("domain") @Info("The selected domain")			String domain,
+			@PathParam("entity") @Info("The candidate parent")			String entity, 
+			@QueryParam("child") @Info("The selected entity")			String child,
+			@HeaderParam("token") @Info("The authentication token")		String token 
+			) throws Exception {
 		
 		RiscossDB db = null;
 		try {
@@ -646,10 +643,12 @@ public class EntityManager {
 	 */
 	@GET	@Path("/{domain}/{entity}/hierarchy")
 	@Produces("application/json")
+	@Info("Returns direct parents and children of an entity (not the whole hierarchy)")
 	public String getHierarchyInfo(
-			@PathParam("domain") @Info("The selected domain") String domain,
-			@PathParam("entity") String entity,
-			@HeaderParam("token") @Info("The authentication token") String token) throws Exception {
+			@PathParam("domain") @Info("The selected domain")				String domain,
+			@PathParam("entity") @Info("The selected entity")				String entity,
+			@HeaderParam("token") @Info("The authentication token")			String token
+			) throws Exception {
 		RiscossDB db = null;
 		try {
 			
@@ -679,10 +678,12 @@ public class EntityManager {
 	
 
 	@GET	@Path("/{domain}/{entity}/rdcs/list")
+	@Info("Returns the list ov available RDC for the given entity; the list includes both enabled and not enabled RDCs")
 	public String listRDCs(
-			@PathParam("domain") @Info("The selected domain") String domain,
-			@PathParam("entity") String entityName,
-			@HeaderParam("token") @Info("The authentication token") String token ) throws Exception {
+			@PathParam("domain") @Info("The selected domain")			String domain,
+			@PathParam("entity") @Info("The selected entity")			String entityName,
+			@HeaderParam("token") @Info("The authentication token")		String token 
+			) throws Exception {
 		JsonObject o = new JsonObject();
 		RiscossDB db = null;
 		try {
@@ -715,11 +716,14 @@ public class EntityManager {
 	}
 
 	@POST	@Path("/{domain}/{entity}/rdcs/store")
+	@Info("Stores the parameters for each RDC to be associated to a selected entity")
 	public void setRDCs(
-			@PathParam("domain") @Info("The selected domain") String domain,
-			@PathParam("entity") String entityName, 
-			@HeaderParam("token") @Info("The authentication token") String token,
-			String rdcmapString) throws Exception {
+			@PathParam("domain") @Info("The selected domain")						String domain,
+			@PathParam("entity") @Info("The entity to set the paremeters") String	entityName, 
+			@HeaderParam("token") @Info("The authentication token")					String token,
+			@Info("A list, containing the value for each parameter of each RDC, and a flag telling whether to enable the RDC") String
+																					rdcmapString
+			) throws Exception {
 		RiscossDB db = null;
 		try {
 			
@@ -761,10 +765,12 @@ public class EntityManager {
 	
 	@GET	@Path("/{domain}/{entity}/rdcs/newrun")
 	@Produces("application/json")
+	@Info("Executes all the RDC associated to the given entity")
 	public String runRDCS(
-			@PathParam("domain") @Info("The selected domain") String domain,
-			@PathParam("entity") String entityName,
-			@HeaderParam("token") @Info("The authentication token") String token ) throws Exception {
+			@PathParam("domain") @Info("The selected domain")					String domain,
+			@PathParam("entity") @Info("The selected entity")					String entityName,
+			@HeaderParam("token") @Info("The authentication token")				String token
+			) throws Exception {
 		RiscossDB db = null;
 		try {
 			
@@ -821,10 +827,12 @@ public class EntityManager {
 
 	
 	@GET @Path("/{domain}/{entity}/rd")
+	@Info("Returns the RiskData associated to the given entity")
 	public String getRiskData(
-			@PathParam("domain") @Info("The selected domain") String domain,
-			@PathParam("entity") String entity,
-			@HeaderParam("token") @Info("The authentication token") String token ) throws Exception {
+			@PathParam("domain") @Info("The selected domain")					String domain,
+			@PathParam("entity") @Info("The selected entity")					String entity,
+			@HeaderParam("token") @Info("The authentication token")				String token
+			) throws Exception {
 		RiscossDB db = null;
 		try {
 			
@@ -848,9 +856,10 @@ public class EntityManager {
 	@GET	@Path("/{domain}/{entity}/ras")
 	@Produces("application/json")
 	public String getRAD(
-			@PathParam("domain") @Info("The selected domain") String domain,
-			@PathParam("entity") String entity,
-			@HeaderParam("token") @Info("The authentication token") String token ) throws Exception {
+			@PathParam("domain") @Info("The selected domain")			String domain,
+			@PathParam("entity") @Info("The selected entity")			String entity,
+			@HeaderParam("token") @Info("The authentication token")		String token 
+			) throws Exception {
 		RiscossDB db = null;
 		try {
 			
@@ -869,9 +878,10 @@ public class EntityManager {
 	@GET @Path("/{domain}/{entity}/candidatechildren")
 	@Info("Returns a list of entities that can be set as child of the given entity. Thi is useful to avoid circles.")
 	public String getCandidateChildren( 
-			@PathParam("domain") @Info("The selected domain") String domain,
-			@PathParam("entity") @Info("The candidate parent entity") String entity,
-			@HeaderParam("token") @Info("The authentication token") String token ) throws Exception {
+			@PathParam("domain") @Info("The selected domain")				String domain,
+			@PathParam("entity") @Info("The candidate parent entity")		String entity,
+			@HeaderParam("token") @Info("The authentication token")			String token
+			) throws Exception {
 		
 		RiscossDB db = null;
 		
@@ -908,7 +918,7 @@ public class EntityManager {
 	}
 	
 	@GET @Path("/{domain}/{entity}/candidateparents")
-	@Info("Returns a list of entities that can be set as parent of the given entity. Thi is useful to avoid circles.")
+	@Info("Returns a list of entities that can be set as parent of the given entity. This is useful to avoid circles.")
 	public String getCandidateParents( 
 			@PathParam("domain") @Info("The selected domain")				String domain,
 			@PathParam("entity") @Info("The candidate child entity")		String entity,
