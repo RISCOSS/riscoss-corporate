@@ -290,7 +290,7 @@ public class RiskAnalysisResults implements IsWidget {
 				else if (entityResults.get(i).isObject().get("type").isString().stringValue().equals("Risk")) {
 					risks.add(entityResults.get(i).isObject());
 				}
-				else {
+				else if (entityResults.get(i).isObject().get("type").isString().stringValue().equals("Goal")){
 					goals.add(entityResults.get(i).isObject());
 				}
 			}
@@ -528,8 +528,17 @@ public class RiskAnalysisResults implements IsWidget {
 										JsonRiskResult result = new JsonRiskResult( v );
 										switch( result.getDataType() ) {
 											case EVIDENCE: {
-												if (v.get("type").isString().stringValue().equals("Goal")) goals.add(v.get( "e" ).isObject().get( "e" ).isNumber().doubleValue());
-												else if (v.get("type").isString().stringValue().equals("Risk")) risks.add(v.get( "e" ).isObject().get( "e" ).isNumber().doubleValue());
+												if (v.get("datatype").isString().stringValue().equals("evidence")) {
+													if (v.get("type") == null) {
+														risks.add(v.get( "e" ).isObject().get( "e" ).isNumber().doubleValue());
+													}
+													else if (v.get("type").isString().stringValue().equals("Risk")) {
+														risks.add(v.get( "e" ).isObject().get( "e" ).isNumber().doubleValue());
+													}
+													else if (v.get("type").isString().stringValue().equals("Goal")){
+														goals.add(v.get( "e" ).isObject().get( "e" ).isNumber().doubleValue());
+													}
+												}
 											}
 											default: break;
 										}
