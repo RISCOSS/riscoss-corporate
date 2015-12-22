@@ -366,9 +366,9 @@ public class AnalysisManager {
 	@Info(	"Returns some basic information about a risk session: " + 
 			"ID, target entity, risk configuration, name, timestamp" )	
 	public String getSessionSummary(
-			@PathParam("domain") String domain,
-			@HeaderParam("token") String token, 
-			@PathParam("sid") String sid
+			@PathParam("domain") @Info("The work domain")						String domain,
+			@HeaderParam("token") @Info("The authentication token")				String token, 
+			@PathParam("sid") @Info("The risk session ID")						String sid
 			) throws Exception {
 		RiscossDB db = null;
 		try {
@@ -715,13 +715,15 @@ public class AnalysisManager {
 	
 	@POST @Path("/{domain}/new")
 	public String runAnalysisWithRealDataOld( 
-			@DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, 
-			@QueryParam("rc") String rc,
-			@QueryParam("target") String target,
-			@QueryParam("verbosity") String flags,
-			@DefaultValue("RunThrough") @QueryParam("opt") String strOpt /* See AnalysisOption.RunThrough */,
-			@DefaultValue("") @HeaderParam("customData") String customData ) throws Exception {
+			@DefaultValue("Playground") @PathParam("domain") @Info("The selected domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")											String token, 
+			@QueryParam("rc") @Info("The risk configuration")												String rc,
+			@QueryParam("target") @Info("The target entity")												String target,
+			@QueryParam("verbosity") @Info("Extra parameters")												String flags,
+			@DefaultValue("RunThrough") @QueryParam("opt") @Info("The policy to be applied in case of missing data")
+																											String strOpt /* See AnalysisOption.RunThrough */,
+			@HeaderParam("customData") @Info("An assignment to input indicators")							String customData
+			) throws Exception {
 		
 		EAnalysisOption opt = EAnalysisOption.valueOf( strOpt );
 		if( opt == null ) opt = EAnalysisOption.RunThrough;
@@ -905,11 +907,13 @@ public class AnalysisManager {
 	
 	@POST @Path("/{domain}/whatif")
 	@Consumes(MediaType.APPLICATION_JSON)
+	@Info("Executes a risk analysis outside a session")
 	public String runAnalysisWithCustomData( 
-			@DefaultValue("Playground") @PathParam("domain") String domain,
-			@DefaultValue("") @HeaderParam("token") String token, 
-			@QueryParam("models") String modelsString,
-			@HeaderParam("values") String valuesString ) throws Exception {
+			@PathParam("domain") @Info("The selected domain")							String domain,
+			@HeaderParam("token") @Info("The authentication token")						String token, 
+			@QueryParam("models") @Info("A list of models to be used")					String modelsString,
+			@HeaderParam("values") @Info("An assignment to the input indicators")		String valuesString
+			) throws Exception {
 		
 		JsonObject jvalues = (JsonObject)new JsonParser().parse( valuesString );
 		JsonArray jmodels = (JsonArray)new JsonParser().parse( modelsString );
@@ -1035,6 +1039,7 @@ public class AnalysisManager {
 	}
 	
 	@GET @Path("/{domain}/session/{sid}/mt/list")
+	@Info("Returns a list of the currently applied mitigation activities")
 	public String getAppliedMitigationTechniques(
 			@HeaderParam("token") @Info("The authentication token")							String token,
 			@PathParam("domain") @Info("The selected domain")								String domain,
@@ -1061,6 +1066,7 @@ public class AnalysisManager {
 	}
 	
 	@GET @Path("/{domain}/session/{sid}/mt/{mt}/input")
+	@Info("Returns the input, specified by the user, of a previously applied mitigation activity")
 	public String getMitigationTechniqueParameters(
 			@HeaderParam("token") @Info("The authentication token")							String token,
 			@PathParam("domain") @Info("The selected domain")								String domain,
@@ -1092,6 +1098,7 @@ public class AnalysisManager {
 	}
 	
 	@GET @Path("/{domain}/session/{sid}/mt/{mt}/output")
+	@Info("Returns the output of a previously applied mitigation activity")
 	public String getMitigationTechniqueResults(
 			@HeaderParam("token") @Info("The authentication token")							String token,
 			@PathParam("domain") @Info("The selected domain")								String domain,
@@ -1231,6 +1238,7 @@ public class AnalysisManager {
 	}
 	
 	@POST @Path("/{domain}/ahp")
+	@Info("Executes a simulation using the AHP algorithm")
 	public String runAHPAnalysis( 
 			@PathParam("domain") @Info("The selected domain")			String domain,
 			@Info("The AHP parameters")									String json
