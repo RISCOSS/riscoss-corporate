@@ -3,7 +3,9 @@ package eu.riscoss.client.dashboard;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
@@ -200,13 +202,13 @@ public class MainPageModule implements EntryPoint {
 		}
 	}
 	
-	String nextRAS;
+	JsonRiskAnalysis nextRAS;
 	
 	private void getRisks() {
 		for (JsonRiskAnalysis j : sessions) {
-			nextRAS = j.getID();
+			nextRAS = j;
 			RiscossJsonClient.getSessionResults(j.getID(), new JsonCallback() {
-				String ras = nextRAS;
+				JsonRiskAnalysis ras = nextRAS;
 				@Override
 				public void onFailure(Method method, Throwable exception) {
 					Window.alert(exception.getMessage());
@@ -239,7 +241,7 @@ public class MainPageModule implements EntryPoint {
 						}
 					}
 					if (res.equals("")) res = "-";
-					risksList.put(ras, res);
+					risksList.put(ras.getTarget() + "/" + ras.getRC(), res);
 					generateRiskSessionsChart();
 				}
 			});
@@ -247,7 +249,13 @@ public class MainPageModule implements EntryPoint {
 	}
 	
 	public void generateRiskSessionsChart() {
+//		Window.alert("BEGIN");
 		table = new CellTable<>(15, (Resources) GWT.create(TableResources.class));
+//		Iterator it = risksList.entrySet().iterator();
+//	    while (it.hasNext()) {
+//	        Map.Entry pair = (Map.Entry)it.next();
+//	        Window.alert(pair.getKey() + "///" + pair.getValue());
+//	    }
 
 		Column<JsonRiskAnalysis, String> entity = new Column<JsonRiskAnalysis, String>(new TextCell()) {
 			@Override
@@ -264,8 +272,7 @@ public class MainPageModule implements EntryPoint {
 		Column<JsonRiskAnalysis, String> riskList = new Column<JsonRiskAnalysis, String>(new TextCell()) {
 			@Override
 			public String getValue(JsonRiskAnalysis arg0) {
-				String s = arg0.getID();
-				return risksList.get(s);
+				return risksList.get(arg0.getTarget() + "/" + arg0.getRC());
 			}
 		};
 		Column<JsonRiskAnalysis, String> date = new Column<JsonRiskAnalysis, String>(new TextCell()) {
