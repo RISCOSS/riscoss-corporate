@@ -333,6 +333,7 @@ body {
 	margin-right: 20px !important;
 	padding: 3px !important;
 	margin-bottom: 18px !important;
+	cursor: pointer !important;
 }
 
 .Button {
@@ -347,6 +348,7 @@ body {
 	color: #F3F3F3 !important;
 	font-weight: bold !important;
 	font-size: 14px !important;
+	cursor: pointer !important;
 }
 
 .deleteButton2 {
@@ -496,4 +498,8 @@ body {
 .mainImageLogo {
 	border-bottom: 3px solid #7EAC30 !important;
 	background-color: #EEEEEE !important;
+}
+
+.logo {
+	cursor: pointer !important;
 }

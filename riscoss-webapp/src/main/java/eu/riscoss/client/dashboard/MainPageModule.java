@@ -272,7 +272,9 @@ public class MainPageModule implements EntryPoint {
 		Column<JsonRiskAnalysis, String> riskList = new Column<JsonRiskAnalysis, String>(new TextCell()) {
 			@Override
 			public String getValue(JsonRiskAnalysis arg0) {
-				return risksList.get(arg0.getTarget() + "/" + arg0.getRC());
+				String s = risksList.get(arg0.getTarget() + "/" + arg0.getRC());
+				if (s == null) return "-";
+				return s;
 			}
 		};
 		Column<JsonRiskAnalysis, String> date = new Column<JsonRiskAnalysis, String>(new TextCell()) {

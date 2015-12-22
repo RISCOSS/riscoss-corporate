@@ -203,6 +203,7 @@ public class RiscossWebApp implements EntryPoint {
 				loadPanel("dashboard.jsp");
 			}
 		});
+		logo.setStyleName("logo");
 		north.add( logo );
 		north.setHeight("5%"); // any value here seems to resolve the firefox problem of showing only a small frame on the right side
 		Label version = new Label("v0.6.0");

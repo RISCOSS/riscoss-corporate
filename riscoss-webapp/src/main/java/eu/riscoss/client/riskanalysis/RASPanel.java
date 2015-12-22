@@ -294,9 +294,32 @@ public class RASPanel implements IsWidget {
 			}
 			
 		} );
+		checkIfEntityExists();
 		
 	}
 	
+	private void checkIfEntityExists() {
+		RiscossJsonClient.listEntities(new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				boolean b = false;
+				for(int i=0; i<response.isArray().size(); i++){
+					JSONObject o = (JSONObject)response.isArray().get(i);
+					if (o.get("name").isString().stringValue().equals(entity)) b = true;
+				}
+				if (!b) {
+					buttons2.clear();
+					buttons.remove(mitigation);
+					if (inputButtons != null) inputButtons.clear();
+				}
+			}
+		});
+	}
+
 	String mostCurrentSession;
 	
 	public void checkLastRiskSession() {
