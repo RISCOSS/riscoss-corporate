@@ -33,6 +33,7 @@ import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.gwt.view.client.SelectionChangeEvent.Handler;
 
 import eu.riscoss.client.JsonRiskResult;
+import eu.riscoss.client.Log;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecRASInfo;
 import eu.riscoss.client.entities.TableResources;
@@ -239,9 +240,7 @@ public class MainPageModule implements EntryPoint {
 					}
 					if (res.equals("")) res = "-";
 					risksList.put(ras, res);
-					if (sessions.size() == totalC) {
-						generateRiskSessionsChart();
-					}
+					generateRiskSessionsChart();
 				}
 			});
 		}
@@ -265,7 +264,8 @@ public class MainPageModule implements EntryPoint {
 		Column<JsonRiskAnalysis, String> riskList = new Column<JsonRiskAnalysis, String>(new TextCell()) {
 			@Override
 			public String getValue(JsonRiskAnalysis arg0) {
-				return risksList.get(arg0.getID());
+				String s = arg0.getID();
+				return risksList.get(s);
 			}
 		};
 		Column<JsonRiskAnalysis, String> date = new Column<JsonRiskAnalysis, String>(new TextCell()) {
@@ -274,7 +274,6 @@ public class MainPageModule implements EntryPoint {
 				return arg0.getDate();
 			}
 		};
-		
 		table.setRowData(0, sessions);
 		
 		final SelectionModel<JsonRiskAnalysis> selectionModel = new SingleSelectionModel<JsonRiskAnalysis>();
