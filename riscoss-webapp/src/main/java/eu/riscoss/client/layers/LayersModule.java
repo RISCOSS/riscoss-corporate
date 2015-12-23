@@ -716,8 +716,6 @@ public class LayersModule implements EntryPoint {
 	}
 	
 	EntityPropertyPage ppgEnt;
-	TextBox 			newName;
-	Label 				l;
 	
 	private void reloadEntityInfo() {
 		if (selectedEntity != null) {
@@ -725,7 +723,7 @@ public class LayersModule implements EntryPoint {
 			rightPanel = new VerticalPanel();
 			rightPanel.setStyleName("rightPanelLayer");
 			rightPanel.setWidth("90%");
-			l = new Label(selectedEntity);
+			Label l = new Label(selectedEntity);
 			l.setStyleName("subtitle");
 			rightPanel.add(l);
 			
@@ -742,9 +740,9 @@ public class LayersModule implements EntryPoint {
 			Label name = new Label("Name");
 			name.setStyleName("bold");
 			properties.setWidget(0, 0, name);
-			newName = new TextBox();
-			newName.setText(selectedEntity);
-			properties.setWidget(0, 1, newName);
+			Label nameL = new Label(selectedEntity);
+			nameL.setStyleName("tag");
+			properties.setWidget(0, 1, nameL);
 			
 			properties.setWidget(0, 2, space);
 			
@@ -772,33 +770,7 @@ public class LayersModule implements EntryPoint {
 			saveEntity.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					ppgEnt.saveEntityData(newName.getText());
-					l.setText(newName.getText());
-					RiscossJsonClient.listEntities(selectedLayer, new JsonCallback() {
-						@Override
-						public void onFailure(
-								Method method,
-								Throwable exception) {
-						}
-						@Override
-						public void onSuccess(
-								Method method,
-								JSONValue response) {
-							RiscossJsonClient.listEntities(selectedLayer, new JsonCallback() {
-								@Override
-								public void onFailure(
-										Method method,
-										Throwable exception) {
-								}
-								@Override
-								public void onSuccess(
-										Method method,
-										JSONValue response) {
-									reloadEntityTable(response);
-								}
-							});
-						}
-					});
+					ppgEnt.saveEntityData();
 				}
 			});
 			buttons.add(saveEntity);
