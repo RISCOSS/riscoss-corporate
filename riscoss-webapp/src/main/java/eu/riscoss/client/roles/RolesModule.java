@@ -56,11 +56,11 @@ public class RolesModule implements EntryPoint {
 	};
 	
 	public void generateTable() {
-		g = new Grid(6, 11);
+		g = new Grid(5, 11);
 		//g.setWidth("100%");
 		
 		//Roles (rows)
-		for (int i = 1; i < 6; ++i) {
+		for (int i = 1; i < 5; ++i) {
 			Label l = new Label(KnownRoles.values()[i-1].name());
 			l.setStyleName("bold");
 			g.setWidget(i, 0, l);
@@ -79,32 +79,32 @@ public class RolesModule implements EntryPoint {
 			g.setWidget(1, i, tick);
 		}
 		
-		//Consumer
+//		//Consumer
+//		for (int i = 5; i < 10; ++i) {
+//			Image tick = new Image( "resources/good_or_tick.png" );
+//			g.setWidget(2, i, tick);
+//		}
+		
+		//Producer
+		{
+			Image tick = new Image( "resources/good_or_tick.png" );
+			g.setWidget(2, 2, tick);
+		}
 		for (int i = 5; i < 10; ++i) {
 			Image tick = new Image( "resources/good_or_tick.png" );
 			g.setWidget(2, i, tick);
 		}
 		
-		//Producer
-		{
-			Image tick = new Image( "resources/good_or_tick.png" );
-			g.setWidget(3, 2, tick);
-		}
-		for (int i = 5; i < 10; ++i) {
-			Image tick = new Image( "resources/good_or_tick.png" );
-			g.setWidget(3, i, tick);
-		}
-		
 		//Modeler
 		for (int i = 2; i < 10; ++i) {
 			Image tick = new Image( "resources/good_or_tick.png" );
-			g.setWidget(4, i, tick);
+			g.setWidget(3, i, tick);
 		}
 		
 		//Administrator
 		for (int i = 1; i < 11; ++i) {
 			Image tick = new Image( "resources/good_or_tick.png" );
-			g.setWidget(5, i, tick);
+			g.setWidget(4, i, tick);
 		}
 		
 		/*for (int i = 0; i < 11; ++i) {
@@ -114,7 +114,7 @@ public class RolesModule implements EntryPoint {
 		g.setCellSpacing(0);
 //		g.setBorderWidth(1);
 		
-		for (int i = 0; i < 6; ++i) {
+		for (int i = 0; i < 5; ++i) {
 			for (int j = 0; j < 11; ++j) {
 				g.getCellFormatter().setHorizontalAlignment(i, j, HasHorizontalAlignment.ALIGN_CENTER);
 				g.getCellFormatter().setStyleName(i, j, "cellGrid");

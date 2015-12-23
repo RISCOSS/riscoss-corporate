@@ -5,7 +5,7 @@ import java.util.List;
 
 public enum KnownRoles {
 	
-	Guest( DBResource.All.name() ,"r" ), 
+//	Guest( DBResource.All.name() ,"r" ), 
 	Consumer( DBResource.All.name(),"r" ), 
 	Producer( DBResource.All.name(),"r", DBResource.Entities.name(),"rw", DBResource.Layers.name(),"rw" ), 
 	Modeler( DBResource.All.name(),"r", DBResource.Models.name(), "rw", DBResource.RiskConfigurations.name(), "rw" ), 

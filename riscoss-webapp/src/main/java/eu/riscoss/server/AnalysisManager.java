@@ -714,6 +714,7 @@ public class AnalysisManager {
 	}
 	
 	@POST @Path("/{domain}/new")
+	@Info("Executes a risk a simple risk analysis using real data but outside a risk session and with not hierarchy support")
 	public String runAnalysisWithRealDataOld( 
 			@DefaultValue("Playground") @PathParam("domain") @Info("The selected domain")					String domain,
 			@HeaderParam("token") @Info("The authentication token")											String token, 
@@ -907,7 +908,7 @@ public class AnalysisManager {
 	
 	@POST @Path("/{domain}/whatif")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Info("Executes a risk analysis outside a session")
+	@Info("Executes a risk analysis simulation outside a session")
 	public String runAnalysisWithCustomData( 
 			@PathParam("domain") @Info("The selected domain")							String domain,
 			@HeaderParam("token") @Info("The authentication token")						String token, 

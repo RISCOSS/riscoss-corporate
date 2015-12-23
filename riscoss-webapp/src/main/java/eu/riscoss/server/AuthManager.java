@@ -95,10 +95,10 @@ public class AuthManager {
 		try {
 			OSecurity security = graph.getRawGraph().getMetadata().getSecurity();
 			
-			ORole guest = security.getRole( KnownRoles.Guest.name() );
+			ORole guest = security.getRole( KnownRoles.Consumer.name() );
 			
 			if( guest == null ) {
-				guest = security.createRole( KnownRoles.Guest.name(), OSecurityRole.ALLOW_MODES.ALLOW_ALL_BUT );
+				guest = security.createRole( KnownRoles.Consumer.name(), OSecurityRole.ALLOW_MODES.ALLOW_ALL_BUT );
 			}
 			
 			security.createUser( username, password, guest );

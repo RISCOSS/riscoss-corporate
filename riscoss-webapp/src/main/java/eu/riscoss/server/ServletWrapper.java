@@ -131,7 +131,7 @@ public class ServletWrapper extends ServletContainer {
 				}
 				
 				sm.createPage( "/", "RISCOSS Web App", "index.jsp", new String[] { KnownRoles.Administrator.name() } );
-				sm.createPage( "/", "Dashboard", "dashboard.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() });
+				sm.createPage( "/", "Dashboard", "dashboard.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() });
 				
 				sm.createSection( "/Configure" );
 				sm.createPage( "/Configure", "Layers", "layers.jsp", new String[] { KnownRoles.Administrator.name() } );
@@ -143,15 +143,15 @@ public class ServletWrapper extends ServletContainer {
 				sm.createSection( "/Run" );
 				//				sm.createPage( "/Run", "One-layer Analysis", "analysis.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
 				sm.deletePage( "/Run", "One-layer Analysis");
-				sm.createPage( "/Run", "Multi-layer Analysis", "riskanalysis.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
-				sm.createPage( "/Run", "What-if Analysis", "whatifanalysis.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
-				sm.createPage( "/Run", "AHP Session Analysis", "rma.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
+				sm.createPage( "/Run", "Multi-layer Analysis", "riskanalysis.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
+				sm.createPage( "/Run", "What-if Analysis", "whatifanalysis.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
+				sm.createPage( "/Run", "AHP Session Analysis", "rma.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
 				//				sm.createPage( "/Run", "CBRank Analysis", "analysis.jsp?type=cbrank", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
 				//				sm.createPage( "/Run", "Genetic Algorithm Analysis", "analysis.jsp?type=ga", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
 				
 				sm.createSection( "/Browse" );
-				sm.createPage( "/Browse", "Risk Data Repository", "rdr.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
-				sm.createPage( "/Browse", "Risk Analysis Sessions", "ras.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
+				sm.createPage( "/Browse", "Risk Data Repository", "rdr.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
+				sm.createPage( "/Browse", "Risk Analysis Sessions", "ras.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
 				
 				sm.createSection( "/Admin" );
 				sm.deletePage( "/Admin", "Users and Roles" );

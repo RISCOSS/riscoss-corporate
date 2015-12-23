@@ -71,7 +71,9 @@ public class DownwardEntitySearch {
 		
 		if( set.contains( entity ) ) {
 			System.err.println( "CYCLE DETECTED!" );
-			for( String s : set ) System.out.print( s );
+			for( String s : set ) {
+				System.out.print( s );
+			}
 			System.out.println();
 			return;
 		}
