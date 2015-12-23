@@ -217,6 +217,8 @@ public class EntityManager {
 				jd.name = "CYCLE DETECTED! (" + name + ")";
 				jd.layer = db.layerOf( name );
 				jparent.children.add( jd );
+				// FIXME Somehow, somewhere, a cycle has been introduced. Currently we don't know where or how. For now, we just remove it when we find it.
+				db.removeEntity( name, jparent.name );
 			}
 			else {
 				JEntityNode jd = new JEntityNode();
