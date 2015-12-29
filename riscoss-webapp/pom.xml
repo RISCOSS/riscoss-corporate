@@ -132,13 +132,13 @@
 		<!-- <version>0.24-SNAPSHOT</version> -->
 		<!-- </dependency> -->
 		<!-- Smile.jar -->
-		<dependency>
+		<!--dependency>
 			<groupId>eu.riscoss</groupId>
 			<artifactId>riscoss-platform-jsmile</artifactId>
 			<version>${project.version}</version>
 			<scope>system</scope>
 			<systemPath>${project.basedir}/src/main/resources/smile.jar</systemPath>
-		</dependency>
+		</dependency-->
 
 		<dependency>
 			<groupId>eu.riscoss.rdc</groupId>
