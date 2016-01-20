@@ -104,7 +104,7 @@ public class LayerPropertyPage implements IsWidget {
 	public LayerPropertyPage() {
 		
 		//tab.add( panel , "Properties");
-		tab.add( ciPanel , "Contextual Information");
+		tab.add( ciPanel , "Layer information");
 		tab.selectTab(0);
 		tab.setSize( "100%", "100%" );
 		tab.setVisible(false);
@@ -258,7 +258,7 @@ public class LayerPropertyPage implements IsWidget {
 					info.addContextualInfoCalendar(id.getText(), name.getText(), description.getText(), defvaluestring);
 				}
 				
-				else {
+				else if (type == 3) {
 					elements = new ArrayList<>();
 					int rCount = enumeration.getRowCount();
 					for (int i = 1; i < rCount; ++i) {
@@ -274,6 +274,11 @@ public class LayerPropertyPage implements IsWidget {
 					enumeration.setWidget(0, 0, w);
 					
 					defvalue.setWidget(new ListBox());
+				}
+				
+				else if (type == 4) {
+					defvaluestring = String.valueOf(((TextBox) defvalue.getWidget()).getText());
+					info.addContextualInfoText(id.getText(), name.getText(), description.getText(), defvaluestring);
 				}
 				
 				CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
@@ -354,6 +359,7 @@ public class LayerPropertyPage implements IsWidget {
 		lBox.addItem("Boolean");
 		lBox.addItem("Date");
 		lBox.addItem("List");
+		lBox.addItem("Text");
 		lBox.setSelectedIndex(0);
 		
 		lBox.addChangeHandler(new ChangeHandler() {
@@ -442,7 +448,7 @@ public class LayerPropertyPage implements IsWidget {
 					ciItemPanel.setWidget(null);
 				}
 				
-				else {
+				else if (lBox.getSelectedIndex() == 3){
 					enumeration = new FlexTable();
 					enumeration.insertRow(0);
 					enumeration.insertCell(0, 0);
@@ -487,6 +493,20 @@ public class LayerPropertyPage implements IsWidget {
 					newElement.setWidget(7, 1, null);
 					ciList.setWidget(2, 0, enumeration);
 					ciItemPanel.setWidget( null );
+				}
+				
+				else if (lBox.getSelectedIndex() == 4){
+					ciList.setWidget(2, 0, null);
+					TextBox tb = new TextBox();
+					tb.setWidth("60px");
+					defvalue.setWidget(tb);
+					newElement.setWidget(5, 0, add);
+					newElement.setWidget(5, 1, null);
+					newElement.setWidget(6, 0, null);
+					newElement.setWidget(6, 1, null);
+					newElement.setWidget(7, 0, null);
+					newElement.setWidget(7, 1, null);
+					ciItemPanel.setWidget(null);
 				}
 				
 			}
@@ -686,8 +706,11 @@ public class LayerPropertyPage implements IsWidget {
 				else if (type.equals("List")) {
 					jElement.setDefval(String.valueOf(newDefValList.getSelectedIndex()));
 				}
-				else {
+				else if (type.equals("Date")){
 					jElement.setDefval(getDate());
+				}
+				else if (type.equals("Text")){
+					jElement.setDefval(newDefValInt.getText());
 				}
 				CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
 				JSONValue json = codec.encode( info );
@@ -798,8 +821,8 @@ public class LayerPropertyPage implements IsWidget {
 		Label defvalL = new Label("Default value");
 		defvalL.setStyleName("bold");
 		g.setWidget(3, 0, defvalL);
-		String s = jElement.getDefval();
 		
+		String s = jElement.getDefval();
 		if (jElement.getType().equals("Integer")) {
 			newDefValInt.setText(s);
 			g.setWidget(3, 1, newDefValInt);
@@ -858,13 +881,16 @@ public class LayerPropertyPage implements IsWidget {
 			dfval.add(timePanel);
 			g.setWidget(3, 1, dfval);
 		}
-		else {
+		else if (jElement.getType().equals("List")) {
 			newDefValList = new ListBox();
 			for (int i = 0; i < jElement.getInfo().size(); ++i) {
 				newDefValList.addItem(jElement.getInfo().get(i));
 			}
 			newDefValList.setSelectedIndex(Integer.parseInt(s));
 			g.setWidget(3, 1, newDefValList);
+		} else if (jElement.getType().equals("Text")) {
+			newDefValInt.setText(s);
+			g.setWidget(3, 1, newDefValInt);
 		}
 		
 		vPanel.add(g);

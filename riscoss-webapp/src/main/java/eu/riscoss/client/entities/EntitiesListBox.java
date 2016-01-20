@@ -50,7 +50,7 @@ public class EntitiesListBox {
 	
 	//List-tree button
 	Button			changeList;
-	Boolean			enabledTree = false;
+	Boolean			enabledTree = true;
 	
 	//Fields used for the filtering
 	HorizontalPanel filterPanel;
@@ -98,7 +98,7 @@ public class EntitiesListBox {
 	}
 	
 	private void initializeBox() {
-		changeList = new Button("Change to tree view");
+		changeList = new Button("Change to list view");
 		changeList.setStyleName("button");
 		changeList.addClickHandler(new ClickHandler() {
 			@Override
@@ -120,7 +120,7 @@ public class EntitiesListBox {
 		mainPanel.add(filterPanel);
 		mainPanel.add(list);
 		list.setWidth("100%");
-		reloadListData();
+		reloadTreeData();
 	}
 	
 	private HorizontalPanel searchFields() {

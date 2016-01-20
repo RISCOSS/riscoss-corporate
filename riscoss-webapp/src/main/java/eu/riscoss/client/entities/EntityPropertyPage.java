@@ -783,7 +783,7 @@ public class EntityPropertyPage implements IsWidget {
 					tb.setWidget(row, 1, g);
 					types.add("Date");
 				}
-				else {
+				else if (item.getDataType().equals("List")) {
 					ListBox lb = new ListBox();
 					for (int k = 1; k < contextualInfo.length; ++k) {
 						lb.addItem(contextualInfo[k]);
@@ -798,6 +798,18 @@ public class EntityPropertyPage implements IsWidget {
 					
 					tb.setWidget(row, 1, lb);
 					types.add("List");
+				}
+				else if (item.getDataType().equals("Text")) {
+					TextBox t = new TextBox();
+					t.setText(contextualInfo[0]);
+					t.addValueChangeHandler(new ValueChangeHandler<String>() {
+						@Override
+						public void onValueChange(ValueChangeEvent<String> event) {
+							changedData = true;	
+						}
+					});
+					tb.setWidget(row, 1, t);
+					types.add("Text");
 				}
 				++row;
 			}
@@ -976,9 +988,12 @@ public class EntityPropertyPage implements IsWidget {
 				    value += fmt.format(date);
 				}
 			}
-			else {
+			else if (datatype.equals("List")){
 				value += ((ListBox) tb.getWidget(i, 1)).getSelectedIndex();
 				value += extraInfoList.get(i);
+			}
+			else if (datatype.equals("Text")) {
+				value += ((TextBox) tb.getWidget(i, 1)).getText();
 			}
 			o.put( "value", new JSONString( value ) );
 			o.put( "datatype", new JSONString ( datatype ) );

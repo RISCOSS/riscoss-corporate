@@ -37,6 +37,12 @@
 			<version>4.7</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.googlecode.gflot</groupId>
+			<artifactId>gflot</artifactId>
+			<version>3.3.0</version>
+			<scope>provided</scope>
+		</dependency>
 
 		<!-- Slider -->
 		<dependency>
@@ -120,11 +126,11 @@
 			<artifactId>riscoss-fbk</artifactId>
 			<version>0.24-SNAPSHOT</version>
 		</dependency>
-		<dependency>
-			<groupId>eu.riscoss</groupId>
-			<artifactId>riscoss-kpa</artifactId>
-			<version>0.24-SNAPSHOT</version>
-		</dependency>
+		<!-- <dependency> -->
+		<!-- <groupId>eu.riscoss</groupId> -->
+		<!-- <artifactId>riscoss-kpa</artifactId> -->
+		<!-- <version>0.24-SNAPSHOT</version> -->
+		<!-- </dependency> -->
 		<!-- Smile.jar -->
 		<dependency>
 			<groupId>eu.riscoss</groupId>
@@ -180,6 +186,32 @@
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 
+		<dependency>
+			<groupId>eu.riscoss</groupId>
+			<artifactId>riscoss-ram-core</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.riscoss</groupId>
+			<artifactId>riscoss-ram-rae</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.riscoss</groupId>
+			<artifactId>riscoss-ram-ahp</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.riscoss</groupId>
+			<artifactId>riscoss-ram-cbrank</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.riscoss</groupId>
+			<artifactId>riscoss-ram-ga</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
 		<!-- Temporary dependency -->
 		<dependency>
 			<groupId>org.python</groupId>
@@ -211,6 +243,14 @@
 			<resource>
 				<directory>src/main/resources</directory>
 			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>smile.jar</include>
+				</includes>
+				<targetPath>../lib/</targetPath>
+			</resource>
+
 		</resources>
 
 		<plugins>
@@ -254,6 +294,8 @@
 							<include>**/png</include>
 						</includes>
 					</resource>
+
+
 
 					<!-- ????? -->
 					<!-- <modules> -->

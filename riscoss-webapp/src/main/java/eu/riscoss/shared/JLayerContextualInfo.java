@@ -44,6 +44,14 @@ public class JLayerContextualInfo {
 		
 	}
 	
+	public void addContextualInfoText(String id, String name, String description, String defval) {
+		
+		JLayerContextualInfoElement contextInfo = new JLayerContextualInfoElement(id, name, description, defval, "Text");
+		
+		contextInfoList.add(contextInfo);
+		
+	}
+	
 	public JLayerContextualInfoElement getContextualInfoElement(int index) {
 		return this.contextInfoList.get(index);
 	}

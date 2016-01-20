@@ -12,14 +12,19 @@
 	</context-param>
 	
 	<!-- Uncomment this to customize the DB location -->
-	<!-- <context-param>
+	<context-param>
 		<param-name>eu.riscoss.db.address</param-name>
-		<param-value>plocal:../</param-value>
+		<param-value>plocal:/home/jmotger/Escritorio</param-value>
 	</context-param>
 	<context-param>
 		<param-name>eu.riscoss.db.name</param-name>
 		<param-value>riscoss-db</param-value>
-	</context-param> -->
+	</context-param>
+	<context-param>
+		<!-- max size of the upload request -->
+		<param-name>maxSize</param-name>
+		<param-value>40000000</param-value>
+	</context-param>
 	
 <!-- 	<context-param> -->
 <!-- 		<param-name>eu.riscoss.db.address</param-name> -->
