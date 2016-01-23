@@ -71,40 +71,6 @@ public class MainPageModule implements EntryPoint {
 		
 		RootPanel.get().add(page);
 		
-//		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-//	    	  @Override
-//	    	  public void execute() {
-//	    		  int totalWidth = v.getOffsetWidth();
-//	    		  int imageWidth = logo.getOffsetWidth();
-//	    		  int height = logo.getOffsetHeight();
-//	    		  
-//	    		  int spacers = (totalWidth - imageWidth)/2;
-//	    		  if (spacers > totalWidth/5) {
-//	    			  execute();
-//	    			  return;
-//	    		  }
-//	    		  if (totalWidth < Window.getClientWidth()) {
-//	    			  execute();
-//	    			  return;
-//	    		  }
-//	    		  
-//	    		  HorizontalPanel h1 = new HorizontalPanel();
-//	    		  HorizontalPanel h2 = new HorizontalPanel();
-//	    		  
-//	    		  h1.setStyleName("mainImageLogo");
-//	    		  h2.setStyleName("mainImageLogo");
-//	    		  
-//	    		  h1.setWidth(spacers + "px");
-//	    		  h1.setHeight(height + "px");
-//	    		  h2.setHeight(height + "px");
-//	    		  h2.setWidth(spacers + "px");
-//	    		  
-//	    		  v.clear();
-//	    		  v.add(h1);
-//	    		  v.add(logo);
-//	    		  v.add(h2);
-//	    	  }
-//	    });
 	}
 	
 	CellTable<JsonRiskAnalysis>			table;

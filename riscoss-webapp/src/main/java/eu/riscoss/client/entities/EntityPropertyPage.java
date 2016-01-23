@@ -79,6 +79,7 @@ import eu.riscoss.client.layers.LayersModule;
 import eu.riscoss.client.rdr.EntityDataBox;
 import eu.riscoss.client.report.RiskAnalysisReport;
 import eu.riscoss.client.riskanalysis.RASPanel;
+import eu.riscoss.client.ui.ContextualInfoTable;
 import eu.riscoss.client.ui.CustomizableForm;
 import eu.riscoss.client.ui.CustomizableForm.CustomField;
 import eu.riscoss.client.ui.TreeWidget;
@@ -211,8 +212,8 @@ public class EntityPropertyPage implements IsWidget {
 	SimplePanel			newRasPanel		= new SimplePanel();
 	SimplePanel			dataCollectors 	= new SimplePanel();
 	SimplePanel			rdr				= new SimplePanel();
-	CustomizableForm	userForm 		= new CustomizableForm();
-	FlexTable			tb;
+	ContextualInfoTable	userForm 		= new ContextualInfoTable();
+	FlexTable			tb				= new FlexTable();
 	
 	String				layer;
 	
@@ -238,27 +239,12 @@ public class EntityPropertyPage implements IsWidget {
 	public EntityPropertyPage(EntitiesModule m) {
 		this.module = m;
 		tab.add( summaryPanel, "Properties" );
-		tab.add( ciPanel, "Contextual Information" );
+		tab.add( ciPanel, "Custom information" );
 		tab.add( dataCollectors, "Data Collectors");
 		tab.add( rdr, "Data Repository");
 		tab.add( newRasPanel, "Analysis Sessions" );
 		tab.selectTab( 0 );
 		tab.setSize( "100%", "100%" );
-		/*tab.addSelectionHandler( new SelectionHandler<Integer>() {
-			@Override
-			public void onSelection( SelectionEvent<Integer> event ) {
-				if( rasLoaded == true ) return;
-				RiscossJsonClient.getRASResults( entity, new JsonCallback() {
-					@Override
-					public void onFailure( Method method, Throwable exception ) {
-						Window.alert( exception.getMessage() );
-					}
-					@Override
-					public void onSuccess( Method method, JSONValue response ) {
-						loadRAS( response );
-					}} );
-			}
-		});*/
 		
 		RiscossJsonClient.listEntities(new JsonCallback() {
 			@Override
@@ -333,6 +319,7 @@ public class EntityPropertyPage implements IsWidget {
 	SimplePager pager;
 	ListDataProvider<String> childrenDataProvider;
 	SimplePager childrenPager;
+	VerticalPanel propertiesPanel = new VerticalPanel();
 	
 	
 	protected void loadProperties( JSONValue response ) {
@@ -356,7 +343,23 @@ public class EntityPropertyPage implements IsWidget {
 			childrenList.add(info.getChildrenList().get(i).isString().stringValue());
 		}
 		
+		
+		//Properties Panel
 		v = new VerticalPanel();
+		propertiesPanel = new VerticalPanel();
+		
+		Label layerInfoLabel = new Label("Layer information");
+		layerInfoLabel.setStyleName("smallTitle");
+		Label parentInfoLabel = new Label("Hierarchy information");
+		parentInfoLabel.setStyleName("smallTitle");
+		
+		loadContextualInfoData();
+		propertiesPanel.add(layerInfoLabel);
+		propertiesPanel.add(tb);
+		propertiesPanel.add(parentInfoLabel);
+		propertiesPanel.add(v);
+		
+		
 		v.setWidth("100%");
 		{	
 			HorizontalPanel hPanel = new HorizontalPanel();
@@ -630,8 +633,6 @@ public class EntityPropertyPage implements IsWidget {
 			
 		}
 		
-		loadContextualInfoData();
-		
 		entityDataBox = new EntityDataBox();
 		entityDataBox.setSelectedEntity(entity);
 		rdr.setWidget(entityDataBox);
@@ -649,10 +650,12 @@ public class EntityPropertyPage implements IsWidget {
 	}
 	
 	List<String> types;
+	TextBox newID;
+	TextBox newValue;
 	
 	private void loadContextualInfoData() {
 		tb = new FlexTable();
-		userForm = new CustomizableForm();
+		userForm = new ContextualInfoTable();
 		custom = new FlexTable();
 		types = new ArrayList<>();
 		
@@ -816,66 +819,39 @@ public class EntityPropertyPage implements IsWidget {
 			
 		}
 		
-		userForm.enableFastInsert();
-//		v.add( userForm );
-		userForm.addFieldListener( new CustomizableForm.FieldListener() {
+	
+		HorizontalPanel newCIElement = new HorizontalPanel();
+		newCIElement.setStyleName("layerData");
+		Label newIDL = new Label("ID");
+		newIDL.setStyleName("bold");
+		newID = new TextBox();
+		Label newValueL = new Label("Value");
+		newValueL.setStyleName("bold");
+		newValue = new TextBox();
+		newCIElement.add(newIDL);
+		newCIElement.add(newID);
+		newCIElement.add(newValueL);
+		newCIElement.add(newValue);
+		
+		Button newCustomInfo = new Button("New custom information");
+		newCustomInfo.setStyleName("button");
+		newCustomInfo.addClickHandler(new ClickHandler() {
 			@Override
-			public void valueChanged( CustomizableForm.CustomField field ) {
-				JSONObject o = new JSONObject();
-				o.put( "id", new JSONString( field.getName() ) );
-				o.put( "target", new JSONString( EntityPropertyPage.this.entity ) );
-				o.put( "value", new JSONString( field.getValue() ) );
-				o.put( "datatype", new JSONString ( "CUSTOM" ));
-				o.put( "type", new JSONString( "custom" ) );
-				o.put( "origin", new JSONString( "user" ) );
-				JSONArray array = new JSONArray();
-				array.set( 0, o );
-				RiscossJsonClient.postRiskData( array, new JsonCallback() {
-					@Override
-					public void onFailure( Method method, Throwable exception ) {
-						Window.alert( exception.getMessage() );
-					}
-					@Override
-					public void onSuccess( Method method, JSONValue response ) {
-						//								Window.alert( "Ok" );
-					}} );
-			}
-			
-			@Override
-			public void labelChanged( CustomField field ) {
-				
-			}
-
-			@Override
-			public void fieldDeleted( CustomField field ) {
-				JSONObject o = new JSONObject();
-				o.put( "id", new JSONString( field.getName() ) );
-				o.put( "target", new JSONString( EntityPropertyPage.this.entity ) );
-				JSONArray array = new JSONArray();
-				array.set( 0, o );
-				userForm.removeField( field );
-				RiscossJsonClient.postRiskData( array,  new JsonCallbackWrapper<String>( field.getName() ) {
-					@Override
-					public void onSuccess( Method method, JSONValue response ) {
-						
-					}
-					@Override
-					public void onFailure( Method method, Throwable exception ) {
-						Window.alert( exception.getMessage() );
-					}
-				});
+			public void onClick(ClickEvent event) {
+				boolean b = userForm.newField(newID.getText(), newValue.getText());
+				if (b) {
+					newID.setText("");
+					newValue.setText("");
+				}
 			}
 		});
-		summaryPanel.setWidget( v );
+		
 		VerticalPanel vPanel = new VerticalPanel();
-		Label t = new Label("Layer contextual information");
-		t.setStyleName("smallTitle2");
-		vPanel.add(t);
-		vPanel.add(tb);
-		Label t2 = new Label("Custom contextual information");
-		t2.setStyleName("smallTitle2");
-		vPanel.add(t2);
-		vPanel.add(userForm);
+		vPanel.add(newCIElement);
+		vPanel.add(newCustomInfo);
+		vPanel.add(userForm.getWidget());
+		
+		summaryPanel.setWidget( propertiesPanel );
 		dataCollectors.setWidget(confDialog.getDock());
 		ciPanel.setWidget( vPanel );
 	}
@@ -883,54 +859,9 @@ public class EntityPropertyPage implements IsWidget {
 	String newN;
 	
 	public void saveEntityData() {
-		//if (changedData || confDialog.changedData()) {
-//		if (!newName.equals(entity)) {
-//			newN = newName;
-//			if (newName == null || newName.equals("") ) 
-//				return;
-//			
-//			//String s = RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
-//			if (!RiscossUtil.sanitize(newName).equals(newName)){
-//				//info: firefox has some problem with this window, and fires assertion errors in dev mode
-//				Window.alert("Name contains prohibited characters (##,@,\") \nPlease re-enter name");
-//				return;
-//			}
-//			
-//			RiscossJsonClient.listEntities(new JsonCallback() {
-//				@Override
-//				public void onFailure(Method method, Throwable exception) {	
-//				}
-//				@Override
-//				public void onSuccess(Method method, JSONValue response) {
-//					for(int i=0; i<response.isArray().size(); i++){
-//						JSONObject o = (JSONObject)response.isArray().get(i);
-//						if (newN.equals(o.get( "name" ).isString().stringValue())){
-//							//info: firefox has some problem with this window, and fires assertion errors in dev mode
-//							Window.alert("Layer name already in use.\nPlease re-enter name.");
-//							return;
-//						}
-//					}
-//					RiscossJsonClient.renameEntity(entity, newN, new JsonCallback() {
-//						@Override
-//						public void onFailure(Method method, Throwable exception) {
-//							Window.alert(exception.getMessage());
-//						}
-//						@Override
-//						public void onSuccess(Method method, JSONValue response) {
-//							entity = newN;
-//							confDialog.setSelectedEntity(newN);
-//							saveContextualInfo();
-//							changedData = false;
-//							confDialog.setChangedData();
-//						}
-//					});	
-//				}
-//			});
-//		}
 		saveContextualInfo();
 		changedData = false;
 		confDialog.setChangedData();
-		//}
 	}
 	
 	private void saveDataCollectors() {
@@ -960,6 +891,7 @@ public class EntityPropertyPage implements IsWidget {
 	}
 	
 	private void saveContextualInfo() {
+		userForm.save(entity);
 		for (int i = 0; i < tb.getRowCount(); ++i) {
 			JSONObject o = new JSONObject();
 			o.put( "id", new JSONString( ((Label)tb.getWidget(i, 0)).getText() ) );
