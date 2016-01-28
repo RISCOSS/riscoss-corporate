@@ -47,7 +47,9 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
 import eu.riscoss.dataproviders.RiskData;
+import eu.riscoss.db.RecordAbstraction;
 import eu.riscoss.db.RiscossDB;
+import eu.riscoss.db.RiskAnalysisSession;
 import eu.riscoss.db.SearchParams;
 import eu.riscoss.ram.algo.DownwardEntitySearch;
 import eu.riscoss.ram.algo.DownwardEntitySearch.DIRECTION;
@@ -57,6 +59,7 @@ import eu.riscoss.rdc.RDCFactory;
 import eu.riscoss.rdc.RDCParameter;
 import eu.riscoss.shared.JEntityData;
 import eu.riscoss.shared.JEntityNode;
+import eu.riscoss.shared.JRASInfo;
 import eu.riscoss.shared.JRiskNativeData;
 import eu.riscoss.shared.RiscossUtil;
 
@@ -473,7 +476,24 @@ public class EntityManager {
 		try {
 			
 			db = DBConnector.openDB( domain, token );
+			
+			
 			db.renameEntity(name, newName);
+			
+			/*String layer = db.layerOf( newName );
+			List<String> rcs = db.findCandidateRCs( layer );
+			List<String> ids = new ArrayList<>();
+			for( String rc : rcs ) {
+				for( RecordAbstraction record : db.listRAS( newName,  rc ) ) {
+					JRASInfo jras = new JRASInfo( record.getName(), record.getProperty( "name", record.getName() ));
+					ids.add(jras.getId());
+				}
+			}
+			
+			for (String id : ids) {
+				RiskAnalysisSession ras = db.openRAS( id );
+				ras.setTarget(newName);
+			}*/
 		}
 		catch( Exception ex ) {
 			throw ex;

@@ -83,6 +83,7 @@ public class ModelsModule implements EntryPoint {
 	private static final String BUTTON_UPDATE_MODEL	= "Upload new model";
 	private static final String BUTTON_UPLOAD_DESC 	= "Upload new documentation";
 	private static final String BUTTON_REPLACE_DOC 	= "Replace documentation";
+	private static final String BUTTON_DELETE_DOC = "Delete documentation";
 	private static final String BUTTON_NEW_MODEL 	= "UPLOAD MODEL"; // "New...";
 	private static final String BUTTON_CHANGE_NAME 	= "change";
 	
@@ -349,6 +350,8 @@ public class ModelsModule implements EntryPoint {
 //			Label descfLabel = new Label("Documentation:\n"+descfilename);
 			
 			Button uploadDesc;	
+			Button deleteDesc = new Button();
+			deleteDesc = new Button(BUTTON_DELETE_DOC);
 			if (descfilename==null || descfilename.equals("")){
 				uploadDesc = new Button(BUTTON_UPLOAD_DESC);
 				Label descfLabel = new Label("No documentation uploaded.");
@@ -358,7 +361,6 @@ public class ModelsModule implements EntryPoint {
 				Anchor descfAnchor = new Anchor("Download documentation:\n"+descfilename, GWT.getHostPageBaseURL() +  "models/download?domain=" + RiscossJsonClient.getDomain() + 
 						"&name="+ name+"&type=desc&token="+RiscossCall.getToken());
 				grid.setWidget( 1, 0, descfAnchor);
-
 			}
 			
 			uploadDesc.setStyleName("button");
@@ -386,7 +388,10 @@ public class ModelsModule implements EntryPoint {
 				}
 			});
 			
-			grid.setWidget( 1, 1, docuUploader);
+			VerticalPanel vPanel = new VerticalPanel();
+			vPanel.add(docuUploader);
+			//vPanel.add(deleteDesc);
+			grid.setWidget( 1, 1, vPanel);
 			
 			//Downloader/////////done in Anchor now!
 			

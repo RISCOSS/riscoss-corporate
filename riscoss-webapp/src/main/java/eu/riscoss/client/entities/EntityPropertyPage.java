@@ -858,7 +858,56 @@ public class EntityPropertyPage implements IsWidget {
 	
 	String newN;
 	
-	public void saveEntityData() {
+	public void saveEntityData(String newName) {
+		if (!newName.equals(entity)) {
+			renameAndSave(newName);
+		} else {
+			saveEntity();
+		}
+		
+	}
+	
+	private void renameAndSave(String newName) {
+		newN = newName;
+		RiscossJsonClient.listEntities(new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				if (newN == null || newN.equals("") ) {
+					return;
+				}
+				//String s = RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
+				if (!RiscossUtil.sanitize(newN).equals(newN)){
+					//info: firefox has some problem with this window, and fires assertion errors in dev mode
+					Window.alert("Entity name contains prohibited characters (##,@,\") \nPlease re-enter name");
+					return;
+				}
+				for(int i=0; i<response.isArray().size(); i++){
+					JSONObject o = (JSONObject)response.isArray().get(i);
+					Window.alert(o.get("name").isString().stringValue());
+					if (newN.equals(o.get( "name" ).isString().stringValue())) {
+						Window.alert("Entity name already in use.\nPlease re-enter name.");
+						return;
+					}
+				}
+				RiscossJsonClient.renameEntity(entity, newN, new JsonCallback() {
+					@Override
+					public void onFailure(Method method, Throwable exception) {
+						Window.alert(exception.getMessage());
+					}
+					@Override
+					public void onSuccess(Method method, JSONValue response) {
+						saveEntity();
+					}
+				});
+			}
+		});
+	}
+	
+	private void saveEntity() {
 		saveContextualInfo();
 		changedData = false;
 		confDialog.setChangedData();

@@ -716,6 +716,7 @@ public class LayersModule implements EntryPoint {
 	}
 	
 	EntityPropertyPage ppgEnt;
+	TextBox entityNameBox;
 	
 	private void reloadEntityInfo() {
 		if (selectedEntity != null) {
@@ -740,9 +741,12 @@ public class LayersModule implements EntryPoint {
 			Label name = new Label("Name");
 			name.setStyleName("bold");
 			properties.setWidget(0, 0, name);
-			Label nameL = new Label(selectedEntity);
+			entityNameBox = new TextBox();
+			entityNameBox.setText(selectedEntity);
+			properties.setWidget(0, 1, entityNameBox);
+			/*Label nameL = new Label(selectedEntity);
 			nameL.setStyleName("tag");
-			properties.setWidget(0, 1, nameL);
+			properties.setWidget(0, 1, nameL);*/
 			
 			properties.setWidget(0, 2, space);
 			
@@ -770,7 +774,7 @@ public class LayersModule implements EntryPoint {
 			saveEntity.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					ppgEnt.saveEntityData();
+					ppgEnt.saveEntityData(entityNameBox.getText());
 				}
 			});
 			buttons.add(saveEntity);

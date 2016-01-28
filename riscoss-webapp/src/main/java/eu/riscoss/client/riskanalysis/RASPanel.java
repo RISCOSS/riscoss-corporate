@@ -44,6 +44,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
+import eu.riscoss.client.Log;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecMissingData;
 import eu.riscoss.client.codec.CodecRASInfo;
@@ -515,6 +516,7 @@ public class RASPanel implements IsWidget {
 			public void onClick(ClickEvent event) {
 				CodecRiskData crd = GWT.create( CodecRiskData.class );
 				JSONValue values = crd.encode( inputForm.getValueMap() );
+				Log.println(values.toString());
 				RiscossJsonClient.setAnalysisMissingData(selectedRAS, values, new JsonCallback() {
 					@Override
 					public void onSuccess( Method method, JSONValue response ) {

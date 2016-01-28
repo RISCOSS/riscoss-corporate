@@ -37,6 +37,7 @@ import com.google.gwt.view.client.SingleSelectionModel;
 
 import eu.riscoss.client.EntityInfo;
 import eu.riscoss.client.JsonEntitySummary;
+import eu.riscoss.client.Log;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.ui.TreeWidget;
 import eu.riscoss.shared.RiscossUtil;
@@ -252,6 +253,7 @@ public class EntitiesListBox {
 	private void appendChilds(TreeWidget rootEnt, JSONArray children) {
 		this.root = rootEnt;
 		for (int i = 0; i < children.size(); ++i) {
+			Log.println("call");
 			RiscossJsonClient.getEntityData(children.get(i).isString().stringValue(), new JsonCallback() {
 				TreeWidget rootWidget = root;
 				@Override
