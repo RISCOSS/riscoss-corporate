@@ -80,6 +80,8 @@ import eu.riscoss.shared.JMissingData;
 import eu.riscoss.shared.JRASInfo;
 import eu.riscoss.shared.JRiskData;
 import eu.riscoss.shared.JValueMap;
+import eu.riscoss.shared.JWhatIfData;
+import eu.riscoss.shared.JWhatIfData.JWhatIfItem;
 
 @Path("analysis")
 public class AnalysisManager {
@@ -361,7 +363,48 @@ public class AnalysisManager {
 			DBConnector.closeDB(db);
 		}
 	}
-
+	
+	
+	@GET @Path("/{domain}/session/{sid}/data")
+	public String getSessionData(
+			@HeaderParam("token") @Info("The authentication token")				String token, 
+			@PathParam("domain") @Info("The work domain")						String domain,
+			@PathParam("sid") @Info("The risk session ID")						String sid,
+			@QueryParam("e") @Info("The list of entities whose data have to be retrieved")
+																				List<String> entities
+			) throws Exception {
+		RiscossDB db = null;
+		try {
+			db = DBConnector.openDB( domain, token );
+			JWhatIfData data = new JWhatIfData();
+			RiskAnalysisSession ras = db.openRAS( sid );
+			for( String entity : entities ) {
+				String layer = ras.getLayer( entity );
+				JWhatIfItem item = new JWhatIfItem();
+				item.models = ras.getModels( layer );
+				{
+					RiskAnalysisEngine rae = ReasoningLibrary.get().createRiskAnalysisEngine();
+					for( String model : item.models ) {
+						String blob = ras.getStoredModelBlob( model );
+						rae.loadModel( blob );
+						for( Chunk chunk : rae.queryModel( ModelSlice.INPUT_DATA ) ) {
+							item.values.put( chunk.getId(), ras.getInput( entity, chunk.getId() ) );
+						}
+					}
+				}
+				data.items.put( entity, item );
+			}
+			return gson.toJson( data );
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
+	}
+	
+	
 	@GET @Path("/{domain}/session/{sid}/summary")
 	@Info(	"Returns some basic information about a risk session: " + 
 			"ID, target entity, risk configuration, name, timestamp" )	
