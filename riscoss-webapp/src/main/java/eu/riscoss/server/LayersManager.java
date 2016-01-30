@@ -130,6 +130,28 @@ public class LayersManager {
 		}
 	}
 	
+	@POST @Path("{domain}/{layer}/edit-parent")
+	@Info("Edits the parent of an existing layer")
+	public void editParent(
+			@PathParam("domain") @Info("The work domain") 					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token,
+			@PathParam("layer") @Info("The name of the layer to edit")		String name,
+			@QueryParam("newParent") @Info("The name of the new parent") 	String parent
+			) throws Exception {
+		
+		RiscossDB db = null;
+		try {
+			db = DBConnector.openDB( domain, token);
+			
+			db.editParent(name, parent);
+			
+		} catch (Exception ex) {
+			throw ex;
+		} finally {
+			DBConnector.closeDB( db );
+		}
+	}
+	
 	@DELETE @Path("{domain}/{layer}/delete")
 	@Info("Deltes an existing layer")
 	public void deleteLayer( 

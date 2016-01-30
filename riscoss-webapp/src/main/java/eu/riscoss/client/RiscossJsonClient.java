@@ -89,6 +89,10 @@ public class RiscossJsonClient {
 //			.post().send( cb );
 	}
 	
+	public static void editLayerParent(String layer, String newParent, JsonCallback cb) {
+		RiscossCall.fromCookies().layers().item(layer).editParent(newParent).post(cb);
+	}
+	
 	public static void deleteLayer( String layerName, JsonCallback cb ) {
 		RiscossCall.fromCookies().layers().item(layerName).delete().delete( cb );
 //		new Resource( GWT.getHostPageBaseURL() + "api/layers/" + getDomain() + "/delete" )
@@ -441,6 +445,10 @@ public class RiscossJsonClient {
 	
 	public static void creteRiskAnalysisSession(String name, String riskConf, String target, JsonCallback cb){
 		RiscossCall.fromCookies().analysis().fx("session").create(name).arg("rc",riskConf).arg("target", target).post(cb);
+	}
+	
+	public static void renameRiskAnalysisSession(String id, String newName, JsonCallback cb) {
+		RiscossCall.fromCookies().analysis().fx("session").fx(id).fx("rename").fx(newName).post(cb);
 	}
 	
 	public static void editSessionTarget(String riskAnalysisSession, String target, JsonCallback cb) {

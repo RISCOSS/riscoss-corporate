@@ -380,6 +380,11 @@ public class ORiscossDomain implements RiscossDB {
 	}
 	
 	@Override
+	public void editParent(String layer, String newParent) {
+		new OLinkedList( dom, "/layers" ).editParent(layer, newParent);
+	}
+	
+	@Override
 	public void renameEntity(String name, String newName) {
 		NodeID id = dom.getVertex( "/entities/" + name );
 		if (id != null) {
