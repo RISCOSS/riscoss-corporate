@@ -38,6 +38,7 @@ public interface RiscossDB {
 	public abstract List<String>					getParents( String entity );
 	public abstract List<String>					getChildren( String entity );
 	public abstract String							layerOf(String entity);
+	public abstract void							editLayer(String entity, String layer);
 	public abstract Collection<String>				listUserData( String entity );
 	
 	/*

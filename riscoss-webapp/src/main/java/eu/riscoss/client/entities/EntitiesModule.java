@@ -219,10 +219,12 @@ public class EntitiesModule implements EntryPoint {
 	}
 	
 	public void saveEntityData() {
-		ppg.saveEntityData(entityNameBox.getText());
+		ppg.saveEntityData(entityNameBox.getText(), entityLayer.getValue(entityLayer.getSelectedIndex()));
 	}
 	
 	public interface CodecEntityNodeList extends JsonEncoderDecoder<JEntityNode> {}
+	
+	ListBox entityLayer;
 	
 	public void setSelectedEntity( String entity ) {
 		this.selectedEntity = entity;
@@ -238,7 +240,23 @@ public class EntitiesModule implements EntryPoint {
 			public void onSuccess(Method method, JSONValue response) {
 				JsonEntitySummary info = new JsonEntitySummary( response );
 				selectedLayer = info.getLayer();
-				loadProperties( );
+				RiscossJsonClient.listLayers(new JsonCallback() {
+					@Override
+					public void onFailure(Method method, Throwable exception) {
+						// TODO Auto-generated method stub
+					}
+					@Override
+					public void onSuccess(Method method, JSONValue response) {
+						entityLayer = new ListBox();
+						for(int i=0; i<response.isArray().size(); i++){
+							JSONObject o = (JSONObject)response.isArray().get(i);
+							entityLayer.insertItem(o.get("name").isString().stringValue(), i);
+							if (o.get("name").isString().stringValue().equals(selectedLayer)) 
+								entityLayer.setSelectedIndex(i);
+						}
+						loadProperties();
+					}
+				});
 			}} );
 		
 	}
@@ -274,7 +292,7 @@ public class EntitiesModule implements EntryPoint {
 		
 		Label parentNv = new Label(selectedLayer);
 		parentNv.setStyleName("tag");
-		grid.setWidget(0, 4, parentNv);
+		grid.setWidget(0, 4, entityLayer);
 		
 		rightPanel.add(grid);
 		

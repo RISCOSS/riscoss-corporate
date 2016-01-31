@@ -88,18 +88,23 @@ import eu.riscoss.shared.RiscossUtil;
 
 public class EntityPropertyPage implements IsWidget {
 	
-	class RDCConfDialog {
+	public class RDCConfDialog {
 		
 		DialogBox dialog = new DialogBox( false, true );
 		DockPanel dock = new DockPanel();
 		RDCConfigurationPage ppg = new RDCConfigurationPage();
 		String RDCEntity;
 		EntitiesModule module;
+		LayersModule lModule;
 		
 		RDCConfDialog(EntitiesModule module) {
 			this.module = module;
 			dock.add( ppg.asWidget(), DockPanel.CENTER );
 			dialog.setWidget( dock );
+		}
+		
+		public void setLModule(LayersModule m) {
+			this.lModule = m;
 		}
 		
 		public Boolean changedData() {
@@ -126,7 +131,8 @@ public class EntityPropertyPage implements IsWidget {
 			}
 		}
 		
-		public void save() {
+		public void save(String entity) {
+			RDCEntity = entity;
 			JSONObject json = ppg.getJson();
 			String str = "";
 			String sep = "";
@@ -143,7 +149,12 @@ public class EntityPropertyPage implements IsWidget {
 				}
 				@Override
 				public void onSuccess(Method method, JSONValue response) {
-					module.reloadData();
+					if (module != null) {
+						module.reloadData();
+					}
+					if (lModule != null) {
+						lModule.reloadData(RDCEntity);
+					}
 				}
 			});
 		}
@@ -203,6 +214,10 @@ public class EntityPropertyPage implements IsWidget {
 			ppg.setSelectedEntity(entity);
 		}
 		
+	}
+	
+	public void setLModule(LayersModule l) {
+		confDialog.setLModule(l);
 	}
 	
 	TabPanel			tab				= new TabPanel();
@@ -857,13 +872,53 @@ public class EntityPropertyPage implements IsWidget {
 	}
 	
 	String newN;
+	String newL;
 	
-	public void saveEntityData(String newName) {
-		if (!newName.equals(entity)) {
-			renameAndSave(newName);
-		} else {
-			saveEntity();
-		}
+	public void saveEntityData(String newName, String newLayer) {
+		newN = newName;
+		newL = newLayer;
+		RiscossJsonClient.listRiskAnalysisSessions(entity, "", new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				if (!newL.equals(layer) && (parentList.size() > 0 || childrenList.size() > 0)) {
+					Window.alert("Entities with parents or children cannot modify the layer");
+					return;
+				}
+				if( response == null ) return;
+				if( response.isObject() == null ) return;
+				response = response.isObject().get( "list" );
+				if (!newL.equals(layer) && response.isArray().size() > 0) {
+					Window.alert("Entities with associated risk analysis sessions cannot modify the layer");
+					return;
+				}
+				if (!newL.equals(layer) && response.isArray().size() == 0) {
+					RiscossJsonClient.editLayer(entity, newL, new JsonCallback() {
+						@Override
+						public void onFailure(Method method, Throwable exception) {Window.alert(exception.getMessage());
+						}
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							if (!newN.equals(entity)) {
+								renameAndSave(newN);
+							} else {
+								saveEntity();
+							}
+						}
+					});
+				}
+				else if (newL.equals(layer)) {
+					if (!newN.equals(entity)) {
+						renameAndSave(newN);
+					} else {
+						saveEntity();
+					}
+				}
+			}
+		});
 		
 	}
 	
@@ -887,7 +942,6 @@ public class EntityPropertyPage implements IsWidget {
 				}
 				for(int i=0; i<response.isArray().size(); i++){
 					JSONObject o = (JSONObject)response.isArray().get(i);
-					Window.alert(o.get("name").isString().stringValue());
 					if (newN.equals(o.get( "name" ).isString().stringValue())) {
 						Window.alert("Entity name already in use.\nPlease re-enter name.");
 						return;
@@ -900,6 +954,7 @@ public class EntityPropertyPage implements IsWidget {
 					}
 					@Override
 					public void onSuccess(Method method, JSONValue response) {
+						entity = newN;
 						saveEntity();
 					}
 				});
@@ -914,7 +969,8 @@ public class EntityPropertyPage implements IsWidget {
 	}
 	
 	private void saveDataCollectors() {
-		confDialog.save();
+		confDialog.setLModule(l);
+		confDialog.save(entity);
 	}
 	
 	private void saveParentyInfo() {

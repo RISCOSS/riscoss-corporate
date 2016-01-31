@@ -185,6 +185,17 @@ public class ORiscossDomain implements RiscossDB {
 		}
 	}
 	
+	@Override
+	public void editLayer(String entity, String layer) {
+		NodeID entityID = dom.getVertex( "/entities/" + entity );
+		dom.rmlink("/layers/" + layerOf(entity), "/entities/" + entity, "contains");
+		
+		NodeID id = dom.get( "/layers/" + layer );
+		if( id != null ) {
+			dom.link( "/layers/" + layer, "/entities/" + entity, "contains" );
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see eu.riscoss.db.RiscossDBInterface#removeEntity(eu.riscoss.db.NodeID)
 	 */

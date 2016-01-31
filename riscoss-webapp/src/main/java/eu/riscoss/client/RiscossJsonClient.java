@@ -131,6 +131,10 @@ public class RiscossJsonClient {
 		RiscossCall.fromCookies().entities().item( name ).rename(newName).post( cb );;
 	}
 	
+	
+	public static void editLayer(String entity, String layer, JsonCallback cb) {
+		RiscossCall.fromCookies().entities().item(entity).editLayer(layer).post(cb);
+	}
 	/**
 	 * Lists all entities for layer. Note: if layer = "", returns the list of all entities.
 	 * call: ("/{domain}/{layer}/list")

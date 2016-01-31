@@ -304,6 +304,25 @@ public class EntityManager {
 			DBConnector.closeDB(db);
 		}
 	}
+	
+	@POST @Path("/{domain}/{entity}/edit-layer")
+	@Info("Edit the layer of the specified entity")
+	public void editLayer(
+			@PathParam("domain") @Info("The selected domain") 			String domain,
+			@PathParam("entity") @Info("The selected entity")			String entity,
+			@HeaderParam("token") @Info("The authentication token") 	String token,
+			@QueryParam("layer") @Info("The new layer")					String layer
+			) throws Exception {
+		RiscossDB db = null;
+		try {
+			db = DBConnector.openDB(domain, token);
+			db.editLayer(entity, layer);
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
 
 	@DELETE @Path("/{domain}/{entity}/delete")
 	@Info("Deleted the specified entity")
@@ -477,14 +496,13 @@ public class EntityManager {
 			
 			db = DBConnector.openDB( domain, token );
 			
-			
 			db.renameEntity(name, newName);
 			
-			/*String layer = db.layerOf( newName );
+			String layer = db.layerOf( newName );
 			List<String> rcs = db.findCandidateRCs( layer );
 			List<String> ids = new ArrayList<>();
 			for( String rc : rcs ) {
-				for( RecordAbstraction record : db.listRAS( newName,  rc ) ) {
+				for( RecordAbstraction record : db.listRAS( name,  rc ) ) {
 					JRASInfo jras = new JRASInfo( record.getName(), record.getProperty( "name", record.getName() ));
 					ids.add(jras.getId());
 				}
@@ -493,7 +511,7 @@ public class EntityManager {
 			for (String id : ids) {
 				RiskAnalysisSession ras = db.openRAS( id );
 				ras.setTarget(newName);
-			}*/
+			}
 		}
 		catch( Exception ex ) {
 			throw ex;

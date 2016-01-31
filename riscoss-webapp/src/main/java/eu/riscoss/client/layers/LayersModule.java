@@ -59,6 +59,7 @@ import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SelectionChangeEvent.Handler;
 import com.google.gwt.view.client.SingleSelectionModel;
 
+import eu.riscoss.client.JsonEntitySummary;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecLayerContextualInfo;
 import eu.riscoss.client.codec.CodecRASInfo;
@@ -755,19 +756,41 @@ public class LayersModule implements EntryPoint {
 	
 	EntityPropertyPage ppgEnt;
 	TextBox entityNameBox;
+	ListBox entityLayer;
 	
 	private void reloadEntityInfo() {
+		RiscossJsonClient.listLayers(new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				// TODO Auto-generated method stub
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				entityLayer = new ListBox();
+				for(int i=0; i<response.isArray().size(); i++){
+					JSONObject o = (JSONObject)response.isArray().get(i);
+					entityLayer.insertItem(o.get("name").isString().stringValue(), i);
+					if (o.get("name").isString().stringValue().equals(selectedLayer)) 
+						entityLayer.setSelectedIndex(i);
+				}
+				reloadEnt();
+			}
+		});
+	}
+	
+	Label title;
+	
+	protected void reloadEnt() {
 		if (selectedEntity != null) {
 			mainView.remove(rightPanel);
 			rightPanel = new VerticalPanel();
 			rightPanel.setStyleName("rightPanelLayer");
 			rightPanel.setWidth("90%");
-			Label l = new Label(selectedEntity);
-			l.setStyleName("subtitle");
-			rightPanel.add(l);
+			title = new Label(selectedEntity);
+			title.setStyleName("subtitle");
+			rightPanel.add(title);
 			
 			ppgEnt = new EntityPropertyPage(null);
-			ppgEnt.setLayerModule(this);
 			ppgEnt.setSelectedEntity(selectedEntity);
 			
 			Grid grid = new Grid(5,1);
@@ -791,9 +814,9 @@ public class LayersModule implements EntryPoint {
 			Label parent = new Label("Layer");
 			parent.setStyleName("bold");
 			properties.setWidget(0, 3, parent);
-			Label parentL = new Label(selectedLayer);
-			parentL.setStyleName("tag");
-			properties.setWidget(0, 4, parentL);
+			/*Label parentL = new Label(selectedLayer);
+			parentL.setStyleName("tag");*/
+			properties.setWidget(0, 4, entityLayer);
 			
 			grid.setWidget(0, 0, properties);
 			grid.setWidget(1, 0, null);
@@ -809,10 +832,11 @@ public class LayersModule implements EntryPoint {
 			delete.setStyleName("button");
 			Button saveEntity = new Button("Save");
 			saveEntity.setStyleName("button");
+			ppgEnt.setLayerModule(this);
 			saveEntity.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					ppgEnt.saveEntityData(entityNameBox.getText());
+					ppgEnt.saveEntityData(entityNameBox.getText(), entityLayer.getValue(entityLayer.getSelectedIndex()));
 				}
 			});
 			buttons.add(saveEntity);
@@ -823,6 +847,34 @@ public class LayersModule implements EntryPoint {
 			rightPanel.add(grid);
 			mainView.add(rightPanel);
 		}
+	}
+	
+	public void reloadData(String entity) {
+		title.setText(entity);
+		RiscossJsonClient.getEntityData(entity, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				JsonEntitySummary info = new JsonEntitySummary( response );
+				selectedLayer = info.getLayer();
+				newEntityButton.setText("New " + selectedLayer + " entity");
+				RiscossJsonClient.listEntities(selectedLayer, new JsonCallback() {
+					@Override
+					public void onFailure(
+							Method method,
+							Throwable exception) {
+					}
+					@Override
+					public void onSuccess(
+							Method method,
+							JSONValue response) {
+						reloadEntityTable(response);
+					}
+				});
+			}
+		});
 	}
 
 	Boolean hasRisk;

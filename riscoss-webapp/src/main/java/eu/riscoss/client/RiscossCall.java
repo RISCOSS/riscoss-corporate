@@ -362,6 +362,10 @@ public class RiscossCall extends JSONCall{
 			return new Argument( key, value );
 		}
 
+		public Argument editLayer(String layer) {
+			return new Function("edit-layer").arg("layer", layer );
+		}
+
 	}
 	
 	public class Argument extends JSONCall{
