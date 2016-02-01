@@ -1004,6 +1004,16 @@ public class EntityPropertyPage implements IsWidget {
 			String datatype = types.get(i);
 			String value = "";
 			if (datatype.equals("Integer")) {
+				if (!((TextBox) tb.getWidget(i, 1)).getText().equals("")) {
+					int cValue = Integer.parseInt(((TextBox) tb.getWidget(i, 1)).getText());
+					String[] extra = extraInfoList.get(i).split(";");
+					int min = Integer.parseInt(extra[1]);
+					int max = Integer.parseInt(extra[2]);
+					if (cValue < min || cValue > max) {
+						Window.alert(((Label)tb.getWidget(i, 0)).getText()  + " value must be within limits (min = " + min + ", max = " + max + ")");
+						return;
+					}
+				}
 				value += ((TextBox) tb.getWidget(i, 1)).getText();
 				value += extraInfoList.get(i);
 			}
