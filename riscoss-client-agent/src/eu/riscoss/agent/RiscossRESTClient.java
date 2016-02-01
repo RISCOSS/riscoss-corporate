@@ -44,6 +44,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import eu.riscoss.agent.services.AdminService;
+import eu.riscoss.agent.services.BackboneService;
 import eu.riscoss.agent.services.DomainService;
 import eu.riscoss.agent.services.DomainsService;
 import eu.riscoss.agent.services.UserService;
@@ -344,6 +345,10 @@ public class RiscossRESTClient {
 		
 		return client;
 		
+	}
+
+	public BackboneService backbone() {
+		return new BackboneService( this );
 	}
 	
 }

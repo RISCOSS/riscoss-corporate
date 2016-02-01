@@ -13,8 +13,8 @@ public class UseCasee1 implements UseCase {
 		client.login( "admin", "admin" );
 		
 		client.admin().setPredefinedRole( "Playground", "Administrator" );
-		client.admin().setRole( "asiena", "FBK", "Consumer" );
-		client.admin().setRole( "asiena", "UPC", "Guest" );
+		client.admin().setRole( "asiena", "FBK", "Producer" );
+		client.admin().setRole( "asiena", "UPC", "Consumer" );
 		
 		client.logout();
 		
