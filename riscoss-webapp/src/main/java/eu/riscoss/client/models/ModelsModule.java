@@ -236,10 +236,20 @@ public class ModelsModule implements EntryPoint {
 	}
 	
 	private void saveModelData() {
-		if (changedData) {
-			saveModelName();
-			changedData = false;
-		}
+		//if (changedData) {
+		RiscossJsonClient.setModelDescription(selectedModel, description.getText(), new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				if (changedData) {
+					saveModelName();
+					changedData = false;
+				}
+			}
+		});
 	}
 	
 	private void saveModelName() {
@@ -569,6 +579,8 @@ public class ModelsModule implements EntryPoint {
 	
 	TextBox nameM;
 	EditModelDialog panel;
+	private VerticalPanel descriptionData;
+	private TextBox description;
 	
 	public void setSelectedModel(String name) {
 		selectedModel = name;
@@ -607,6 +619,30 @@ public class ModelsModule implements EntryPoint {
 		grid.setWidget(0, 1, nameM);
 		
 		rightPanel.add(grid);
+		
+		descriptionData = new VerticalPanel();
+		descriptionData.setStyleName("description");
+		descriptionData.setWidth("100%");
+		Label descLabel = new Label("Description");
+		descLabel.setStyleName("bold");
+		descriptionData.add(descLabel);
+		description = new TextBox();
+		description.setWidth("100%");
+		RiscossJsonClient.getModelDescription(name, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				description.setText(response.isString().stringValue());
+			}
+		});
+		//description.setWidth("100%");
+		descriptionData.add(description);
+		
+		rightPanel.add(descriptionData);
+		
 		
 		HorizontalPanel buttons = new HorizontalPanel();
 		Button delete = new Button("Delete");
