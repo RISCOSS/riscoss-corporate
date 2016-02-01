@@ -621,4 +621,36 @@ public class RiscossJsonClient {
 		RiscossCall.fromToken(getToken()).admin().fx("users").list().get( cb );
 	}
 	
+	public static void setLayerDescription( String layer, String description, JsonCallback cb) {
+		RiscossCall.fromCookies().layers().item(layer).fx("description").arg("description", description).post(cb);
+	}
+	
+	public static void setEntityDescription( String entity, String description, JsonCallback cb) {
+		RiscossCall.fromCookies().entities().item(entity).fx("description").arg("description", description).post(cb);
+	}
+	
+	public static void setModelDescription( String model, String description, JsonCallback cb) {
+		RiscossCall.fromCookies().models().item(model).fx("description").arg("description", description).post(cb);
+	}
+	
+	public static void setRiskConfDescription( String rc, String description, JsonCallback cb) {
+		RiscossCall.fromCookies().rcs().item(rc).fx("description").arg("description", description).post(cb);
+	}
+	
+	public static void getLayerDescription( String layer, JsonCallback cb) {
+		RiscossCall.fromCookies().layers().item(layer).fx("description").get(cb);
+	}
+	
+	public static void getEntityDescription( String entity, JsonCallback cb) {
+		RiscossCall.fromCookies().entities().item(entity).fx("description").get(cb);
+	}
+	
+	public static void getModelDescription( String model, JsonCallback cb) {
+		RiscossCall.fromCookies().models().item(model).fx("description").get(cb);
+	}
+	
+	public static void getRiskConfDescription( String rc, JsonCallback cb) {
+		RiscossCall.fromCookies().rcs().item(rc).fx("description").get(cb);
+	}
+	
 }
