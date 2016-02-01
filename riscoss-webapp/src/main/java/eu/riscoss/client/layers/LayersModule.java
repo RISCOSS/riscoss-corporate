@@ -132,6 +132,8 @@ public class LayersModule implements EntryPoint {
 	TextBox				nameL;
 	
 	HorizontalPanel 	layerData;
+	VerticalPanel		descriptionData;
+	VerticalPanel		data;
 	
 	public void onModuleLoad() {
 		dock.setSize( "100%", "100%" );
@@ -301,7 +303,16 @@ public class LayersModule implements EntryPoint {
 		save.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				saveLayerData();
+				RiscossJsonClient.setLayerDescription(selectedLayer, description.getText(), new JsonCallback() {
+					@Override
+					public void onFailure(Method method, Throwable exception) {
+						Window.alert(exception.getMessage());
+					}
+					@Override
+					public void onSuccess(Method method, JSONValue response) {
+						saveLayerData();
+					}
+				});
 			}
 		});
 		
@@ -417,21 +428,22 @@ public class LayersModule implements EntryPoint {
 					public void onSuccess(Method method, JSONValue response) {
 						selectedLayer = nameL.getText().trim();
 						final String s = candidateParents.getValue(candidateParents.getSelectedIndex());
-						if (!s.equals(selectedParent) && entities.size() == 0)
-						RiscossJsonClient.editLayerParent(selectedLayer, s, new JsonCallback() {
-							@Override
-							public void onFailure(Method method,
-									Throwable exception) {
-								Window.alert(exception.getMessage());
-							}
-							@Override
-							public void onSuccess(Method method,
-									JSONValue response) {
-								selectedParent = s;
-								reloadPage();
-							}
-						});
-						else if (entities.size() > 0) {
+						if (!s.equals(selectedParent) && entities.size() == 0) {
+							RiscossJsonClient.editLayerParent(selectedLayer, s, new JsonCallback() {
+								@Override
+								public void onFailure(Method method,
+										Throwable exception) {
+									Window.alert(exception.getMessage());
+								}
+								@Override
+								public void onSuccess(Method method,
+										JSONValue response) {
+									selectedParent = s;
+									reloadPage();
+								}
+							});
+						}
+						else if (entities.size() > 0 && !s.equals(selectedParent)) {
 							Window.alert("Layers with associated entities cannot modify the parent layer");
 							reloadPage();
 						}
@@ -508,6 +520,7 @@ public class LayersModule implements EntryPoint {
 	}
 	
 	ListBox candidateParents;
+	TextBox description;
 	
 	private void loadRightPanel() {
 		RiscossJsonClient.listLayers(new JsonCallback() {
@@ -543,7 +556,10 @@ public class LayersModule implements EntryPoint {
 				grid.setStyleName("properties");
 				grid.setWidth("100%");
 				
-				Grid properties = new Grid(1,5);
+				Grid properties = new Grid(2,5);
+				properties.setCellPadding(0);
+				properties.setCellSpacing(0);
+				properties.setBorderWidth(0);
 				
 				Label name = new Label("Name");
 				name.setStyleName("bold");
@@ -569,8 +585,30 @@ public class LayersModule implements EntryPoint {
 				properties.setWidget(0, 4, parentL);*/
 				properties.setWidget(0, 4, candidateParents);
 				
+				descriptionData = new VerticalPanel();
+				descriptionData.setStyleName("description");
+				descriptionData.setWidth("100%");
+				Label descLabel = new Label("Description");
+				descLabel.setStyleName("bold");
+				descriptionData.add(descLabel);
+				description = new TextBox();
+				description.setWidth("100%");
+				RiscossJsonClient.getLayerDescription(selectedLayer, new JsonCallback() {
+					@Override
+					public void onFailure(Method method, Throwable exception) {
+						Window.alert(exception.getMessage());
+					}
+					@Override
+					public void onSuccess(Method method, JSONValue response) {
+						Window.alert(response.isString().stringValue());
+						description.setText(response.isString().stringValue());
+					}
+				});
+				//description.setWidth("100%");
+				descriptionData.add(description);
+				
 				grid.setWidget(0, 0, properties);
-				grid.setWidget(1, 0, null);
+				grid.setWidget(1, 0, descriptionData);
 				
 				HorizontalPanel buttons = new HorizontalPanel();
 				Button delete = new Button("Delete");
@@ -820,7 +858,30 @@ public class LayersModule implements EntryPoint {
 			properties.setWidget(0, 4, entityLayer);
 			
 			grid.setWidget(0, 0, properties);
-			grid.setWidget(1, 0, null);
+			
+			descriptionData = new VerticalPanel();
+			descriptionData.setStyleName("description");
+			descriptionData.setWidth("100%");
+			Label descLabel = new Label("Description");
+			descLabel.setStyleName("bold");
+			descriptionData.add(descLabel);
+			description = new TextBox();
+			description.setWidth("100%");
+			RiscossJsonClient.getEntityDescription(selectedEntity, new JsonCallback() {
+				@Override
+				public void onFailure(Method method, Throwable exception) {
+					Window.alert(exception.getMessage());
+				}
+				@Override
+				public void onSuccess(Method method, JSONValue response) {
+					Window.alert(response.isString().stringValue());
+					description.setText(response.isString().stringValue());
+				}
+			});
+			//description.setWidth("100%");
+			descriptionData.add(description);
+			
+			grid.setWidget(1, 0, descriptionData);
 			
 			HorizontalPanel buttons = new HorizontalPanel();
 			Button delete = new Button("Delete");
@@ -837,7 +898,16 @@ public class LayersModule implements EntryPoint {
 			saveEntity.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					ppgEnt.saveEntityData(entityNameBox.getText(), entityLayer.getValue(entityLayer.getSelectedIndex()));
+					RiscossJsonClient.setEntityDescription(selectedEntity, description.getText(), new JsonCallback() {
+						@Override
+						public void onFailure(Method method, Throwable exception) {
+							Window.alert(exception.getMessage());
+						}
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							ppgEnt.saveEntityData(entityNameBox.getText(), entityLayer.getValue(entityLayer.getSelectedIndex()));
+						}
+					});
 				}
 			});
 			buttons.add(saveEntity);

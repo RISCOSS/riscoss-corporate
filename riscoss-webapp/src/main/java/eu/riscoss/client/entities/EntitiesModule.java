@@ -219,7 +219,16 @@ public class EntitiesModule implements EntryPoint {
 	}
 	
 	public void saveEntityData() {
-		ppg.saveEntityData(entityNameBox.getText(), entityLayer.getValue(entityLayer.getSelectedIndex()));
+		RiscossJsonClient.setEntityDescription(selectedEntity, description.getText(), new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				ppg.saveEntityData(entityNameBox.getText(), entityLayer.getValue(entityLayer.getSelectedIndex()));
+			}
+		});
 	}
 	
 	public interface CodecEntityNodeList extends JsonEncoderDecoder<JEntityNode> {}
@@ -262,6 +271,10 @@ public class EntitiesModule implements EntryPoint {
 	}
 	
 	TextBox entityNameBox;
+
+	private VerticalPanel descriptionData;
+
+	private TextBox description;
 	
 	private void loadProperties() {
 		mainView.remove(rightPanel);
@@ -296,6 +309,30 @@ public class EntitiesModule implements EntryPoint {
 		grid.setWidget(0, 4, entityLayer);
 		
 		rightPanel.add(grid);
+		
+		descriptionData = new VerticalPanel();
+		descriptionData.setStyleName("description");
+		descriptionData.setWidth("100%");
+		Label descLabel = new Label("Description");
+		descLabel.setStyleName("bold");
+		descriptionData.add(descLabel);
+		description = new TextBox();
+		description.setWidth("100%");
+		RiscossJsonClient.getModelDescription(selectedEntity, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				Window.alert(response.isString().stringValue());
+				description.setText(response.isString().stringValue());
+			}
+		});
+		//description.setWidth("100%");
+		descriptionData.add(description);
+		
+		rightPanel.add(descriptionData);
 		
 		HorizontalPanel buttons = new HorizontalPanel();
 		Button delete = new Button("Delete");

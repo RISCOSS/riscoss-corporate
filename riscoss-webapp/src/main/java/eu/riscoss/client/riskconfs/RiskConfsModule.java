@@ -249,7 +249,16 @@ public class RiskConfsModule implements EntryPoint {
 	}
 	
 	private void saveRiskConfData() {
-		ppg.saveRiskConfData();
+		RiscossJsonClient.setRiskConfDescription(selectedRC, description.getText(), new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				ppg.saveRiskConfData();
+			}
+		});
 	}
 	
 	protected void onAddNew() {
@@ -334,6 +343,8 @@ public class RiskConfsModule implements EntryPoint {
 	}
 	
 	Button save;
+	private VerticalPanel descriptionData;
+	private TextBox description;
 	
 	public void onRCSelected( String item ) {
 		
@@ -364,6 +375,30 @@ public class RiskConfsModule implements EntryPoint {
 		grid.setWidget(0, 1, nameLy);
 		
 		rightPanel.add(grid);
+		
+		descriptionData = new VerticalPanel();
+		descriptionData.setStyleName("description");
+		descriptionData.setWidth("100%");
+		Label descLabel = new Label("Description");
+		descLabel.setStyleName("bold");
+		descriptionData.add(descLabel);
+		description = new TextBox();
+		description.setWidth("100%");
+		RiscossJsonClient.getModelDescription(selectedRC, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				Window.alert(response.isString().stringValue());
+				description.setText(response.isString().stringValue());
+			}
+		});
+		//description.setWidth("100%");
+		descriptionData.add(description);
+		
+		rightPanel.add(descriptionData);
 		
 		RiscossJsonClient.getRCContent( selectedRC, new JsonCallback() {
 			@Override
