@@ -550,6 +550,10 @@ public class RiscossJsonClient {
 		}
 		return array;
 	}
+	
+	public static JSONString mkJsonString( String string ) {
+		return new JSONString(string);
+	}
 
 	//TODO: rdr
 	public static void postRiskData( JSONArray json, JsonCallback cb ) {
@@ -622,19 +626,19 @@ public class RiscossJsonClient {
 	}
 	
 	public static void setLayerDescription( String layer, String description, JsonCallback cb) {
-		RiscossCall.fromCookies().layers().item(layer).fx("description").arg("description", description).post(cb);
+		RiscossCall.fromCookies().layers().item(layer).fx("description").post(mkJsonString(description), cb);
 	}
 	
 	public static void setEntityDescription( String entity, String description, JsonCallback cb) {
-		RiscossCall.fromCookies().entities().item(entity).fx("description").arg("description", description).post(cb);
+		RiscossCall.fromCookies().entities().item(entity).fx("description").post(mkJsonString(description), cb);
 	}
 	
 	public static void setModelDescription( String model, String description, JsonCallback cb) {
-		RiscossCall.fromCookies().models().item(model).fx("description").arg("description", description).post(cb);
+		RiscossCall.fromCookies().models().item(model).fx("description").post(mkJsonString(description), cb);
 	}
 	
 	public static void setRiskConfDescription( String rc, String description, JsonCallback cb) {
-		RiscossCall.fromCookies().rcs().item(rc).fx("description").arg("description", description).post(cb);
+		RiscossCall.fromCookies().rcs().item(rc).fx("description").post(mkJsonString(description), cb);
 	}
 	
 	public static void getLayerDescription( String layer, JsonCallback cb) {
