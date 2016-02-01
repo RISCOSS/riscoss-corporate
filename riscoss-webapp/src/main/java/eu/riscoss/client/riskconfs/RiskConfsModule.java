@@ -384,14 +384,13 @@ public class RiskConfsModule implements EntryPoint {
 		descriptionData.add(descLabel);
 		description = new TextBox();
 		description.setWidth("100%");
-		RiscossJsonClient.getModelDescription(selectedRC, new JsonCallback() {
+		RiscossJsonClient.getRiskConfDescription(selectedRC, new JsonCallback() {
 			@Override
 			public void onFailure(Method method, Throwable exception) {
 				Window.alert(exception.getMessage());
 			}
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
-				Window.alert(response.isString().stringValue());
 				description.setText(response.isString().stringValue());
 			}
 		});

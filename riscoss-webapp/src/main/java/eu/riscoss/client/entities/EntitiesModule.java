@@ -318,14 +318,13 @@ public class EntitiesModule implements EntryPoint {
 		descriptionData.add(descLabel);
 		description = new TextBox();
 		description.setWidth("100%");
-		RiscossJsonClient.getModelDescription(selectedEntity, new JsonCallback() {
+		RiscossJsonClient.getEntityDescription(selectedEntity, new JsonCallback() {
 			@Override
 			public void onFailure(Method method, Throwable exception) {
 				Window.alert(exception.getMessage());
 			}
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
-				Window.alert(response.isString().stringValue());
 				description.setText(response.isString().stringValue());
 			}
 		});

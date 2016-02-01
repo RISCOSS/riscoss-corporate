@@ -600,7 +600,6 @@ public class LayersModule implements EntryPoint {
 					}
 					@Override
 					public void onSuccess(Method method, JSONValue response) {
-						Window.alert(response.isString().stringValue());
 						description.setText(response.isString().stringValue());
 					}
 				});
@@ -874,7 +873,6 @@ public class LayersModule implements EntryPoint {
 				}
 				@Override
 				public void onSuccess(Method method, JSONValue response) {
-					Window.alert(response.isString().stringValue());
 					description.setText(response.isString().stringValue());
 				}
 			});
