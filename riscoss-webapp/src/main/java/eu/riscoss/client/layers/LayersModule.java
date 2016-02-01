@@ -804,6 +804,7 @@ public class LayersModule implements EntryPoint {
 			properties.setWidget(0, 0, name);
 			entityNameBox = new TextBox();
 			entityNameBox.setText(selectedEntity);
+			entityNameBox.setEnabled(false);
 			properties.setWidget(0, 1, entityNameBox);
 			/*Label nameL = new Label(selectedEntity);
 			nameL.setStyleName("tag");

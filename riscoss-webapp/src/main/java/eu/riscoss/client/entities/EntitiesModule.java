@@ -282,6 +282,7 @@ public class EntitiesModule implements EntryPoint {
 		
 		entityNameBox = new TextBox();
 		entityNameBox.setText(selectedEntity);
+		entityNameBox.setEnabled(false);
 		grid.setWidget(0, 1, entityNameBox);
 		
 		grid.setWidget(0, 2, space);

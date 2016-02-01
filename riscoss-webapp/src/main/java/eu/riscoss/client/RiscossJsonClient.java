@@ -407,6 +407,10 @@ public class RiscossJsonClient {
 //		.get().send( cb );
 	}
 	
+	public static void deleteModelDoc(String name, JsonCallback cb) {
+		RiscossCall.fromCookies().models().item(name).fx("delete-documentation").post(cb);
+	}
+	
 	
 	public static void deleteModel( String name, JsonCallback cb ) {
 		RiscossCall.fromCookies().models().item(name).delete().delete(cb);

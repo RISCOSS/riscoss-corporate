@@ -798,6 +798,13 @@ public class ORiscossDomain implements RiscossDB {
 	}
 
 	@Override
+	public void deleteModelDesc(String modelName) {
+		NodeID id = dom.getVertex( "/models/" + modelName );
+		dom.setAttribute(id, "descBlobName", "");
+		dom.removeAttribute(id, "descBlob");
+	}
+	
+	@Override
 	public void setLayerData( String layer, String key, String value ) {
 		NodeID id = dom.get( "/layers/" + layer );
 		if( id != null )

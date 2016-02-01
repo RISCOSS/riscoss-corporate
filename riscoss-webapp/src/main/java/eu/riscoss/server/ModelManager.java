@@ -485,6 +485,29 @@ public class ModelManager {
 		return f.getValue().toString();
 	}
 	
+	@POST @Path("/{domain}/{model}/delete-documentation")
+	@Info("Deletes the documentation of a model")
+	public void deleteDocumentation(
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token,
+			@PathParam("model") @Info("The name of the model")				String name
+			) throws Exception {
+		
+		RiscossDB db = null;
+		
+		try {
+			
+			db = DBConnector.openDB(domain, token);
+			
+			db.deleteModelDesc(name);
+			
+		} catch(Exception e) {
+			throw e;
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
+	
 	@GET @Path("/{domain}/{model}/get")
 	@Info("Returns information about a stored model")
 	public String getInfo(

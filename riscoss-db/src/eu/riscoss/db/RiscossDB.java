@@ -68,6 +68,7 @@ public interface RiscossDB {
 	public abstract byte[]							getModelDescBlob(String modelName);
 	public abstract void							removeModelDescBlob(String modelName);
 	public abstract String							getModelDescFielname(String modelName);
+	public abstract void							deleteModelDesc(String modelName);
 	
 	/*
 	 * Risk Configurations
