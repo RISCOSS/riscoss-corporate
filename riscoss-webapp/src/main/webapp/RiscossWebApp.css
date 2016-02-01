@@ -114,6 +114,10 @@ body {
 	font-weight: bold !important;
 }
 
+.description {
+	margin-bottom:8px !important;
+}
+
 .margin {
 	background-color: #F2F2F2 !important;
 	padding: 20px !important;

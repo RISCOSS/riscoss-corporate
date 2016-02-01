@@ -411,7 +411,7 @@ public class ModelsModule implements EntryPoint {
 			
 			HorizontalPanel hPanel = new HorizontalPanel();
 			hPanel.add(docuUploader);
-			hPanel.add(deleteDesc);
+			if (descfilename!=null && !descfilename.equals("")) hPanel.add(deleteDesc);
 			grid.setWidget( 1, 1, hPanel);
 			
 			//Downloader/////////done in Anchor now!
