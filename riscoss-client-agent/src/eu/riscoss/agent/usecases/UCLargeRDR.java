@@ -18,19 +18,19 @@ import eu.riscoss.agent.tasks.ListEntities;
 import eu.riscoss.agent.tasks.SearchEntities;
 import eu.riscoss.agent.tasks.SelectDomain;
 
-public class UCCycles implements UseCase {
+public class UCLargeRDR implements UseCase {
 
-	public static void main( String[] args ) throws Exception {
-		new UCCycles().run( new RiscossRESTClient() );
-	}
-	
 	Gson gson = new Gson();
 	
-	String domain = "Cycles_Domain";
+	String domain = "LargeRDR";
 	
-	public UCCycles() {}
+	public static void main( String[] args ) throws Exception {
+		new UCLargeRDR().run( new RiscossRESTClient() );
+	}
 	
-	public UCCycles( String domain ) {
+	public UCLargeRDR() {}
+	
+	public UCLargeRDR( String domain ) {
 		this.domain = domain;
 	}
 	
@@ -41,14 +41,9 @@ public class UCCycles implements UseCase {
 		
 		Workflow w = new Workflow( rest );
 		
-//		w.execute( new SearchEntities( null, null, "", "", "true" ) );
-//		w.execute( new ListEntities() );
-//		System.out.println( w.getContext().get( "entities", "" ) );
-//		if( System.currentTimeMillis() > 0 ) return;
-		
 		w.execute( new EnsureDomainExistence( domain ) );
 		w.execute( new SelectDomain( domain ) );
-		w.execute( new EnsureLayerStructureNew( new String[] { "Product", "Project", "OSSComponent" } ) );
+		w.execute( new EnsureLayerStructureNew( new String[] { "OSSComponent" } ) );
 		
 		w.execute( new ListEntities() );
 		
@@ -73,21 +68,8 @@ public class UCCycles implements UseCase {
 			}
 		}
 		
-//		w.execute( new EnsureEntityExistence( "Product", "PRODUCT1"  ) );
-//		w.execute( new EnsureEntityExistence( "Project", "PROJECT1"  ) );
-//		w.execute( new EnsureEntityExistence( "OSSComponent", "OSS1"  ) );
-//		w.execute( new EnsureParent( "PROJECT1", "PRODUCT1" ) );
-//		w.execute( new EnsureParent( "OSS1", "PROJECT1" ) );
-//		w.execute( new EnsureParent( "PRODUCT1", "OSS1" ) );
 		
-		
-		for( int p = 0; p < 5; p++ ) {
-			w.execute( new EnsureEntityExistence( "Product", "product" + p  ) );
-		}
-		for( int prj = 0; prj < 5; prj++) {
-			w.execute( new EnsureEntityExistence( "Project", "project" + prj ) );
-		}
-		for( int c = 0; c < 5; c++ ) {
+		for( int c = 0; c < 500; c++ ) {
 			w.execute( new EnsureEntityExistence( "OSSComponent", "c" + c ) );
 		}
 		
@@ -95,10 +77,11 @@ public class UCCycles implements UseCase {
 		
 		list  = new Gson().fromJson( w.getContext().get( "entities", "" ), new TypeToken<List<JsonObject>>() {}.getType() );
 		
-		
 		Random r = new Random( 11 ); //System.currentTimeMillis() );
 		
-		for( int i = 0; i < 30; i++ ) {
+		for( int i = 0; i < 500; i++ ) {
+			
+			System.out.println( i );
 			
 			int pnum = r.nextInt( list.size() );
 			int cnum = r.nextInt( list.size() );

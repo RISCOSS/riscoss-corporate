@@ -25,4 +25,8 @@ public class RESTService {
 		return encode( rest.get( "domain", "" ) );
 	}
 	
+	public RiscossRESTClient getRESTClient() {
+		return this.rest;
+	}
+	
 }

@@ -59,31 +59,31 @@ public class UCMA_AHP implements UseCase {
 			Model model = program.getModel();
 			model.addProposition( new Proposition( "indicator", "i1" ).withProperty( "input", "true" ).withProperty( "datatype", "real" ) );
 			model.addProposition( new Proposition( "situation", "s1" ) );
-			model.addProposition( new Proposition( "event", "e1" ).withProperty( "output", "true" ) );
-			model.addProposition( new Proposition( "event", "e2" ).withProperty( "output", "true" ) );
-			model.addProposition( new Proposition( "goal", "g1" ).withProperty( "output", "true" ) );
-			model.addProposition( new Proposition( "goal", "g2" ).withProperty( "output", "true" ) );
+			model.addProposition( new Proposition( "event", "Bug risk" ).withProperty( "output", "true" ) );
+			model.addProposition( new Proposition( "event", "Community Inactiveness" ).withProperty( "output", "true" ) );
+			model.addProposition( new Proposition( "goal", "In house component maintenance" ).withProperty( "output", "true" ) );
+			model.addProposition( new Proposition( "goal", "Maintenance through OSS ecosystem and community" ).withProperty( "output", "true" ) );
 			model.addRelation( new Relation( "indicate" )
 					.withSource( model.getProposition( "i1" ) )
 					.withTarget( model.getProposition( "s1" ) ) );
 			model.addRelation( new Relation( "expose" )
 					.withSource( model.getProposition( "s1" ) )
-					.withTarget( model.getProposition( "e1" ) ) );
+					.withTarget( model.getProposition( "Bug risk" ) ) );
 			model.addRelation( new Relation( "expose" )
 					.withSource( model.getProposition( "s1" ) )
-					.withTarget( model.getProposition( "e2" ) ) );
+					.withTarget( model.getProposition( "Community Inactiveness" ) ) );
 			model.addRelation( new Relation( "impact" )
-					.withSource( model.getProposition( "e1" ) )
-					.withTarget( model.getProposition( "g1" ) ) );
+					.withSource( model.getProposition( "Bug risk" ) )
+					.withTarget( model.getProposition( "In house component maintenance" ) ) );
+//			model.addRelation( new Relation( "impact" )
+//					.withSource( model.getProposition( "Bug risk" ) )
+//					.withTarget( model.getProposition( "Maintenance through OSS ecosystem and community" ) ) );
 			model.addRelation( new Relation( "impact" )
-					.withSource( model.getProposition( "e1" ) )
-					.withTarget( model.getProposition( "g2" ) ) );
+					.withSource( model.getProposition( "Community Inactiveness" ) )
+					.withTarget( model.getProposition( "In house component maintenance" ) ) );
 			model.addRelation( new Relation( "impact" )
-					.withSource( model.getProposition( "e2" ) )
-					.withTarget( model.getProposition( "g1" ) ) );
-			model.addRelation( new Relation( "impact" )
-					.withSource( model.getProposition( "e2" ) )
-					.withTarget( model.getProposition( "g2" ) ) );
+					.withSource( model.getProposition( "Community Inactiveness" ) )
+					.withTarget( model.getProposition( "Maintenance through OSS ecosystem and community" ) ) );
 			String blob = new XmlWriter().generateXml( program ).asString();
 			
 			rest.domain( domain ).models().delete( "testModel.xml" );
@@ -95,9 +95,12 @@ public class UCMA_AHP implements UseCase {
 		
 		{	// Create and execute a risk analysis session
 			Gson gson = new Gson();
-			JRASInfo ras = gson.fromJson( rest.domain( domain ).analysis().createSession( "c1", "test-rc1" ), JRASInfo.class );
 			
+			JRASInfo ras = gson.fromJson( rest.domain( domain ).analysis().createSession( "c1", "test-rc1" ), JRASInfo.class );
 			String ret = rest.domain( domain ).analysis().session( ras.getId() ).execute();
+			
+			ras = gson.fromJson( rest.domain( domain ).analysis().createSession( "c1", "test-rc1" ), JRASInfo.class );
+			ret = rest.domain( domain ).analysis().session( ras.getId() ).execute();
 			
 			System.out.println( "" + ret );
 			
@@ -110,15 +113,16 @@ public class UCMA_AHP implements UseCase {
 			JAHPInput ahpInput = new JAHPInput();
 			ahpInput.ngoals = 2;
 			ahpInput.nrisks = 2;
-			ahpInput.goals.add( new JAHPComparison( "g1", "g2", 3 ) );
+			ahpInput.goals.add( new JAHPComparison( 
+					"In house component maintenance", "Maintenance through OSS ecosystem and community", 3 ) );
 			{
 				List<JAHPComparison> list = new ArrayList<JAHPComparison>();
-				list.add( new JAHPComparison( "e1", "e2", 1 ) );
+				list.add( new JAHPComparison( "Bug risk", "Community Inactiveness", 8 ) );
 				ahpInput.risks.add( list );
 			}
 			{
 				List<JAHPComparison> list = new ArrayList<JAHPComparison>();
-				list.add( new JAHPComparison( "e1", "e2", 1 ) );
+				list.add( new JAHPComparison( "Bug risk", "Community Inactiveness", 5 ) );
 				ahpInput.risks.add( list );
 			}
 			

@@ -32,7 +32,20 @@ public class EntityService extends RESTService {
 	}
 
 	public String getChildren() {
-		return rest.get( "entities/" + getDomain() + "/" + encode( getEntity() ) + "/children" ).send();
+		return rest.get( 
+				"entities/" + getDomain() + "/" + encode( getEntity() ) + "/children" ).send();
+	}
+
+	public void setDescription( String string ) {
+		rest.post( 
+				"entities/" + getDomain() + "/" + encode( getEntity() ) + "/description" )
+				.send( string );
+	}
+
+	public String getDescription() {
+		return rest.get( 
+				"entities/" + getDomain() + "/" + encode( getEntity() ) + "/description" )
+				.send();
 	}
 	
 }
