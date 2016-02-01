@@ -128,6 +128,87 @@ public class OLinkedList {
 		return list;
 	}
 
+	public void editParent(String layer, String newParent) {
+		NodeID id = dom.getVertex(this.rootPath + "/" + layer);
+		
+		//case 1: root layer
+		if (id.compareTo(getTopLayer()) == 0) {
+			NodeID newTop = getNextLayer(id);
+			NodeID layers = getLayersID();
+			dom.rmlink( "/layers", dom.getPath( id ), "first" );
+			dom.link( layers, newTop, "first" );
+			
+			dom.rmlink(id, newTop, "next");
+			NodeID parent = dom.getVertex(this.rootPath + "/" + newParent);
+			if (parent.compareTo(getBottomLayer()) == 0) {
+				setNextLayer(parent, id);
+			} else {
+				NodeID next = getNextLayer(parent);
+				dom.rmlink(parent, next, "next");
+				setNextLayer(parent, id);
+				setNextLayer(id, next);
+			}
+		} 
+		//case 2: bottom layer
+		else if (id.compareTo(getBottomLayer()) == 0) {
+			NodeID previous = null;
+			for( NodeID prev : list() ) {
+				if( getNextLayer( prev ).compareTo( id ) == 0 ) {
+					previous = prev;
+					break;
+				}
+			}
+			dom.rmlink(previous, id, "next");
+			if (newParent.equals("[top]")) {
+				NodeID newTop = id;
+				NodeID layers = getLayersID();
+				NodeID oldLayer = getTopLayer();
+				dom.rmlink( "/layers", dom.getPath( oldLayer ), "first" );
+				dom.link( layers, newTop, "first" );
+				setNextLayer(id, oldLayer);
+			} else {
+				NodeID parent = dom.getVertex(this.rootPath + "/" + newParent);
+				NodeID next = getNextLayer(parent);
+				dom.rmlink(parent, next, "next");
+				setNextLayer(parent, id);
+				setNextLayer(id, next);
+			}
+		} 
+		//case 3: middle layer
+		else {
+			NodeID previous = null;
+			for( NodeID prev : list() ) {
+				if( getNextLayer( prev ).compareTo( id ) == 0 ) {
+					previous = prev;
+					break;
+				}
+			}
+			NodeID next = getNextLayer(id);
+			dom.rmlink(previous, id, "next");
+			dom.rmlink(id, next, "next");
+			setNextLayer(previous, next);
+			if (newParent.equals("[top]")) {
+				NodeID newTop = id;
+				NodeID layers = getLayersID();
+				NodeID oldLayer = getTopLayer();
+				dom.rmlink( "/layers", dom.getPath( oldLayer ), "first" );
+				dom.link( layers, newTop, "first" );
+				setNextLayer(id, oldLayer);
+			} else {
+				NodeID parent = dom.getVertex(this.rootPath + "/" + newParent);
+				if (parent.compareTo(getBottomLayer()) == 0) {
+					setNextLayer(getBottomLayer(), id);
+				}
+				else {
+					NodeID nextParent = getNextLayer(parent);
+					dom.rmlink(parent, nextParent, "next");
+					setNextLayer(parent, id);
+					setNextLayer(id, nextParent);
+				}
+			}
+		}
+	}
+	
 	public void removeLayer(String name) {
 		NodeID id = dom.getVertex( this.rootPath + "/" + name );
 		
@@ -153,6 +234,8 @@ public class OLinkedList {
 			dom.deleteVertex( id );
 		}
 	}
+	
+	
 	
 	public void renameLayer(String name, String newName) {
 		NodeID id = dom.getVertex( this.rootPath + "/" + name );

@@ -59,6 +59,7 @@ import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SelectionChangeEvent.Handler;
 import com.google.gwt.view.client.SingleSelectionModel;
 
+import eu.riscoss.client.JsonEntitySummary;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecLayerContextualInfo;
 import eu.riscoss.client.codec.CodecRASInfo;
@@ -381,48 +382,64 @@ public class LayersModule implements EntryPoint {
 	}
 	
 	private void saveLayerData() {
-		if (dataChanged) {
-			dataChanged = false;
-			String name = nameL.getText().trim();
-			
-			if (name == null || name.equals("") ) 
-				return;
-			
-			//String s = RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
-			if (!RiscossUtil.sanitize(name).equals(name)){
-				//info: firefox has some problem with this window, and fires assertion errors in dev mode
-				Window.alert("Name contains prohibited characters (##,@,\") \nPlease re-enter name");
-				return;
+		String name = nameL.getText().trim();
+		
+		if (name == null || name.equals("") ) 
+			return;
+		
+		//String s = RiscossUtil.sanitize(txt.getText().trim());//attention:name sanitation is not directly notified to the user
+		if (!RiscossUtil.sanitize(name).equals(name)){
+			//info: firefox has some problem with this window, and fires assertion errors in dev mode
+			Window.alert("Name contains prohibited characters (##,@,\") \nPlease re-enter name");
+			return;
+		}
+		
+		RiscossJsonClient.listLayers(new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {	
 			}
-			
-			RiscossJsonClient.listLayers(new JsonCallback() {
-				@Override
-				public void onFailure(Method method, Throwable exception) {	
-				}
-				@Override
-				public void onSuccess(Method method, JSONValue response) {
-					for(int i=0; i<response.isArray().size(); i++){
-						JSONObject o = (JSONObject)response.isArray().get(i);
-						if (nameL.getText().trim().equals(o.get( "name" ).isString().stringValue())){
-							//info: firefox has some problem with this window, and fires assertion errors in dev mode
-							Window.alert("Layer name already in use.\nPlease re-enter name.");
-							return;
-						}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				for(int i=0; i<response.isArray().size(); i++){
+					JSONObject o = (JSONObject)response.isArray().get(i);
+					if (nameL.getText().trim().equals(o.get( "name" ).isString().stringValue()) && !nameL.getText().trim().equals(selectedLayer)){
+						//info: firefox has some problem with this window, and fires assertion errors in dev mode
+						Window.alert("Layer name already in use.\nPlease re-enter name.");
+						return;
 					}
-					RiscossJsonClient.renameLayer(selectedLayer, nameL.getText().trim(), new JsonCallback() {
-						@Override
-						public void onFailure(Method method, Throwable exception) {
-							Window.alert(exception.getMessage());
-						}
-						@Override
-						public void onSuccess(Method method, JSONValue response) {
-							selectedLayer = nameL.getText().trim();
+				}
+				RiscossJsonClient.renameLayer(selectedLayer, nameL.getText().trim(), new JsonCallback() {
+					@Override
+					public void onFailure(Method method, Throwable exception) {
+						Window.alert(exception.getMessage());
+					}
+					@Override
+					public void onSuccess(Method method, JSONValue response) {
+						selectedLayer = nameL.getText().trim();
+						final String s = candidateParents.getValue(candidateParents.getSelectedIndex());
+						if (!s.equals(selectedParent) && entities.size() == 0)
+						RiscossJsonClient.editLayerParent(selectedLayer, s, new JsonCallback() {
+							@Override
+							public void onFailure(Method method,
+									Throwable exception) {
+								Window.alert(exception.getMessage());
+							}
+							@Override
+							public void onSuccess(Method method,
+									JSONValue response) {
+								selectedParent = s;
+								reloadPage();
+							}
+						});
+						else if (entities.size() > 0) {
+							Window.alert("Layers with associated entities cannot modify the parent layer");
 							reloadPage();
 						}
-					});	
-				}
-			});
-		} 
+						else reloadPage();
+					}
+				});	
+			}
+		});
 	}
 	
 	private void reloadPage() {
@@ -490,121 +507,143 @@ public class LayersModule implements EntryPoint {
 		
 	}
 	
-	private void loadRightPanel() {
-		mainView.remove(rightPanel);
-		rightPanel = new VerticalPanel();
-		rightPanel.setStyleName("rightPanelLayer");
-		rightPanel.setWidth("90%");
-		rightPanel.setHeight("auto");
-		
-		Label subtitle = new Label(selectedLayer);
-		subtitle.setStyleName("subtitle");
-		rightPanel.add(subtitle);
-		mainViewEntity.remove(rightPanelEntity);
-		
-		grid = new Grid(5,1);
-		grid.setStyleName("properties");
-		grid.setWidth("100%");
-		
-		Grid properties = new Grid(1,5);
-		
-		Label name = new Label("Name");
-		name.setStyleName("bold");
-		properties.setWidget(0, 0, name);
-		nameL = new TextBox();
-		nameL.setText(selectedLayer);
-		nameL.setStyleName("tag");
-		nameL.addValueChangeHandler(new ValueChangeHandler<String>() {
-			@Override
-			public void onValueChange(ValueChangeEvent<String> event) {
-				dataChanged = true;
-			}
-		});
-		properties.setWidget(0, 1, nameL);
-		
-		properties.setWidget(0, 2, space);
-		
-		Label parent = new Label("Parent");
-		parent.setStyleName("bold");
-		properties.setWidget(0, 3, parent);
-		selectedParent = ppg.getParent();
-		Label parentL = new Label(selectedParent);
-		parentL.setStyleName("tag");
-		properties.setWidget(0, 4, parentL);
-		
-		grid.setWidget(0, 0, properties);
-		grid.setWidget(1, 0, null);
-		
-		HorizontalPanel buttons = new HorizontalPanel();
-		Button delete = new Button("Delete");
-		delete.addClickHandler(new ClickHandler() {
-						@Override
-						public void onClick(ClickEvent event) {
-							if (entities.size() > 0) {
-								Window.alert("Layers with associated layers cannot be deleted");
-							}
-							else {
-								Boolean b = Window.confirm("Are you sure that you want to delete layer " + selectedLayer + "?");
-								if (b) {
-									RiscossJsonClient.deleteLayer(selectedLayer, new JsonCallback() {
-									@Override
-									public void onFailure(Method method,Throwable exception) {
-										Window.alert( exception.getMessage() );
-									}
-									@Override
-									public void onSuccess(Method method,JSONValue response) {
-										Window.Location.reload();
-									}} );
-								}
-							}
-						}
-					} ) ;
-		delete.setStyleName("button");
-		buttons.add(save);
-		buttons.add(delete);
-		
-		grid.setWidget(2, 0, buttons);
-		grid.setWidget(3, 0, null);
-		
-		ppg.setSelectedLayer(selectedLayer);
+	ListBox candidateParents;
 	
-		grid.setWidget(4, 0, ppg);
-		
-		rightPanel.add(grid);
-		
-		RiscossJsonClient.listEntities(selectedLayer, new JsonCallback() {
+	private void loadRightPanel() {
+		RiscossJsonClient.listLayers(new JsonCallback() {
 			@Override
 			public void onFailure(Method method, Throwable exception) {
-				Window.alert( exception.getMessage() );
+				// TODO Auto-generated method stub
 			}
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
-				list = response;
-				reloadEntityTable(response);
+				selectedParent = ppg.getParent();
+				candidateParents = new ListBox();
+				candidateParents.insertItem("[top]", 0);
+				if (selectedParent.equals("[top]")) candidateParents.setSelectedIndex(0);
+				for(int i=1; i<=response.isArray().size(); i++){
+					JSONObject o = (JSONObject)response.isArray().get(i-1);
+					if (!selectedLayer.equals(o.get("name").isString().stringValue())) {
+						candidateParents.insertItem(o.get("name").isString().stringValue(), i);
+						if (selectedParent.equals(o.get("name").isString().stringValue())) candidateParents.setSelectedIndex(i);
+					}
+				}
+				mainView.remove(rightPanel);
+				rightPanel = new VerticalPanel();
+				rightPanel.setStyleName("rightPanelLayer");
+				rightPanel.setWidth("90%");
+				rightPanel.setHeight("auto");
 				
-				leftPanelEntity.clear();
+				Label subtitle = new Label(selectedLayer);
+				subtitle.setStyleName("subtitle");
+				rightPanel.add(subtitle);
+				mainViewEntity.remove(rightPanelEntity);
 				
-				HorizontalPanel layerData = new HorizontalPanel();
-				layerData.setStyleName("layerData");
+				grid = new Grid(5,1);
+				grid.setStyleName("properties");
+				grid.setWidth("100%");
+				
+				Grid properties = new Grid(1,5);
+				
 				Label name = new Label("Name");
 				name.setStyleName("bold");
-				layerData.add(name);
-				entityName = new TextBox();
-				entityName.setWidth("120px");
-				entityName.setStyleName("layerNameField");
-				layerData.add(entityName);
-				leftPanelEntity.add(layerData);
+				properties.setWidget(0, 0, name);
+				nameL = new TextBox();
+				nameL.setText(selectedLayer);
+				nameL.setStyleName("tag");
+				nameL.addValueChangeHandler(new ValueChangeHandler<String>() {
+					@Override
+					public void onValueChange(ValueChangeEvent<String> event) {
+						dataChanged = true;
+					}
+				});
+				properties.setWidget(0, 1, nameL);
+				
+				properties.setWidget(0, 2, space);
+				
+				Label parent = new Label("Parent");
+				parent.setStyleName("bold");
+				properties.setWidget(0, 3, parent);
+				/*Label parentL = new Label(selectedParent);
+				parentL.setStyleName("tag");
+				properties.setWidget(0, 4, parentL);*/
+				properties.setWidget(0, 4, candidateParents);
+				
+				grid.setWidget(0, 0, properties);
+				grid.setWidget(1, 0, null);
 				
 				HorizontalPanel buttons = new HorizontalPanel();
+				Button delete = new Button("Delete");
+				delete.addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						if (entities.size() > 0) {
+							Window.alert("Layers with associated layers cannot be deleted");
+						}
+						else {
+							Boolean b = Window.confirm("Are you sure that you want to delete layer " + selectedLayer + "?");
+							if (b) {
+								RiscossJsonClient.deleteLayer(selectedLayer, new JsonCallback() {
+								@Override
+								public void onFailure(Method method,Throwable exception) {
+									Window.alert( exception.getMessage() );
+								}
+								@Override
+								public void onSuccess(Method method,JSONValue response) {
+									Window.Location.reload();
+								}} );
+							}
+						}
+					}
+				} ) ;
+				delete.setStyleName("button");
+				buttons.add(save);
+				buttons.add(delete);
 				
-				newEntityButton.setText("New " + selectedLayer + " entity");
-				buttons.add(newEntityButton);
+				grid.setWidget(2, 0, buttons);
+				grid.setWidget(3, 0, null);
 				
+				ppg.setSelectedLayer(selectedLayer);
+			
+				grid.setWidget(4, 0, ppg);
 				
-				leftPanelEntity.add(buttons);
-				leftPanelEntity.add(tablePanel);
+				rightPanel.add(grid);
 				
-				mainView.add(rightPanel);
+				RiscossJsonClient.listEntities(selectedLayer, new JsonCallback() {
+					@Override
+					public void onFailure(Method method, Throwable exception) {
+						Window.alert( exception.getMessage() );
+					}
+					@Override
+					public void onSuccess(Method method, JSONValue response) {
+						list = response;
+						reloadEntityTable(response);
+						
+						leftPanelEntity.clear();
+						
+						HorizontalPanel layerData = new HorizontalPanel();
+						layerData.setStyleName("layerData");
+						Label name = new Label("Name");
+						name.setStyleName("bold");
+						layerData.add(name);
+						entityName = new TextBox();
+						entityName.setWidth("120px");
+						entityName.setStyleName("layerNameField");
+						layerData.add(entityName);
+						leftPanelEntity.add(layerData);
+						
+						HorizontalPanel buttons = new HorizontalPanel();
+						
+						newEntityButton.setText("New " + selectedLayer + " entity");
+						buttons.add(newEntityButton);
+						
+						
+						leftPanelEntity.add(buttons);
+						leftPanelEntity.add(tablePanel);
+						
+						mainView.add(rightPanel);
+					}
+				});
 			}
 		});
 	}
@@ -716,19 +755,42 @@ public class LayersModule implements EntryPoint {
 	}
 	
 	EntityPropertyPage ppgEnt;
+	TextBox entityNameBox;
+	ListBox entityLayer;
 	
 	private void reloadEntityInfo() {
+		RiscossJsonClient.listLayers(new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				// TODO Auto-generated method stub
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				entityLayer = new ListBox();
+				for(int i=0; i<response.isArray().size(); i++){
+					JSONObject o = (JSONObject)response.isArray().get(i);
+					entityLayer.insertItem(o.get("name").isString().stringValue(), i);
+					if (o.get("name").isString().stringValue().equals(selectedLayer)) 
+						entityLayer.setSelectedIndex(i);
+				}
+				reloadEnt();
+			}
+		});
+	}
+	
+	Label title;
+	
+	protected void reloadEnt() {
 		if (selectedEntity != null) {
 			mainView.remove(rightPanel);
 			rightPanel = new VerticalPanel();
 			rightPanel.setStyleName("rightPanelLayer");
 			rightPanel.setWidth("90%");
-			Label l = new Label(selectedEntity);
-			l.setStyleName("subtitle");
-			rightPanel.add(l);
+			title = new Label(selectedEntity);
+			title.setStyleName("subtitle");
+			rightPanel.add(title);
 			
 			ppgEnt = new EntityPropertyPage(null);
-			ppgEnt.setLayerModule(this);
 			ppgEnt.setSelectedEntity(selectedEntity);
 			
 			Grid grid = new Grid(5,1);
@@ -740,18 +802,22 @@ public class LayersModule implements EntryPoint {
 			Label name = new Label("Name");
 			name.setStyleName("bold");
 			properties.setWidget(0, 0, name);
-			Label nameL = new Label(selectedEntity);
+			entityNameBox = new TextBox();
+			entityNameBox.setText(selectedEntity);
+			entityNameBox.setEnabled(false);
+			properties.setWidget(0, 1, entityNameBox);
+			/*Label nameL = new Label(selectedEntity);
 			nameL.setStyleName("tag");
-			properties.setWidget(0, 1, nameL);
+			properties.setWidget(0, 1, nameL);*/
 			
 			properties.setWidget(0, 2, space);
 			
 			Label parent = new Label("Layer");
 			parent.setStyleName("bold");
 			properties.setWidget(0, 3, parent);
-			Label parentL = new Label(selectedLayer);
-			parentL.setStyleName("tag");
-			properties.setWidget(0, 4, parentL);
+			/*Label parentL = new Label(selectedLayer);
+			parentL.setStyleName("tag");*/
+			properties.setWidget(0, 4, entityLayer);
 			
 			grid.setWidget(0, 0, properties);
 			grid.setWidget(1, 0, null);
@@ -767,10 +833,11 @@ public class LayersModule implements EntryPoint {
 			delete.setStyleName("button");
 			Button saveEntity = new Button("Save");
 			saveEntity.setStyleName("button");
+			ppgEnt.setLayerModule(this);
 			saveEntity.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					ppgEnt.saveEntityData();
+					ppgEnt.saveEntityData(entityNameBox.getText(), entityLayer.getValue(entityLayer.getSelectedIndex()));
 				}
 			});
 			buttons.add(saveEntity);
@@ -781,6 +848,34 @@ public class LayersModule implements EntryPoint {
 			rightPanel.add(grid);
 			mainView.add(rightPanel);
 		}
+	}
+	
+	public void reloadData(String entity) {
+		title.setText(entity);
+		RiscossJsonClient.getEntityData(entity, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				JsonEntitySummary info = new JsonEntitySummary( response );
+				selectedLayer = info.getLayer();
+				newEntityButton.setText("New " + selectedLayer + " entity");
+				RiscossJsonClient.listEntities(selectedLayer, new JsonCallback() {
+					@Override
+					public void onFailure(
+							Method method,
+							Throwable exception) {
+					}
+					@Override
+					public void onSuccess(
+							Method method,
+							JSONValue response) {
+						reloadEntityTable(response);
+					}
+				});
+			}
+		});
 	}
 
 	Boolean hasRisk;
@@ -802,6 +897,7 @@ public class LayersModule implements EntryPoint {
 
 	protected void deleteEntity() {
 		if (hasRisk) Window.alert("Entities with associated risk sessions cannot be deleted");
+		if (ppgEnt.hasParents()) Window.alert("Entities with parents cannot be deleted");
 		else {
 			Boolean b = Window.confirm("Are you sure that you want to delete entity " + selectedEntity + "?");
 			if (b) {
@@ -849,9 +945,9 @@ public class LayersModule implements EntryPoint {
 				page.clear();
 				page.setStyleName("leftPanelLayer");
 				JsonRiskAnalysis json = new JsonRiskAnalysis( response );
-				Label title = new Label(json.getName());
+				/*Label title = new Label(json.getName());
 				title.setStyleName("subtitle");
-				page.add(title);
+				page.add(title);*/
 				page.add(rasPanelResult);
 			}
 		});
@@ -886,6 +982,6 @@ public class LayersModule implements EntryPoint {
 		ppgEnt = new EntityPropertyPage(null);
 		ppgEnt.setSelectedEntity(selectedEntity);
 		ppgEnt.setSelectedTab(4);
-		//loadProperties();
+		reloadEnt();
 	}
 }

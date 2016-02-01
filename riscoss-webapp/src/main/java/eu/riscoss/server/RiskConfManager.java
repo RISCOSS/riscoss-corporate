@@ -41,6 +41,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
 import eu.riscoss.db.RiscossDB;
+import eu.riscoss.db.RiscossElements;
 import eu.riscoss.shared.JRiskConfiguration;
 import eu.riscoss.shared.JRiskConfigurationLayerInfo;
 import eu.riscoss.shared.RiscossUtil;
@@ -345,5 +346,40 @@ public class RiskConfManager {
 			DBConnector.closeDB( db );
 		}
 	}
-
+	
+	@GET @Path("/{domain}/{rc}/description")
+	public String getDescription(
+			@PathParam("domain") @Info("The selected domain") 			String domain,
+			@PathParam("rc") @Info("The selected rc")					String rc,
+			@HeaderParam("token") @Info("The authentication token") 	String token
+			) throws Exception {
+		RiscossDB db = null;
+		try {
+			db = DBConnector.openDB(domain, token);
+			return db.getProperty( RiscossElements.RISKCONF, rc, "description", "" );
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
+	
+	@POST @Path("/{domain}/{rc}/description")
+	public void setDescription(
+			@PathParam("domain") @Info("The selected domain") 			String domain,
+			@PathParam("rc") @Info("The selected rc")					String rc,
+			@HeaderParam("token") @Info("The authentication token") 	String token,
+			@Info("The description string to be set")					String description
+			) throws Exception {
+		RiscossDB db = null;
+		try {
+			db = DBConnector.openDB(domain, token);
+			db.setProperty( RiscossElements.RISKCONF, rc, "description", description );
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
+	
 }

@@ -433,7 +433,7 @@ public class RiskAnalysisWizard implements EntryPoint {
 		g.setWidget(2, 2, null);
 		selectedRiskSession = name;
 		elem = k;
-		mainView.clear();
+		page.clear();
 		top.remove(g);
 		vPanel = new VerticalPanel();
 		vPanel.setStyleName("leftPanelLayer");
@@ -441,7 +441,7 @@ public class RiskAnalysisWizard implements EntryPoint {
 		rasPanel.loadRAS(list.get(k).getId());
 		vPanel.add(rasPanel);
 		title.setText(selectedRiskSession);
-		mainView.add(vPanel);
+		page.add(vPanel);
 	}
 	
 	private void setSelectedRAS() {
@@ -475,14 +475,18 @@ public class RiskAnalysisWizard implements EntryPoint {
 	private void reloadPage() {
 		String or = Window.Location.getParameter("or");
 		if (or == null) {
-			mainView.clear();
+			page.clear();
+			page.add(title);
 			mainView.add(leftPanel);
 			mainView.add(rightPanel);
+			page.add(top);
+			page.add(mainView);
 			top.add(g);
 			selectedRiskConf = "";
 			selectedRiskSession = "";
 			title.setText("Multi-layer Analysis");
 			g.setWidget(1, 1, new Label(" - "));
+			setSelectedEntity(selectedEntity);
 		}
 		else Window.Location.replace("dashboard.jsp");
 	}

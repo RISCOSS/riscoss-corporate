@@ -20,6 +20,7 @@ public interface RiscossDB {
 	public abstract void							addLayer(String name, String after);
 	public abstract void							removeLayer(String name);
 	public abstract void							renameLayer(String name, String newName);
+	public abstract void							editParent(String layer, String newParent);
 	public abstract void							setLayerData( String layer, String key, String value );
 	public abstract String							getLayerData( String layer, String key );
 	public abstract List<String>					getScope( String layer );
@@ -37,6 +38,7 @@ public interface RiscossDB {
 	public abstract List<String>					getParents( String entity );
 	public abstract List<String>					getChildren( String entity );
 	public abstract String							layerOf(String entity);
+	public abstract void							editLayer(String entity, String layer);
 	public abstract Collection<String>				listUserData( String entity );
 	
 	/*
@@ -66,6 +68,7 @@ public interface RiscossDB {
 	public abstract byte[]							getModelDescBlob(String modelName);
 	public abstract void							removeModelDescBlob(String modelName);
 	public abstract String							getModelDescFielname(String modelName);
+	public abstract void							deleteModelDesc(String modelName);
 	
 	/*
 	 * Risk Configurations
@@ -114,5 +117,11 @@ public interface RiscossDB {
 	public abstract Collection<String>				findEntities( String layer, String query, SearchParams params );
 	public abstract void							removeUserFromDomain( String name );
 	public abstract void 							renameEntity(String entity, String newName);
+	
+	/*
+	 * General purpose methods
+	 */
+	public abstract String							getProperty( RiscossElements element, String name, String propertyName, String def );
+	public abstract void							setProperty( RiscossElements element, String name, String propertyName, String value );
 	
 }

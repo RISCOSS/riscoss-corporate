@@ -185,6 +185,17 @@ public class ORiscossDomain implements RiscossDB {
 		}
 	}
 	
+	@Override
+	public void editLayer(String entity, String layer) {
+		NodeID entityID = dom.getVertex( "/entities/" + entity );
+		dom.rmlink("/layers/" + layerOf(entity), "/entities/" + entity, "contains");
+		
+		NodeID id = dom.get( "/layers/" + layer );
+		if( id != null ) {
+			dom.link( "/layers/" + layer, "/entities/" + entity, "contains" );
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see eu.riscoss.db.RiscossDBInterface#removeEntity(eu.riscoss.db.NodeID)
 	 */
@@ -377,6 +388,11 @@ public class ORiscossDomain implements RiscossDB {
 	@Override
 	public void renameLayer(String name, String newName) {	
 		new OLinkedList( dom, "/layers" ).renameLayer( name, newName );
+	}
+	
+	@Override
+	public void editParent(String layer, String newParent) {
+		new OLinkedList( dom, "/layers" ).editParent(layer, newParent);
 	}
 	
 	@Override
@@ -782,6 +798,13 @@ public class ORiscossDomain implements RiscossDB {
 	}
 
 	@Override
+	public void deleteModelDesc(String modelName) {
+		NodeID id = dom.getVertex( "/models/" + modelName );
+		dom.setAttribute(id, "descBlobName", "");
+		dom.removeAttribute(id, "descBlob");
+	}
+	
+	@Override
 	public void setLayerData( String layer, String key, String value ) {
 		NodeID id = dom.get( "/layers/" + layer );
 		if( id != null )
@@ -915,6 +938,62 @@ public class ORiscossDomain implements RiscossDB {
 		if( oldSpecificRole != null )
 			execute( "update ouser remove roles = (select from orole where name='" + oldSpecificRole + "') where name = '" + name + "'" );
 		
+	}
+
+	@Override
+	public String getProperty( RiscossElements element, String name, String propertyName, String def ) {
+		NodeID id = null;
+		switch( element ) {
+		case ENTITY:
+			id = dom.get( "/entities/" + name );
+			break;
+		case LAYER:
+			id = dom.get( "/layers/" + name );
+			break;
+		case MODEL:
+			id = dom.get( "/models/" + name );
+			break;
+		case RISKCONF:
+			id = dom.get( "/risk-configurations/" + name );
+			break;
+		case SESSION:
+			id = dom.get( "/ras/" + name );
+			break;
+		default:
+			break;
+		}
+		if( id == null ) {
+			return def;
+		}
+		return dom.getAttribute( id, propertyName, def );
+	}
+
+	@Override
+	public void setProperty( RiscossElements element, String name, String propertyName, String value ) {
+		NodeID id = null;
+		switch( element ) {
+		case ENTITY:
+			id = dom.get( "/entities/" + name );
+			break;
+		case LAYER:
+			id = dom.get( "/layers/" + name );
+			break;
+		case MODEL:
+			id = dom.get( "/models/" + name );
+			break;
+		case RISKCONF:
+			id = dom.get( "/risk-configurations/" + name );
+			break;
+		case SESSION:
+			id = dom.get( "/ras/" + name );
+			break;
+		default:
+			break;
+		}
+		if( id == null ) {
+			return;
+		}
+		dom.setAttribute( id, propertyName, value );
 	}
 	
 }

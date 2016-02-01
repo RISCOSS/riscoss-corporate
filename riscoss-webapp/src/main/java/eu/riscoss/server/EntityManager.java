@@ -47,7 +47,10 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
 import eu.riscoss.dataproviders.RiskData;
+import eu.riscoss.db.RecordAbstraction;
 import eu.riscoss.db.RiscossDB;
+import eu.riscoss.db.RiscossElements;
+import eu.riscoss.db.RiskAnalysisSession;
 import eu.riscoss.db.SearchParams;
 import eu.riscoss.ram.algo.DownwardEntitySearch;
 import eu.riscoss.ram.algo.DownwardEntitySearch.DIRECTION;
@@ -57,6 +60,7 @@ import eu.riscoss.rdc.RDCFactory;
 import eu.riscoss.rdc.RDCParameter;
 import eu.riscoss.shared.JEntityData;
 import eu.riscoss.shared.JEntityNode;
+import eu.riscoss.shared.JRASInfo;
 import eu.riscoss.shared.JRiskNativeData;
 import eu.riscoss.shared.RiscossUtil;
 
@@ -301,6 +305,60 @@ public class EntityManager {
 			DBConnector.closeDB(db);
 		}
 	}
+	
+	@GET @Path("/{domain}/{entity}/description")
+	public String getDescription(
+			@PathParam("domain") @Info("The selected domain") 			String domain,
+			@PathParam("entity") @Info("The selected entity")			String entity,
+			@HeaderParam("token") @Info("The authentication token") 	String token
+			) throws Exception {
+		RiscossDB db = null;
+		try {
+			db = DBConnector.openDB(domain, token);
+			return db.getProperty( RiscossElements.ENTITY, entity, "description", "" );
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
+	
+	@POST @Path("/{domain}/{entity}/description")
+	public void setDescription(
+			@PathParam("domain") @Info("The selected domain") 			String domain,
+			@PathParam("entity") @Info("The selected entity")			String entity,
+			@HeaderParam("token") @Info("The authentication token") 	String token,
+			@Info("The description string to be set")					String description
+			) throws Exception {
+		RiscossDB db = null;
+		try {
+			db = DBConnector.openDB(domain, token);
+			db.setProperty( RiscossElements.ENTITY, entity, "description", description );
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
+	
+	@POST @Path("/{domain}/{entity}/edit-layer")
+	@Info("Edit the layer of the specified entity")
+	public void editLayer(
+			@PathParam("domain") @Info("The selected domain") 			String domain,
+			@PathParam("entity") @Info("The selected entity")			String entity,
+			@HeaderParam("token") @Info("The authentication token") 	String token,
+			@QueryParam("layer") @Info("The new layer")					String layer
+			) throws Exception {
+		RiscossDB db = null;
+		try {
+			db = DBConnector.openDB(domain, token);
+			db.editLayer(entity, layer);
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
 
 	@DELETE @Path("/{domain}/{entity}/delete")
 	@Info("Deleted the specified entity")
@@ -473,7 +531,23 @@ public class EntityManager {
 		try {
 			
 			db = DBConnector.openDB( domain, token );
+			
 			db.renameEntity(name, newName);
+			
+			String layer = db.layerOf( newName );
+			List<String> rcs = db.findCandidateRCs( layer );
+			List<String> ids = new ArrayList<>();
+			for( String rc : rcs ) {
+				for( RecordAbstraction record : db.listRAS( name,  rc ) ) {
+					JRASInfo jras = new JRASInfo( record.getName(), record.getProperty( "name", record.getName() ));
+					ids.add(jras.getId());
+				}
+			}
+			
+			for (String id : ids) {
+				RiskAnalysisSession ras = db.openRAS( id );
+				ras.setTarget(newName);
+			}
 		}
 		catch( Exception ex ) {
 			throw ex;

@@ -185,9 +185,9 @@ public class RASModule implements EntryPoint {
 				page.clear();
 				page.setStyleName("leftPanelLayer");
 				JsonRiskAnalysis json = new JsonRiskAnalysis( response );
-				Label title = new Label(json.getName());
+				/*Label title = new Label(json.getName());
 				title.setStyleName("subtitle");
-				page.add(title);
+				page.add(title);*/
 				page.add(rasPanel);
 			}
 		});

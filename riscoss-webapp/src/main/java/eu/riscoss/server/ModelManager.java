@@ -39,6 +39,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
 import eu.riscoss.db.RiscossDB;
+import eu.riscoss.db.RiscossElements;
 import eu.riscoss.fbk.language.Proposition;
 import eu.riscoss.fbk.language.Relation;
 import eu.riscoss.reasoner.Chunk;
@@ -484,6 +485,29 @@ public class ModelManager {
 		return f.getValue().toString();
 	}
 	
+	@POST @Path("/{domain}/{model}/delete-documentation")
+	@Info("Deletes the documentation of a model")
+	public void deleteDocumentation(
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token,
+			@PathParam("model") @Info("The name of the model")				String name
+			) throws Exception {
+		
+		RiscossDB db = null;
+		
+		try {
+			
+			db = DBConnector.openDB(domain, token);
+			
+			db.deleteModelDesc(name);
+			
+		} catch(Exception e) {
+			throw e;
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
+	
 	@GET @Path("/{domain}/{model}/get")
 	@Info("Returns information about a stored model")
 	public String getInfo(
@@ -686,6 +710,41 @@ public class ModelManager {
 		}
 		finally {
 			DBConnector.closeDB( db );
+		}
+	}
+	
+	@GET @Path("/{domain}/{model}/description")
+	public String getDescription(
+			@PathParam("domain") @Info("The selected domain") 			String domain,
+			@PathParam("model") @Info("The selected model")				String model,
+			@HeaderParam("token") @Info("The authentication token") 	String token
+			) throws Exception {
+		RiscossDB db = null;
+		try {
+			db = DBConnector.openDB(domain, token);
+			return db.getProperty( RiscossElements.MODEL, model, "description", "" );
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
+	
+	@POST @Path("/{domain}/{model}/description")
+	public void setDescription(
+			@PathParam("domain") @Info("The selected domain") 			String domain,
+			@PathParam("model") @Info("The selected model")				String model,
+			@HeaderParam("token") @Info("The authentication token") 	String token,
+			@Info("The description string to be set")					String description
+			) throws Exception {
+		RiscossDB db = null;
+		try {
+			db = DBConnector.openDB(domain, token);
+			db.setProperty( RiscossElements.MODEL, model, "description", description );
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBConnector.closeDB(db);
 		}
 	}
 	

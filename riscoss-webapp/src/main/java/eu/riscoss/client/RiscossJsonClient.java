@@ -89,6 +89,10 @@ public class RiscossJsonClient {
 //			.post().send( cb );
 	}
 	
+	public static void editLayerParent(String layer, String newParent, JsonCallback cb) {
+		RiscossCall.fromCookies().layers().item(layer).editParent(newParent).post(cb);
+	}
+	
 	public static void deleteLayer( String layerName, JsonCallback cb ) {
 		RiscossCall.fromCookies().layers().item(layerName).delete().delete( cb );
 //		new Resource( GWT.getHostPageBaseURL() + "api/layers/" + getDomain() + "/delete" )
@@ -127,6 +131,10 @@ public class RiscossJsonClient {
 		RiscossCall.fromCookies().entities().item( name ).rename(newName).post( cb );;
 	}
 	
+	
+	public static void editLayer(String entity, String layer, JsonCallback cb) {
+		RiscossCall.fromCookies().entities().item(entity).editLayer(layer).post(cb);
+	}
 	/**
 	 * Lists all entities for layer. Note: if layer = "", returns the list of all entities.
 	 * call: ("/{domain}/{layer}/list")
@@ -399,6 +407,10 @@ public class RiscossJsonClient {
 //		.get().send( cb );
 	}
 	
+	public static void deleteModelDoc(String name, JsonCallback cb) {
+		RiscossCall.fromCookies().models().item(name).fx("delete-documentation").post(cb);
+	}
+	
 	
 	public static void deleteModel( String name, JsonCallback cb ) {
 		RiscossCall.fromCookies().models().item(name).delete().delete(cb);
@@ -441,6 +453,10 @@ public class RiscossJsonClient {
 	
 	public static void creteRiskAnalysisSession(String name, String riskConf, String target, JsonCallback cb){
 		RiscossCall.fromCookies().analysis().fx("session").create(name).arg("rc",riskConf).arg("target", target).post(cb);
+	}
+	
+	public static void renameRiskAnalysisSession(String id, String newName, JsonCallback cb) {
+		RiscossCall.fromCookies().analysis().fx("session").fx(id).fx("rename").arg("newname", newName).post(cb);
 	}
 	
 	public static void editSessionTarget(String riskAnalysisSession, String target, JsonCallback cb) {

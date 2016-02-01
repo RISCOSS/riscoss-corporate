@@ -50,6 +50,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
+import eu.riscoss.client.Log;
 import eu.riscoss.dataproviders.RiskData;
 import eu.riscoss.dataproviders.RiskDataType;
 import eu.riscoss.db.RecordAbstraction;
@@ -80,6 +81,8 @@ import eu.riscoss.shared.JMissingData;
 import eu.riscoss.shared.JRASInfo;
 import eu.riscoss.shared.JRiskData;
 import eu.riscoss.shared.JValueMap;
+import eu.riscoss.shared.JWhatIfData;
+import eu.riscoss.shared.JWhatIfData.JWhatIfItem;
 
 @Path("analysis")
 public class AnalysisManager {
@@ -136,6 +139,33 @@ public class AnalysisManager {
 			DBConnector.closeDB( db );
 		}
 		
+	}
+	
+	@POST @Path("/{domain}/session/{sid}/rename")
+	@Info("Rename an existing risk analysis session")
+	public void renameSession(
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token,
+			@PathParam("sid") @Info("The session id")						String sid,
+			@QueryParam("newname") @Info("The session new name")			String newName) throws Exception {
+		
+		RiscossDB db = null;
+		
+		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
+			RiskAnalysisSession ras = db.openRAS( sid );
+
+			ras.setName(newName);
+			
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
 	}
 	
 	@POST @Path("/{domain}/session/create")
@@ -211,9 +241,6 @@ public class AnalysisManager {
 		}
 	}
 	
-	/* This method goes through the hierarchy of entities in a given risk analysis session,
-	 * reads the required data from the rdr, and stores the data in the risk analysis session
-	 */
 	@GET @Path("/{domain}/session/{sid}/edit-target/{target}")
 	@Info("Edits the entity name of a risk session")
 	public void editSessionTarget( 
@@ -361,7 +388,48 @@ public class AnalysisManager {
 			DBConnector.closeDB(db);
 		}
 	}
-
+	
+	
+	@GET @Path("/{domain}/session/{sid}/data")
+	public String getSessionData(
+			@HeaderParam("token") @Info("The authentication token")				String token, 
+			@PathParam("domain") @Info("The work domain")						String domain,
+			@PathParam("sid") @Info("The risk session ID")						String sid,
+			@QueryParam("e") @Info("The list of entities whose data have to be retrieved")
+																				List<String> entities
+			) throws Exception {
+		RiscossDB db = null;
+		try {
+			db = DBConnector.openDB( domain, token );
+			JWhatIfData data = new JWhatIfData();
+			RiskAnalysisSession ras = db.openRAS( sid );
+			for( String entity : entities ) {
+				String layer = ras.getLayer( entity );
+				JWhatIfItem item = new JWhatIfItem();
+				item.models = ras.getModels( layer );
+				{
+					RiskAnalysisEngine rae = ReasoningLibrary.get().createRiskAnalysisEngine();
+					for( String model : item.models ) {
+						String blob = ras.getStoredModelBlob( model );
+						rae.loadModel( blob );
+						for( Chunk chunk : rae.queryModel( ModelSlice.INPUT_DATA ) ) {
+							item.values.put( chunk.getId(), ras.getInput( entity, chunk.getId() ) );
+						}
+					}
+				}
+				data.items.put( entity, item );
+			}
+			return gson.toJson( data );
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
+	}
+	
+	
 	@GET @Path("/{domain}/session/{sid}/summary")
 	@Info(	"Returns some basic information about a risk session: " + 
 			"ID, target entity, risk configuration, name, timestamp" )	

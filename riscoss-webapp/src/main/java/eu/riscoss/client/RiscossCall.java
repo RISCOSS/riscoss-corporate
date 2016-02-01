@@ -306,6 +306,14 @@ public class RiscossCall extends JSONCall{
 			return new Function("rename").arg("newname", newname );
 		}
 		/**
+		 * adds a function "/edit-parent"
+		 * @param new parent of the item
+		 * @return
+		 */
+		public Argument editParent(String newParent) {
+			return new Function("edit-parent").arg("newParent", newParent);
+		}
+		/**
 		 * adds a function "/store"
 		 * @return
 		 */
@@ -352,6 +360,10 @@ public class RiscossCall extends JSONCall{
 		 */
 		public Argument arg( String key, String value ) {
 			return new Argument( key, value );
+		}
+
+		public Argument editLayer(String layer) {
+			return new Function("edit-layer").arg("layer", layer );
 		}
 
 	}

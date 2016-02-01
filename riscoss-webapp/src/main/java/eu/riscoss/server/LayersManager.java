@@ -36,6 +36,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import eu.riscoss.db.RiscossDB;
+import eu.riscoss.db.RiscossElements;
 import eu.riscoss.shared.JLayerContextualInfo;
 import eu.riscoss.shared.RiscossUtil;
 
@@ -126,6 +127,28 @@ public class LayersManager {
 			throw ex;
 		}
 		finally {
+			DBConnector.closeDB( db );
+		}
+	}
+	
+	@POST @Path("{domain}/{layer}/edit-parent")
+	@Info("Edits the parent of an existing layer")
+	public void editParent(
+			@PathParam("domain") @Info("The work domain") 					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token,
+			@PathParam("layer") @Info("The name of the layer to edit")		String name,
+			@QueryParam("newParent") @Info("The name of the new parent") 	String parent
+			) throws Exception {
+		
+		RiscossDB db = null;
+		try {
+			db = DBConnector.openDB( domain, token);
+			
+			db.editParent(name, parent);
+			
+		} catch (Exception ex) {
+			throw ex;
+		} finally {
 			DBConnector.closeDB( db );
 		}
 	}
@@ -246,6 +269,41 @@ public class LayersManager {
 		}
 		finally {
 			DBConnector.closeDB( db );
+		}
+	}
+	
+	@GET @Path("/{domain}/{layer}/description")
+	public String getDescription(
+			@PathParam("domain") @Info("The selected domain") 			String domain,
+			@PathParam("layer") @Info("The name of an existing layer")	String entity,
+			@HeaderParam("token") @Info("The authentication token") 	String token
+			) throws Exception {
+		RiscossDB db = null;
+		try {
+			db = DBConnector.openDB(domain, token);
+			return db.getProperty( RiscossElements.LAYER, entity, "description", "" );
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
+	
+	@POST @Path("/{domain}/{layer}/description")
+	public void setDescription(
+			@PathParam("domain") @Info("The selected domain") 			String domain,
+			@PathParam("layer") @Info("The name of an existing layer")	String layer,
+			@HeaderParam("token") @Info("The authentication token") 	String token,
+			@Info("The description string to be set")					String description
+			) throws Exception {
+		RiscossDB db = null;
+		try {
+			db = DBConnector.openDB(domain, token);
+			db.setProperty( RiscossElements.LAYER, layer, "description", description );
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBConnector.closeDB(db);
 		}
 	}
 	

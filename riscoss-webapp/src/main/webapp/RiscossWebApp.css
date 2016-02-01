@@ -212,6 +212,13 @@ body {
 	color: #2E2E2E !important;
 }
 
+.h1 {
+	font-size: 32px !important;
+	margin: 0px 20px 8px 0px !important;
+	border-bottom: 1px solid #E6E6E6 !important;
+	color: #2E2E2E !important;
+}
+
 .bold {
 	font-size: 14px !important;
 	font-weight: bold !important;
@@ -349,6 +356,15 @@ body {
 	font-weight: bold !important;
 	font-size: 14px !important;
 	cursor: pointer !important;
+}
+
+.modelButton {
+	background-color:  #4D9244 !important;
+	color: #F3F3F3 !important;
+	font-weight: bold !important;
+	font-size: 10px !important;
+	cursor: pointer !important;
+	padding: 3px 3px;
 }
 
 .deleteButton2 {
