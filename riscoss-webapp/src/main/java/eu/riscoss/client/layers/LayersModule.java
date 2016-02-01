@@ -897,6 +897,7 @@ public class LayersModule implements EntryPoint {
 
 	protected void deleteEntity() {
 		if (hasRisk) Window.alert("Entities with associated risk sessions cannot be deleted");
+		if (ppgEnt.hasParents()) Window.alert("Entities with parents cannot be deleted");
 		else {
 			Boolean b = Window.confirm("Are you sure that you want to delete entity " + selectedEntity + "?");
 			if (b) {

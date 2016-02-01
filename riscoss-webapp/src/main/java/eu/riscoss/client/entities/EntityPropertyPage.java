@@ -1215,5 +1215,10 @@ public class EntityPropertyPage implements IsWidget {
 				
 			}} );
 	}
+
+	public boolean hasParents() {
+		if (parentList.size() > 0) return true;
+		else return false;
+	}
 	
 }
