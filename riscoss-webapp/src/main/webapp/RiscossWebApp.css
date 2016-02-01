@@ -212,6 +212,13 @@ body {
 	color: #2E2E2E !important;
 }
 
+.h1 {
+	font-size: 32px !important;
+	margin: 0px 20px 8px 0px !important;
+	border-bottom: 1px solid #E6E6E6 !important;
+	color: #2E2E2E !important;
+}
+
 .bold {
 	font-size: 14px !important;
 	font-weight: bold !important;

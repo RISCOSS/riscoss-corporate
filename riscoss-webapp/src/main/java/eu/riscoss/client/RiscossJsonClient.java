@@ -452,7 +452,7 @@ public class RiscossJsonClient {
 	}
 	
 	public static void renameRiskAnalysisSession(String id, String newName, JsonCallback cb) {
-		RiscossCall.fromCookies().analysis().fx("session").fx(id).fx("rename").fx(newName).post(cb);
+		RiscossCall.fromCookies().analysis().fx("session").fx(id).fx("rename").arg("newname", newName).post(cb);
 	}
 	
 	public static void editSessionTarget(String riskAnalysisSession, String target, JsonCallback cb) {

@@ -943,9 +943,9 @@ public class LayersModule implements EntryPoint {
 				page.clear();
 				page.setStyleName("leftPanelLayer");
 				JsonRiskAnalysis json = new JsonRiskAnalysis( response );
-				Label title = new Label(json.getName());
+				/*Label title = new Label(json.getName());
 				title.setStyleName("subtitle");
-				page.add(title);
+				page.add(title);*/
 				page.add(rasPanelResult);
 			}
 		});
@@ -980,6 +980,6 @@ public class LayersModule implements EntryPoint {
 		ppgEnt = new EntityPropertyPage(null);
 		ppgEnt.setSelectedEntity(selectedEntity);
 		ppgEnt.setSelectedTab(4);
-		//loadProperties();
+		reloadEnt();
 	}
 }

@@ -41,6 +41,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -121,6 +122,8 @@ public class RASPanel implements IsWidget {
 	VerticalPanel vPanel;
 	HorizontalPanel buttons;
 	HorizontalPanel buttons2;
+	TextBox 		rasNameBox;
+	Label 			title;
 
 	protected void loadRASSummary( JsonRiskAnalysis ras ) {
 		sessionSummary = ras;
@@ -135,6 +138,11 @@ public class RASPanel implements IsWidget {
 		currentDate = getDate(date);
 		
 		vPanel = new VerticalPanel();
+		vPanel.setWidth("100%");
+		title = new Label(rasName);
+		title.setStyleName("h1");
+		title.setWidth("100%");
+		vPanel.add(title);
 		Grid grid = new Grid(4,4);
 		grid.setCellSpacing(0);
 		grid.setCellPadding(0);
@@ -144,10 +152,15 @@ public class RASPanel implements IsWidget {
 		nL.setStyleName("headTable");
 		nL.setWidth("130px");
 		grid.setWidget(0, 0, nL);
-		Label rasName = new Label(ras.getName());
+		/*Label rasName = new Label(ras.getName());
 		rasName.setStyleName("contentTable");
 		rasName.setHeight("100%");
-		grid.setWidget(0, 1, rasName);
+		grid.setWidget(0, 1, rasName);*/
+		rasNameBox = new TextBox();
+		rasNameBox.setText(ras.getName());
+		rasNameBox.setWidth("97%");
+		grid.setWidget(0, 1, rasNameBox);
+		
 		
 		Label rcL = new Label("Risk configuration");
 		rcL.setStyleName("headTable");
@@ -207,6 +220,7 @@ public class RASPanel implements IsWidget {
 		//If RASPanel placed in multi-layer analysis
 		if (risk != null) {
 			buttons.add(risk.getBack());
+			buttons.add(saveRas);
 			buttons.add(remove);
 			buttons.add(empty);
 			buttons.add(mitigation);
@@ -219,6 +233,7 @@ public class RASPanel implements IsWidget {
 		//If RASPanel placed in browse ras
 		else if (rasModule != null) {
 			buttons.add(browseBack);
+			buttons.add(saveRas);
 			buttons.add(browseDelete);
 			buttons.add(empty);
 			buttons.add(mitigation);
@@ -231,6 +246,7 @@ public class RASPanel implements IsWidget {
 		//If RASPanel is in entity
 		else if (eppg != null && entityB) {
 			buttons.add(entityBack);
+			buttons.add(saveRas);
 			buttons.add(entityDelete);
 			buttons.add(empty);
 			buttons.add(mitigation);
@@ -243,6 +259,7 @@ public class RASPanel implements IsWidget {
 		//If RASPanel is in layer
 		else {
 			buttons.add(layerBack);
+			buttons.add(saveRas);
 			buttons.add(layerDelete);
 			buttons.add(empty);
 			buttons.add(mitigation);
@@ -384,8 +401,18 @@ public class RASPanel implements IsWidget {
 	Button		save;
 	Button		backupSave;
 	Button		mitigation;
+	Button 		saveRas;
 	
 	protected void generateButtons() {
+		
+		saveRas = new Button("Save");
+		saveRas.setStyleName("deleteButton");
+		saveRas.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				saveRASData();	
+			}
+		});
 		
 		update = new Button("Update");
 		update.setStyleName("deleteButton");
@@ -550,6 +577,20 @@ public class RASPanel implements IsWidget {
 	}
 	
 	Label running = new Label("  Running...");
+	
+	public void saveRASData() {
+		title.setText(rasNameBox.getText());
+		RiscossJsonClient.renameRiskAnalysisSession(RASID, rasNameBox.getText(), new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				
+			}
+		});
+	}
 	
 	public void onSaveAndRunClicked() {
 		buttons2.add(running);

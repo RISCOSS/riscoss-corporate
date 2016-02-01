@@ -141,7 +141,7 @@ public class AnalysisManager {
 		
 	}
 	
-	@POST @Path("/{domain}/session/{sid}/rename/{newname}")
+	@POST @Path("/{domain}/session/{sid}/rename")
 	@Info("Rename an existing risk analysis session")
 	public void renameSession(
 			@PathParam("domain") @Info("The work domain")					String domain,
