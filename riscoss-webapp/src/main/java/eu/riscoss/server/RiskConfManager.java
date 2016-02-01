@@ -356,7 +356,7 @@ public class RiskConfManager {
 		RiscossDB db = null;
 		try {
 			db = DBConnector.openDB(domain, token);
-			return db.getProperty( RiscossElements.RISKCONF, rc, "" );
+			return db.getProperty( RiscossElements.RISKCONF, rc, "description", "" );
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -374,7 +374,7 @@ public class RiskConfManager {
 		RiscossDB db = null;
 		try {
 			db = DBConnector.openDB(domain, token);
-			db.setProperty( RiscossElements.RISKCONF, rc, description );
+			db.setProperty( RiscossElements.RISKCONF, rc, "description", description );
 		} catch (Exception e) {
 			throw e;
 		} finally {

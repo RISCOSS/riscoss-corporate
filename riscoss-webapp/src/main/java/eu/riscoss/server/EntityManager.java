@@ -315,7 +315,7 @@ public class EntityManager {
 		RiscossDB db = null;
 		try {
 			db = DBConnector.openDB(domain, token);
-			return db.getProperty( RiscossElements.ENTITY, entity, "" );
+			return db.getProperty( RiscossElements.ENTITY, entity, "description", "" );
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -333,7 +333,7 @@ public class EntityManager {
 		RiscossDB db = null;
 		try {
 			db = DBConnector.openDB(domain, token);
-			db.setProperty( RiscossElements.ENTITY, entity, description );
+			db.setProperty( RiscossElements.ENTITY, entity, "description", description );
 		} catch (Exception e) {
 			throw e;
 		} finally {

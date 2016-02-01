@@ -934,7 +934,7 @@ public class ORiscossDomain implements RiscossDB {
 	}
 
 	@Override
-	public String getProperty( RiscossElements element, String name, String def ) {
+	public String getProperty( RiscossElements element, String name, String propertyName, String def ) {
 		NodeID id = null;
 		switch( element ) {
 		case ENTITY:
@@ -958,11 +958,11 @@ public class ORiscossDomain implements RiscossDB {
 		if( id == null ) {
 			return def;
 		}
-		return dom.getAttribute( id, "description", def );
+		return dom.getAttribute( id, propertyName, def );
 	}
 
 	@Override
-	public void setProperty( RiscossElements element, String name, String value ) {
+	public void setProperty( RiscossElements element, String name, String propertyName, String value ) {
 		NodeID id = null;
 		switch( element ) {
 		case ENTITY:
@@ -986,7 +986,7 @@ public class ORiscossDomain implements RiscossDB {
 		if( id == null ) {
 			return;
 		}
-		dom.setAttribute( id, "description", value );
+		dom.setAttribute( id, propertyName, value );
 	}
 	
 }

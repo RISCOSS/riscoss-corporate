@@ -281,7 +281,7 @@ public class LayersManager {
 		RiscossDB db = null;
 		try {
 			db = DBConnector.openDB(domain, token);
-			return db.getProperty( RiscossElements.LAYER, entity, "" );
+			return db.getProperty( RiscossElements.LAYER, entity, "description", "" );
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -299,7 +299,7 @@ public class LayersManager {
 		RiscossDB db = null;
 		try {
 			db = DBConnector.openDB(domain, token);
-			db.setProperty( RiscossElements.LAYER, layer, description );
+			db.setProperty( RiscossElements.LAYER, layer, "description", description );
 		} catch (Exception e) {
 			throw e;
 		} finally {

@@ -699,7 +699,7 @@ public class ModelManager {
 		RiscossDB db = null;
 		try {
 			db = DBConnector.openDB(domain, token);
-			return db.getProperty( RiscossElements.MODEL, model, "" );
+			return db.getProperty( RiscossElements.MODEL, model, "description", "" );
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -717,7 +717,7 @@ public class ModelManager {
 		RiscossDB db = null;
 		try {
 			db = DBConnector.openDB(domain, token);
-			db.setProperty( RiscossElements.MODEL, model, description );
+			db.setProperty( RiscossElements.MODEL, model, "description", description );
 		} catch (Exception e) {
 			throw e;
 		} finally {

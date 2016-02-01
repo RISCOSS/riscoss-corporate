@@ -120,7 +120,7 @@ public interface RiscossDB {
 	/*
 	 * General purpose methods
 	 */
-	public abstract String							getProperty( RiscossElements element, String name, String def );
-	public abstract void							setProperty( RiscossElements element, String name, String value );
+	public abstract String							getProperty( RiscossElements element, String name, String propertyName, String def );
+	public abstract void							setProperty( RiscossElements element, String name, String propertyName, String value );
 	
 }
