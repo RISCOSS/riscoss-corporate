@@ -36,6 +36,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import eu.riscoss.db.RiscossDB;
+import eu.riscoss.db.RiscossElements;
 import eu.riscoss.shared.JLayerContextualInfo;
 import eu.riscoss.shared.RiscossUtil;
 
@@ -268,6 +269,41 @@ public class LayersManager {
 		}
 		finally {
 			DBConnector.closeDB( db );
+		}
+	}
+	
+	@GET @Path("/{domain}/{layer}/description")
+	public String getDescription(
+			@PathParam("domain") @Info("The selected domain") 			String domain,
+			@PathParam("layer") @Info("The name of an existing layer")	String entity,
+			@HeaderParam("token") @Info("The authentication token") 	String token
+			) throws Exception {
+		RiscossDB db = null;
+		try {
+			db = DBConnector.openDB(domain, token);
+			return db.getProperty( RiscossElements.LAYER, entity, "" );
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
+	
+	@POST @Path("/{domain}/{layer}/description")
+	public void setDescription(
+			@PathParam("domain") @Info("The selected domain") 			String domain,
+			@PathParam("layer") @Info("The name of an existing layer")	String layer,
+			@HeaderParam("token") @Info("The authentication token") 	String token,
+			@Info("The description string to be set")					String description
+			) throws Exception {
+		RiscossDB db = null;
+		try {
+			db = DBConnector.openDB(domain, token);
+			db.setProperty( RiscossElements.LAYER, layer, description );
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBConnector.closeDB(db);
 		}
 	}
 	

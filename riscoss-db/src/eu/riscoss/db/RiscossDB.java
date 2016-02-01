@@ -117,4 +117,10 @@ public interface RiscossDB {
 	public abstract void							removeUserFromDomain( String name );
 	public abstract void 							renameEntity(String entity, String newName);
 	
+	/*
+	 * General purpose methods
+	 */
+	public abstract String							getProperty( RiscossElements element, String name, String def );
+	public abstract void							setProperty( RiscossElements element, String name, String value );
+	
 }

@@ -39,6 +39,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
 import eu.riscoss.db.RiscossDB;
+import eu.riscoss.db.RiscossElements;
 import eu.riscoss.fbk.language.Proposition;
 import eu.riscoss.fbk.language.Relation;
 import eu.riscoss.reasoner.Chunk;
@@ -686,6 +687,41 @@ public class ModelManager {
 		}
 		finally {
 			DBConnector.closeDB( db );
+		}
+	}
+	
+	@GET @Path("/{domain}/{model}/description")
+	public String getDescription(
+			@PathParam("domain") @Info("The selected domain") 			String domain,
+			@PathParam("model") @Info("The selected model")				String model,
+			@HeaderParam("token") @Info("The authentication token") 	String token
+			) throws Exception {
+		RiscossDB db = null;
+		try {
+			db = DBConnector.openDB(domain, token);
+			return db.getProperty( RiscossElements.MODEL, model, "" );
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
+	
+	@POST @Path("/{domain}/{model}/description")
+	public void setDescription(
+			@PathParam("domain") @Info("The selected domain") 			String domain,
+			@PathParam("model") @Info("The selected model")				String model,
+			@HeaderParam("token") @Info("The authentication token") 	String token,
+			@Info("The description string to be set")					String description
+			) throws Exception {
+		RiscossDB db = null;
+		try {
+			db = DBConnector.openDB(domain, token);
+			db.setProperty( RiscossElements.MODEL, model, description );
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBConnector.closeDB(db);
 		}
 	}
 	

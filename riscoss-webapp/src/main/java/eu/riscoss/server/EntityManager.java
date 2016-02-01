@@ -49,6 +49,7 @@ import com.google.gson.JsonPrimitive;
 import eu.riscoss.dataproviders.RiskData;
 import eu.riscoss.db.RecordAbstraction;
 import eu.riscoss.db.RiscossDB;
+import eu.riscoss.db.RiscossElements;
 import eu.riscoss.db.RiskAnalysisSession;
 import eu.riscoss.db.SearchParams;
 import eu.riscoss.ram.algo.DownwardEntitySearch;
@@ -300,6 +301,41 @@ public class EntityManager {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			return "";
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
+	
+	@GET @Path("/{domain}/{entity}/description")
+	public String getDescription(
+			@PathParam("domain") @Info("The selected domain") 			String domain,
+			@PathParam("entity") @Info("The selected entity")			String entity,
+			@HeaderParam("token") @Info("The authentication token") 	String token
+			) throws Exception {
+		RiscossDB db = null;
+		try {
+			db = DBConnector.openDB(domain, token);
+			return db.getProperty( RiscossElements.ENTITY, entity, "" );
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
+	
+	@POST @Path("/{domain}/{entity}/description")
+	public void setDescription(
+			@PathParam("domain") @Info("The selected domain") 			String domain,
+			@PathParam("entity") @Info("The selected entity")			String entity,
+			@HeaderParam("token") @Info("The authentication token") 	String token,
+			@Info("The description string to be set")					String description
+			) throws Exception {
+		RiscossDB db = null;
+		try {
+			db = DBConnector.openDB(domain, token);
+			db.setProperty( RiscossElements.ENTITY, entity, description );
+		} catch (Exception e) {
+			throw e;
 		} finally {
 			DBConnector.closeDB(db);
 		}

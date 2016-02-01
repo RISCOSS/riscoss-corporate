@@ -932,5 +932,61 @@ public class ORiscossDomain implements RiscossDB {
 			execute( "update ouser remove roles = (select from orole where name='" + oldSpecificRole + "') where name = '" + name + "'" );
 		
 	}
+
+	@Override
+	public String getProperty( RiscossElements element, String name, String def ) {
+		NodeID id = null;
+		switch( element ) {
+		case ENTITY:
+			id = dom.get( "/entities/" + name );
+			break;
+		case LAYER:
+			id = dom.get( "/layers/" + name );
+			break;
+		case MODEL:
+			id = dom.get( "/models/" + name );
+			break;
+		case RISKCONF:
+			id = dom.get( "/risk-configurations/" + name );
+			break;
+		case SESSION:
+			id = dom.get( "/ras/" + name );
+			break;
+		default:
+			break;
+		}
+		if( id == null ) {
+			return def;
+		}
+		return dom.getAttribute( id, "description", def );
+	}
+
+	@Override
+	public void setProperty( RiscossElements element, String name, String value ) {
+		NodeID id = null;
+		switch( element ) {
+		case ENTITY:
+			id = dom.get( "/entities/" + name );
+			break;
+		case LAYER:
+			id = dom.get( "/layers/" + name );
+			break;
+		case MODEL:
+			id = dom.get( "/models/" + name );
+			break;
+		case RISKCONF:
+			id = dom.get( "/risk-configurations/" + name );
+			break;
+		case SESSION:
+			id = dom.get( "/ras/" + name );
+			break;
+		default:
+			break;
+		}
+		if( id == null ) {
+			return;
+		}
+		dom.setAttribute( id, "description", value );
+	}
 	
 }
