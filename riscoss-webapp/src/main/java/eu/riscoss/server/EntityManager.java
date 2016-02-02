@@ -315,7 +315,8 @@ public class EntityManager {
 		RiscossDB db = null;
 		try {
 			db = DBConnector.openDB(domain, token);
-			return db.getProperty( RiscossElements.ENTITY, entity, "description", "" );
+			String ret = db.getProperty( RiscossElements.ENTITY, entity, "description", "" );
+			return ret;
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -1021,7 +1022,7 @@ public class EntityManager {
 					
 				}
 				
-				if( layers.equals( l ) ) {
+				if( layer.equals( l ) ) {
 					break;
 				}
 				
