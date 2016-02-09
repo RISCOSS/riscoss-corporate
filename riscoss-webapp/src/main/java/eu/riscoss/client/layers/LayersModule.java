@@ -323,6 +323,7 @@ public class LayersModule implements EntryPoint {
 	}
 	
 	Button newEntityButton;
+	String newName;
 	
 	private void generateNewEntityButton() {
 		newEntityButton = new Button("New " + selectedLayer + " entity");
@@ -341,54 +342,63 @@ public class LayersModule implements EntryPoint {
 					Window.alert("Name contains prohibited characters (##,@,\") \nPlease re-enter name");
 					return;
 				}
-
-				for(int i=0; i<list.isArray().size(); i++){
-					JSONObject o = (JSONObject)list.isArray().get(i);
-					if (name.equals(o.get( "name" ).isString().stringValue())){
-						//info: firefox has some problem with this window, and fires assertion errors in dev mode
-						Window.alert("Layer name already in use.\nPlease re-enter name.");
-						return;
-					}
-				}
-				RiscossJsonClient.createEntity(name, selectedLayer, "", new JsonCallback() {
+				newName = name;
+				
+				RiscossJsonClient.listEntities(new JsonCallback() {
 					@Override
-					public void onFailure(Method method,
-							Throwable exception) {
+					public void onFailure(Method method, Throwable exception) {
 						Window.alert(exception.getMessage());
 					}
 					@Override
-					public void onSuccess(Method method,
-							JSONValue response) {
-						selectedEntity = entityName.getText().trim();
-						entityName.setText("");
-						RiscossJsonClient.getLayerContextualInfo(selectedLayer, new JsonCallback() {
+					public void onSuccess(Method method, JSONValue response) {
+						for(int i=0; i<response.isArray().size(); i++){
+							JSONObject o = (JSONObject)response.isArray().get(i);
+							if (newName.equals(o.get( "name" ).isString().stringValue())){
+								//info: firefox has some problem with this window, and fires assertion errors in dev mode
+								Window.alert("Entity name already in use.\nPlease re-enter name.");
+								return;
+							}
+						}
+						RiscossJsonClient.createEntity(newName, selectedLayer, "", new JsonCallback() {
 							@Override
-							public void onFailure(Method method, Throwable exception) {
-								Window.alert( exception.getMessage() );
+							public void onFailure(Method method,
+									Throwable exception) {
+								Window.alert(exception.getMessage());
 							}
 							@Override
-							public void onSuccess(Method method, JSONValue response) {
-								CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
-								JLayerContextualInfo jLayerContextualInfo = codec.decode( response );
-								updateContextualInfo(jLayerContextualInfo);
-								reloadEntityInfo();
-								RiscossJsonClient.listEntities(selectedLayer, new JsonCallback() {
+							public void onSuccess(Method method,
+									JSONValue response) {
+								selectedEntity = entityName.getText().trim();
+								entityName.setText("");
+								RiscossJsonClient.getLayerContextualInfo(selectedLayer, new JsonCallback() {
 									@Override
-									public void onFailure(Method method,
-											Throwable exception) {
+									public void onFailure(Method method, Throwable exception) {
+										Window.alert( exception.getMessage() );
 									}
 									@Override
-									public void onSuccess(Method method,
-											JSONValue response) {
-										reloadEntityTable(response);
+									public void onSuccess(Method method, JSONValue response) {
+										CodecLayerContextualInfo codec = GWT.create( CodecLayerContextualInfo.class );
+										JLayerContextualInfo jLayerContextualInfo = codec.decode( response );
+										updateContextualInfo(jLayerContextualInfo);
+										reloadEntityInfo();
+										RiscossJsonClient.listEntities(selectedLayer, new JsonCallback() {
+											@Override
+											public void onFailure(Method method,
+													Throwable exception) {
+											}
+											@Override
+											public void onSuccess(Method method,
+													JSONValue response) {
+												reloadEntityTable(response);
+											}
+										});
 									}
 								});
 							}
-						});
+						});		
 					}
-				});		
+				});
 			}
-			
 		});
 	}
 	
