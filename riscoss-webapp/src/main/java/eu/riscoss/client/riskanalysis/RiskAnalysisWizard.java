@@ -449,7 +449,7 @@ public class RiskAnalysisWizard implements EntryPoint {
 		g.setWidget(2, 0, null);
 		g.setWidget(2, 1, null);
 		g.setWidget(2, 2, null);
-		mainView.clear();
+		page.clear();
 		top.remove(g);
 		vPanel = new VerticalPanel();
 		vPanel.setStyleName("leftPanelLayer");
@@ -466,7 +466,7 @@ public class RiskAnalysisWizard implements EntryPoint {
 			public void onSuccess(Method method, JSONValue response) {
 				JsonRiskAnalysis j = new JsonRiskAnalysis( response );
 				title.setText(j.getName());
-				mainView.add(vPanel);
+				page.add(vPanel);
 			}
 		});
 		
