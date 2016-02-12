@@ -99,6 +99,53 @@ public class EntityManager {
 		return a.toString();
 
 	}
+	
+	@GET @Path("/{domain}/list-hierarchy")
+	@Info("Returns a list of the entities stored in the given domain with children information")
+	public String listHierarchy(
+			@PathParam("domain") @Info("The selected domain")			String domain,
+			@HeaderParam("token") @Info("The authentication token")		String token 
+			) throws Exception {
+
+		JsonArray a = new JsonArray();
+
+		RiscossDB db = null;
+		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
+			for (String name : db.entities()) {
+				JsonObject o = new JsonObject();
+				o.addProperty("name", name);
+				o.addProperty("layer", db.layerOf(name));
+				{
+					JsonArray ar = new JsonArray();
+					for (String e : db.getChildren(name)) {
+						ar.add(new JsonPrimitive(e));
+					}
+					o.add("children", ar);
+				}
+				{
+					JsonArray ar = new JsonArray();
+					for (String e : db.getParents(name)) {
+						ar.add(new JsonPrimitive(e));
+					}
+					o.add("parents", ar);
+				}
+				
+				a.add(o);
+			}
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
+			DBConnector.closeDB(db);
+		}
+
+		return a.toString();
+
+	}
 
 	/**
 	 * returns the list of entities in a specific layer.

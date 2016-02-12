@@ -1,6 +1,8 @@
 package eu.riscoss.client.entities;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
@@ -40,6 +42,8 @@ import eu.riscoss.client.JsonEntitySummary;
 import eu.riscoss.client.Log;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.ui.TreeWidget;
+import eu.riscoss.shared.JEntityNode;
+import eu.riscoss.shared.Pair;
 import eu.riscoss.shared.RiscossUtil;
 
 public class EntitiesListBox {
@@ -89,7 +93,7 @@ public class EntitiesListBox {
 
 			@Override
 			public void onFailure(Method method, Throwable exception) {
-				
+				Window.alert(exception.getMessage());
 			}
 		});
 	}
@@ -247,87 +251,79 @@ public class EntitiesListBox {
 		entitiesTree = new TreeWidget();
 		if (entityQueryString.equals("") && filterLayer.equals("all")) generateTree();
 		else generateListTree();
-		
 	}
 	
 	private void appendChilds(TreeWidget rootEnt, JSONArray children) {
-		this.root = rootEnt;
 		for (int i = 0; i < children.size(); ++i) {
-			Log.println("call");
-			RiscossJsonClient.getEntityData(children.get(i).isString().stringValue(), new JsonCallback() {
-				TreeWidget rootWidget = root;
+			nextEntityName = children.get(i).isString().stringValue();
+			Anchor a = new Anchor(nextEntityName + " (" + entities.get(nextEntityName).getLeft() + ")");
+			a.setWidth("100%");
+			a.setStyleName("font");
+			a.addClickHandler(new ClickHandler() {
+				String name = nextEntityName;
 				@Override
-				public void onFailure(Method method, Throwable exception) {
-					Window.alert(exception.getMessage());
-				}
-				@Override
-				public void onSuccess(Method method, JSONValue response) {
-					JsonEntitySummary entityElement = new JsonEntitySummary(response);
-					nextEntityName = entityElement.getEntityName();
-					Anchor a = new Anchor(nextEntityName + " (" + entityElement.getLayer() + ")");
-					a.setWidth("100%");
-					a.setStyleName("font");
-					a.addClickHandler(new ClickHandler() {
-						String name = nextEntityName;
-						@Override
-						public void onClick(ClickEvent event) {
-							module.setSelectedEntity(name);
-						}
-					});
-					HorizontalPanel cPanel = new HorizontalPanel();
-					cPanel.setStyleName("tree");
-					cPanel.setWidth("100%");
-					cPanel.add(a);
-					TreeWidget c = new TreeWidget(cPanel);
-					rootWidget.addChild(c);
-					if (entityElement.getChildrenList().size() > 0) appendChilds(c, entityElement.getChildrenList()); 
+				public void onClick(ClickEvent event) {
+					module.setSelectedEntity(name);
 				}
 			});
+			HorizontalPanel cPanel = new HorizontalPanel();
+			cPanel.setStyleName("tree");
+			cPanel.setWidth("100%");
+			cPanel.add(a);
+			TreeWidget c = new TreeWidget(cPanel);
+			rootEnt.addChild(c);
+			if (children.size() > 0) appendChilds(c, entities.get(nextEntityName).getRight());
 		}
 	}
 	
+	HashMap<String, Pair<String,JSONArray>> entities;
+	
 	private void generateTree() {
-		RiscossJsonClient.listEntities(new JsonCallback() {
+		RiscossJsonClient.listEntitiesHierarchy(new JsonCallback() {
 			@Override
 			public void onFailure(Method method, Throwable exception) {
 				Window.alert(exception.getMessage());
 			}
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
+				entities = new HashMap();
 				for (int i = 0; i < response.isArray().size(); ++i) {
-					RiscossJsonClient.getEntityData( response.isArray().get(i).isObject().get("name").isString().stringValue(), new JsonCallback() {
-						@Override
-						public void onFailure(Method method, Throwable exception) {
-							Window.alert( exception.getMessage() );
-						}
-						@Override
-						public void onSuccess(Method method, JSONValue response) {
-							JsonEntitySummary entityElement = new JsonEntitySummary(response);
-							if (entityElement.getParentList().size() == 0) {
-								nextEntityName = entityElement.getEntityName();
-								Anchor a = new Anchor(nextEntityName  + " (" + entityElement.getLayer() + ")");
-								a.setWidth("100%");
-								a.setStyleName("font");
-								a.addClickHandler(new ClickHandler() {
-									String name = nextEntityName;
-									@Override
-									public void onClick(ClickEvent event) {
-										module.setSelectedEntity(name);
-									}
-								});
-								HorizontalPanel cPanel = new HorizontalPanel();
-								cPanel.setStyleName("tree");
-								cPanel.setWidth("100%");
-								cPanel.add(a);
-								TreeWidget c = new TreeWidget(cPanel);
-								entitiesTree.addChild(c);
-								if (entityElement.getChildrenList().size() > 0) {
-									appendChilds(c, entityElement.getChildrenList());
-								}
-							}
-							list.add(entitiesTree);
-						}} );
+					String name = response.isArray().get(i).isObject().get("name").isString().stringValue();
+					if (!name.equals("-")) {
+						String layer = response.isArray().get(i).isObject().get("layer").isString().stringValue();
+						JSONArray parentList = response.isArray().get(i).isObject().get("parents").isArray();
+						JSONArray childrenList = response.isArray().get(i).isObject().get("children").isArray();
+						entities.put(name, new Pair(layer, childrenList));
+					}
 				}
+				for (int i = 0; i < entities.size(); ++i) {
+					if (response.isArray().get(i).isObject().get("parents").isArray().size() == 0) {
+						String name = response.isArray().get(i).isObject().get("name").isString().stringValue();
+						if (!name.equals("-")) {
+							nextEntityName = name;
+							Anchor a = new Anchor(nextEntityName  + " (" + entities.get(name).getLeft() + ")");
+							a.setWidth("100%");
+							a.setStyleName("font");
+							a.addClickHandler(new ClickHandler() {
+								String name = nextEntityName;
+								@Override
+								public void onClick(ClickEvent event) {
+									module.setSelectedEntity(name);
+								}
+							});
+							HorizontalPanel cPanel = new HorizontalPanel();
+							cPanel.setStyleName("tree");
+							cPanel.setWidth("100%");
+							cPanel.add(a);
+							TreeWidget c = new TreeWidget(cPanel);
+							entitiesTree.addChild(c);
+							if (entities.get(name).getRight().size() > 0) {
+								appendChilds(c, entities.get(name).getRight());
+							}
+						}
+					}
+				}
+				list.add(entitiesTree);
 			}
 		});
 	}
@@ -344,33 +340,28 @@ public class EntitiesListBox {
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
 				for (int i = 0; i < response.isArray().size(); ++i) {
-					RiscossJsonClient.getEntityData( response.isArray().get(i).isObject().get("name").isString().stringValue(), new JsonCallback() {
+					String name = response.isArray().get(i).isObject().get("name").isString().stringValue();
+					String layer = response.isArray().get(i).isObject().get("layer").isString().stringValue();
+					
+					Anchor a = new Anchor(name  + " (" + layer + ")");
+					a.setWidth("100%");
+					a.setStyleName("font");
+					a.addClickHandler(new ClickHandler() {
+						String name = nextEntityName;
 						@Override
-						public void onFailure(Method method, Throwable exception) {
-							Window.alert( exception.getMessage() );
+						public void onClick(ClickEvent event) {
+							module.setSelectedEntity(name);
 						}
-						@Override
-						public void onSuccess(Method method, JSONValue response) {
-							JsonEntitySummary entityElement = new JsonEntitySummary(response);
-							nextEntityName = entityElement.getEntityName();
-							Anchor a = new Anchor(nextEntityName  + " (" + entityElement.getLayer() + ")");
-							a.setWidth("100%");
-							a.setStyleName("font");
-							a.addClickHandler(new ClickHandler() {
-								String name = nextEntityName;
-								@Override
-								public void onClick(ClickEvent event) {
-									module.setSelectedEntity(name);
-								}
-							});
-							HorizontalPanel cPanel = new HorizontalPanel();
-							cPanel.setStyleName("tree");
-							cPanel.setWidth("100%");
-							cPanel.add(a);
-							TreeWidget c = new TreeWidget(cPanel);
-							entitiesTree.addChild(c);
-							list.add(entitiesTree);
-						}} );
+					});
+					HorizontalPanel cPanel = new HorizontalPanel();
+					cPanel.setStyleName("tree");
+					cPanel.setWidth("100%");
+					cPanel.add(a);
+					TreeWidget c = new TreeWidget(cPanel);
+					entitiesTree.addChild(c);
+
+					list.add(entitiesTree);
+					
 				}
 			}
 		});
