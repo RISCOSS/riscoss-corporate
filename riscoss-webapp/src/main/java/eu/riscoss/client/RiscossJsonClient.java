@@ -455,6 +455,10 @@ public class RiscossJsonClient {
 		RiscossCall.fromCookies().analysis().fx("session").list().arg("entity", entity).arg("rc", rc).get(cb);;
 	}
 	
+	public static void getLastRiskAnalysisSessions(JsonCallback cb) {
+		RiscossCall.fromCookies().analysis().fx("session").fx("last").get(cb);
+	}
+	
 	public static void creteRiskAnalysisSession(String name, String riskConf, String target, JsonCallback cb){
 		RiscossCall.fromCookies().analysis().fx("session").create(name).arg("rc",riskConf).arg("target", target).post(cb);
 	}
