@@ -163,6 +163,10 @@ public class RiscossJsonClient {
 		RiscossCall.fromCookies().entities().item(layer).fx("search").arg("query", query).arg("max", max).get( cb );
 	}
 	
+	public static void searchLayers( String query, JsonCallback cb) {
+		RiscossCall.fromCookies().layers().fx("search").arg("query", query).get(cb);
+	}
+	
 	/**
 	 * Like ListEntities, with filtering on "query"
 	 * @param query (piece of) entity name

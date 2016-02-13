@@ -172,6 +172,7 @@ public class MainPageModule implements EntryPoint {
 			}
 		};
 		table.setRowData(0, sessions);
+		table.setColumnWidth(3, "180px");
 		
 		final SelectionModel<RiskAnalysisSessionInfo> selectionModel = new SingleSelectionModel<RiskAnalysisSessionInfo>();
 	    table.setSelectionModel(selectionModel);

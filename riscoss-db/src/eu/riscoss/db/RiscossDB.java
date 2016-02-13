@@ -24,6 +24,7 @@ public interface RiscossDB {
 	public abstract void							setLayerData( String layer, String key, String value );
 	public abstract String							getLayerData( String layer, String key );
 	public abstract List<String>					getScope( String layer );
+	public abstract Collection<String>				findLayers( String query, SearchParams params );
 	
 	/*
 	 * Entities
