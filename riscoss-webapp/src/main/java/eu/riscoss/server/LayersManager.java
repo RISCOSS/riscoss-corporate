@@ -94,8 +94,8 @@ public class LayersManager {
 		return searchNew( domain, token, query, "0", "0");
 	}
 
-	@GET @Path("/{domain}/search-entities")
-	@Info("Returns a list of entities that match the specified parameters in a specified layer")
+	@GET @Path("/{domain}/search-layers")
+	@Info("Returns a list of layers that match the specified parameters")
 	public String searchNew(
 			@PathParam("domain") @Info("The selected domain")											String domain, 
 			@HeaderParam("token") @Info("The authentication token")										String token,

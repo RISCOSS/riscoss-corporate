@@ -31,6 +31,8 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.safehtml.shared.SafeHtml;
@@ -75,6 +77,7 @@ public class RiskConfsModule implements EntryPoint {
 	HorizontalPanel		mainView = new HorizontalPanel();
 	VerticalPanel		leftPanel = new VerticalPanel();
 	VerticalPanel		rightPanel = new VerticalPanel();
+	VerticalPanel		tablePanel = new VerticalPanel();
 	TextBox				riskConfName = new TextBox();
 	
 	RCPropertyPage 		ppg;
@@ -84,6 +87,8 @@ public class RiskConfsModule implements EntryPoint {
 	JSONValue			riskconfsList;
 	JSONObject			currentRC = null;
 	String				selectedRC = null;
+	
+	SimplePanel			spTable;
 	
 	public RiskConfsModule() {
 	}
@@ -124,7 +129,105 @@ public class RiskConfsModule implements EntryPoint {
 	public void onModuleLoad() {
 		
 		exportJS();
+		tablePanel = new VerticalPanel();
+		spTable = new SimplePanel();
 		
+		RiscossJsonClient.listRCs( new JsonCallback() {
+			public void onSuccess(Method method, JSONValue response) {
+				riskconfsList = response;
+				loadRiskConfsTable(response);
+			}
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert( exception.getMessage() );
+			}
+		} );
+		
+		rightPanel2 = new SimplePanel();
+
+		rightPanel2.setSize( "100%", "100%" );
+		
+		mainView.setStyleName("mainViewLayer");
+		mainView.setWidth("100%");
+		leftPanel.setStyleName("leftPanelLayer");
+		leftPanel.setWidth("400px");
+		//leftPanel.setHeight("100%");
+		rightPanel.setStyleName("rightPanelLayer");
+		
+		Label title = new Label("Risk configuration management");
+		title.setStyleName("title");
+		page.add(title);
+		
+		HorizontalPanel data = new HorizontalPanel();
+		data.setStyleName("layerData");
+		Label name = new Label("Name");
+		name.setStyleName("text");
+		data.add(name);
+		riskConfName.setWidth("120px");
+		riskConfName.setStyleName("layerNameField");
+		data.add(riskConfName);
+		leftPanel.add(data);
+		
+		Button newRisk = new Button("New configuration");
+		newRisk.setStyleName("button");
+		newRisk.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent arg0) {
+				String name = riskConfName.getText().trim();
+				for(int i=0; i< riskconfsList.isArray().size(); i++){
+					JSONObject o = (JSONObject)riskconfsList.isArray().get(i);
+					if (name.equals(o.get( "name" ).isString().stringValue())){
+						//info: firefox has some problem with this window, and fires assertion errors in dev mode
+						Window.alert("Model name already in use.\nPlease rename file.");
+						return;
+					}
+				}
+				if( name == null || "".equals( name ) ) 
+					return;
+				while (!RiscossUtil.sanitize(name).equals(name)){
+					name = Window.prompt( "Name contains prohibited characters (##,@,\") \nRe-enter name:", "" );
+					if( name == null || "".equals( name ) ) 
+						return;
+				}
+				
+				RiscossJsonClient.createRC( name, new JsonCallback() {
+					@Override
+					public void onFailure(Method method, Throwable exception) {
+						Window.alert( exception.getMessage() );
+					}
+					
+					@Override
+					public void onSuccess(Method method, JSONValue response) {
+						dataProvider.getList().add( new RCInfo( 
+								response.isObject().get( "name" ).isString().stringValue() ) );
+						//Window.Location.reload();
+					}} );
+				onRCSelected(name);
+				riskConfName.setText("");
+			}
+		});
+		leftPanel.add(newRisk);
+		leftPanel.add(searchFields());
+		leftPanel.add(spTable);
+		
+		mainView.add(leftPanel);
+		mainView.add(rightPanel);
+		page.add(mainView);
+		page.setWidth("100%");
+
+		save = new Button("Save");
+		save.setStyleName("button");
+		save.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				saveRiskConfData();
+			}
+		});
+		
+		RootPanel.get().add( page );
+	}
+	
+	private void loadRiskConfsTable(JSONValue response) {
+		tablePanel.clear();
 		table = new CellTable<RCInfo>(15, (Resources) GWT.create(TableResources.class));
 		
 		table.addColumn( new Column<RCInfo,SafeHtml>(new SafeHtmlCell() ) {
@@ -132,120 +235,71 @@ public class RiskConfsModule implements EntryPoint {
 			public SafeHtml getValue(RCInfo object) {
 				return new LinkHtml( object.name, "javascript:selectRC(\"" + object.name + "\")" ); };
 		}, "Risk Configuration");
-			table.setWidth("100%");
-			dataProvider = new ListDataProvider<RCInfo>();
-			dataProvider.addDataDisplay(table);
-			
-			RiscossJsonClient.listRCs( new JsonCallback() {
-				
-				public void onSuccess(Method method, JSONValue response) {
-					riskconfsList = response;
-					GWT.log( response.toString() );
-					if( response.isArray() != null ) {
-						for( int i = 0; i < response.isArray().size(); i++ ) {
-							JSONObject o = (JSONObject)response.isArray().get( i );
-							dataProvider.getList().add( new RCInfo( 
-									o.get( "name" ).isString().stringValue() ) );
-						}
-					}
-				}
-				
-				public void onFailure(Method method, Throwable exception) {
-					Window.alert( exception.getMessage() );
-				}
-			} );
-			
-			rightPanel2 = new SimplePanel();
-			
-			SimplePager pager = new SimplePager();
-		    pager.setDisplay( table );
-		    
-			VerticalPanel tablePanel = new VerticalPanel();
-			tablePanel.add( table );
-			tablePanel.add( pager );
-			tablePanel.setWidth("100%");
-	
-			rightPanel2.setSize( "100%", "100%" );
-			table.setWidth( "100%" );
-			
-			mainView.setStyleName("mainViewLayer");
-			mainView.setWidth("100%");
-			leftPanel.setStyleName("leftPanelLayer");
-			leftPanel.setWidth("400px");
-			//leftPanel.setHeight("100%");
-			rightPanel.setStyleName("rightPanelLayer");
-			
-			Label title = new Label("Risk configuration management");
-			title.setStyleName("title");
-			page.add(title);
-			
-			HorizontalPanel data = new HorizontalPanel();
-			data.setStyleName("layerData");
-			Label name = new Label("Name");
-			name.setStyleName("text");
-			data.add(name);
-			riskConfName.setWidth("120px");
-			riskConfName.setStyleName("layerNameField");
-			data.add(riskConfName);
-			leftPanel.add(data);
-			
-			Button newRisk = new Button("New configuration");
-			newRisk.setStyleName("button");
-			newRisk.addClickHandler(new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent arg0) {
-					String name = riskConfName.getText().trim();
-					for(int i=0; i< riskconfsList.isArray().size(); i++){
-						JSONObject o = (JSONObject)riskconfsList.isArray().get(i);
-						if (name.equals(o.get( "name" ).isString().stringValue())){
-							//info: firefox has some problem with this window, and fires assertion errors in dev mode
-							Window.alert("Model name already in use.\nPlease rename file.");
-							return;
-						}
-					}
-					if( name == null || "".equals( name ) ) 
-						return;
-					while (!RiscossUtil.sanitize(name).equals(name)){
-						name = Window.prompt( "Name contains prohibited characters (##,@,\") \nRe-enter name:", "" );
-						if( name == null || "".equals( name ) ) 
-							return;
-					}
-					
-					RiscossJsonClient.createRC( name, new JsonCallback() {
-						@Override
-						public void onFailure(Method method, Throwable exception) {
-							Window.alert( exception.getMessage() );
-						}
-						
-						@Override
-						public void onSuccess(Method method, JSONValue response) {
-							dataProvider.getList().add( new RCInfo( 
-									response.isObject().get( "name" ).isString().stringValue() ) );
-							//Window.Location.reload();
-						}} );
-					onRCSelected(name);
-					riskConfName.setText("");
-				}
-			});
-			leftPanel.add(newRisk);
-			
-			leftPanel.add(tablePanel);
-			
-			mainView.add(leftPanel);
-			mainView.add(rightPanel);
-			page.add(mainView);
-			page.setWidth("100%");
+		table.setWidth("100%");
+		dataProvider = new ListDataProvider<RCInfo>();
+		dataProvider.addDataDisplay(table);
 
-			save = new Button("Save");
-			save.setStyleName("button");
-			save.addClickHandler(new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					saveRiskConfData();
-				}
-			});
+		GWT.log( response.toString() );
+		if( response.isArray() != null ) {
+			for( int i = 0; i < response.isArray().size(); i++ ) {
+				JSONObject o = (JSONObject)response.isArray().get( i );
+				dataProvider.getList().add( new RCInfo( 
+						o.get( "name" ).isString().stringValue() ) );
+			}
+		}
+
+		SimplePager pager = new SimplePager();
+	    pager.setDisplay( table );
+		
+		tablePanel.add( table );
+		tablePanel.add( pager );
+		tablePanel.setWidth("100%");
+		
+		spTable.setWidget(tablePanel);
+		
+	}
+	
+	TextBox entityFilterQuery = new TextBox();
+	String entityQueryString;
+	
+	private HorizontalPanel searchFields() {
+		HorizontalPanel h = new HorizontalPanel();
+		
+		Label filterlabel = new Label("Search risk configurations: ");
+		filterlabel.setStyleName("bold");
+		h.add(filterlabel);
+		
+		entityFilterQuery.setWidth("120px");
+		entityFilterQuery.setStyleName("layerNameField");
+		h.add(entityFilterQuery);
+		
+		entityFilterQuery.addKeyUpHandler(new KeyUpHandler() {
 			
-			RootPanel.get().add( page );
+			@Override
+			public void onKeyUp(KeyUpEvent event) {
+				if (entityFilterQuery.getText() != null){
+					String tmp = RiscossUtil.sanitize(entityFilterQuery.getText());
+					if (!tmp.equals(entityQueryString)) {
+						entityQueryString = tmp;
+						RiscossJsonClient.searchRCs(entityQueryString, new JsonCallback() {
+
+							@Override
+							public void onFailure(Method method,
+									Throwable exception) {
+								Window.alert(exception.getMessage());
+							}
+							@Override
+							public void onSuccess(Method method,
+									JSONValue response) {
+								loadRiskConfsTable(response);
+							}
+						});
+					}
+				}
+			}
+		});
+		
+		return h;
 	}
 	
 	private void saveRiskConfData() {

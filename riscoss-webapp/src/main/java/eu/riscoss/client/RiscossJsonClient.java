@@ -167,6 +167,13 @@ public class RiscossJsonClient {
 		RiscossCall.fromCookies().layers().fx("search").arg("query", query).get(cb);
 	}
 	
+	public static void searchModels( String query, JsonCallback cb ) {
+		RiscossCall.fromCookies().models().fx("search").arg("query", query).get(cb);
+	}
+	
+	public static void searchRCs( String query, JsonCallback cb) {
+		RiscossCall.fromCookies().rcs().fx("search").arg("query", query).get(cb);
+	}
 	/**
 	 * Like ListEntities, with filtering on "query"
 	 * @param query (piece of) entity name

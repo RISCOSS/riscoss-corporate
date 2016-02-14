@@ -20,10 +20,14 @@
 
 package eu.riscoss.server;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -40,6 +44,7 @@ import com.google.gson.JsonPrimitive;
 
 import eu.riscoss.db.RiscossDB;
 import eu.riscoss.db.RiscossElements;
+import eu.riscoss.db.SearchParams;
 import eu.riscoss.fbk.language.Proposition;
 import eu.riscoss.fbk.language.Relation;
 import eu.riscoss.reasoner.Chunk;
@@ -56,6 +61,8 @@ import eu.riscoss.shared.EChunkType;
 import eu.riscoss.shared.JChunkItem;
 import eu.riscoss.shared.JChunkList;
 import eu.riscoss.shared.JChunkValue;
+import eu.riscoss.shared.JLayerNode;
+import eu.riscoss.shared.JModelNode;
 import eu.riscoss.shared.JProposition;
 import eu.riscoss.shared.JRelation;
 import eu.riscoss.shared.JRiskModel;
@@ -97,6 +104,57 @@ public class ModelManager {
 		return a.toString();
 		
 	}
+	
+	@GET @Path("/{domain}/search") 
+	@Info("Returns a list of models that match the specified parameters")
+	public String search(
+			@PathParam("domain") @Info("The selected domain")			String domain, 
+			@HeaderParam("token") @Info("The authentication token")		String token,
+			@QueryParam("query")										String query
+			) throws Exception {
+		return searchNew( domain, token, query, "0", "0");
+	}
+
+	@GET @Path("/{domain}/search-models")
+	@Info("Returns a list of models that match the specified parameters")
+	public String searchNew(
+			@PathParam("domain") @Info("The selected domain")											String domain, 
+			@HeaderParam("token") @Info("The authentication token")										String token,
+			@DefaultValue("") @QueryParam("query") @Info("The actual query (on the model name)")		String query, 
+			@DefaultValue("0") @QueryParam("from") @Info("Index of the first model (for pagination)")	String strFrom,
+			@DefaultValue("0") @QueryParam("max") @Info("Amount of models to search")					String strMax
+		) throws Exception {
+		
+		List<JModelNode> result = new ArrayList<JModelNode>();
+		
+		RiscossDB db = null;
+		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
+			SearchParams params = new SearchParams();
+			params.setMax( strMax );
+			params.setFrom( strFrom );
+			
+			List<String> models = new ArrayList<String>();
+			
+			Collection<String> list = db.findModels(query, params);
+			for (String name : list) {
+				JModelNode jd = new JModelNode();
+				jd.name = name;
+				result.add(jd);
+			}
+			
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
+			DBConnector.closeDB(db);
+		}
+		return new Gson().toJson( result );
+	}
+	
 	/**
 	 * 
 	 * @param domain

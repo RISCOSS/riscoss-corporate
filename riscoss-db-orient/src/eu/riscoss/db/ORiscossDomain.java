@@ -919,8 +919,29 @@ public class ORiscossDomain implements RiscossDB {
 				(params.max > 0 ? " limit " + params.max : "") +
 				(params.from > 0 ? " skip " + params.from : "") +
 				(params.sort == SearchParams.SORT.AZ ? " order by tag" : "" );
-		System.out.println(queryString);
 		NodeID id = dom.get("/layers");
+		return dom.listOutEdgeNames(id, GDomDB.CHILDOF_CLASS, null, null, queryString);
+	}
+	
+	@Override
+	public Collection<String> findModels( String query, SearchParams params ) {
+		query = query.toLowerCase();
+		String queryString = "in.tag.toLowerCase() like '%" + query + "%'" + 
+				(params.max > 0 ? " limit " + params.max : "") +
+				(params.from > 0 ? " skip " + params.from : "") +
+				(params.sort == SearchParams.SORT.AZ ? " order by tag" : "" );
+		NodeID id = dom.get("/models");
+		return dom.listOutEdgeNames(id, GDomDB.CHILDOF_CLASS, null, null, queryString);
+	}
+	
+	@Override
+	public Collection<String> findRCs( String query, SearchParams params ) {
+		query = query.toLowerCase();
+		String queryString = "in.tag.toLowerCase() like '%" + query + "%'" + 
+				(params.max > 0 ? " limit " + params.max : "") +
+				(params.from > 0 ? " skip " + params.from : "") +
+				(params.sort == SearchParams.SORT.AZ ? " order by tag" : "" );
+		NodeID id = dom.get("/risk-configurations");
 		return dom.listOutEdgeNames(id, GDomDB.CHILDOF_CLASS, null, null, queryString);
 	}
 

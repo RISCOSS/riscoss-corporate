@@ -342,7 +342,7 @@ public class EntitiesListBox {
 				for (int i = 0; i < response.isArray().size(); ++i) {
 					String name = response.isArray().get(i).isObject().get("name").isString().stringValue();
 					String layer = response.isArray().get(i).isObject().get("layer").isString().stringValue();
-					
+					nextEntityName = name;
 					Anchor a = new Anchor(name  + " (" + layer + ")");
 					a.setWidth("100%");
 					a.setStyleName("font");
