@@ -671,6 +671,7 @@ public class RiskAnalysisResults implements IsWidget {
 	}
 	
 	String nextEntityName;
+	List<String> entities = new ArrayList<>();
 	
 	private void generateTree(TreeWidget c, JSONValue entity) {
 		nextEntityName = entity.isObject().get("entity").isString().stringValue();
@@ -691,9 +692,14 @@ public class RiskAnalysisResults implements IsWidget {
 		TreeWidget cc = new TreeWidget(cPanel);
 		c.addChild(cc);
 		results.put(nextEntityName, entity.isObject().get("results").isArray());
+		entities.add(nextEntityName);
 		for (int i = 0; i < entity.isObject().get("children").isArray().size(); ++i) {
 			generateTree(cc, entity.isObject().get("children").isArray().get(i));
 		}
+	}
+	
+	public List<String> getEntities() {
+		return entities;
 	}
 	
 	private Date getDate (String date) {

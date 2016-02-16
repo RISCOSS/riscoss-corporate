@@ -224,6 +224,7 @@ public class RASPanel implements IsWidget {
 			buttons.add(remove);
 			buttons.add(empty);
 			buttons.add(mitigation);
+			buttons.add(whatIf);
 			buttons2.add(update);
 			buttons2.add(run);
 			buttons2.add(empty2);
@@ -237,6 +238,7 @@ public class RASPanel implements IsWidget {
 			buttons.add(browseDelete);
 			buttons.add(empty);
 			buttons.add(mitigation);
+			buttons.add(whatIf);
 			buttons2.add(update);
 			buttons2.add(run);
 			buttons2.add(empty2);
@@ -250,6 +252,7 @@ public class RASPanel implements IsWidget {
 			buttons.add(entityDelete);
 			buttons.add(empty);
 			buttons.add(mitigation);
+			buttons.add(whatIf);
 			buttons2.add(update);
 			buttons2.add(run);
 			buttons2.add(empty2);
@@ -263,6 +266,7 @@ public class RASPanel implements IsWidget {
 			buttons.add(layerDelete);
 			buttons.add(empty);
 			buttons.add(mitigation);
+			buttons.add(whatIf);
 			buttons2.add(update);
 			buttons2.add(run);
 			buttons2.add(empty2);
@@ -367,6 +371,7 @@ public class RASPanel implements IsWidget {
 									mostCurrentSession = ras.getID();
 									buttons2.clear();
 									buttons.remove(mitigation);
+									buttons.remove(whatIf);
 									if (inputButtons != null) inputButtons.clear();
 									Label l = new Label("Current session is not the last one.");
 									Anchor a = new Anchor("Click here to see last execution results.");
@@ -402,6 +407,7 @@ public class RASPanel implements IsWidget {
 	Button		backupSave;
 	Button		mitigation;
 	Button 		saveRas;
+	Button 		whatIf;
 	
 	protected void generateButtons() {
 		
@@ -572,6 +578,15 @@ public class RASPanel implements IsWidget {
 			@Override
 			public void onClick(ClickEvent arg0) {
 				applyMitigation();	
+			}
+		});
+		
+		whatIf = new Button("What-If");
+		whatIf.setStyleName("deleteButton");
+		whatIf.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent arg0) {
+				whatIfAnalysis();
 			}
 		});
 	}
@@ -968,6 +983,13 @@ public class RASPanel implements IsWidget {
 //		RootPanel.get().add(p.getWidget());
 //		p.activate();
 		Window.Location.replace("rma.jsp?id=" + selectedRAS);
+	}
+	
+	private void whatIfAnalysis() {
+		List<String> entities = r.getEntities();
+		String s = "";
+		for (String e : entities) s = s + e + "@";
+		Window.Location.replace("whatifanalysis.jsp?id=" + selectedRAS + "&entities=" + s);
 	}
 	
 	private String getDate() {
