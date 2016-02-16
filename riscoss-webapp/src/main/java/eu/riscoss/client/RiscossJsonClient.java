@@ -127,6 +127,10 @@ public class RiscossJsonClient {
 		//new Resource( GWT.getHostPageBaseURL() + "api/entities/" + getDomain() + "/list" ).get().send( cb );
 	}
 	
+	public static void listEntitiesHierarchy( JsonCallback cb ) {
+		RiscossCall.fromCookies().entities().fx("list-hierarchy").get(cb);
+	}
+	
 	public static void renameEntity(String name, String newName, JsonCallback cb) {
 		RiscossCall.fromCookies().entities().item( name ).rename(newName).post( cb );;
 	}
@@ -159,6 +163,17 @@ public class RiscossJsonClient {
 		RiscossCall.fromCookies().entities().item(layer).fx("search").arg("query", query).arg("max", max).get( cb );
 	}
 	
+	public static void searchLayers( String query, JsonCallback cb) {
+		RiscossCall.fromCookies().layers().fx("search").arg("query", query).get(cb);
+	}
+	
+	public static void searchModels( String query, JsonCallback cb ) {
+		RiscossCall.fromCookies().models().fx("search").arg("query", query).get(cb);
+	}
+	
+	public static void searchRCs( String query, JsonCallback cb) {
+		RiscossCall.fromCookies().rcs().fx("search").arg("query", query).get(cb);
+	}
 	/**
 	 * Like ListEntities, with filtering on "query"
 	 * @param query (piece of) entity name
@@ -449,6 +464,10 @@ public class RiscossJsonClient {
 	 */
 	public static void listRiskAnalysisSessions(String entity, String rc, JsonCallback cb){
 		RiscossCall.fromCookies().analysis().fx("session").list().arg("entity", entity).arg("rc", rc).get(cb);;
+	}
+	
+	public static void getLastRiskAnalysisSessions(JsonCallback cb) {
+		RiscossCall.fromCookies().analysis().fx("session").fx("last").get(cb);
 	}
 	
 	public static void creteRiskAnalysisSession(String name, String riskConf, String target, JsonCallback cb){

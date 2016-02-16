@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+
+import org.json.JSONObject;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -131,11 +134,69 @@ public class AnalysisManager {
 			}
 			json.add( "list", array );
 			return json.toString();
-		}
+		} 
 		catch( Exception ex ) {
 			throw ex;
 		}
 		finally {
+			DBConnector.closeDB( db );
+		}
+		
+	}
+	
+	@GET @Path("/{domain}/session/last")
+	@Info("Get a list of the last risk session for every entity and rc pair")
+	public String getLastRiskSession(
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token") 		String token) throws Exception {
+		
+		RiscossDB db = null;
+		
+		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
+			JsonArray a = new JsonArray();
+			HashMap<String, RiskAnalysisSession> raslist = new HashMap<>();
+			
+			List<String> list = new ArrayList<>();
+						
+			for( RecordAbstraction record : db.listRAS( "",  "" ) ) {
+				JRASInfo jras = new JRASInfo( record.getName(), record.getProperty( "name", record.getName() ) );
+				RiskAnalysisSession ras = db.openRAS( jras.getId() );
+				String path = ras.getTarget() + "#" + ras.getRCName();
+				if (!raslist.containsKey(path)) {
+					raslist.put(path, ras);
+				}
+				else {
+					if (raslist.get(path).getTimestamp() < ras.getTimestamp()) {
+						raslist.remove(path);
+						raslist.put(path, ras);
+					}
+				}
+			}
+			
+			for (RiskAnalysisSession ras : raslist.values()) {
+				JsonObject json = new JsonObject();
+				json.addProperty( "id", ras.getId() );
+				json.addProperty( "target", ras.getTarget() );
+				json.addProperty( "rc", ras.getRCName() );
+				json.addProperty( "name", ras.getName() );
+				json.addProperty( "res", ras.readResults());
+				try {
+					Date date = new Date( ras.getTimestamp() );
+					SimpleDateFormat sdf = new SimpleDateFormat( "dd-MM-yyyy HH.mm.ss" );
+					json.addProperty( "timestamp", sdf.format( date ) );
+				}
+				catch( Exception ex ) {}
+				a.add(json);
+			}
+			
+			return a.toString();
+			
+		} catch ( Exception ex ) {
+			throw ex;
+		} finally {
 			DBConnector.closeDB( db );
 		}
 		

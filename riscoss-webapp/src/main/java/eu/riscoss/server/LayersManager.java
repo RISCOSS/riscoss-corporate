@@ -21,9 +21,12 @@
 
 package eu.riscoss.server;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -37,7 +40,10 @@ import com.google.gson.JsonObject;
 
 import eu.riscoss.db.RiscossDB;
 import eu.riscoss.db.RiscossElements;
+import eu.riscoss.db.SearchParams;
+import eu.riscoss.shared.JEntityNode;
 import eu.riscoss.shared.JLayerContextualInfo;
+import eu.riscoss.shared.JLayerNode;
 import eu.riscoss.shared.RiscossUtil;
 
 @Path("layers")
@@ -76,6 +82,56 @@ public class LayersManager {
 		}
 		
 		return a.toString();
+	}
+	
+	@GET @Path("/{domain}/search") 
+	@Info("Returns a list of layers that match the specified parameters")
+	public String search(
+			@PathParam("domain") @Info("The selected domain")			String domain, 
+			@HeaderParam("token") @Info("The authentication token")		String token,
+			@QueryParam("query")										String query
+			) throws Exception {
+		return searchNew( domain, token, query, "0", "0");
+	}
+
+	@GET @Path("/{domain}/search-layers")
+	@Info("Returns a list of layers that match the specified parameters")
+	public String searchNew(
+			@PathParam("domain") @Info("The selected domain")											String domain, 
+			@HeaderParam("token") @Info("The authentication token")										String token,
+			@DefaultValue("") @QueryParam("query") @Info("The actual query (on the layer name)")		String query, 
+			@DefaultValue("0") @QueryParam("from") @Info("Index of the first layer (for pagination")	String strFrom,
+			@DefaultValue("0") @QueryParam("max") @Info("Amount of layers to search")					String strMax
+		) throws Exception {
+		
+		List<JLayerNode> result = new ArrayList<JLayerNode>();
+		
+		RiscossDB db = null;
+		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
+			SearchParams params = new SearchParams();
+			params.setMax( strMax );
+			params.setFrom( strFrom );
+			
+			List<String> layers = new ArrayList<String>();
+			
+			Collection<String> list = db.findLayers(query, params);
+			for (String name : list) {
+				JLayerNode jd = new JLayerNode();
+				jd.name = name;
+				result.add(jd);
+			}
+			
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
+			DBConnector.closeDB(db);
+		}
+		return new Gson().toJson( result );
 	}
 	
 //	//@POST @Path("{domain}/new")

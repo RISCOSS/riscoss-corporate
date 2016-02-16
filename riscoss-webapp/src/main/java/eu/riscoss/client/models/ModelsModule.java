@@ -35,6 +35,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.json.client.JSONArray;
@@ -107,10 +109,13 @@ public class ModelsModule implements EntryPoint {
 	ListDataProvider<ModelInfo> dataProvider;
 	// private FlowPanel panelImages = new FlowPanel();
 	SimplePanel rightPanel2 = new SimplePanel();
+	SimplePanel spTable = new SimplePanel();
 
 	public void onModuleLoad() {
 
 		exportJS();
+		
+		tablePanel = new VerticalPanel();
 		
 		RiscossJsonClient.listModels(new JsonCallback() {
 			@Override
@@ -120,47 +125,9 @@ public class ModelsModule implements EntryPoint {
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
 				modelsList = response;
+				loadModelsTable(response);
 			}
 		});
-
-		table = new CellTable<ModelInfo>(15, (Resources) GWT.create(TableResources.class));
-
-		table.addColumn(new Column<ModelInfo, SafeHtml>(new SafeHtmlCell()) {
-			@Override
-			public SafeHtml getValue(ModelInfo object) {
-				return new LinkHtml(object.getName(), "javascript:editModel(\"" + object.getName() + "\")");
-			};
-		}, "Model");
-
-		dataProvider = new ListDataProvider<ModelInfo>();
-		dataProvider.addDataDisplay(table);
-
-		RiscossJsonClient.listModels( new JsonCallback() {
-
-			public void onSuccess(Method method, JSONValue response) {
-				GWT.log(response.toString());
-				if (response.isArray() != null) {
-					for (int i = 0; i < response.isArray().size(); i++) {
-						JSONObject o = (JSONObject) response.isArray().get(i);
-						dataProvider.getList().add(new ModelInfo(o.get("name").isString().stringValue()));
-					}
-				}
-			}
-
-			public void onFailure(Method method, Throwable exception) {
-				Window.alert(exception.getMessage());
-			}
-		});
-		
-		SimplePager pager = new SimplePager();
-		pager.setDisplay(table);
-
-		tablePanel = new VerticalPanel();
-		tablePanel.add(table);
-		table.setWidth("100%");
-		tablePanel.add(pager);
-		tablePanel.setWidth("100%");
-		table.setWidth("100%");
 		
 		mainView.setStyleName("mainViewLayer");
 		mainView.setWidth("100%");
@@ -215,8 +182,8 @@ public class ModelsModule implements EntryPoint {
 			}
 		});
 		leftPanel.add(upload);
-		
-		leftPanel.add(tablePanel);
+		leftPanel.add(searchFields());
+		leftPanel.add(spTable);
 		
 		mainView.add(leftPanel);
 		mainView.add(rightPanel);
@@ -233,6 +200,83 @@ public class ModelsModule implements EntryPoint {
 		});
 
 		RootPanel.get().add(page);
+	}
+	
+	private void loadModelsTable(JSONValue response) {
+		tablePanel.clear();
+		table = new CellTable<ModelInfo>(15, (Resources) GWT.create(TableResources.class));
+
+		table.addColumn(new Column<ModelInfo, SafeHtml>(new SafeHtmlCell()) {
+			@Override
+			public SafeHtml getValue(ModelInfo object) {
+				return new LinkHtml(object.getName(), "javascript:editModel(\"" + object.getName() + "\")");
+			};
+		}, "Model");
+
+		dataProvider = new ListDataProvider<ModelInfo>();
+		dataProvider.addDataDisplay(table);
+
+		GWT.log(response.toString());
+		if (response.isArray() != null) {
+			for (int i = 0; i < response.isArray().size(); i++) {
+				JSONObject o = (JSONObject) response.isArray().get(i);
+				dataProvider.getList().add(new ModelInfo(o.get("name").isString().stringValue()));
+			}
+		}
+		
+		SimplePager pager = new SimplePager();
+		pager.setDisplay(table);
+
+		tablePanel = new VerticalPanel();
+		tablePanel.add(table);
+		table.setWidth("100%");
+		tablePanel.add(pager);
+		tablePanel.setWidth("100%");
+		table.setWidth("100%");
+		spTable.setWidget(tablePanel);
+	}
+	
+	TextBox entityFilterQuery = new TextBox();
+	String entityQueryString;
+	
+	private HorizontalPanel searchFields() {
+		HorizontalPanel h = new HorizontalPanel();
+		
+		Label filterlabel = new Label("Search models: ");
+		filterlabel.setStyleName("bold");
+		h.add(filterlabel);
+		
+		entityFilterQuery.setWidth("120px");
+		entityFilterQuery.setStyleName("layerNameField");
+		h.add(entityFilterQuery);
+		
+		entityFilterQuery.addKeyUpHandler(new KeyUpHandler() {
+			
+			@Override
+			public void onKeyUp(KeyUpEvent event) {
+				if (entityFilterQuery.getText() != null){
+					String tmp = RiscossUtil.sanitize(entityFilterQuery.getText());
+					if (!tmp.equals(entityQueryString)) {
+						entityQueryString = tmp;
+						RiscossJsonClient.searchModels(entityQueryString, new JsonCallback() {
+
+							@Override
+							public void onFailure(Method method,
+									Throwable exception) {
+								Window.alert(exception.getMessage());
+							}
+							@Override
+							public void onSuccess(Method method,
+									JSONValue response) {
+								loadModelsTable(response);
+							}
+						});
+					}
+				}
+			}
+		});
+		
+		return h;
 	}
 	
 	private void saveModelData() {

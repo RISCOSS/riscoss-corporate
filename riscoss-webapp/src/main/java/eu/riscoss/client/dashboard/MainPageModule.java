@@ -2,10 +2,7 @@ package eu.riscoss.client.dashboard;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
@@ -13,10 +10,8 @@ import org.fusesource.restygwt.client.Method;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
@@ -35,16 +30,27 @@ import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.gwt.view.client.SelectionChangeEvent.Handler;
 
 import eu.riscoss.client.JsonRiskResult;
-import eu.riscoss.client.Log;
 import eu.riscoss.client.RiscossJsonClient;
-import eu.riscoss.client.codec.CodecRASInfo;
 import eu.riscoss.client.entities.TableResources;
-import eu.riscoss.client.riskanalysis.JsonRiskAnalysis;
-import eu.riscoss.shared.JRASInfo;
-import eu.riscoss.shared.Pair;
 
 public class MainPageModule implements EntryPoint {
 
+	
+	private class RiskAnalysisSessionInfo {
+		String target;
+		String rc;
+		String timestamp;
+		String id;
+		String results;
+		
+		public RiskAnalysisSessionInfo(String target, String rc, String timestamp, String id, String results) {
+			this.target = target;
+			this.rc = rc;
+			this.timestamp = timestamp;
+			this.id = id;
+			this.results = results;
+		}
+	}
 	
 	VerticalPanel page = new VerticalPanel();
 	HorizontalPanel v = new HorizontalPanel();
@@ -67,22 +73,24 @@ public class MainPageModule implements EntryPoint {
 		
 		page.add(tablePanel);
 		
-		getInfo();
+		getSessionsInfo();
+		
+		//getInfo();
 		
 		RootPanel.get().add(page);
 		
 	}
 	
-	CellTable<JsonRiskAnalysis>			table;
-	ListDataProvider<JsonRiskAnalysis>	dataProvider;
+	CellTable<RiskAnalysisSessionInfo>			table;
+	ListDataProvider<RiskAnalysisSessionInfo>	dataProvider;
 	SimplePager pager;
 	
-	List<JsonRiskAnalysis> sessions = new ArrayList<>();
+	List<RiskAnalysisSessionInfo> sessions = new ArrayList<>();
 	String nextEntity;
 	String nextRC;
 	
-	public void getInfo() {
-		RiscossJsonClient.listEntities(new JsonCallback() {
+	public void getSessionsInfo() {
+		RiscossJsonClient.getLastRiskAnalysisSessions(new JsonCallback() {
 			@Override
 			public void onFailure(Method method, Throwable exception) {
 				Window.alert(exception.getMessage());
@@ -90,98 +98,9 @@ public class MainPageModule implements EntryPoint {
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
 				for (int i = 0; i < response.isArray().size(); ++i) {
-					nextEntity = response.isArray().get(i).isObject().get("name").isString().stringValue();
-					if (!nextEntity.equals("-"))
-					RiscossJsonClient.listRCs(nextEntity, new JsonCallback() {
-						String entity = nextEntity;
-						@Override
-						public void onFailure(Method method, Throwable exception) {
-							Window.alert(exception.getMessage());
-						}
-						@Override
-						public void onSuccess(Method method, JSONValue response) {
-							for (int i = 0; i < response.isArray().size(); ++i) {
-								nextRC = response.isArray().get(i).isObject().get("name").isString().stringValue();
-								RiscossJsonClient.listRiskAnalysisSessions(entity, nextRC, new JsonCallback() {
-									@Override
-									public void onFailure(Method method,
-											Throwable exception) {
-										Window.alert(exception.getMessage());
-									}
-									@Override
-									public void onSuccess(Method method,
-											JSONValue response) {
-										getLastRiskSession(response);
-									}
-								});
-							}
-						}
-					});
-				}
-			}
-		});
-	}
-	
-	HashMap<String, String> risksList = new HashMap<>();
-	int totalC = 0;
-	
-	public void getLastRiskSession(JSONValue response) {
-		if( response == null ) return;
-		if( response.isObject() == null ) return;
-		response = response.isObject().get( "list" );
-		List<JRASInfo> riskSessions = new ArrayList<>();
-		CodecRASInfo codec = GWT.create( CodecRASInfo.class );
-		if( response.isArray() != null ) {
-			for( int i = 0; i < response.isArray().size(); i++ ) {
-				JRASInfo info = codec.decode( response.isArray().get( i ) );
-				riskSessions.add( info );
-			}
-		}
-		if (response.isArray().size() > 0 ) totalC += 1;
-		for (int i = 0; i < riskSessions.size(); ++i) {
-			RiscossJsonClient.getSessionSummary(riskSessions.get(i).getId(), new JsonCallback() {
-				@Override
-				public void onFailure(Method method, Throwable exception) {
-					Window.alert(exception.getMessage());
-				}
-				@Override
-				public void onSuccess(Method method, JSONValue response) {
-					JsonRiskAnalysis j = new JsonRiskAnalysis( response );
-					boolean contains = false;
-					for (int i = 0; i < sessions.size(); ++i) {
-						if (sessions.get(i).getTarget().equals(j.getTarget())
-								&& sessions.get(i).getRC().equals(j.getRC())
-								&& getDate(sessions.get(i).getDate()).before(getDate(j.getDate()))) {
-							sessions.remove(i);
-							sessions.add(j);
-							return;
-						}
-						else if (sessions.get(i).getTarget().equals(j.getTarget())
-								&& sessions.get(i).getRC().equals(j.getRC())) {
-							contains = true;
-						}
-					}
-					if (!contains) sessions.add(j);
-					if (totalC == sessions.size()) getRisks();
-				}
-			});
-		}
-	}
-	
-	JsonRiskAnalysis nextRAS;
-	
-	private void getRisks() {
-		for (JsonRiskAnalysis j : sessions) {
-			nextRAS = j;
-			RiscossJsonClient.getSessionResults(j.getID(), new JsonCallback() {
-				JsonRiskAnalysis ras = nextRAS;
-				@Override
-				public void onFailure(Method method, Throwable exception) {
-					Window.alert(exception.getMessage());
-				}
-				@Override
-				public void onSuccess(Method method, JSONValue response) {
-					JSONArray results = response.isObject().get( "results" ).isArray();
+					JSONValue r = response.isArray().get(i).isObject().get( "res" );
+					JSONValue obj = JSONParser.parseLenient(r.isString().stringValue());
+					JSONValue results = obj.isObject().get("results");
 					String res = "";
 					for (int s = 0; s < results.isArray().size(); ++s) {
 						JSONObject v = results.isArray().get( s ).isObject();
@@ -207,11 +126,16 @@ public class MainPageModule implements EntryPoint {
 						}
 					}
 					if (res.equals("")) res = "-";
-					risksList.put(ras.getTarget() + "/" + ras.getRC(), res);
-					generateRiskSessionsChart();
+					sessions.add(new RiskAnalysisSessionInfo(
+							response.isArray().get(i).isObject().get( "target" ).isString().stringValue(),
+							response.isArray().get(i).isObject().get( "rc" ).isString().stringValue(),
+							response.isArray().get(i).isObject().get( "timestamp" ).isString().stringValue(),
+							response.isArray().get(i).isObject().get( "id" ).isString().stringValue(),
+							res));
 				}
-			});
-		}
+				generateRiskSessionsChart();
+			}
+		});
 	}
 	
 	public void generateRiskSessionsChart() {
@@ -223,43 +147,42 @@ public class MainPageModule implements EntryPoint {
 //	        Window.alert(pair.getKey() + "///" + pair.getValue());
 //	    }
 
-		Column<JsonRiskAnalysis, String> entity = new Column<JsonRiskAnalysis, String>(new TextCell()) {
+		Column<RiskAnalysisSessionInfo, String> entity = new Column<RiskAnalysisSessionInfo, String>(new TextCell()) {
 			@Override
-			public String getValue(JsonRiskAnalysis arg0) {
-				return arg0.getTarget();
+			public String getValue(RiskAnalysisSessionInfo arg0) {
+				return arg0.target;
 			}
 		};
-		Column<JsonRiskAnalysis, String> risk = new Column<JsonRiskAnalysis, String>(new TextCell()) {
+		Column<RiskAnalysisSessionInfo, String> risk = new Column<RiskAnalysisSessionInfo, String>(new TextCell()) {
 			@Override
-			public String getValue(JsonRiskAnalysis arg0) {
-				return arg0.getRC();
+			public String getValue(RiskAnalysisSessionInfo arg0) {
+				return arg0.rc;
 			}
 		};
-		Column<JsonRiskAnalysis, String> riskList = new Column<JsonRiskAnalysis, String>(new TextCell()) {
+		Column<RiskAnalysisSessionInfo, String> riskList = new Column<RiskAnalysisSessionInfo, String>(new TextCell()) {
 			@Override
-			public String getValue(JsonRiskAnalysis arg0) {
-				String s = risksList.get(arg0.getTarget() + "/" + arg0.getRC());
-				if (s == null) return "-";
-				return s;
+			public String getValue(RiskAnalysisSessionInfo arg0) {
+				return arg0.results;
 			}
 		};
-		Column<JsonRiskAnalysis, String> date = new Column<JsonRiskAnalysis, String>(new TextCell()) {
+		Column<RiskAnalysisSessionInfo, String> date = new Column<RiskAnalysisSessionInfo, String>(new TextCell()) {
 			@Override
-			public String getValue(JsonRiskAnalysis arg0) {
-				return arg0.getDate();
+			public String getValue(RiskAnalysisSessionInfo arg0) {
+				return arg0.timestamp;
 			}
 		};
 		table.setRowData(0, sessions);
+		table.setColumnWidth(3, "180px");
 		
-		final SelectionModel<JsonRiskAnalysis> selectionModel = new SingleSelectionModel<JsonRiskAnalysis>();
+		final SelectionModel<RiskAnalysisSessionInfo> selectionModel = new SingleSelectionModel<RiskAnalysisSessionInfo>();
 	    table.setSelectionModel(selectionModel);
 	    selectionModel.addSelectionChangeHandler(new Handler() {
 			@Override
 			public void onSelectionChange(SelectionChangeEvent arg0) {
-				List<JsonRiskAnalysis> l = dataProvider.getList();
+				List<RiskAnalysisSessionInfo> l = dataProvider.getList();
 				for (int i = 0; i < l.size(); ++i) {
 					if (selectionModel.isSelected(l.get(i))) {
-						Window.Location.replace("riskanalysis.jsp?or=main&id=" + l.get(i).getID());
+						Window.Location.replace("riskanalysis.jsp?or=main&id=" + l.get(i).id);
 					}
 				}
 			}
@@ -270,7 +193,7 @@ public class MainPageModule implements EntryPoint {
 	    table.addColumn(riskList, "Risks");
 	    table.addColumn(date, "Last execution time");
 		
-		dataProvider = new ListDataProvider<JsonRiskAnalysis>();
+		dataProvider = new ListDataProvider<RiskAnalysisSessionInfo>();
 		dataProvider.addDataDisplay( table );
 		
 		for( int i = 0; i < sessions.size(); i++ ) {

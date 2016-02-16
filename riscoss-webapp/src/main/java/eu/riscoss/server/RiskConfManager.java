@@ -22,11 +22,13 @@
 package eu.riscoss.server;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -42,6 +44,9 @@ import com.google.gson.JsonPrimitive;
 
 import eu.riscoss.db.RiscossDB;
 import eu.riscoss.db.RiscossElements;
+import eu.riscoss.db.SearchParams;
+import eu.riscoss.shared.JModelNode;
+import eu.riscoss.shared.JRCNode;
 import eu.riscoss.shared.JRiskConfiguration;
 import eu.riscoss.shared.JRiskConfigurationLayerInfo;
 import eu.riscoss.shared.RiscossUtil;
@@ -95,6 +100,56 @@ public class RiskConfManager {
 		}
 		
 		return a.toString();
+	}
+	
+	@GET @Path("/{domain}/search") 
+	@Info("Returns a list of rcs that match the specified parameters")
+	public String search(
+			@PathParam("domain") @Info("The selected domain")			String domain, 
+			@HeaderParam("token") @Info("The authentication token")		String token,
+			@QueryParam("query")										String query
+			) throws Exception {
+		return searchNew( domain, token, query, "0", "0");
+	}
+
+	@GET @Path("/{domain}/search-rcs")
+	@Info("Returns a list of rcs that match the specified parameters")
+	public String searchNew(
+			@PathParam("domain") @Info("The selected domain")											String domain, 
+			@HeaderParam("token") @Info("The authentication token")										String token,
+			@DefaultValue("") @QueryParam("query") @Info("The actual query (on the rc name)")			String query, 
+			@DefaultValue("0") @QueryParam("from") @Info("Index of the first rc (for pagination)")		String strFrom,
+			@DefaultValue("0") @QueryParam("max") @Info("Amount of rcs to search")						String strMax
+		) throws Exception {
+		
+		List<JRCNode> result = new ArrayList<JRCNode>();
+		
+		RiscossDB db = null;
+		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
+			SearchParams params = new SearchParams();
+			params.setMax( strMax );
+			params.setFrom( strFrom );
+			
+			List<String> rcs = new ArrayList<String>();
+			
+			Collection<String> list = db.findRCs(query, params);
+			for (String name : list) {
+				JRCNode jd = new JRCNode();
+				jd.name = name;
+				result.add(jd);
+			}
+			
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
+			DBConnector.closeDB(db);
+		}
+		return new Gson().toJson( result );
 	}
 	
 	/**

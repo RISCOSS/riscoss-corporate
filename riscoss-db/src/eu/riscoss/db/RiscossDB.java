@@ -24,6 +24,7 @@ public interface RiscossDB {
 	public abstract void							setLayerData( String layer, String key, String value );
 	public abstract String							getLayerData( String layer, String key );
 	public abstract List<String>					getScope( String layer );
+	public abstract Collection<String>				findLayers( String query, SearchParams params );
 	
 	/*
 	 * Entities
@@ -60,6 +61,7 @@ public interface RiscossDB {
 	public abstract void							updateModel(String modelName, String blobFilename, String modelBlob);
 	public abstract String							getModelFilename(String modelName); 
 	public abstract void							changeModelName(String modelName, String newName);
+	public abstract Collection<String>				findModels( String query, SearchParams params );
 	
 	/*
 	 * Model description
@@ -82,6 +84,7 @@ public interface RiscossDB {
 	public abstract void							setRCModels( String entity, Map<String,ArrayList<String>> map );
 	public abstract Map<String, ArrayList<String>>	getRCModels( String rc );
 	public abstract List<String>					findCandidateRCs( String layer );
+	public abstract Collection<String>				findRCs( String query, SearchParams params );
 	
 	/*
 	 * Risk Data Repository
