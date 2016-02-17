@@ -35,9 +35,9 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -75,6 +75,7 @@ public class WhatIfAnalysisModule implements EntryPoint {
 	Map<String,IndicatorWidget> indicatorWidgets = new HashMap<String,IndicatorWidget>();
 //	Map<String,RiskWidget> riskWidgets = new HashMap<String,RiskWidget>();
 	Map<String,IndicatorWidget> riskWidgets = new HashMap<String,IndicatorWidget>();
+	JWhatIfData 				jWhatIfData;
 	
 	HorizontalPanel buttons = new HorizontalPanel();
 	String sid;
@@ -147,11 +148,20 @@ public class WhatIfAnalysisModule implements EntryPoint {
 				}
 			});
 		} else {
+			Button back = new Button("Back");
+			back.setStyleName("deleteButton");
+			back.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent arg0) {
+					back();
+				}
+			});
+			buttons.add(back);
+			mainView.add(buttons);
 			List<String> entities = new ArrayList<>();
 			String s[] = sb.split("@");
 			for (int i = 0; i < s.length; ++i) {
 				entities.add(s[i]);
-				Log.println(s[i]);
 			}
 			RiscossJsonClient.getSessionData(sid, entities, new JsonCallback() {
 				@Override
@@ -160,18 +170,24 @@ public class WhatIfAnalysisModule implements EntryPoint {
 				}
 				@Override
 				public void onSuccess(Method method, JSONValue response) {
+					models = new ArrayList<>();
 					CodecWhatIfData codec = GWT.create( CodecWhatIfData.class );
-					JWhatIfData jWhatIfData = codec.decode( response );
-					/*for (JWhatIfItem j : jWhatIfData.items.values()) {
-						Log.println("MODELS");
+					jWhatIfData = codec.decode( response );
+					for (JWhatIfItem j : jWhatIfData.items.values()) {
 						for (String s : j.models) {
-							Log.println(s);
+							models.add(s);
 						}
-						Log.println("VALUES");
-						for (String s : j.values.values()) {
-							Log.println(s);
+					}
+					RiscossJsonClient.listChunks(models, new JsonCallback() {
+						@Override
+						public void onFailure(Method method, Throwable exception) {
+							Window.alert(exception.getMessage());
 						}
-					}*/
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							loadModel(response);	
+						}
+					});
 				}
 			});
 		}
@@ -226,6 +242,20 @@ public class WhatIfAnalysisModule implements EntryPoint {
 				riskWidgets.put( jinput.get( "id" ).isString().stringValue(), rw );
 			}
 		}
+		
+		if (sid != null) {
+			for (JWhatIfItem item : jWhatIfData.items.values()) {
+				for (String id : item.values.keySet()) {
+					if (indicatorWidgets.containsKey(id)) {
+						String s = item.values.get(id);
+						JSONObject json = JSONParser.parseLenient(s).isObject();
+						String value = json.get("value").isString().stringValue();
+						indicatorWidgets.get(id).setValue(value);
+					}
+				}
+			}
+		}
+		
 		left1.setSpacing(10);
 		left2.setSpacing(10);
 		left3.setSpacing(10);
@@ -237,8 +267,8 @@ public class WhatIfAnalysisModule implements EntryPoint {
 		right.setStyleName("rightPanelLayer");
 		
 		contentPanel.setWidget( h );
-		
 		ready = true;
+		runAnalysis();
 	}
 
 	Label running = new Label("Running...");
@@ -294,5 +324,9 @@ public class WhatIfAnalysisModule implements EntryPoint {
 		}
 		
 		return o;
+	}
+	
+	private void back() {
+		Window.Location.replace("riskanalysis.jsp?id=" + sid);
 	}
 }

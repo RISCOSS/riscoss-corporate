@@ -10,8 +10,7 @@
 	<!-- Other module inherits -->
 	<inherits name="org.fusesource.restygwt.RestyGWT" />
 	
-	<inherits name="com.kiouri.sliderbar.SliderBarMVP" />
-	
+	<inherits name="com.kiouri.sliderbar.SliderBarMVP" />	
 	
 	<add-linker name="xsiframe" />
 	

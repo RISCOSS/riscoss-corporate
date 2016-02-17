@@ -77,6 +77,8 @@ public class IndicatorWidget implements IsWidget {
 
 		public abstract void setValue( JSONObject v );
 		
+		public abstract void setValue (String s);
+		
 	}
 	
 	class NumberInput extends AbstractInputField {
@@ -142,6 +144,11 @@ public class IndicatorWidget implements IsWidget {
 		@Override
 		String getValue() {
 			return "" + range.getValue( sb.getValue() );
+		}
+
+		@Override
+		public void setValue(String s) {
+			sb.setValue(Integer.parseInt(s));
 		}
 
 	}
@@ -306,6 +313,12 @@ public class IndicatorWidget implements IsWidget {
 				Log.println( distribution.toString() );
 			return distribution.toString();
 		}
+
+		@Override
+		public void setValue(String s) {
+			// TODO Auto-generated method stub
+			
+		}
 		
 	}
 	
@@ -348,6 +361,12 @@ public class IndicatorWidget implements IsWidget {
 			setValue( 
 					v.get( "p" ).isString().stringValue(), 
 					v.get( "m" ).isString().stringValue() );
+		}
+
+		@Override
+		public void setValue(String s) {
+			// TODO Auto-generated method stub
+			
 		}
 	}
 	
@@ -408,6 +427,14 @@ public class IndicatorWidget implements IsWidget {
 		}
 		catch( Exception ex ) {
 			Window.alert( ex.getMessage() );
+		}
+	}
+	
+	public void setValue (String s) {
+		try {
+			this.field.setValue(s);
+		} catch( Exception ex ) {
+			
 		}
 	}
 }

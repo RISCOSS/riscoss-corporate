@@ -505,7 +505,7 @@ public class RiscossJsonClient {
 	}
 	
 	public static void getSessionData(String riskAnalysisSession, List<String> entities, JsonCallback cb) {
-		RiscossCall.fromCookies().analysis().fx("session").fx(riskAnalysisSession).fx("data").arg("e",  mkJsonArray( entities ).toString() ).get( cb );
+		RiscossCall.fromCookies().analysis().fx("session").fx(riskAnalysisSession).fx("data").arg("e",  mkJsonArray(entities).toString()).get( cb );
 	}
 	
 	public static void getSessionResults(String riskAnalysisSession, JsonCallback cb){
