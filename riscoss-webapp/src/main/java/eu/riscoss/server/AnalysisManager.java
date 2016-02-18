@@ -457,14 +457,19 @@ public class AnalysisManager {
 			@PathParam("domain") @Info("The work domain")						String domain,
 			@PathParam("sid") @Info("The risk session ID")						String sid,
 			@QueryParam("e") @Info("The list of entities whose data have to be retrieved")
-																				List<String> entities
+																				String entities
 			) throws Exception {
 		RiscossDB db = null;
 		try {
+			JsonArray jentities = (JsonArray)new JsonParser().parse( entities );
+			List<String> list = new ArrayList<>();
+			for (int i = 0; i < jentities.size(); ++i) {
+				list.add(jentities.get(i).getAsString());
+			}
 			db = DBConnector.openDB( domain, token );
 			JWhatIfData data = new JWhatIfData();
 			RiskAnalysisSession ras = db.openRAS( sid );
-			for( String entity : entities ) {
+			for( String entity : list ) {
 				String layer = ras.getLayer( entity );
 				JWhatIfItem item = new JWhatIfItem();
 				item.models = ras.getModels( layer );

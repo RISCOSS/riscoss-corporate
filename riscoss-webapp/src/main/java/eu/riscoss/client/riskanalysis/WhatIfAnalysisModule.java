@@ -21,6 +21,7 @@
 
 package eu.riscoss.client.riskanalysis;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,13 +30,14 @@ import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -46,8 +48,14 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 import eu.riscoss.client.Callback;
+import eu.riscoss.client.Log;
 import eu.riscoss.client.RiscossJsonClient;
+import eu.riscoss.client.codec.CodecLayerContextualInfo;
+import eu.riscoss.client.codec.CodecWhatIfData;
 import eu.riscoss.client.riskconfs.ModelSelectionDialog;
+import eu.riscoss.shared.JLayerContextualInfo;
+import eu.riscoss.shared.JWhatIfData;
+import eu.riscoss.shared.JWhatIfData.JWhatIfItem;
 
 public class WhatIfAnalysisModule implements EntryPoint {
 	
@@ -67,48 +75,16 @@ public class WhatIfAnalysisModule implements EntryPoint {
 	Map<String,IndicatorWidget> indicatorWidgets = new HashMap<String,IndicatorWidget>();
 //	Map<String,RiskWidget> riskWidgets = new HashMap<String,RiskWidget>();
 	Map<String,IndicatorWidget> riskWidgets = new HashMap<String,IndicatorWidget>();
+	JWhatIfData 				jWhatIfData;
 	
 	HorizontalPanel buttons = new HorizontalPanel();
+	String sid;
 	
 	public void onModuleLoad() {
 		
-		HorizontalPanel h = new HorizontalPanel();
-		Anchor a = new Anchor( "Select models..." );
-		a.addClickHandler( new ClickHandler() {
-			@Override
-			public void onClick( ClickEvent event ) {
-				ModelSelectionDialog dialog = new ModelSelectionDialog();
-				dialog.show( new Callback<List<String>>() {
-					@Override
-					public void onError( Throwable t ) {
-						// Do nothing
-					}
-					@Override
-					public void onDone( List<String> list ) {
-						models = list;
-						RiscossJsonClient.listChunks( list, new JsonCallback() {
-							@Override
-							public void onFailure( Method method, Throwable exception ) {
-								Window.alert( exception.getMessage() );
-							}
-
-							@Override
-							public void onSuccess( Method method, JSONValue response ) {
-//								try {
-									loadModel( response );
-//								} catch( Exception ex ) {
-//									Window.alert( ex.getMessage() );
-//								}
-							}} );
-					}
-				});
-			}
-		});
-		h.add( a );
+		sid = Window.Location.getParameter( "id" );
+		String sb = Window.Location.getParameter( "entities" );
 		
-		dock.add( h, DockPanel.NORTH );
-		dock.add( contentPanel,DockPanel.CENTER );
-		dock.setSize( "100%", "100%" );
 		//RootPanel.get().add( dock );
 		
 		page.setWidth("100%");
@@ -118,80 +94,109 @@ public class WhatIfAnalysisModule implements EntryPoint {
 		page.add(title);
 		mainView.setStyleName("mainViewPage");
 		
-		Button selectModels = new Button("Select models...");
-		selectModels.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent arg0) {
-				ModelSelectionDialog dialog = new ModelSelectionDialog();
-				dialog.show( new Callback<List<String>>() {
-					@Override
-					public void onError( Throwable t ) {
-						// Do nothing
+		if (sid == null) {
+			Button selectModels = new Button("Select models...");
+			selectModels.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent arg0) {
+					ModelSelectionDialog dialog = new ModelSelectionDialog();
+					dialog.show( new Callback<List<String>>() {
+						@Override
+						public void onError( Throwable t ) {
+							// Do nothing
+						}
+						@Override
+						public void onDone( List<String> list ) {
+							models = list;
+							RiscossJsonClient.listChunks( list, new JsonCallback() {
+								@Override
+								public void onFailure( Method method, Throwable exception ) {
+									Window.alert( exception.getMessage() );
+								}
+	
+								@Override
+								public void onSuccess( Method method, JSONValue response ) {
+	//								try {
+										loadModel( response );
+	//								} catch( Exception ex ) {
+	//									Window.alert( ex.getMessage() );
+	//								}
+								}} );
+						}
+					});
+				}
+			});
+			selectModels.setStyleName("button");
+			buttons.add(selectModels);
+			mainView.add(buttons);
+			RiscossJsonClient.listModels( new JsonCallback() {
+				
+				@Override
+				public void onSuccess(Method method, JSONValue response) {
+					
+					if( response.isArray() != null ) {
+						for( int i = 0; i < response.isArray().size(); i++ ) {
+							JSONObject o = (JSONObject)response.isArray().get( i );
+							combo.addItem( o.get( "name" ).isString().stringValue() );
+						}
 					}
-					@Override
-					public void onDone( List<String> list ) {
-						models = list;
-						RiscossJsonClient.listChunks( list, new JsonCallback() {
-							@Override
-							public void onFailure( Method method, Throwable exception ) {
-								Window.alert( exception.getMessage() );
-							}
-
-							@Override
-							public void onSuccess( Method method, JSONValue response ) {
-//								try {
-									loadModel( response );
-//								} catch( Exception ex ) {
-//									Window.alert( ex.getMessage() );
-//								}
-							}} );
-					}
-				});
+				}
+				
+				@Override
+				public void onFailure(Method method, Throwable exception) {
+					Window.alert( exception.getMessage() );
+				}
+			});
+		} else {
+			Button back = new Button("Back");
+			back.setStyleName("deleteButton");
+			back.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent arg0) {
+					back();
+				}
+			});
+			buttons.add(back);
+			mainView.add(buttons);
+			List<String> entities = new ArrayList<>();
+			String s[] = sb.split("@");
+			for (int i = 0; i < s.length; ++i) {
+				entities.add(s[i]);
 			}
-		});
-		selectModels.setStyleName("button");
-		buttons.add(selectModels);
-		mainView.add(buttons);
+			RiscossJsonClient.getSessionData(sid, entities, new JsonCallback() {
+				@Override
+				public void onFailure(Method method, Throwable exception) {
+					// TODO Auto-generated method stub	
+				}
+				@Override
+				public void onSuccess(Method method, JSONValue response) {
+					models = new ArrayList<>();
+					CodecWhatIfData codec = GWT.create( CodecWhatIfData.class );
+					jWhatIfData = codec.decode( response );
+					for (JWhatIfItem j : jWhatIfData.items.values()) {
+						for (String s : j.models) {
+							models.add(s);
+						}
+					}
+					RiscossJsonClient.listChunks(models, new JsonCallback() {
+						@Override
+						public void onFailure(Method method, Throwable exception) {
+							Window.alert(exception.getMessage());
+						}
+						@Override
+						public void onSuccess(Method method, JSONValue response) {
+							loadModel(response);	
+						}
+					});
+				}
+			});
+		}
+		
 		mainView.add(contentPanel);
 		
 		page.add(mainView);
 		
 		RootPanel.get().add(page);
-		
-		RiscossJsonClient.listModels( new JsonCallback() {
-			
-			@Override
-			public void onSuccess(Method method, JSONValue response) {
-				
-				if( response.isArray() != null ) {
-					for( int i = 0; i < response.isArray().size(); i++ ) {
-						JSONObject o = (JSONObject)response.isArray().get( i );
-						combo.addItem( o.get( "name" ).isString().stringValue() );
-					}
-				}
-				
-//				RiscossJsonClient.listRCs( new JsonCallback() {
-//					@Override
-//					public void onSuccess( Method method, JSONValue response ) {
-//						if( response.isArray() != null ) {
-//							for( int i = 0; i < response.isArray().size(); i++ ) {
-//								JSONObject o = (JSONObject)response.isArray().get( i );
-//								rcCombo.addItem( o.get( "name" ).isString().stringValue() );
-//							}
-//						}
-//					}
-//					@Override
-//					public void onFailure( Method method, Throwable exception ) {
-//						Window.alert( exception.getMessage() );
-//					}
-//				});
-			}
-			
-			@Override
-			public void onFailure(Method method, Throwable exception) {
-				Window.alert( exception.getMessage() );
-			}
-		});
 		
 	}
 	
@@ -237,6 +242,20 @@ public class WhatIfAnalysisModule implements EntryPoint {
 				riskWidgets.put( jinput.get( "id" ).isString().stringValue(), rw );
 			}
 		}
+		
+		if (sid != null) {
+			for (JWhatIfItem item : jWhatIfData.items.values()) {
+				for (String id : item.values.keySet()) {
+					if (indicatorWidgets.containsKey(id)) {
+						String s = item.values.get(id);
+						JSONObject json = JSONParser.parseLenient(s).isObject();
+						String value = json.get("value").isString().stringValue();
+						indicatorWidgets.get(id).setValue(value);
+					}
+				}
+			}
+		}
+		
 		left1.setSpacing(10);
 		left2.setSpacing(10);
 		left3.setSpacing(10);
@@ -248,8 +267,8 @@ public class WhatIfAnalysisModule implements EntryPoint {
 		right.setStyleName("rightPanelLayer");
 		
 		contentPanel.setWidget( h );
-		
 		ready = true;
+		runAnalysis();
 	}
 
 	Label running = new Label("Running...");
@@ -305,5 +324,9 @@ public class WhatIfAnalysisModule implements EntryPoint {
 		}
 		
 		return o;
+	}
+	
+	private void back() {
+		Window.Location.replace("riskanalysis.jsp?id=" + sid);
 	}
 }
