@@ -354,7 +354,7 @@ public class RiskAnalysisResults implements IsWidget {
         	JsonRiskResult result = new JsonRiskResult( v );
         	
 			String id = "";
-			id = v.get( "id" ).isString().stringValue();
+			id = v.get( "label" ).isString().stringValue();
 			Double value = v.get( "e" ).isObject().get( "e" ).isNumber().doubleValue();
 			series.add( model.addSeries( Series.of( id ).setBarsSeriesOptions( BarSeriesOptions.create().setOrder( i ) ) ) );
 			values.add(value);
@@ -370,7 +370,7 @@ public class RiskAnalysisResults implements IsWidget {
 			hp.setStyleName("margin-bottom");
 			hp.add(p);
 			
-			String htmlString = "<b>" + v.get( "id" ).isString().stringValue() + "</b>";
+			String htmlString = "<b>" + v.get( "label" ).isString().stringValue() + "</b>";
 			if( v.get( "description" ) != null ) {
 				htmlString += ": " + v.get( "description" ).isString().stringValue();
 			}
@@ -386,7 +386,7 @@ public class RiskAnalysisResults implements IsWidget {
 			//Comparisons view
 			
 			VerticalPanel panel = new VerticalPanel();
-			Label l = new Label(v.get( "id" ).isString().stringValue());
+			Label l = new Label(v.get( "label" ).isString().stringValue());
 			l.setStyleName("bold");
 			panel.add( l );
 			VerticalPanel space = new VerticalPanel();
