@@ -371,7 +371,6 @@ public class RASPanel implements IsWidget {
 									mostCurrentSession = ras.getID();
 									buttons2.clear();
 									buttons.remove(mitigation);
-									buttons.remove(whatIf);
 									if (inputButtons != null) inputButtons.clear();
 									Label l = new Label("Current session is not the last one.");
 									Anchor a = new Anchor("Click here to see last execution results.");

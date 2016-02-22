@@ -354,7 +354,6 @@ public class RiskAnalysisResults implements IsWidget {
         	JsonRiskResult result = new JsonRiskResult( v );
         	
 			String id = "";
-			Log.println(v.toString());
 			id = v.get( "id" ).isString().stringValue();
 			Double value = v.get( "e" ).isObject().get( "e" ).isNumber().doubleValue();
 			series.add( model.addSeries( Series.of( id ).setBarsSeriesOptions( BarSeriesOptions.create().setOrder( i ) ) ) );
