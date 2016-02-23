@@ -140,6 +140,13 @@ body {
 	margin: 0px 20px 20px 20px !important;
 }
 
+.columnTitle {
+	font-size: 20px !important;
+	margin-bottom: 8px !important;
+	color: #2E2E2E !important;
+	border-bottom: 1px dotted #E6E6E6 !important;
+}
+
 .gwt-TabPanelBottom {
 	border: 0px solid #ffffff !important;
 	border-top: 1px solid #4D9244 !important;

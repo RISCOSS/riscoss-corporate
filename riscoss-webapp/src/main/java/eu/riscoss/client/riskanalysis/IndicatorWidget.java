@@ -365,8 +365,7 @@ public class IndicatorWidget implements IsWidget {
 
 		@Override
 		public void setValue(String s) {
-			// TODO Auto-generated method stub
-			
+			setValue(s, "0");
 		}
 	}
 	
@@ -384,16 +383,14 @@ public class IndicatorWidget implements IsWidget {
 	
 	
 	public IndicatorWidget( JSONObject o ) {
-		
 		String datatype = o.get( "datatype" ).isString().stringValue();
-		
-		if( "REAL".equals( datatype ) )
+		if( "REAL".equals( datatype ) || "real".equals(datatype))
 			field = new NumberInput( o );
-		else if( "INTEGER".equals( datatype ) )
+		else if( "INTEGER".equals( datatype ) || "integer".equals( datatype ) )
 			field = new NumberInput( o );
-		else if( "DISTRIBUTION".equals( datatype ) )
+		else if( "DISTRIBUTION".equals( datatype ) ||  "distribution".equals( datatype ))
 			field = new DistributionInput( o );
-		else if( "EVIDENCE".equals( datatype ) )
+		else if( "EVIDENCE".equals( datatype ) || "evidence".equals( datatype ) ) 
 			field = new EvidenceInput( o );
 		else
 			field = new NumberInput( o );

@@ -212,6 +212,7 @@ public class RiskAnalysisWizard implements EntryPoint {
 
 		selectedRiskSession = newName.getText().trim();
 		newName.setText("");
+		page.clear();
 		mainView.clear();
 		top.remove(g);
 		vPanel = new VerticalPanel();
@@ -220,6 +221,7 @@ public class RiskAnalysisWizard implements EntryPoint {
 		rasPanel.loadRAS(newId);
 		vPanel.add(rasPanel);
 		mainView.add(vPanel);
+		page.add(mainView);
 	}
 	
 	private void appendChilds(TreeWidget rootEnt, JSONArray children) {
@@ -472,6 +474,7 @@ public class RiskAnalysisWizard implements EntryPoint {
 		if (or == null) {
 			page.clear();
 			page.add(title);
+			mainView.clear();
 			mainView.add(leftPanel);
 			mainView.add(rightPanel);
 			page.add(top);

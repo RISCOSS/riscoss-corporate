@@ -48,6 +48,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 import eu.riscoss.client.Callback;
+import eu.riscoss.client.JsonRiskResult;
 import eu.riscoss.client.Log;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecLayerContextualInfo;
@@ -75,6 +76,8 @@ public class WhatIfAnalysisModule implements EntryPoint {
 	Map<String,IndicatorWidget> indicatorWidgets = new HashMap<String,IndicatorWidget>();
 //	Map<String,RiskWidget> riskWidgets = new HashMap<String,RiskWidget>();
 	Map<String,IndicatorWidget> riskWidgets = new HashMap<String,IndicatorWidget>();
+	Map<String,IndicatorWidget> riskSessionWidgetsGoals = new HashMap<String,IndicatorWidget>();
+	Map<String,IndicatorWidget> riskSessionWidgetsRisks = new HashMap<String,IndicatorWidget>();
 	JWhatIfData 				jWhatIfData;
 	
 	HorizontalPanel buttons = new HorizontalPanel();
@@ -200,6 +203,8 @@ public class WhatIfAnalysisModule implements EntryPoint {
 		
 	}
 	
+	VerticalPanel right1;
+	
 	protected void loadModel( JSONValue response ) {
 		
 		HorizontalPanel h = new HorizontalPanel();
@@ -207,7 +212,8 @@ public class WhatIfAnalysisModule implements EntryPoint {
 		VerticalPanel left1 = new VerticalPanel();
 		VerticalPanel left2 = new VerticalPanel();
 		VerticalPanel left3 = new VerticalPanel();
-		VerticalPanel right = new VerticalPanel();
+		right1 = new VerticalPanel();
+		resPanel = new VerticalPanel();
 		
 		JSONObject jo = response.isObject();
 		
@@ -231,6 +237,14 @@ public class WhatIfAnalysisModule implements EntryPoint {
 			}
 		}
 		
+		Label whatIf = new Label("What-if results");
+		Label riskSes = new Label("Risk session results");
+		whatIf.setStyleName("columnTitle");
+		whatIf.setWidth("100%");
+		riskSes.setStyleName("columnTitle");
+		riskSes.setWidth("100%");
+		right1.add(whatIf);
+		resPanel.add(riskSes);
 		if( jo.get( "outputs" ) != null ) {
 			JSONArray inputs = jo.get( "outputs" ).isArray();
 			for( int i = 0; i < inputs.size(); i++ ) {
@@ -238,8 +252,8 @@ public class WhatIfAnalysisModule implements EntryPoint {
 				IndicatorWidget rw = new IndicatorWidget( jinput );
 //				RiskWidget rw = new RiskWidget( jinput );
 //				rw.setValue( "0", "0" );
-				right.add( rw );
-				riskWidgets.put( jinput.get( "id" ).isString().stringValue(), rw );
+				right1.add( rw );
+				riskWidgets.put( jinput.get( "label" ).isString().stringValue(), rw );
 			}
 		}
 		
@@ -254,6 +268,7 @@ public class WhatIfAnalysisModule implements EntryPoint {
 					}
 				}
 			}
+			generateRiskSessionResults();
 		}
 		
 		left1.setSpacing(10);
@@ -262,15 +277,66 @@ public class WhatIfAnalysisModule implements EntryPoint {
 		h.add( left1 );
 		h.add( left2 );
 		h.add( left3 );
-		h.add( right );
-		right.setSpacing(20);
-		right.setStyleName("rightPanelLayer");
+		h.add( right1 );
+		if (sid != null) h.add( resPanel );
+		right1.setSpacing(20);
+		right1.setStyleName("rightPanelLayer");
+		resPanel.setSpacing(20);
+		resPanel.setStyleName("rightPanelLayer");
 		
 		contentPanel.setWidget( h );
 		ready = true;
 		runAnalysis();
 	}
 
+	VerticalPanel resPanel;
+	
+	protected void generateRiskSessionResults() {
+		RiscossJsonClient.getSessionResults(sid, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				JSONArray results = response.isObject().get("hresults").isObject().get("results").isArray();
+				for (int i = 0; i < results.size(); ++i) {
+					JSONObject jinput = results.get( i ).isObject();
+					Log.println(jinput.toString());
+					IndicatorWidget rw = new IndicatorWidget( jinput );
+					Double d = jinput.get("e").isObject().get("e").isNumber().doubleValue();
+					rw.setValue(String.valueOf(d));
+//					RiskWidget rw = new RiskWidget( jinput );
+//					rw.setValue( "0", "0" );
+					if (jinput.get("type").isString().stringValue().equals("Goal")) riskSessionWidgetsGoals.put( jinput.get( "label" ).isString().stringValue(), rw );
+					else riskSessionWidgetsRisks.put( jinput.get( "label" ).isString().stringValue(), rw );
+				}
+				for (IndicatorWidget rw : riskSessionWidgetsGoals.values()) {
+					resPanel.add(rw);
+				}
+				for (IndicatorWidget rw : riskSessionWidgetsRisks.values()) {
+					resPanel.add(rw);
+				}
+				sortSimulation();
+			}
+		});
+	}
+	
+	protected void sortSimulation() {
+		right1.clear();
+		Label whatIf = new Label("What-if results");
+		whatIf.setStyleName("columnTitle");
+		whatIf.setWidth("100%");
+		right1.add(whatIf);
+		
+		for (String s : riskSessionWidgetsGoals.keySet()) {
+			right1.add(riskWidgets.get(s));
+		}
+		for (String s : riskSessionWidgetsRisks.keySet()) {
+			right1.add(riskWidgets.get(s));
+		}
+	}
+	
 	Label running = new Label("Running...");
 	
 	protected void runAnalysis() {
