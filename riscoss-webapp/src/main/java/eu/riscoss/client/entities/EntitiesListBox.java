@@ -296,30 +296,29 @@ public class EntitiesListBox {
 						entities.put(name, new Pair(layer, childrenList));
 					}
 				}
-				for (int i = 0; i < entities.size(); ++i) {
-					if (response.isArray().get(i).isObject().get("parents").isArray().size() == 0) {
-						String name = response.isArray().get(i).isObject().get("name").isString().stringValue();
-						if (!name.equals("-")) {
-							nextEntityName = name;
-							Anchor a = new Anchor(nextEntityName  + " (" + entities.get(name).getLeft() + ")");
-							a.setWidth("100%");
-							a.setStyleName("font");
-							a.addClickHandler(new ClickHandler() {
-								String name = nextEntityName;
-								@Override
-								public void onClick(ClickEvent event) {
-									module.setSelectedEntity(name);
-								}
-							});
-							HorizontalPanel cPanel = new HorizontalPanel();
-							cPanel.setStyleName("tree");
-							cPanel.setWidth("100%");
-							cPanel.add(a);
-							TreeWidget c = new TreeWidget(cPanel);
-							entitiesTree.addChild(c);
-							if (entities.get(name).getRight().size() > 0) {
-								appendChilds(c, entities.get(name).getRight());
+				for (int i = 0; i < response.isArray().size(); ++i) {
+					String name = response.isArray().get(i).isObject().get("name").isString().stringValue();
+					Log.println(name);
+					if (!name.equals("-") && response.isArray().get(i).isObject().get("parents").isArray().size() == 0) {
+						nextEntityName = name;
+						Anchor a = new Anchor(nextEntityName  + " (" + entities.get(name).getLeft() + ")");
+						a.setWidth("100%");
+						a.setStyleName("font");
+						a.addClickHandler(new ClickHandler() {
+							String name = nextEntityName;
+							@Override
+							public void onClick(ClickEvent event) {
+								module.setSelectedEntity(name);
 							}
+						});
+						HorizontalPanel cPanel = new HorizontalPanel();
+						cPanel.setStyleName("tree");
+						cPanel.setWidth("100%");
+						cPanel.add(a);
+						TreeWidget c = new TreeWidget(cPanel);
+						entitiesTree.addChild(c);
+						if (entities.get(name).getRight().size() > 0) {
+							appendChilds(c, entities.get(name).getRight());
 						}
 					}
 				}
@@ -341,27 +340,28 @@ public class EntitiesListBox {
 			public void onSuccess(Method method, JSONValue response) {
 				for (int i = 0; i < response.isArray().size(); ++i) {
 					String name = response.isArray().get(i).isObject().get("name").isString().stringValue();
-					String layer = response.isArray().get(i).isObject().get("layer").isString().stringValue();
-					nextEntityName = name;
-					Anchor a = new Anchor(name  + " (" + layer + ")");
-					a.setWidth("100%");
-					a.setStyleName("font");
-					a.addClickHandler(new ClickHandler() {
-						String name = nextEntityName;
-						@Override
-						public void onClick(ClickEvent event) {
-							module.setSelectedEntity(name);
-						}
-					});
-					HorizontalPanel cPanel = new HorizontalPanel();
-					cPanel.setStyleName("tree");
-					cPanel.setWidth("100%");
-					cPanel.add(a);
-					TreeWidget c = new TreeWidget(cPanel);
-					entitiesTree.addChild(c);
-
-					list.add(entitiesTree);
-					
+					if (!name.equals("-")) {
+						String layer = response.isArray().get(i).isObject().get("layer").isString().stringValue();
+						nextEntityName = name;
+						Anchor a = new Anchor(name  + " (" + layer + ")");
+						a.setWidth("100%");
+						a.setStyleName("font");
+						a.addClickHandler(new ClickHandler() {
+							String name = nextEntityName;
+							@Override
+							public void onClick(ClickEvent event) {
+								module.setSelectedEntity(name);
+							}
+						});
+						HorizontalPanel cPanel = new HorizontalPanel();
+						cPanel.setStyleName("tree");
+						cPanel.setWidth("100%");
+						cPanel.add(a);
+						TreeWidget c = new TreeWidget(cPanel);
+						entitiesTree.addChild(c);
+	
+						list.add(entitiesTree);
+					}
 				}
 			}
 		});
