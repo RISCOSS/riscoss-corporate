@@ -768,6 +768,8 @@ public class ModelsModule implements EntryPoint {
 					@Override
 					public void onSuccess(Method method, JSONValue response) {
 						//dataProvider.getList().remove(getValue());
+						leftPanel.remove(tablePanel);
+						tablePanel.clear();
 						mainView.remove(rightPanel);
 						table = new CellTable<ModelInfo>(15, (Resources) GWT.create(TableResources.class));
 	
@@ -799,10 +801,7 @@ public class ModelsModule implements EntryPoint {
 						});
 						
 						SimplePager pager = new SimplePager();
-						pager.setDisplay(table);
-	
-						leftPanel.remove(tablePanel);
-						
+						pager.setDisplay(table);						
 						tablePanel = new VerticalPanel();
 						tablePanel.add(table);
 						tablePanel.add(pager);
