@@ -985,10 +985,9 @@ public class RASPanel implements IsWidget {
 	}
 	
 	private void whatIfAnalysis() {
-		/*List<String> entities = r.getEntities();
+		List<String> entities = r.getEntities();
 		String s = "";
-		for (String e : entities) s = s + e + "@";*/
-		String s = sessionSummary.getTarget();
+		for (String e : entities) s = s + e + "@";
 		Window.Location.replace("whatifanalysis.jsp?id=" + selectedRAS + "&entities=" + s);
 	}
 	

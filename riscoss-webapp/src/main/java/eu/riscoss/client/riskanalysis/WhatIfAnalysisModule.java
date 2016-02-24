@@ -164,6 +164,7 @@ public class WhatIfAnalysisModule implements EntryPoint {
 			List<String> entities = new ArrayList<>();
 			String s[] = sb.split("@");
 			for (int i = 0; i < s.length; ++i) {
+				Log.println(s[i]);
 				entities.add(s[i]);
 			}
 			RiscossJsonClient.getSessionData(sid, entities, new JsonCallback() {
@@ -302,7 +303,6 @@ public class WhatIfAnalysisModule implements EntryPoint {
 				JSONArray results = response.isObject().get("hresults").isObject().get("results").isArray();
 				for (int i = 0; i < results.size(); ++i) {
 					JSONObject jinput = results.get( i ).isObject();
-					Log.println(jinput.toString());
 					IndicatorWidget rw = new IndicatorWidget( jinput );
 					Double d = jinput.get("e").isObject().get("e").isNumber().doubleValue();
 					rw.setValue(String.valueOf(d));
