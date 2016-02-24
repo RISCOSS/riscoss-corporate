@@ -268,10 +268,10 @@ public class RiskAnalysisWizard implements EntryPoint {
 						entities.put(name, new Pair(layer, childrenList));
 					}
 				}				
-				for (int i = 0; i < entities.size(); ++i) {
-					if (response.isArray().get(i).isObject().get("parents").isArray().size() == 0) {
-						String name = response.isArray().get(i).isObject().get("name").isString().stringValue();
-						if (!name.equals("-")) {
+				for (int i = 0; i < response.isArray().size(); ++i) {
+					String name = response.isArray().get(i).isObject().get("name").isString().stringValue();
+					if (!name.equals("-")) {
+						if (response.isArray().get(i).isObject().get("parents").isArray().size() == 0) {
 							nextEntityName = name;
 							Anchor a = new Anchor(nextEntityName  + " (" + entities.get(name).getLeft() + ")");
 							a.setWidth("100%");
