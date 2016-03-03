@@ -82,7 +82,7 @@ public class WhatIfAnalysisModule implements EntryPoint {
 	
 	HorizontalPanel buttons = new HorizontalPanel();
 	String sid;
-	String entity;
+	List<String> entityList = new ArrayList<>();
 	
 	public void onModuleLoad() {
 		
@@ -168,7 +168,7 @@ public class WhatIfAnalysisModule implements EntryPoint {
 				Log.println(s[i]);
 				entities.add(s[i]);
 			}
-			entity = entities.get(0);
+			entityList = entities;
 			RiscossJsonClient.getSessionData(sid, entities, new JsonCallback() {
 				@Override
 				public void onFailure(Method method, Throwable exception) {
@@ -180,8 +180,7 @@ public class WhatIfAnalysisModule implements EntryPoint {
 					CodecWhatIfData codec = GWT.create( CodecWhatIfData.class );
 					jWhatIfData = codec.decode( response );
 					for (String ent : jWhatIfData.items.keySet()) {
-						Log.println(ent);
-						if (ent.equals(entity))
+						if (entityList.contains(ent))
 							for (String s : jWhatIfData.items.get(ent).models) {
 								Log.println(s);
 								models.add(s);
