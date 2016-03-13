@@ -17,5 +17,12 @@ public class Pair<T1, T2> {
 	public T2 getRight() {
 		return this.right;
 	}
+	
+	public void setLeft(T1 left) {
+		this.left = left;
+	}
 
+	public void setRight(T2 right) {
+		this.right = right;
+	}
 }

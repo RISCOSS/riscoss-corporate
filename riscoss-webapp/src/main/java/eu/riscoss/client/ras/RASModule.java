@@ -1,14 +1,24 @@
 package eu.riscoss.client.ras;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
 import org.fusesource.restygwt.client.Resource;
 
 import com.google.gwt.cell.client.ButtonCell;
+import com.google.gwt.cell.client.CheckboxCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.cellview.client.CellTable;
@@ -16,15 +26,19 @@ import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.CellTable.Resources;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.SelectionModel;
 
 import eu.riscoss.client.JsonCallbackWrapper;
+import eu.riscoss.client.JsonRiskResult;
+import eu.riscoss.client.Log;
 import eu.riscoss.client.RiscossCall;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecRASInfo;
@@ -33,19 +47,23 @@ import eu.riscoss.client.riskanalysis.JsonRiskAnalysis;
 import eu.riscoss.client.riskanalysis.RASPanel;
 import eu.riscoss.client.ui.LinkHtml;
 import eu.riscoss.shared.JRASInfo;
+import eu.riscoss.shared.Pair;
 
 public class RASModule implements EntryPoint {
 
-	DockPanel					panel = new DockPanel();
+	SimplePanel					panel = new SimplePanel();
 	
-	CellTable<JsonRiskAnalysis>			table;
-	ListDataProvider<JsonRiskAnalysis>	dataProvider;
+	CellTable<Pair<JsonRiskAnalysis, Boolean>>			table;
+	ListDataProvider<Pair<JsonRiskAnalysis, Boolean>>	dataProvider;
 	SimplePager					pager = new SimplePager();
 	
 	VerticalPanel		page = new VerticalPanel();
 	HorizontalPanel		mainView = new HorizontalPanel();
 	VerticalPanel		leftPanel = new VerticalPanel();
 	VerticalPanel		rightPanel = new VerticalPanel();
+	Label title;
+	
+	VerticalPanel 		tablePanel = new VerticalPanel();
 	
 	public native void exportJS() /*-{
 	var that = this;
@@ -54,42 +72,73 @@ public class RASModule implements EntryPoint {
 	});
 	}-*/;
 	
+	List<String> comparison = new ArrayList<>();
+	Button compare;
+	
 	@Override
 	public void onModuleLoad() {
 		exportJS();
 		
-		table = new CellTable<JsonRiskAnalysis>(15, (Resources) GWT.create(TableResources.class));
+		table = new CellTable<Pair<JsonRiskAnalysis, Boolean>>(15, (Resources) GWT.create(TableResources.class));
 		
-		table.addColumn( new Column<JsonRiskAnalysis,SafeHtml>(new SafeHtmlCell() ) {
+		compare = new Button("Compare");
+		compare.setStyleName("button");
+		compare.addClickHandler(new ClickHandler() {
 			@Override
-			public SafeHtml getValue(JsonRiskAnalysis object) {
-				return new LinkHtml( object.getName(), "javascript:setSelectedRAS(\"" + object.getID() + "\")" ); };
+			public void onClick(ClickEvent event) {
+				generateComparison();
+			}
+		});
+		
+		Column<Pair<JsonRiskAnalysis, Boolean>,Boolean> column = new Column<Pair<JsonRiskAnalysis, Boolean>, Boolean> (new CheckboxCell()) {
+			@Override
+			public Boolean getValue(Pair<JsonRiskAnalysis, Boolean> object) {
+				return object.getRight();
+			}
+		};
+		column.setFieldUpdater(new FieldUpdater<Pair<JsonRiskAnalysis, Boolean>, Boolean>() {
+			@Override
+			public void update(int index,
+					Pair<JsonRiskAnalysis, Boolean> object, Boolean value) {
+				object.setRight(value);
+				if (value) comparison.add(object.getLeft().getID());
+				else comparison.remove(object.getLeft().getID());
+				if (comparison.size() >= 2) leftPanel.add(compare);
+				else leftPanel.remove(compare);
+			}
+		});
+		
+		table.addColumn(column);
+		table.addColumn( new Column<Pair<JsonRiskAnalysis, Boolean>,SafeHtml>(new SafeHtmlCell() ) {
+			@Override
+			public SafeHtml getValue(Pair<JsonRiskAnalysis, Boolean> object) {
+				return new LinkHtml( object.getLeft().getName(), "javascript:setSelectedRAS(\"" + object.getLeft().getID() + "\")" ); };
 		}, "Session name");
-		table.addColumn( new Column<JsonRiskAnalysis,SafeHtml>(new SafeHtmlCell() ) {
+		table.addColumn( new Column<Pair<JsonRiskAnalysis, Boolean>,SafeHtml>(new SafeHtmlCell() ) {
 			@Override
-			public SafeHtml getValue(JsonRiskAnalysis object) {
-				return new LinkHtml( object.getTarget(), "javascript:setSelectedRAS(\"" + object.getID() + "\")" ); };
+			public SafeHtml getValue(Pair<JsonRiskAnalysis, Boolean> object) {
+				return new LinkHtml( object.getLeft().getTarget(), "javascript:setSelectedRAS(\"" + object.getLeft().getID() + "\")" ); };
 		}, "Entity");
-		table.addColumn( new Column<JsonRiskAnalysis,SafeHtml>(new SafeHtmlCell() ) {
+		table.addColumn( new Column<Pair<JsonRiskAnalysis, Boolean>,SafeHtml>(new SafeHtmlCell() ) {
 			@Override
-			public SafeHtml getValue(JsonRiskAnalysis object) {
-				return new LinkHtml( object.getRC(), "javascript:setSelectedRAS(\"" + object.getID() + "\")" ); };
+			public SafeHtml getValue(Pair<JsonRiskAnalysis, Boolean> object) {
+				return new LinkHtml( object.getLeft().getRC(), "javascript:setSelectedRAS(\"" + object.getLeft().getID() + "\")" ); };
 		}, "Risk configuration");
-		table.addColumn( new Column<JsonRiskAnalysis,SafeHtml>(new SafeHtmlCell() ) {
+		table.addColumn( new Column<Pair<JsonRiskAnalysis, Boolean>,SafeHtml>(new SafeHtmlCell() ) {
 			@Override
-			public SafeHtml getValue(JsonRiskAnalysis object) {
-				return new LinkHtml( object.getDate(), "javascript:setSelectedRAS(\"" + object.getID() + "\")" ); };
+			public SafeHtml getValue(Pair<JsonRiskAnalysis, Boolean> object) {
+				return new LinkHtml( object.getLeft().getDate(), "javascript:setSelectedRAS(\"" + object.getLeft().getID() + "\")" ); };
 		}, "Execution time");
 		
 		
 		
-		dataProvider = new ListDataProvider<JsonRiskAnalysis>();
+		dataProvider = new ListDataProvider<Pair<JsonRiskAnalysis, Boolean>>();
 		dataProvider.addDataDisplay( table );
 		
 		SimplePager pager = new SimplePager();
 	    pager.setDisplay( table );
 	    
-		VerticalPanel tablePanel = new VerticalPanel();
+		tablePanel = new VerticalPanel();
 		tablePanel.add( table );
 		tablePanel.add( pager );
 		
@@ -100,10 +149,10 @@ public class RASModule implements EntryPoint {
 		rightPanel.setStyleName("rightPanelLayer");
 		page.setWidth("100%");
 		
-		Label title = new Label("Risk Analysis Sessions");
+		title = new Label("Risk Analysis Sessions");
 		title.setStyleName("title");
 		
-		panel.add( tablePanel, DockPanel.CENTER );
+		panel.setWidget( tablePanel);
 		panel.setStyleName("margin-left");
 		page.add(title);
 		leftPanel.add(panel);
@@ -115,17 +164,23 @@ public class RASModule implements EntryPoint {
 		
 		loadRASList();
 	}
-	
-	private void loadData() {
 		
+	protected void generateComparison() {
+		page.clear();
+		ComparisonPanel cp = new ComparisonPanel(comparison) {
+			@Override
+			public void back() {
+				page.clear();
+				page.add(title);
+				page.add(mainView);
+			}
+		};
+		page.add(cp.getWidget());
 	}
-	
+
 	public void loadRASList() {
 		
 		dataProvider.getList().clear();
-		
-//		new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/session/list")
-//			.get().send( new JsonCallback() 
 		
 		RiscossJsonClient.listRiskAnalysisSessions("", "", new JsonCallback(){
 			public void onSuccess(Method method, JSONValue response) {
@@ -145,7 +200,8 @@ public class RASModule implements EntryPoint {
 							@Override
 							public void onSuccess(Method method,
 									JSONValue response) {
-								dataProvider.getList().add( new JsonRiskAnalysis(response) );
+								Pair p = new Pair(new JsonRiskAnalysis(response), false);
+								dataProvider.getList().add( p);
 							}
 						});
 					}

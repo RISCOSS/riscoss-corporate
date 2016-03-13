@@ -328,7 +328,7 @@ public class RiscossWebApp implements EntryPoint {
 			l5.add(riskanalysis, "riskanalysis");
 			vvv.add(l5);
 		}
-		/*if (access.contains("Risk Analysis Sessions")) {
+		if (access.contains("Risk Analysis Sessions")) {
 			b3 = true;
 			Anchor ras = new Anchor("generate some comparisons");
 			ras.addClickHandler(new ClickHandler() {
@@ -340,7 +340,7 @@ public class RiscossWebApp implements EntryPoint {
 			HTMLPanel l6 = new HTMLPanel("You can also <span id='ras'></span>.");
 			l6.add(ras, "ras");
 			vvv.add(l6);
-		}*/
+		}
 		s3.setWidget(vvv);
 		
 		if (b1) shortcuts.add(s1);

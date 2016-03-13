@@ -226,6 +226,16 @@ public class RiscossJsonClient {
 //			.header( "info", o.toString() )
 //			.send( cb );
 //	}
+	
+	public static void getSessionListResults( List<String> ras, JsonCallback cb) {
+		JSONObject json = new JSONObject();
+		JSONArray array = new JSONArray();
+		for (String s : ras) {
+			array.set(array.size(), new JSONString( s ));
+		}
+		json.put( "list", array);
+		RiscossCall.fromCookies().analysis().fx("session").fx("list-results").post(json, cb);
+	}
 
 	public static void setParents( String entity, List<String> entities, JsonCallback cb ) {
 		JSONObject json = new JSONObject();

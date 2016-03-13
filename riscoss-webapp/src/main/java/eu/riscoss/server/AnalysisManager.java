@@ -144,6 +144,48 @@ public class AnalysisManager {
 		
 	}
 	
+	@POST @Path("/{domain}/session/list-results")
+	@Info("Get the results of a given list of risk analysis session")
+	public String getSessionListResults(
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token,
+			@Info ("The list of entities")									String rasIds) throws Exception {
+		
+		RiscossDB db = null;
+		
+		try {
+			
+			db = DBConnector.openDB(domain, token);
+			
+			JsonArray a = new JsonArray();
+			JsonObject list = (JsonObject) new JsonParser().parse(rasIds);
+			
+			for (JsonElement id : list.get("list").getAsJsonArray()) {
+				RiskAnalysisSession ras = db.openRAS( id.getAsString() );
+				JsonObject json = new JsonObject();
+				json.addProperty("id", ras.getId());
+				json.addProperty("target", ras.getTarget());
+				json.addProperty("rc", ras.getRCName());
+				json.addProperty("name", ras.getName());
+				json.addProperty("res", ras.readResults());
+				try {
+					Date date = new Date( ras.getTimestamp() );
+					SimpleDateFormat sdf = new SimpleDateFormat( "dd-MM-yyyy HH.mm.ss" );
+					json.addProperty("timestamp", sdf.format( date ));
+				} catch ( Exception ex ) {}
+				a.add(json);
+			}
+			
+			return a.toString();
+			
+		} catch (Exception ex) {
+			throw ex;
+		} finally {
+			DBConnector.closeDB(db);
+		}
+		
+	}
+	
 	@GET @Path("/{domain}/session/last")
 	@Info("Get a list of the last risk session for every entity and rc pair")
 	public String getLastRiskSession(
@@ -449,7 +491,6 @@ public class AnalysisManager {
 			DBConnector.closeDB(db);
 		}
 	}
-	
 	
 	@GET @Path("/{domain}/session/{sid}/data")
 	public String getSessionData(
