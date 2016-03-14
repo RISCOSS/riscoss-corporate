@@ -944,6 +944,17 @@ public class ORiscossDomain implements RiscossDB {
 		NodeID id = dom.get("/risk-configurations");
 		return dom.listOutEdgeNames(id, GDomDB.CHILDOF_CLASS, null, null, queryString);
 	}
+	
+	@Override
+	public Collection<String> findRAS( String query, SearchParams params ) {
+		query = query.toLowerCase();
+		String queryString = "in.tag.toLowerCase() like '%" + query + "%'" + 
+				(params.max > 0 ? " limit " + params.max : "") +
+				(params.from > 0 ? " skip " + params.from : "") +
+				(params.sort == SearchParams.SORT.AZ ? " order by tag" : "" );
+		NodeID id = dom.get("/ras");
+		return dom.listOutEdgeNames(id, GDomDB.CHILDOF_CLASS, null, null, queryString);
+	}
 
 	@Override
 	public List<String> getScope( String layer ) {

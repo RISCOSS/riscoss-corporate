@@ -106,6 +106,7 @@ public interface RiscossDB {
 	
 	public abstract void							close();
 	public abstract String							getName();
+	public abstract Collection<String> 				findRAS(String query, SearchParams params);
 	
 	/*
 	 * User management
