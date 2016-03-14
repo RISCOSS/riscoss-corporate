@@ -24,6 +24,7 @@ package eu.riscoss.server;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,6 +61,7 @@ import eu.riscoss.db.RecordAbstraction;
 import eu.riscoss.db.RiscossDB;
 import eu.riscoss.db.RiskAnalysisSession;
 import eu.riscoss.db.RiskScenario;
+import eu.riscoss.db.SearchParams;
 import eu.riscoss.ram.MitigationActivity;
 import eu.riscoss.ram.RiskAnalysisManager;
 import eu.riscoss.ram.algo.DownwardEntitySearch;
@@ -80,8 +82,10 @@ import eu.riscoss.shared.EAnalysisOption;
 import eu.riscoss.shared.EAnalysisResult;
 import eu.riscoss.shared.JArgument;
 import eu.riscoss.shared.JArgumentation;
+import eu.riscoss.shared.JLayerNode;
 import eu.riscoss.shared.JMissingData;
 import eu.riscoss.shared.JRASInfo;
+import eu.riscoss.shared.JRASNode;
 import eu.riscoss.shared.JRiskData;
 import eu.riscoss.shared.JValueMap;
 import eu.riscoss.shared.JWhatIfData;
@@ -142,6 +146,56 @@ public class AnalysisManager {
 			DBConnector.closeDB( db );
 		}
 		
+	}
+	
+	@GET @Path("/{domain}/search") 
+	@Info("Returns a list of ras that match the specified parameters")
+	public String search(
+			@PathParam("domain") @Info("The selected domain")			String domain, 
+			@HeaderParam("token") @Info("The authentication token")		String token,
+			@QueryParam("query")										String query
+			) throws Exception {
+		return searchNew( domain, token, query, "0", "0");
+	}
+	
+	@GET @Path("/{domain}/search-ras")
+	@Info("Returns a list of ras that match the specified parameters")
+	public String searchNew(
+			@PathParam("domain") @Info("The selected domain")											String domain, 
+			@HeaderParam("token") @Info("The authentication token")										String token,
+			@DefaultValue("") @QueryParam("query") @Info("The actual query (on the ras name)")			String query, 
+			@DefaultValue("0") @QueryParam("from") @Info("Index of the first ras (for pagination")		String strFrom,
+			@DefaultValue("0") @QueryParam("max") @Info("Amount of ras to search")					String strMax
+		) throws Exception {
+		
+		List<JRASNode> result = new ArrayList<JRASNode>();
+		
+		RiscossDB db = null;
+		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
+			SearchParams params = new SearchParams();
+			params.setMax( strMax );
+			params.setFrom( strFrom );
+			
+			List<String> ras = new ArrayList<String>();
+			
+			Collection<String> list = db.findRAS(query, params);
+			for (String name : list) {
+				JRASNode jd = new JRASNode();
+				jd.name = name;
+				result.add(jd);
+			}
+			
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
+			DBConnector.closeDB(db);
+		}
+		return new Gson().toJson( result );
 	}
 	
 	@POST @Path("/{domain}/session/list-results")
