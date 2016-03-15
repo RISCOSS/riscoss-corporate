@@ -946,14 +946,26 @@ public class ORiscossDomain implements RiscossDB {
 	}
 	
 	@Override
-	public Collection<String> findRAS( String query, SearchParams params ) {
+	public List<RecordAbstraction> findRAS( String query, String target, String rc, SearchParams params ) {
 		query = query.toLowerCase();
-		String queryString = "in.tag.toLowerCase() like '%" + query + "%'" + 
+		final AttributeProvider<RecordAbstraction> ap = new AttributeProvider<RecordAbstraction>() {
+			
+			OrientRecordAbstraction staticRecordAbstraction = new OrientRecordAbstraction();
+			
+			@Override
+			public RecordAbstraction getValue( ODocument doc ) {
+				staticRecordAbstraction.load( doc );
+				return staticRecordAbstraction;
+			}
+		};
+		String queryString = "in.name.toLowerCase() like '%" + query + "%'" + 
 				(params.max > 0 ? " limit " + params.max : "") +
 				(params.from > 0 ? " skip " + params.from : "") +
+				"and in.target.toLowerCase() like '%" + target + "%'" +
+				"and in.rc.toLowerCase() like '%" + rc + "%'" +
 				(params.sort == SearchParams.SORT.AZ ? " order by tag" : "" );
 		NodeID id = dom.get("/ras");
-		return dom.listOutEdgeNames(id, GDomDB.CHILDOF_CLASS, null, null, queryString);
+		return dom.listOutEdgeNames(id, GDomDB.CHILDOF_CLASS, null, null, queryString, ap);
 	}
 
 	@Override

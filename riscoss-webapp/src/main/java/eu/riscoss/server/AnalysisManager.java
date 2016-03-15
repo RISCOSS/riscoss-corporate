@@ -153,9 +153,11 @@ public class AnalysisManager {
 	public String search(
 			@PathParam("domain") @Info("The selected domain")			String domain, 
 			@HeaderParam("token") @Info("The authentication token")		String token,
-			@QueryParam("query")										String query
+			@QueryParam("query")										String query,
+			@QueryParam("target")										String target,
+			@QueryParam("rc")											String rc
 			) throws Exception {
-		return searchNew( domain, token, query, "0", "0");
+		return searchNew( domain, token, query, target, rc, "0", "0");
 	}
 	
 	@GET @Path("/{domain}/search-ras")
@@ -164,12 +166,13 @@ public class AnalysisManager {
 			@PathParam("domain") @Info("The selected domain")											String domain, 
 			@HeaderParam("token") @Info("The authentication token")										String token,
 			@DefaultValue("") @QueryParam("query") @Info("The actual query (on the ras name)")			String query, 
+			@DefaultValue("") @QueryParam("target") @Info("Target entity of the query")					String target,
+			@DefaultValue("") @QueryParam("rc") @Info("Risk configuration of the query")				String rc,
 			@DefaultValue("0") @QueryParam("from") @Info("Index of the first ras (for pagination")		String strFrom,
-			@DefaultValue("0") @QueryParam("max") @Info("Amount of ras to search")					String strMax
+			@DefaultValue("0") @QueryParam("max") @Info("Amount of ras to search")						String strMax
 		) throws Exception {
-		
-		List<JRASNode> result = new ArrayList<JRASNode>();
-		
+				
+		JsonArray a = new JsonArray();
 		RiscossDB db = null;
 		try {
 			
@@ -179,14 +182,24 @@ public class AnalysisManager {
 			params.setMax( strMax );
 			params.setFrom( strFrom );
 			
-			List<String> ras = new ArrayList<String>();
-			
-			Collection<String> list = db.findRAS(query, params);
-			for (String name : list) {
-				JRASNode jd = new JRASNode();
-				jd.name = name;
-				result.add(jd);
+			List<RecordAbstraction> list = db.findRAS(query, target, rc, params);
+			for( RecordAbstraction record : list ) {
+				JRASInfo jras = new JRASInfo( record.getName(), record.getProperty( "name", record.getName() ) );
+				RiskAnalysisSession r = db.openRAS( jras.getId() );
+				JsonObject json = new JsonObject();
+				json.addProperty("id", r.getId());
+				json.addProperty("target", r.getTarget());
+				json.addProperty("rc", r.getRCName());
+				json.addProperty("name", r.getName());
+				try {
+					Date date = new Date( r.getTimestamp() );
+					SimpleDateFormat sdf = new SimpleDateFormat( "dd-MM-yyyy HH.mm.ss" );
+					json.addProperty("timestamp", sdf.format( date ));
+				} catch ( Exception ex ) {}
+				a.add(json);
 			}
+			
+			return a.toString();
 			
 		}
 		catch( Exception ex ) {
@@ -195,7 +208,6 @@ public class AnalysisManager {
 		finally {
 			DBConnector.closeDB(db);
 		}
-		return new Gson().toJson( result );
 	}
 	
 	@POST @Path("/{domain}/session/list-results")

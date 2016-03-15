@@ -13,10 +13,14 @@ import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.cell.client.CheckboxCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.SafeHtmlCell;
+import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.json.client.JSONValue;
@@ -32,9 +36,16 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.view.client.CellPreviewEvent;
+import com.google.gwt.view.client.DefaultSelectionEventManager;
+import com.google.gwt.view.client.DefaultSelectionEventManager.BlacklistEventTranslator;
 import com.google.gwt.view.client.ListDataProvider;
+import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SelectionModel;
+import com.google.gwt.view.client.SingleSelectionModel;
+import com.google.gwt.view.client.SelectionChangeEvent.Handler;
 
 import eu.riscoss.client.JsonCallbackWrapper;
 import eu.riscoss.client.JsonRiskResult;
@@ -48,6 +59,7 @@ import eu.riscoss.client.riskanalysis.RASPanel;
 import eu.riscoss.client.ui.LinkHtml;
 import eu.riscoss.shared.JRASInfo;
 import eu.riscoss.shared.Pair;
+import eu.riscoss.shared.RiscossUtil;
 
 public class RASModule implements EntryPoint {
 
@@ -56,6 +68,14 @@ public class RASModule implements EntryPoint {
 	CellTable<Pair<JsonRiskAnalysis, Boolean>>			table;
 	ListDataProvider<Pair<JsonRiskAnalysis, Boolean>>	dataProvider;
 	SimplePager					pager = new SimplePager();
+	SelectionModel< Pair<JsonRiskAnalysis, Boolean> > selectionModel;
+	DefaultSelectionEventManager.BlacklistEventTranslator<Pair<JsonRiskAnalysis, Boolean>> blackList;
+	
+	Column<Pair<JsonRiskAnalysis, Boolean>,String> rasName;
+	Column<Pair<JsonRiskAnalysis, Boolean>,String> target;
+	Column<Pair<JsonRiskAnalysis, Boolean>,String> riskConf;
+	Column<Pair<JsonRiskAnalysis, Boolean>,String> date;
+	Column<Pair<JsonRiskAnalysis, Boolean>,Boolean> checked;
 	
 	VerticalPanel		page = new VerticalPanel();
 	HorizontalPanel		mainView = new HorizontalPanel();
@@ -65,22 +85,14 @@ public class RASModule implements EntryPoint {
 	
 	VerticalPanel 		tablePanel = new VerticalPanel();
 	
-	public native void exportJS() /*-{
-	var that = this;
-	$wnd.setSelectedRAS = $entry(function(amt) {
-		that.@eu.riscoss.client.ras.RASModule::setSelectedRAS(Ljava/lang/String;)(amt);
-	});
-	}-*/;
-	
 	List<String> comparison = new ArrayList<>();
 	Button compare;
 	
 	@Override
 	public void onModuleLoad() {
-		exportJS();
 		
 		table = new CellTable<Pair<JsonRiskAnalysis, Boolean>>(15, (Resources) GWT.create(TableResources.class));
-		
+				
 		compare = new Button("Compare");
 		compare.setStyleName("button");
 		compare.addClickHandler(new ClickHandler() {
@@ -90,13 +102,29 @@ public class RASModule implements EntryPoint {
 			}
 		});
 		
-		Column<Pair<JsonRiskAnalysis, Boolean>,Boolean> column = new Column<Pair<JsonRiskAnalysis, Boolean>, Boolean> (new CheckboxCell()) {
+		blackList = new DefaultSelectionEventManager.BlacklistEventTranslator<Pair<JsonRiskAnalysis, Boolean>>(0);
+		
+		selectionModel = new SingleSelectionModel<Pair<JsonRiskAnalysis, Boolean>>();
+	    selectionModel.addSelectionChangeHandler(new Handler() {
 			@Override
-			public Boolean getValue(Pair<JsonRiskAnalysis, Boolean> object) {
-				return object.getRight();
+			public void onSelectionChange(SelectionChangeEvent arg0) {
+				List<Pair<JsonRiskAnalysis, Boolean>> l = dataProvider.getList();
+				for (int i = 0; i < l.size(); ++i) {
+					if (selectionModel.isSelected(l.get(i))) {
+						Window.Location.replace("riskanalysis.jsp?or=main&id=" + l.get(i).getLeft().getID());
+					}
+				}
 			}
+	    });
+		
+		checked = new Column<Pair<JsonRiskAnalysis, Boolean>, Boolean> (new CheckboxCell()) {
+			@Override
+		    public Boolean getValue(Pair<JsonRiskAnalysis, Boolean> object)
+		    {
+		        return object.getRight();
+		    }
 		};
-		column.setFieldUpdater(new FieldUpdater<Pair<JsonRiskAnalysis, Boolean>, Boolean>() {
+		checked.setFieldUpdater(new FieldUpdater<Pair<JsonRiskAnalysis, Boolean>, Boolean>() {
 			@Override
 			public void update(int index,
 					Pair<JsonRiskAnalysis, Boolean> object, Boolean value) {
@@ -108,39 +136,39 @@ public class RASModule implements EntryPoint {
 			}
 		});
 		
-		table.addColumn(column);
-		table.addColumn( new Column<Pair<JsonRiskAnalysis, Boolean>,SafeHtml>(new SafeHtmlCell() ) {
+		rasName =  new Column<Pair<JsonRiskAnalysis, Boolean>,String>(new TextCell() ) {
 			@Override
-			public SafeHtml getValue(Pair<JsonRiskAnalysis, Boolean> object) {
-				return new LinkHtml( object.getLeft().getName(), "javascript:setSelectedRAS(\"" + object.getLeft().getID() + "\")" ); };
-		}, "Session name");
-		table.addColumn( new Column<Pair<JsonRiskAnalysis, Boolean>,SafeHtml>(new SafeHtmlCell() ) {
+			public String getValue(Pair<JsonRiskAnalysis, Boolean> object) {
+				return object.getLeft().getName();
+			}
+		};
+		rasName.setSortable(true);
+		target =  new Column<Pair<JsonRiskAnalysis, Boolean>,String>(new TextCell() ) {
 			@Override
-			public SafeHtml getValue(Pair<JsonRiskAnalysis, Boolean> object) {
-				return new LinkHtml( object.getLeft().getTarget(), "javascript:setSelectedRAS(\"" + object.getLeft().getID() + "\")" ); };
-		}, "Entity");
-		table.addColumn( new Column<Pair<JsonRiskAnalysis, Boolean>,SafeHtml>(new SafeHtmlCell() ) {
+			public String getValue(Pair<JsonRiskAnalysis, Boolean> object) {
+				return object.getLeft().getTarget();
+			}
+		};
+		riskConf =  new Column<Pair<JsonRiskAnalysis, Boolean>,String>(new TextCell() ) {
 			@Override
-			public SafeHtml getValue(Pair<JsonRiskAnalysis, Boolean> object) {
-				return new LinkHtml( object.getLeft().getRC(), "javascript:setSelectedRAS(\"" + object.getLeft().getID() + "\")" ); };
-		}, "Risk configuration");
-		table.addColumn( new Column<Pair<JsonRiskAnalysis, Boolean>,SafeHtml>(new SafeHtmlCell() ) {
+			public String getValue(Pair<JsonRiskAnalysis, Boolean> object) {
+				return object.getLeft().getRC();
+			}
+		};
+		date =  new Column<Pair<JsonRiskAnalysis, Boolean>,String>(new TextCell() ) {
 			@Override
-			public SafeHtml getValue(Pair<JsonRiskAnalysis, Boolean> object) {
-				return new LinkHtml( object.getLeft().getDate(), "javascript:setSelectedRAS(\"" + object.getLeft().getID() + "\")" ); };
-		}, "Execution time");
+			public String getValue(Pair<JsonRiskAnalysis, Boolean> object) {
+				return object.getLeft().getDate();
+			}
+		};
 		
+		table.addColumn(checked);
+		table.addColumn(rasName, "Session name");
+		table.addColumn(target, "Entity");
+		table.addColumn(riskConf, "Risk configuration");
+		table.addColumn(date, "Execution time");
 		
-		
-		dataProvider = new ListDataProvider<Pair<JsonRiskAnalysis, Boolean>>();
-		dataProvider.addDataDisplay( table );
-		
-		SimplePager pager = new SimplePager();
-	    pager.setDisplay( table );
-	    
-		tablePanel = new VerticalPanel();
-		tablePanel.add( table );
-		tablePanel.add( pager );
+		searchRAS("");
 		
 		mainView.setStyleName("mainViewLayer");
 		//mainView.setWidth("100%");
@@ -155,14 +183,66 @@ public class RASModule implements EntryPoint {
 		panel.setWidget( tablePanel);
 		panel.setStyleName("margin-left");
 		page.add(title);
+		leftPanel.add(searchFields());
+		panel.getElement().getStyle().setMarginTop(10, Unit.PX);
 		leftPanel.add(panel);
+		leftPanel.setWidth("100%");
+		mainView.setWidth("95%");
 		mainView.add(leftPanel);
 		page.add(mainView);
 		
 		//RootPanel.get().add( panel );
 		RootPanel.get().add( page );
+	}
+
+	private void searchRAS(String query) {
+		//TODO get entity and target
+		RiscossJsonClient.searchRAS(query, "", "", new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				reloadTable(response);
+				
+			}
+		});
+	}
+	
+	private void reloadTable(JSONValue response) {
+
+		List< Pair<JsonRiskAnalysis, Boolean> > results = new ArrayList<>();
+		for (int i = 0; i < response.isArray().size(); ++i) {
+			JsonRiskAnalysis obj = new JsonRiskAnalysis(response.isArray().get(i));
+			Boolean b;
+			Log.println(obj.getID());
+			if (comparison.contains(obj.getID())) b = true;
+			else b = false;
+			results.add(new Pair<>(obj, b));
+		}
 		
-		loadRASList();
+	    table.setSelectionModel(selectionModel, DefaultSelectionEventManager.<Pair<JsonRiskAnalysis, Boolean>>createBlacklistManager(0));
+	    
+	    table.setRowData(0, results);
+	    
+	    dataProvider = new ListDataProvider<Pair<JsonRiskAnalysis, Boolean>>();
+		dataProvider.addDataDisplay( table );
+		
+		for( int i = 0; i < results.size(); i++ ) {
+			dataProvider.getList().add( results.get(i) );
+		}
+		
+		SimplePager pager = new SimplePager();
+	    pager.setDisplay( table );
+	    
+	    tablePanel.clear();
+		tablePanel.add( table );
+		tablePanel.add( pager );
+		table.setWidth("100%");
+		tablePanel.setWidth("100%");
+		panel.setWidth("100%");
+		panel.setWidget(tablePanel);
 	}
 		
 	protected void generateComparison() {
@@ -177,42 +257,36 @@ public class RASModule implements EntryPoint {
 		};
 		page.add(cp.getWidget());
 	}
-
-	public void loadRASList() {
+	
+	TextBox entityFilterQuery = new TextBox();
+	String entityQueryString;
+	
+	private HorizontalPanel searchFields() {
+		HorizontalPanel h = new HorizontalPanel();
 		
-		dataProvider.getList().clear();
+		Label filterlabel = new Label("Search ras: ");
+		filterlabel.setStyleName("bold");
+		h.add(filterlabel);
 		
-		RiscossJsonClient.listRiskAnalysisSessions("", "", new JsonCallback(){
-			public void onSuccess(Method method, JSONValue response) {
-				if( response == null ) return;
-				if( response.isObject() == null ) return;
-				response = response.isObject().get( "list" );
-				if( response.isArray() != null ) {
-					CodecRASInfo codec = GWT.create( CodecRASInfo.class );
-					for( int i = 0; i < response.isArray().size(); i++ ) {
-						JRASInfo info = codec.decode( response.isArray().get( i ) );
-						RiscossJsonClient.getSessionSummary(info.getId(), new JsonCallback() {
-							@Override
-							public void onFailure(Method method,
-									Throwable exception) {
-								Window.alert(exception.getMessage());
-							}
-							@Override
-							public void onSuccess(Method method,
-									JSONValue response) {
-								Pair p = new Pair(new JsonRiskAnalysis(response), false);
-								dataProvider.getList().add( p);
-							}
-						});
+		entityFilterQuery.setWidth("120px");
+		entityFilterQuery.setStyleName("layerNameField");
+		h.add(entityFilterQuery);
+		
+		entityFilterQuery.addKeyUpHandler(new KeyUpHandler() {
+			
+			@Override
+			public void onKeyUp(KeyUpEvent event) {
+				if (entityFilterQuery.getText() != null){
+					String tmp = RiscossUtil.sanitize(entityFilterQuery.getText());
+					if (!tmp.equals(entityQueryString)) {
+						entityQueryString = tmp;
+						searchRAS(tmp);
 					}
 				}
 			}
-			
-			public void onFailure(Method method, Throwable exception) {
-				Window.alert( exception.getMessage() );
-			}
 		});
 		
+		return h;
 	}
 	
 	public void back() {
