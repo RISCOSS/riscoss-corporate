@@ -948,6 +948,8 @@ public class ORiscossDomain implements RiscossDB {
 	@Override
 	public List<RecordAbstraction> findRAS( String query, String target, String rc, SearchParams params ) {
 		query = query.toLowerCase();
+		target = target.toLowerCase();
+		rc = rc.toLowerCase();
 		final AttributeProvider<RecordAbstraction> ap = new AttributeProvider<RecordAbstraction>() {
 			
 			OrientRecordAbstraction staticRecordAbstraction = new OrientRecordAbstraction();

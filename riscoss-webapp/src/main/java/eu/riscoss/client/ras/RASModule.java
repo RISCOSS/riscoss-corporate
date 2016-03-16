@@ -17,6 +17,8 @@ import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
@@ -34,6 +36,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
@@ -168,7 +171,11 @@ public class RASModule implements EntryPoint {
 		table.addColumn(riskConf, "Risk configuration");
 		table.addColumn(date, "Execution time");
 		
-		searchRAS("");
+		rasQueryString = "";
+		rcQueryString = "";
+		targetQueryString = "";
+		
+		searchRAS();
 		
 		mainView.setStyleName("mainViewLayer");
 		//mainView.setWidth("100%");
@@ -195,9 +202,8 @@ public class RASModule implements EntryPoint {
 		RootPanel.get().add( page );
 	}
 
-	private void searchRAS(String query) {
-		//TODO get entity and target
-		RiscossJsonClient.searchRAS(query, "", "", new JsonCallback() {
+	private void searchRAS() {
+		RiscossJsonClient.searchRAS(rasQueryString, targetQueryString, rcQueryString, new JsonCallback() {
 			@Override
 			public void onFailure(Method method, Throwable exception) {
 				Window.alert(exception.getMessage());
@@ -216,7 +222,6 @@ public class RASModule implements EntryPoint {
 		for (int i = 0; i < response.isArray().size(); ++i) {
 			JsonRiskAnalysis obj = new JsonRiskAnalysis(response.isArray().get(i));
 			Boolean b;
-			Log.println(obj.getID());
 			if (comparison.contains(obj.getID())) b = true;
 			else b = false;
 			results.add(new Pair<>(obj, b));
@@ -258,8 +263,13 @@ public class RASModule implements EntryPoint {
 		page.add(cp.getWidget());
 	}
 	
-	TextBox entityFilterQuery = new TextBox();
-	String entityQueryString;
+	TextBox rasFilterQuery = new TextBox();
+	ListBox targetFilterQuery = new ListBox();
+	ListBox rcFilterQuery = new ListBox();
+	
+	String rasQueryString;
+	String targetQueryString;
+	String rcQueryString;
 	
 	private HorizontalPanel searchFields() {
 		HorizontalPanel h = new HorizontalPanel();
@@ -268,27 +278,97 @@ public class RASModule implements EntryPoint {
 		filterlabel.setStyleName("bold");
 		h.add(filterlabel);
 		
-		entityFilterQuery.setWidth("120px");
-		entityFilterQuery.setStyleName("layerNameField");
-		h.add(entityFilterQuery);
+		rasFilterQuery.setWidth("200px");
+		rasFilterQuery.setStyleName("layerNameField");
+		h.add(rasFilterQuery);
 		
-		entityFilterQuery.addKeyUpHandler(new KeyUpHandler() {
+		rasFilterQuery.addKeyUpHandler(new KeyUpHandler() {
 			
 			@Override
 			public void onKeyUp(KeyUpEvent event) {
-				if (entityFilterQuery.getText() != null){
-					String tmp = RiscossUtil.sanitize(entityFilterQuery.getText());
-					if (!tmp.equals(entityQueryString)) {
-						entityQueryString = tmp;
-						searchRAS(tmp);
+				if (rasFilterQuery.getText() != null){
+					String tmp = RiscossUtil.sanitize(rasFilterQuery.getText());
+					if (!tmp.equals(rasQueryString)) {
+						rasQueryString = tmp;
+						searchRAS();
 					}
 				}
 			}
 		});
 		
+		
+		Label targetlabel = new Label("Entity: ");
+		targetlabel.setStyleName("bold");
+		targetlabel.getElement().getStyle().setMarginLeft(50, Unit.PX);
+		h.add(targetlabel);
+		
+		targetFilterQuery.setWidth("200px");
+		targetFilterQuery.addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				targetQueryString = targetFilterQuery.getItemText(targetFilterQuery.getSelectedIndex());
+				if (targetQueryString.equals("all")) targetQueryString = "";
+				searchRAS();
+			}
+		});
+		h.add(targetFilterQuery);
+		
+		Label rclabel = new Label("Risk configuration: ");
+		rclabel.setStyleName("bold");
+		rclabel.getElement().getStyle().setMarginLeft(50, Unit.PX);
+		h.add(rclabel);
+		
+		rcFilterQuery.setWidth("200px");
+		rcFilterQuery.addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				rcQueryString = rcFilterQuery.getItemText(rcFilterQuery.getSelectedIndex());
+				if (rcQueryString.equals("all")) rcQueryString = "";
+				searchRAS();
+			}
+		});
+		h.add(rcFilterQuery);
+		
+		loadEntities();
+		loadRCs();
+		
 		return h;
 	}
 	
+	private void loadRCs() {
+		RiscossJsonClient.listRCs(new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				rcFilterQuery.addItem("all");
+				for (int i = 0; i < response.isArray().size(); ++i) {
+					rcFilterQuery.addItem(response.isArray().get(i).isObject().get("name").isString().stringValue());
+				}
+			}
+		});
+	}
+
+	private void loadEntities() {
+		RiscossJsonClient.listEntities(new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				targetFilterQuery.addItem("all");
+				for (int i = 0; i < response.isArray().size(); ++i) {
+					String s = response.isArray().get(i).isObject().get("name").isString().stringValue();
+					if (!s.equals("-"))
+						targetFilterQuery.addItem(s);
+				}
+			}
+		});
+	}
+
 	public void back() {
 		Window.Location.reload();
 	}
@@ -302,29 +382,19 @@ public class RASModule implements EntryPoint {
 		RiscossJsonClient.getSessionSummary(ras, new JsonCallback() {
 			@Override
 			public void onFailure(Method method, Throwable exception) {
-				// TODO Auto-generated method stub
+				Window.alert(exception.getMessage());
 			}
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
-				/*rightPanel.clear();
-				JsonRiskAnalysis json = new JsonRiskAnalysis( response );
-				Label title = new Label(json.getName());
-				title.setStyleName("subtitle");
-				rightPanel.add(title);
-				rightPanel.add(rasPanel);*/
 				page.clear();
 				page.setStyleName("leftPanelLayer");
 				JsonRiskAnalysis json = new JsonRiskAnalysis( response );
-				/*Label title = new Label(json.getName());
-				title.setStyleName("subtitle");
-				page.add(title);*/
 				page.add(rasPanel);
 			}
 		});
 	}
 	
 	protected void deleteRAS( JRASInfo info ) {
-		//new Resource( GWT.getHostPageBaseURL() + "api/analysis/" + RiscossJsonClient.getDomain() + "/session/" + info.getId() + "/delete" ).delete().send( new JsonCallbackWrapper<JRASInfo>( info ) 
 			
 		RiscossJsonClient.deleteRiskAnalysisSession(info.getId(), new JsonCallbackWrapper<JRASInfo>( info ){
 			@Override

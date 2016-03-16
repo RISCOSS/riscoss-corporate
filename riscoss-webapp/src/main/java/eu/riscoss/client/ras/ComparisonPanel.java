@@ -182,7 +182,7 @@ public abstract class ComparisonPanel {
 								}
 							}
 						}
-						else {
+						else if (array.get(i).isObject().get("datatype").isString().stringValue().equals("distribution")){
 							if (!distributions.containsKey(array.get(i).isObject().get("id").isString().stringValue())) {
 								Map<String, JSONObject> m = new HashMap<>();
 								m.put(ses, array.get(i).isObject());
@@ -233,7 +233,7 @@ public abstract class ComparisonPanel {
         PlotOptions plotOptions = PlotOptions.create();
 		
         GlobalSeriesOptions globalSeriesOptions = GlobalSeriesOptions.create();
-        globalSeriesOptions.setBarsSeriesOptions( BarSeriesOptions.create().setShow( true ).setBarWidth( 0.2 ).setLineWidth( 1 ) );
+        globalSeriesOptions.setBarsSeriesOptions( BarSeriesOptions.create().setShow( true ).setBarWidth( 0.1 ).setLineWidth( 1 ) );
         plotOptions.addXAxisOptions( AxisOptions.create().setTicks( new AbstractAxisOptions.TickGenerator()
         {
             @Override
