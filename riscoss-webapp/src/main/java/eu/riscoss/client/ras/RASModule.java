@@ -72,7 +72,6 @@ public class RASModule implements EntryPoint {
 	ListDataProvider<Pair<JsonRiskAnalysis, Boolean>>	dataProvider;
 	SimplePager					pager = new SimplePager();
 	SelectionModel< Pair<JsonRiskAnalysis, Boolean> > selectionModel;
-	DefaultSelectionEventManager.BlacklistEventTranslator<Pair<JsonRiskAnalysis, Boolean>> blackList;
 	
 	Column<Pair<JsonRiskAnalysis, Boolean>,String> rasName;
 	Column<Pair<JsonRiskAnalysis, Boolean>,String> target;
@@ -104,9 +103,7 @@ public class RASModule implements EntryPoint {
 				generateComparison();
 			}
 		});
-		
-		blackList = new DefaultSelectionEventManager.BlacklistEventTranslator<Pair<JsonRiskAnalysis, Boolean>>(0);
-		
+				
 		selectionModel = new SingleSelectionModel<Pair<JsonRiskAnalysis, Boolean>>();
 	    selectionModel.addSelectionChangeHandler(new Handler() {
 			@Override
