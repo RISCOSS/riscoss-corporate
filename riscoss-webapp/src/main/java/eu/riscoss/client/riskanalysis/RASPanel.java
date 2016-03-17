@@ -988,6 +988,7 @@ public class RASPanel implements IsWidget {
 		List<String> entities = r.getEntities();
 		String s = "";
 		for (String e : entities) s = s + e + "@";
+		//String s = entity;
 		Window.Location.replace("whatifanalysis.jsp?id=" + selectedRAS + "&entities=" + s);
 	}
 	

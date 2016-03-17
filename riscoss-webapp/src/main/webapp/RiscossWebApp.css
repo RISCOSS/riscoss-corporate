@@ -271,6 +271,11 @@ body {
 	
 }
 
+.legend {
+	margin-left: 48px !important;
+	margin-top: 10px !important;
+}
+
 .contentTable {
 	padding: 3px 4px !important;
 	border: 1px solid #E6E6E6 !important;
