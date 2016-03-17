@@ -233,7 +233,8 @@ public abstract class ComparisonPanel {
         PlotOptions plotOptions = PlotOptions.create();
 		
         GlobalSeriesOptions globalSeriesOptions = GlobalSeriesOptions.create();
-        globalSeriesOptions.setBarsSeriesOptions( BarSeriesOptions.create().setShow( true ).setBarWidth( 0.1 ).setLineWidth( 1 ) );
+        double width = 1 / (double) nbSeries - 0.01;
+        globalSeriesOptions.setBarsSeriesOptions( BarSeriesOptions.create().setShow( true ).setBarWidth( width ).setLineWidth( 1 ) );
         plotOptions.addXAxisOptions( AxisOptions.create().setTicks( new AbstractAxisOptions.TickGenerator()
         {
             @Override
@@ -307,7 +308,8 @@ public abstract class ComparisonPanel {
         // create the plot
         mainPlot = new SimplePlot( model, plotOptions );
         mainPlot.setWidth(1250);
-        mView.add(legend);
+        mainPlot.getElement().getStyle().setMarginTop(12, Unit.PX);
+        //mView.add(legend);
         mView.add(mainPlot);
         mView.setWidth("100%");
         
@@ -332,7 +334,7 @@ public abstract class ComparisonPanel {
 	
 	protected void generateComparisonGrid() {
 		Grid g = new Grid( risks.size() + goals.size() + distributions.size() + 1, entityResults.size() + 1);
-		g.setWidth("95%");
+		g.setWidth("97%");
 		g.getElement().getStyle().setMarginTop(26, Unit.PX);
 		g.setCellSpacing(0);
 		g.setBorderWidth(1);
