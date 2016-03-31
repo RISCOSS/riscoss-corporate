@@ -706,10 +706,15 @@ public class AnalysisManager {
 	        //Results data
 	        Element results = doc.createElement("results");
 	        JSONObject jsonRes = new JSONObject(ras.readResults());
-	        if (jsonRes.get("hresults") == null) {
-	        	getSequentialResults(jsonRes.getJSONObject("results"), results, doc);
+	        if (!jsonRes.has("hresults")) {
+	        	results.setAttribute("type", "sequential");
+	        	jsonRes.put("entity", ras.getTarget());
+	        	getSequentialResults(jsonRes, results, doc);
 	        }
-	        else getHierarchycalResults(jsonRes.getJSONObject("hresults"), results, doc);
+	        else {
+	        	results.setAttribute("type", "hierarchycal");
+	        	getHierarchycalResults(jsonRes.getJSONObject("hresults"), results, doc);
+	        }
 	        risksession.appendChild(results);
 	        
 	        //Input data
@@ -842,7 +847,7 @@ public class AnalysisManager {
 				getInputs(childArray.getJSONObject(i), child, doc);
 				children.appendChild(child);
 			}
-			if (children.hasChildNodes()) inputs.appendChild(children);
+			inputs.appendChild(children);
 			
 		} catch (DOMException e) {
 			e.printStackTrace();
@@ -856,35 +861,13 @@ public class AnalysisManager {
 		Element res = doc.createElement("res");
 		Element children = doc.createElement("children");
 		try {
-			entity.setTextContent(jsonRes.getString("entity"));
-			JSONArray r = jsonRes.getJSONArray("results");
-			for (int i = 0; i < r.length(); ++i) {
-				Element event = doc.createElement("event");
-				event.setAttribute("id", r.getJSONObject(i).getString("id"));
-				Element label = doc.createElement("label");
-				label.setTextContent(r.getJSONObject(i).getString("label"));
-				Element type = doc.createElement("type");
-				type.setTextContent(r.getJSONObject(i).getString("type"));
-				Element description = doc.createElement("description");
-				description.setTextContent(r.getJSONObject(i).getString("description"));
-				Element exposure = doc.createElement("exposure");
-				exposure.setTextContent(String.valueOf(r.getJSONObject(i).getJSONObject("e").getDouble("e")));
-				
-				event.appendChild(label);
-				event.appendChild(type);
-				event.appendChild(description);
-				event.appendChild(exposure);
-				
-				res.appendChild(event);
-			}
-			results.appendChild(entity);
-			results.appendChild(res);
+			extractRes(jsonRes, results, doc, entity, res);
 			
 			JSONArray childArray = jsonRes.getJSONArray("children");
 			for (int i = 0; i < childArray.length(); ++i) {
 				Element child = doc.createElement("child");
 				getHierarchycalResults(childArray.getJSONObject(i), child, doc);
-				children.appendChild(child);
+				if (child.hasChildNodes()) children.appendChild(child);
 			}
 			results.appendChild(children);
 			
@@ -900,29 +883,7 @@ public class AnalysisManager {
 		Element entity = doc.createElement("entity");
 		Element res = doc.createElement("res");
 		try {
-			entity.setTextContent(jsonRes.getString("entity"));
-			JSONArray r = jsonRes.getJSONArray("results");
-			for (int i = 0; i < r.length(); ++i) {
-				Element event = doc.createElement("event");
-				event.setAttribute("id", r.getJSONObject(i).getString("id"));
-				Element label = doc.createElement("label");
-				label.setTextContent(r.getJSONObject(i).getString("label"));
-				Element type = doc.createElement("type");
-				type.setTextContent(r.getJSONObject(i).getString("type"));
-				Element description = doc.createElement("description");
-				description.setTextContent(r.getJSONObject(i).getString("description"));
-				Element exposure = doc.createElement("exposure");
-				exposure.setTextContent(String.valueOf(r.getJSONObject(i).getJSONObject("e").getDouble("e")));
-				
-				event.appendChild(label);
-				event.appendChild(type);
-				event.appendChild(description);
-				event.appendChild(exposure);
-				
-				res.appendChild(event);
-			}
-			results.appendChild(entity);
-			results.appendChild(res);
+			extractRes(jsonRes, results, doc, entity, res);
 			
 		} catch (DOMException e) {
 			e.printStackTrace();
@@ -931,6 +892,53 @@ public class AnalysisManager {
 		}
 	}
 
+	private void extractRes(JSONObject jsonRes, Element results, Document doc,
+			Element entity, Element res) throws JSONException {
+		entity.setTextContent(jsonRes.getString("entity"));
+		JSONArray r = jsonRes.getJSONArray("results");
+		for (int i = 0; i < r.length(); ++i) {
+			Element event = doc.createElement("event");
+			event.setAttribute("id", r.getJSONObject(i).getString("id"));
+			Element type = doc.createElement("type");
+			type.setTextContent(r.getJSONObject(i).getString("type"));
+			Element datatype = doc.createElement("datatype");
+			datatype.setTextContent(r.getJSONObject(i).getString("datatype"));
+			event.appendChild(type);
+			switch (r.getJSONObject(i).getString("datatype")) {
+				case "evidence":
+					Element label = doc.createElement("label");
+					label.setTextContent(r.getJSONObject(i).getString("label"));
+					Element description = doc.createElement("description");
+					description.setTextContent(r.getJSONObject(i).getString("description"));
+					Element exposure = doc.createElement("exposure");
+					exposure.setTextContent(String.valueOf(r.getJSONObject(i).getJSONObject("e").getDouble("e")));
+					event.appendChild(label);
+					event.appendChild(description);
+					event.appendChild(exposure);
+					res.appendChild(event);
+					break;
+				case "distribution":
+					Element values = doc.createElement("values");
+					JSONArray s = r.getJSONObject(i).getJSONArray("value");
+					for (int j = 0; j < s.length(); ++j) {
+						Element value = doc.createElement("value");
+						value.setTextContent(s.getString(j));
+						values.appendChild(value);
+					}
+					Element rank = doc.createElement("rank");
+					rank.setTextContent(r.getJSONObject(i).getString("rank"));
+					event.appendChild(rank);
+					event.appendChild(values);
+					res.appendChild(event);
+					break;
+				default:
+					break;
+			}
+		}
+		results.appendChild(entity);
+		results.appendChild(res);
+	}
+	
 	@GET @Path("/{domain}/session/{sid}/results")
 	@Produces("application/json")
 	@Info( "Returns the results of a previously executed risk analysis" )
