@@ -22,12 +22,14 @@
 package eu.riscoss.server;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -44,9 +46,23 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.XML;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
+import com.gargoylesoftware.htmlunit.javascript.host.Console;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -636,6 +652,285 @@ public class AnalysisManager {
 		}
 	}
 	
+	@GET @Path("/{domain}/session/{sid}/report")
+	@Info("Get a report xml format string of the selected session")
+	public String generateReport(
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token,
+			@PathParam("sid") @Info("The session id")						String sid) throws Exception {
+		
+		RiscossDB db = null;
+		
+		try {
+			db = DBConnector.openDB( domain, token );
+			RiskAnalysisSession ras = db.openRAS( sid );
+
+			//Inits XML parser
+			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+	        DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+	        Document doc = docBuilder.newDocument();
+	        
+	        //Parse results data
+	        Element rootElement = doc.createElement("riscoss");
+	        doc.appendChild(rootElement);
+	        Element risksession = doc.createElement("risksession");
+	        risksession.setAttribute("label", ras.getName());
+	        rootElement.appendChild(risksession);
+	        
+	        //Risk session main info
+	        Element target = doc.createElement("target");
+	        target.setTextContent(ras.getTarget());
+	        risksession.appendChild(target);
+	        
+	        Element rc = doc.createElement("rc");
+	        rc.setTextContent(ras.getRCName());
+	        risksession.appendChild(rc);
+	        
+	        Element time = doc.createElement("timestamp");
+	        Date date = new Date( ras.getTimestamp() );
+			SimpleDateFormat sdf = new SimpleDateFormat( "dd-MM-yyyy HH.mm.ss" );
+	        time.setTextContent(sdf.format(date));
+	        risksession.appendChild(time);
+	        
+	        //Models data
+	        List<String> modelsList = db.getModelsFromRiskCfg( ras.getRCName(), ras.getTarget() );
+	        Element models = doc.createElement("models");
+	        risksession.appendChild(models);
+	        for (String modelName : modelsList) {
+	        	Element model = doc.createElement("model");
+	        	Element name = doc.createElement("name");
+	        	name.setTextContent(modelName);
+	        	model.appendChild(name);
+	        	models.appendChild(model);
+	        }
+	        //Results data
+	        Element results = doc.createElement("results");
+	        JSONObject jsonRes = new JSONObject(ras.readResults());
+	        if (jsonRes.get("hresults") == null) {
+	        	getSequentialResults(jsonRes.getJSONObject("results"), results, doc);
+	        }
+	        else getHierarchycalResults(jsonRes.getJSONObject("hresults"), results, doc);
+	        risksession.appendChild(results);
+	        
+	        //Input data
+	        Element inputs = doc.createElement("inputs");
+	        getInputs(jsonRes.getJSONObject("input"), inputs, doc);
+	        risksession.appendChild(inputs);
+	        
+	        //Argumentation
+	        Element argumentation = doc.createElement("argumentation");
+	        getArguments(jsonRes.getJSONObject("argumentation").getJSONObject("arguments"), argumentation, doc);
+	        risksession.appendChild(argumentation);
+	        
+	        //Get XML string
+	        StringWriter sw = new StringWriter();
+	        TransformerFactory tf = TransformerFactory.newInstance();
+	        Transformer transformer = tf.newTransformer();
+	        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+	        transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+	        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+	        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+
+	        transformer.transform(new DOMSource(doc), new StreamResult(sw));
+	        
+	        JsonObject json = new JsonObject();
+			json.addProperty( "xml", sw.toString() );
+	        
+			return json.toString();
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
+	}
+	
+	private void getArguments(JSONObject jsonObject, Element argumentation, Document doc) {
+		Iterator<?> keys = jsonObject.keys();
+		
+		while (keys.hasNext()) {
+			String key = (String) keys.next();
+			try {
+				Element argument = doc.createElement("argument");
+				argument.setAttribute("id", key);
+				Element summary = doc.createElement("summary");
+				summary.setTextContent(jsonObject.getJSONObject(key).getString("summary"));
+				Element truth = doc.createElement("truth");
+				truth.setTextContent(jsonObject.getJSONObject(key).getString("truth"));
+				
+				Element subArgs = doc.createElement("subArgs");
+				JSONArray r = jsonObject.getJSONObject(key).getJSONArray("subArgs");
+				for (int i = 0; i < r.length(); ++i) {
+					Element subArg = doc.createElement("argument");
+					appendSubArgs(r.getJSONObject(i), subArg, doc);
+					subArgs.appendChild(subArg);
+				}
+				
+				argumentation.appendChild(argument);
+				argument.appendChild(summary);
+				argument.appendChild(truth);
+				argument.appendChild(subArgs);
+				
+			} catch (DOMException e) {
+				e.printStackTrace();
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+			
+		}
+	}
+
+	private void appendSubArgs(JSONObject object, Element subArg, Document doc) {
+		try {
+			Element summary = doc.createElement("summary");
+			summary.setTextContent(object.getString("summary"));
+			Element truth = doc.createElement("truth");
+			truth.setTextContent(object.getString("truth"));
+			
+			Element subArgs = doc.createElement("subArgs");
+			JSONArray r = object.getJSONArray("subArgs");
+			for (int i = 0; i < r.length(); ++i) {
+				Element sub = doc.createElement("argument");
+				appendSubArgs(r.getJSONObject(i), sub, doc);
+				subArgs.appendChild(sub);
+			}
+			subArg.appendChild(summary);
+			subArg.appendChild(truth);
+			subArg.appendChild(subArgs);
+			
+		} catch (DOMException e) {
+			e.printStackTrace();
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	private void getInputs(JSONObject jsonRes, Element inputs, Document doc) {
+		Element entity = doc.createElement("entity");
+		Element data = doc.createElement("data");
+		Element children = doc.createElement("children");
+		try {
+			entity.setTextContent(jsonRes.getString("entity"));
+			JSONArray r = jsonRes.getJSONArray("data");
+			for (int i = 0; i < r.length(); ++i) {
+				Element event = doc.createElement("input");
+				event.setAttribute("id", r.getJSONObject(i).getString("id"));
+				Element label = doc.createElement("label");
+				label.setTextContent(r.getJSONObject(i).getString("label"));
+				Element type = doc.createElement("type");
+				type.setTextContent(r.getJSONObject(i).getString("type"));
+				Element description = doc.createElement("description");
+				description.setTextContent(r.getJSONObject(i).getString("description"));
+				Element exposure = doc.createElement("value");
+				exposure.setTextContent(String.valueOf(r.getJSONObject(i).getString("value")));
+				
+				event.appendChild(label);
+				event.appendChild(type);
+				event.appendChild(description);
+				event.appendChild(exposure);
+				
+				data.appendChild(event);
+			}
+			inputs.appendChild(entity);
+			inputs.appendChild(data);
+			
+			JSONArray childArray = jsonRes.getJSONArray("children");
+			for (int i = 0; i < childArray.length(); ++i) {
+				Element child = doc.createElement("child");
+				getInputs(childArray.getJSONObject(i), child, doc);
+				children.appendChild(child);
+			}
+			if (children.hasChildNodes()) inputs.appendChild(children);
+			
+		} catch (DOMException e) {
+			e.printStackTrace();
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void getHierarchycalResults(JSONObject jsonRes, Element results, Document doc) {
+		Element entity = doc.createElement("entity");
+		Element res = doc.createElement("res");
+		Element children = doc.createElement("children");
+		try {
+			entity.setTextContent(jsonRes.getString("entity"));
+			JSONArray r = jsonRes.getJSONArray("results");
+			for (int i = 0; i < r.length(); ++i) {
+				Element event = doc.createElement("event");
+				event.setAttribute("id", r.getJSONObject(i).getString("id"));
+				Element label = doc.createElement("label");
+				label.setTextContent(r.getJSONObject(i).getString("label"));
+				Element type = doc.createElement("type");
+				type.setTextContent(r.getJSONObject(i).getString("type"));
+				Element description = doc.createElement("description");
+				description.setTextContent(r.getJSONObject(i).getString("description"));
+				Element exposure = doc.createElement("exposure");
+				exposure.setTextContent(String.valueOf(r.getJSONObject(i).getJSONObject("e").getDouble("e")));
+				
+				event.appendChild(label);
+				event.appendChild(type);
+				event.appendChild(description);
+				event.appendChild(exposure);
+				
+				res.appendChild(event);
+			}
+			results.appendChild(entity);
+			results.appendChild(res);
+			
+			JSONArray childArray = jsonRes.getJSONArray("children");
+			for (int i = 0; i < childArray.length(); ++i) {
+				Element child = doc.createElement("child");
+				getHierarchycalResults(childArray.getJSONObject(i), child, doc);
+				children.appendChild(child);
+			}
+			results.appendChild(children);
+			
+		} catch (DOMException e) {
+			e.printStackTrace();
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	private void getSequentialResults(JSONObject jsonRes, Element results, Document doc) {
+		Element entity = doc.createElement("entity");
+		Element res = doc.createElement("res");
+		try {
+			entity.setTextContent(jsonRes.getString("entity"));
+			JSONArray r = jsonRes.getJSONArray("results");
+			for (int i = 0; i < r.length(); ++i) {
+				Element event = doc.createElement("event");
+				event.setAttribute("id", r.getJSONObject(i).getString("id"));
+				Element label = doc.createElement("label");
+				label.setTextContent(r.getJSONObject(i).getString("label"));
+				Element type = doc.createElement("type");
+				type.setTextContent(r.getJSONObject(i).getString("type"));
+				Element description = doc.createElement("description");
+				description.setTextContent(r.getJSONObject(i).getString("description"));
+				Element exposure = doc.createElement("exposure");
+				exposure.setTextContent(String.valueOf(r.getJSONObject(i).getJSONObject("e").getDouble("e")));
+				
+				event.appendChild(label);
+				event.appendChild(type);
+				event.appendChild(description);
+				event.appendChild(exposure);
+				
+				res.appendChild(event);
+			}
+			results.appendChild(entity);
+			results.appendChild(res);
+			
+		} catch (DOMException e) {
+			e.printStackTrace();
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+
 	@GET @Path("/{domain}/session/{sid}/results")
 	@Produces("application/json")
 	@Info( "Returns the results of a previously executed risk analysis" )
