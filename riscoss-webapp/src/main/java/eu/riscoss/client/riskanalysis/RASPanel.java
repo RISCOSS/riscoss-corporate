@@ -1014,6 +1014,15 @@ public class RASPanel implements IsWidget {
 	}
 	
 	private void generateReport() {
+		/*RiscossJsonClient.getSessionResults(selectedRAS, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				Log.println(response.isObject().toString());
+			}
+		});*/
 		String url = GWT.getHostPageBaseURL() + "analysis/download?domain=" + RiscossJsonClient.getDomain() + "&name="+ rasName+"&rasId=" + selectedRAS +"&type=ras&token="+RiscossCall.getToken();
 		Window.open(url, "", "");
 	}

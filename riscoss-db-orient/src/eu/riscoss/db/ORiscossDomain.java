@@ -33,6 +33,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.ProcessingInstruction;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -1009,9 +1010,12 @@ public class ORiscossDomain implements RiscossDB {
 		}
         Document doc = docBuilder.newDocument();
         
+        doc.setXmlStandalone(true);
+        ProcessingInstruction pi = doc.createProcessingInstruction("xml-stylesheet", "type=\"text/xsl\" href=\"ras-stylesheet.xslt\"");
         //Parse results data
         Element rootElement = doc.createElement("riscoss");
         doc.appendChild(rootElement);
+        doc.insertBefore(pi, rootElement);
         Element risksession = doc.createElement("risksession");
         risksession.setAttribute("label", ras.getName());
         rootElement.appendChild(risksession);
@@ -1048,12 +1052,12 @@ public class ORiscossDomain implements RiscossDB {
 		try {
 			jsonRes = new JSONObject(ras.readResults());
 			if (!jsonRes.has("hresults")) {
-	        	results.setAttribute("type", "sequential");
+	        	results.setAttribute("type", jsonRes.getJSONArray("results").getJSONObject(0).getString("datatype"));
 				jsonRes.put("entity", ras.getTarget());
 	        	getSequentialResults(jsonRes, results, doc);
 			}
 			else {
-				results.setAttribute("type", "hierarchycal");
+				results.setAttribute("type", jsonRes.getJSONObject("hresults").getJSONArray("results").getJSONObject(0).getString("datatype"));
 				getHierarchycalResults(jsonRes.getJSONObject("hresults"), results, doc);
 			}
         } catch (JSONException e) {
@@ -1244,8 +1248,10 @@ public class ORiscossDomain implements RiscossDB {
 	private void getSequentialResults(JSONObject jsonRes, Element results, Document doc) {
 		Element entity = doc.createElement("entity");
 		Element res = doc.createElement("res");
+		Element children = doc.createElement("children");
 		try {
 			extractRes(jsonRes, results, doc, entity, res);
+			results.appendChild(children);
 			
 		} catch (DOMException e) {
 			e.printStackTrace();
@@ -1262,7 +1268,8 @@ public class ORiscossDomain implements RiscossDB {
 			Element event = doc.createElement("event");
 			event.setAttribute("id", r.getJSONObject(i).getString("id"));
 			Element type = doc.createElement("type");
-			type.setTextContent(r.getJSONObject(i).getString("type"));
+			if (r.getJSONObject(i).has("type")) type.setTextContent(r.getJSONObject(i).getString("type"));
+			else type.setTextContent("Risk");
 			Element datatype = doc.createElement("datatype");
 			datatype.setTextContent(r.getJSONObject(i).getString("datatype"));
 			event.appendChild(type);
