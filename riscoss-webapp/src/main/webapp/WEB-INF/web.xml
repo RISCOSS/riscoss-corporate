@@ -12,10 +12,10 @@
 	</context-param>
 	
 	<!-- Uncomment this to customize the DB location -->
-	<context-param>
+	<!-- context-param>
 		<param-name>eu.riscoss.db.address</param-name>
-		<param-value>plocal:/home/jmotger/Escritorio</param-value>
-	</context-param>
+		<param-value>plocal:/...</param-value>
+	</context-param-->
 	<context-param>
 		<param-name>eu.riscoss.db.name</param-name>
 		<param-value>riscoss-db</param-value>
