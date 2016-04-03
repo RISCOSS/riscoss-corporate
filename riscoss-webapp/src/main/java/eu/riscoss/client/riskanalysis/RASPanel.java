@@ -46,6 +46,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import eu.riscoss.client.Log;
+import eu.riscoss.client.RiscossCall;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecMissingData;
 import eu.riscoss.client.codec.CodecRASInfo;
@@ -211,11 +212,13 @@ public class RASPanel implements IsWidget {
 		buttons2 = new HorizontalPanel();
 		HorizontalPanel empty = new HorizontalPanel();
 		HorizontalPanel empty2 = new HorizontalPanel();
+		HorizontalPanel empty3 = new HorizontalPanel();
 		
 		buttons.addStyleName("margin-top");
 		buttons2.setStyleName("margin-top");
 		empty.setWidth("12px");
 		empty2.setWidth("12px");
+		empty3.setWidth("12px");
 		
 		//If RASPanel placed in multi-layer analysis
 		if (risk != null) {
@@ -225,6 +228,8 @@ public class RASPanel implements IsWidget {
 			buttons.add(empty);
 			buttons.add(mitigation);
 			buttons.add(whatIf);
+			buttons.add(empty3);
+			buttons.add(generateReport);
 			buttons2.add(update);
 			buttons2.add(run);
 			buttons2.add(empty2);
@@ -239,6 +244,8 @@ public class RASPanel implements IsWidget {
 			buttons.add(empty);
 			buttons.add(mitigation);
 			buttons.add(whatIf);
+			buttons.add(empty3);
+			buttons.add(generateReport);
 			buttons2.add(update);
 			buttons2.add(run);
 			buttons2.add(empty2);
@@ -253,6 +260,8 @@ public class RASPanel implements IsWidget {
 			buttons.add(empty);
 			buttons.add(mitigation);
 			buttons.add(whatIf);
+			buttons.add(empty3);
+			buttons.add(generateReport);
 			buttons2.add(update);
 			buttons2.add(run);
 			buttons2.add(empty2);
@@ -267,6 +276,8 @@ public class RASPanel implements IsWidget {
 			buttons.add(empty);
 			buttons.add(mitigation);
 			buttons.add(whatIf);
+			buttons.add(empty3);
+			buttons.add(generateReport);
 			buttons2.add(update);
 			buttons2.add(run);
 			buttons2.add(empty2);
@@ -407,6 +418,7 @@ public class RASPanel implements IsWidget {
 	Button		mitigation;
 	Button 		saveRas;
 	Button 		whatIf;
+	Button 		generateReport;
 	
 	protected void generateButtons() {
 		
@@ -586,6 +598,15 @@ public class RASPanel implements IsWidget {
 			@Override
 			public void onClick(ClickEvent arg0) {
 				whatIfAnalysis();
+			}
+		});
+		
+		generateReport = new Button("Generate report");
+		generateReport.setStyleName("deleteButton");
+		generateReport.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				generateReport();
 			}
 		});
 	}
@@ -990,6 +1011,11 @@ public class RASPanel implements IsWidget {
 		for (String e : entities) s = s + e + "@";
 		//String s = entity;
 		Window.Location.replace("whatifanalysis.jsp?id=" + selectedRAS + "&entities=" + s);
+	}
+	
+	private void generateReport() {
+		String url = GWT.getHostPageBaseURL() + "analysis/download?domain=" + RiscossJsonClient.getDomain() + "&name="+ rasName+"&rasId=" + selectedRAS +"&type=ras&token="+RiscossCall.getToken();
+		Window.open(url, "", "");
 	}
 	
 	private String getDate() {

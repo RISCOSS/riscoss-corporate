@@ -38,6 +38,11 @@ public class DownloadServlet extends HttpServlet {
 				blobFileName = db.getModelFilename(modelName);
 				blob = db.getModelBlob(modelName).getBytes();
 				break;
+			case "ras":
+				//gets the ras report
+				blobFileName = modelName + ".xml";
+				blob = db.getXMLReport(request.getParameter("rasId")).getBytes();
+				break;
 			default:
 				return;
 			}
