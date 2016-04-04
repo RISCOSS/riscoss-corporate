@@ -1081,7 +1081,20 @@ public class ORiscossDomain implements RiscossDB {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-        risksession.appendChild(argumentation);
+        //risksession.appendChild(argumentation);
+        Map<String, Node> args = new HashMap<>();
+        NodeList el = argumentation.getChildNodes();
+        for (int i = 0; i < el.getLength(); ++i) {
+        	args.put(el.item(i).getAttributes().item(0).getNodeValue(), el.item(i));
+        }
+        NodeList res = results.getChildNodes().item(1).getChildNodes();
+        for (int i = 0; i < res.getLength(); ++i) {
+        	String key = res.item(i).getAttributes().item(0).getNodeValue();
+        	if (args.containsKey(key)) {
+	        	Node n1 = args.get(key);
+	        	res.item(i).appendChild(n1);
+        	}
+        }
         
         //Get XML string
         StringWriter sw = new StringWriter();
