@@ -108,6 +108,7 @@ public interface RiscossDB {
 	public abstract String							getName();
 	public abstract List<RecordAbstraction> 		findRAS(String query, String target, String rc, SearchParams params);
 	public abstract String							getXMLReport( String sid );
+	public abstract String 							getHTMLReport( String sid );
 	
 	/*
 	 * User management

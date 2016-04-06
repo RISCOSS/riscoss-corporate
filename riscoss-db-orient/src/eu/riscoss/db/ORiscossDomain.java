@@ -1,5 +1,7 @@
 package eu.riscoss.db;
 
+import java.io.ByteArrayOutputStream;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -14,12 +16,14 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
@@ -998,6 +1002,31 @@ public class ORiscossDomain implements RiscossDB {
 	}
 	
 	@Override
+	public String getHTMLReport( String sid ) {
+		String xml = getXMLReport( sid );
+		
+		TransformerFactory tFactory=TransformerFactory.newInstance();
+
+        Source xslDoc = new StreamSource("resources/ras-stylesheet.xslt");
+        Source xmlDoc = new StreamSource(new StringReader(xml));
+
+        ByteArrayOutputStream htmlFile = new ByteArrayOutputStream();
+        Transformer trasform;
+		try {
+			trasform = tFactory.newTransformer(xslDoc);
+			trasform.transform(xmlDoc, new StreamResult(htmlFile));
+		} catch (TransformerConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TransformerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+        return htmlFile.toString();
+	}
+	
+	@Override
 	public String getXMLReport( String sid ) {
 		RiskAnalysisSession ras = openRAS( sid );
 		//Inits XML parser
@@ -1092,8 +1121,11 @@ public class ORiscossDomain implements RiscossDB {
         	String key = res.item(i).getAttributes().item(0).getNodeValue();
         	if (args.containsKey(key)) {
 	        	Node n1 = args.get(key);
-	        	res.item(i).appendChild(n1);
+	        	Element m = (Element) n1;
+	        	m.removeAttribute("id");
+	        	res.item(i).appendChild(m);
         	}
+        	else res.item(i).appendChild(doc.createElement("argument"));
         }
         
         //Get XML string
@@ -1293,7 +1325,10 @@ public class ORiscossDomain implements RiscossDB {
 					Element description = doc.createElement("description");
 					description.setTextContent(r.getJSONObject(i).getString("description"));
 					Element exposure = doc.createElement("exposure");
-					exposure.setTextContent(String.valueOf(r.getJSONObject(i).getJSONObject("e").getDouble("e")));
+					Double d = r.getJSONObject(i).getJSONObject("e").getDouble("e");
+					d = d*(float)100;
+					d = Math.floor(d * 100) / 100;
+					exposure.setTextContent(String.valueOf(d));
 					event.appendChild(label);
 					event.appendChild(description);
 					event.appendChild(exposure);
