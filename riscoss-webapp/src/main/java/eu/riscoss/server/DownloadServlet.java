@@ -45,7 +45,7 @@ public class DownloadServlet extends HttpServlet {
 				break;
 			case "rasHTML":
 				//gets the ras report in html
-				blobFileName = name;
+				blobFileName = "report";
 				blob = db.getHTMLReport(request.getParameter("rasId")).getBytes();
 				
 				response.setContentType("application/html");
