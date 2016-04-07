@@ -18,24 +18,17 @@
 		<li>
 			<strong><xsl:value-of select="label"/>: </strong>
 			<xsl:value-of select="description"/><br/><br/>
-			<strong>Exposure: </strong><xsl:value-of select="exposure"/>%<br/><br/>
+			<strong><i>Exposure = </i></strong><xsl:value-of select="exposure"/>%<br/><br/>
 			<xsl:if test="argument/summary">
-				<ul>
-					<li><xsl:apply-templates select="argument"/></li>
-				</ul>
+				<xsl:apply-templates select="argument"/>
 				<br/>
 			</xsl:if>
 		</li>
 	</xsl:template>
 
 	<xsl:template match="child">
+		<h2><xsl:value-of select="entity"/> entity</h2>
 		<hr/>
-		<table>
-			<tr>
-				<th>Entity</th>
-				<td><xsl:value-of select="entity"/></td>
-			</tr>
-		</table>
 		<xsl:if test="res/event">
 			<ul>
 				<xsl:apply-templates select="res"/>
@@ -53,16 +46,18 @@
 				<style media="screen" type="text/css">
 					body {
 						font-family: sans-serif;
+						color: #686868;
 						padding: 24px;
 					}
 
-					h1, h2, h3, h4, h5, h6 {
-						color: #7EAC30;
+					h1, h2 {
+						color: #6E9C20;
 						margin-bottom: 0;
 					}
 
-					h2 {
-						text-decoration: underline;
+					h3, h4, h5, h6 {
+						color: #7EAC30;
+						margin-bottom: 0;
 					}
 
 					hr {
@@ -125,26 +120,17 @@
 							</td>
 						</tr>
 					</table>
-					<hr/>
 					<xsl:if test="results/@type='evidence'">
-						<table class="header_res">
-							<tr>
-								<th>Entity</th>
-								<td><xsl:value-of select="results/entity"/></td>
-							</tr>
-						</table>
+						<h2><xsl:value-of select="results/entity"/> entity</h2>
+						<hr/>
 						<ul>
 							<xsl:apply-templates select="results/res"/>
 						</ul>
 						<xsl:apply-templates select="results/children"/>
 					</xsl:if>
 					<xsl:if test="results/@type='distribution'">
-						<table class="header_res">
-							<tr>
-								<th>Entity</th>
-								<td><xsl:value-of select="results/entity"/></td>
-							</tr>
-						</table>
+						<h2><xsl:value-of select="results/entity"/> entity</h2>
+						<hr/>
 						<ul>
 							<xsl:for-each select="results/res/event">
 								<li>
@@ -152,7 +138,7 @@
 									Values:<br/>
 									<ul>
 										<xsl:for-each select="values/value">
-											<li><xsl:value-of select="."/></li>
+											<li><xsl:value-of select="."/>%</li>
 										</xsl:for-each>
 									</ul>
 									<br/>

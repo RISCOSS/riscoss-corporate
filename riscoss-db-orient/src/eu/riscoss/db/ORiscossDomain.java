@@ -1339,7 +1339,10 @@ public class ORiscossDomain implements RiscossDB {
 					JSONArray s = r.getJSONObject(i).getJSONArray("value");
 					for (int j = 0; j < s.length(); ++j) {
 						Element value = doc.createElement("value");
-						value.setTextContent(s.getString(j));
+						Double dd = Double.valueOf(s.getString(j));
+						dd = dd*(float)100;
+						dd = Math.floor(dd * 100) / 100;
+						value.setTextContent(String.valueOf(dd));
 						values.appendChild(value);
 					}
 					Element rank = doc.createElement("rank");
