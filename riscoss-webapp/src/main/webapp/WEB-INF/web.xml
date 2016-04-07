@@ -12,7 +12,7 @@
 	</context-param>
 	
 	<!-- Uncomment this to customize the DB location -->
-	<!--  context-param>
+	<!-- context-param>
 		<param-name>eu.riscoss.db.address</param-name>
 		<param-value>plocal:/...</param-value>
 	</context-param-->
@@ -91,6 +91,11 @@
     <servlet-mapping>
         <servlet-name>downloadServlet</servlet-name>
         <url-pattern>/models/download</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+    	<servlet-name>downloadServlet</servlet-name>
+    	<url-pattern>/analysis/download</url-pattern>
     </servlet-mapping>
 
 	<!-- Default page to serve -->

@@ -1,14 +1,45 @@
 package eu.riscoss.db;
 
+import java.io.ByteArrayOutputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.codehaus.jettison.json.JSONObject;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
+import org.codehaus.jettison.json.JSONObject;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.ProcessingInstruction;
+
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
@@ -968,6 +999,364 @@ public class ORiscossDomain implements RiscossDB {
 				(params.sort == SearchParams.SORT.AZ ? " order by tag" : "" );
 		NodeID id = dom.get("/ras");
 		return dom.listOutEdgeNames(id, GDomDB.CHILDOF_CLASS, null, null, queryString, ap);
+	}
+	
+	@Override
+	public String getHTMLReport( String sid ) {
+		String xml = getXMLReport( sid );
+		
+		TransformerFactory tFactory=TransformerFactory.newInstance();
+
+        Source xslDoc = new StreamSource("resources/ras-stylesheet.xslt");
+        Source xmlDoc = new StreamSource(new StringReader(xml));
+
+        ByteArrayOutputStream htmlFile = new ByteArrayOutputStream();
+        Transformer trasform;
+		try {
+			trasform = tFactory.newTransformer(xslDoc);
+			trasform.transform(xmlDoc, new StreamResult(htmlFile));
+		} catch (TransformerConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TransformerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+        return htmlFile.toString();
+	}
+	
+	@Override
+	public String getXMLReport( String sid ) {
+		RiskAnalysisSession ras = openRAS( sid );
+		//Inits XML parser
+		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder docBuilder = null;
+		try {
+			docBuilder = docFactory.newDocumentBuilder();
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		}
+        Document doc = docBuilder.newDocument();
+        
+        doc.setXmlStandalone(true);
+        ProcessingInstruction pi = doc.createProcessingInstruction("xml-stylesheet", "type=\"text/xsl\" href=\"ras-stylesheet.xslt\"");
+        //Parse results data
+        Element rootElement = doc.createElement("riscoss");
+        doc.appendChild(rootElement);
+        doc.insertBefore(pi, rootElement);
+        Element risksession = doc.createElement("risksession");
+        risksession.setAttribute("label", ras.getName());
+        rootElement.appendChild(risksession);
+        
+        //Risk session main info
+        Element target = doc.createElement("target");
+        target.setTextContent(ras.getTarget());
+        risksession.appendChild(target);
+        
+        Element rc = doc.createElement("rc");
+        rc.setTextContent(ras.getRCName());
+        risksession.appendChild(rc);
+        
+        Element time = doc.createElement("timestamp");
+        Date date = new Date( ras.getTimestamp() );
+		SimpleDateFormat sdf = new SimpleDateFormat( "dd-MM-yyyy HH.mm.ss" );
+        time.setTextContent(sdf.format(date));
+        risksession.appendChild(time);
+        
+        //Models data
+        List<String> modelsList = getModelsFromRiskCfg( ras.getRCName(), ras.getTarget() );
+        Element models = doc.createElement("models");
+        risksession.appendChild(models);
+        for (String modelName : modelsList) {
+        	Element model = doc.createElement("model");
+        	Element name = doc.createElement("name");
+        	name.setTextContent(modelName);
+        	model.appendChild(name);
+        	models.appendChild(model);
+        }
+        //Results data
+        Element results = doc.createElement("results");
+        JSONObject jsonRes = null;
+		try {
+			jsonRes = new JSONObject(ras.readResults());
+			if (!jsonRes.has("hresults")) {
+	        	results.setAttribute("type", jsonRes.getJSONArray("results").getJSONObject(0).getString("datatype"));
+				jsonRes.put("entity", ras.getTarget());
+	        	getSequentialResults(jsonRes, results, doc);
+			}
+			else {
+				results.setAttribute("type", jsonRes.getJSONObject("hresults").getJSONArray("results").getJSONObject(0).getString("datatype"));
+				getHierarchycalResults(jsonRes.getJSONObject("hresults"), results, doc);
+			}
+        } catch (JSONException e) {
+			e.printStackTrace();
+		}
+        risksession.appendChild(results);
+        
+        //Input data
+        Element inputs = doc.createElement("inputs");
+        try {
+			getInputs(jsonRes.getJSONObject("input"), inputs, doc);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+        risksession.appendChild(inputs);
+        
+        //Argumentation
+        Element argumentation = doc.createElement("argumentation");
+        try {
+			getArguments(jsonRes.getJSONObject("argumentation").getJSONObject("arguments"), argumentation, doc);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+        //risksession.appendChild(argumentation);
+        Map<String, Node> args = new HashMap<>();
+        NodeList el = argumentation.getChildNodes();
+        for (int i = 0; i < el.getLength(); ++i) {
+        	args.put(el.item(i).getAttributes().item(0).getNodeValue(), el.item(i));
+        }
+        NodeList res = results.getChildNodes().item(1).getChildNodes();
+        for (int i = 0; i < res.getLength(); ++i) {
+        	String key = res.item(i).getAttributes().item(0).getNodeValue();
+        	if (args.containsKey(key)) {
+	        	Node n1 = args.get(key);
+	        	Element m = (Element) n1;
+	        	m.removeAttribute("id");
+	        	res.item(i).appendChild(m);
+        	}
+        	else res.item(i).appendChild(doc.createElement("argument"));
+        }
+        
+        //Get XML string
+        StringWriter sw = new StringWriter();
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Transformer transformer = null;
+		try {
+			transformer = tf.newTransformer();
+		} catch (TransformerConfigurationException e) {
+			e.printStackTrace();
+		}
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+        
+        XPath xPath = XPathFactory.newInstance().newXPath();
+        try {
+			NodeList nodeList = (NodeList) xPath.evaluate("//text()[normalize-space()='']", 
+					doc, 
+					XPathConstants.NODESET);
+			for (int i = 0; i < nodeList.getLength(); ++i) {
+		        Node node = nodeList.item(i);
+		        node.getParentNode().removeChild(node);
+		    }
+			
+			transformer.transform(new DOMSource(doc), new StreamResult(sw));
+		} catch (XPathExpressionException e) {
+			e.printStackTrace();
+		} catch (TransformerException e) {
+			e.printStackTrace();
+		}
+        return sw.toString();
+	}
+	
+	private void getArguments(JSONObject jsonObject, Element argumentation, Document doc) {
+		Iterator<?> keys = jsonObject.keys();
+		
+		while (keys.hasNext()) {
+			String key = (String) keys.next();
+			try {
+				Element argument = doc.createElement("argument");
+				argument.setAttribute("id", key);
+				Element summary = doc.createElement("summary");
+				summary.setTextContent(jsonObject.getJSONObject(key).getString("summary"));
+				Element truth = doc.createElement("truth");
+				truth.setTextContent(jsonObject.getJSONObject(key).getString("truth"));
+				
+				Element subArgs = doc.createElement("subArgs");
+				JSONArray r = jsonObject.getJSONObject(key).getJSONArray("subArgs");
+				for (int i = 0; i < r.length(); ++i) {
+					Element subArg = doc.createElement("argument");
+					appendSubArgs(r.getJSONObject(i), subArg, doc);
+					subArgs.appendChild(subArg);
+				}
+				
+				argumentation.appendChild(argument);
+				argument.appendChild(summary);
+				argument.appendChild(truth);
+				argument.appendChild(subArgs);
+				
+			} catch (DOMException e) {
+				e.printStackTrace();
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+			
+		}
+	}
+
+	private void appendSubArgs(JSONObject object, Element subArg, Document doc) {
+		try {
+			Element summary = doc.createElement("summary");
+			summary.setTextContent(object.getString("summary"));
+			Element truth = doc.createElement("truth");
+			truth.setTextContent(object.getString("truth"));
+			
+			Element subArgs = doc.createElement("subArgs");
+			JSONArray r = object.getJSONArray("subArgs");
+			for (int i = 0; i < r.length(); ++i) {
+				Element sub = doc.createElement("argument");
+				appendSubArgs(r.getJSONObject(i), sub, doc);
+				subArgs.appendChild(sub);
+			}
+			subArg.appendChild(summary);
+			subArg.appendChild(truth);
+			subArg.appendChild(subArgs);
+			
+		} catch (DOMException e) {
+			e.printStackTrace();
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	private void getInputs(JSONObject jsonRes, Element inputs, Document doc) {
+		Element entity = doc.createElement("entity");
+		Element data = doc.createElement("data");
+		Element children = doc.createElement("children");
+		try {
+			entity.setTextContent(jsonRes.getString("entity"));
+			JSONArray r = jsonRes.getJSONArray("data");
+			for (int i = 0; i < r.length(); ++i) {
+				Element event = doc.createElement("input");
+				event.setAttribute("id", r.getJSONObject(i).getString("id"));
+				Element label = doc.createElement("label");
+				label.setTextContent(r.getJSONObject(i).getString("label"));
+				Element type = doc.createElement("type");
+				type.setTextContent(r.getJSONObject(i).getString("type"));
+				Element description = doc.createElement("description");
+				description.setTextContent(r.getJSONObject(i).getString("description"));
+				Element exposure = doc.createElement("value");
+				exposure.setTextContent(String.valueOf(r.getJSONObject(i).getString("value")));
+				
+				event.appendChild(label);
+				event.appendChild(type);
+				event.appendChild(description);
+				event.appendChild(exposure);
+				
+				data.appendChild(event);
+			}
+			inputs.appendChild(entity);
+			inputs.appendChild(data);
+			
+			JSONArray childArray = jsonRes.getJSONArray("children");
+			for (int i = 0; i < childArray.length(); ++i) {
+				Element child = doc.createElement("child");
+				getInputs(childArray.getJSONObject(i), child, doc);
+				children.appendChild(child);
+			}
+			inputs.appendChild(children);
+			
+		} catch (DOMException e) {
+			e.printStackTrace();
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void getHierarchycalResults(JSONObject jsonRes, Element results, Document doc) {
+		Element entity = doc.createElement("entity");
+		Element res = doc.createElement("res");
+		Element children = doc.createElement("children");
+		try {
+			extractRes(jsonRes, results, doc, entity, res);
+			
+			JSONArray childArray = jsonRes.getJSONArray("children");
+			for (int i = 0; i < childArray.length(); ++i) {
+				Element child = doc.createElement("child");
+				getHierarchycalResults(childArray.getJSONObject(i), child, doc);
+				if (child.hasChildNodes()) children.appendChild(child);
+			}
+			results.appendChild(children);
+			
+		} catch (DOMException e) {
+			e.printStackTrace();
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	private void getSequentialResults(JSONObject jsonRes, Element results, Document doc) {
+		Element entity = doc.createElement("entity");
+		Element res = doc.createElement("res");
+		Element children = doc.createElement("children");
+		try {
+			extractRes(jsonRes, results, doc, entity, res);
+			results.appendChild(children);
+			
+		} catch (DOMException e) {
+			e.printStackTrace();
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void extractRes(JSONObject jsonRes, Element results, Document doc,
+			Element entity, Element res) throws JSONException {
+		entity.setTextContent(jsonRes.getString("entity"));
+		JSONArray r = jsonRes.getJSONArray("results");
+		for (int i = 0; i < r.length(); ++i) {
+			Element event = doc.createElement("event");
+			event.setAttribute("id", r.getJSONObject(i).getString("id"));
+			Element type = doc.createElement("type");
+			if (r.getJSONObject(i).has("type")) type.setTextContent(r.getJSONObject(i).getString("type"));
+			else type.setTextContent("Risk");
+			Element datatype = doc.createElement("datatype");
+			datatype.setTextContent(r.getJSONObject(i).getString("datatype"));
+			event.appendChild(type);
+			switch (r.getJSONObject(i).getString("datatype")) {
+				case "evidence":
+					Element label = doc.createElement("label");
+					label.setTextContent(r.getJSONObject(i).getString("label"));
+					Element description = doc.createElement("description");
+					description.setTextContent(r.getJSONObject(i).getString("description"));
+					Element exposure = doc.createElement("exposure");
+					Double d = r.getJSONObject(i).getJSONObject("e").getDouble("e");
+					d = d*(float)100;
+					d = Math.floor(d * 100) / 100;
+					exposure.setTextContent(String.valueOf(d));
+					event.appendChild(label);
+					event.appendChild(description);
+					event.appendChild(exposure);
+					res.appendChild(event);
+					break;
+				case "distribution":
+					Element values = doc.createElement("values");
+					JSONArray s = r.getJSONObject(i).getJSONArray("value");
+					for (int j = 0; j < s.length(); ++j) {
+						Element value = doc.createElement("value");
+						Double dd = Double.valueOf(s.getString(j));
+						dd = dd*(float)100;
+						dd = Math.floor(dd * 100) / 100;
+						value.setTextContent(String.valueOf(dd));
+						values.appendChild(value);
+					}
+					Element rank = doc.createElement("rank");
+					rank.setTextContent(r.getJSONObject(i).getString("rank"));
+					event.appendChild(rank);
+					event.appendChild(values);
+					res.appendChild(event);
+					break;
+				default:
+					break;
+			}
+		}
+		results.appendChild(entity);
+		results.appendChild(res);
 	}
 
 	@Override

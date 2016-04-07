@@ -21,7 +21,7 @@ public class DownloadServlet extends HttpServlet {
 			
 			db = DBConnector.openDB( domain, token );
 			
-			String modelName = request.getParameter("name");
+			String name = request.getParameter("name");
 			String type = request.getParameter("type");
 			
 			String blobFileName = "";
@@ -30,13 +30,23 @@ public class DownloadServlet extends HttpServlet {
 			switch (type) {
 			case "desc":
 				// gets the description for the model
-				blobFileName = db.getModelDescFielname(modelName);
-				blob = db.getModelDescBlob(modelName);
+				blobFileName = db.getModelDescFielname(name);
+				blob = db.getModelDescBlob(name);
 				break;
 			case "model":
 				// gets the model
-				blobFileName = db.getModelFilename(modelName);
-				blob = db.getModelBlob(modelName).getBytes();
+				blobFileName = db.getModelFilename(name);
+				blob = db.getModelBlob(name).getBytes();
+				break;
+			case "ras":
+				//gets the ras report
+				blobFileName = name + ".xml";
+				blob = db.getXMLReport(request.getParameter("rasId")).getBytes();
+				break;
+			case "rasHTML":
+				//gets the ras report in html
+				blobFileName = name + ".html";
+				blob = db.getHTMLReport(request.getParameter("rasId")).getBytes();
 				break;
 			default:
 				return;
