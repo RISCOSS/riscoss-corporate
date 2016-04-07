@@ -21,24 +21,9 @@
 
 package eu.riscoss.client.riskanalysis;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.StringReader;
 import java.util.Date;
 import java.util.List;
 
-import javax.xml.transform.Result;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.stream.StreamSource;
-
-import org.apache.fop.apps.FOPException;
-import org.apache.fop.apps.FOUserAgent;
-import org.apache.fop.apps.Fop;
-import org.apache.fop.apps.FopFactory;
-import org.apache.fop.apps.MimeConstants;
 import org.fusesource.restygwt.client.JsonCallback;
 import org.fusesource.restygwt.client.Method;
 
@@ -67,7 +52,6 @@ import eu.riscoss.client.codec.CodecRASInfo;
 import eu.riscoss.client.codec.CodecRiskData;
 import eu.riscoss.client.entities.EntityPropertyPage;
 import eu.riscoss.client.ras.RASModule;
-import eu.riscoss.client.report.RiskAnalysisReport;
 import eu.riscoss.client.report.RiskAnalysisResults;
 import eu.riscoss.shared.JMissingData;
 import eu.riscoss.shared.JRASInfo;
