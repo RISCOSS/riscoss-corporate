@@ -21,25 +21,17 @@
 
 package eu.riscoss.server;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -51,33 +43,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 
-import org.apache.fop.apps.FOPException;
-import org.apache.fop.apps.FOUserAgent;
-import org.apache.fop.apps.Fop;
-import org.apache.fop.apps.FopFactory;
-import org.apache.fop.apps.MimeConstants;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.XML;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
-import com.gargoylesoftware.htmlunit.javascript.host.Console;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -85,7 +51,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
-import eu.riscoss.client.Log;
 import eu.riscoss.dataproviders.RiskData;
 import eu.riscoss.dataproviders.RiskDataType;
 import eu.riscoss.db.RecordAbstraction;
@@ -113,10 +78,8 @@ import eu.riscoss.shared.EAnalysisOption;
 import eu.riscoss.shared.EAnalysisResult;
 import eu.riscoss.shared.JArgument;
 import eu.riscoss.shared.JArgumentation;
-import eu.riscoss.shared.JLayerNode;
 import eu.riscoss.shared.JMissingData;
 import eu.riscoss.shared.JRASInfo;
-import eu.riscoss.shared.JRASNode;
 import eu.riscoss.shared.JRiskData;
 import eu.riscoss.shared.JValueMap;
 import eu.riscoss.shared.JWhatIfData;
