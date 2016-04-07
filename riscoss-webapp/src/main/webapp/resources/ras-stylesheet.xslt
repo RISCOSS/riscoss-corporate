@@ -92,9 +92,14 @@
 						color: #787878;
 					}
 
+					.logo {
+						float: right;
+					}
+
 				</style>
 			</head>
 			<body>
+				<img class="logo" src="http://www.riscoss.eu/bin/download/ColorThemes/DefaultColorTheme/logo_Riscoss_Tagline_Website.png"/>
 				<xsl:for-each select="riscoss/risksession">
 					<h1><xsl:value-of select="@label" /></h1>
 					<hr/>
