@@ -36,16 +36,17 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import eu.riscoss.client.Log;
-import eu.riscoss.client.RiscossCall;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecMissingData;
 import eu.riscoss.client.codec.CodecRASInfo;
@@ -53,6 +54,7 @@ import eu.riscoss.client.codec.CodecRiskData;
 import eu.riscoss.client.entities.EntityPropertyPage;
 import eu.riscoss.client.ras.RASModule;
 import eu.riscoss.client.report.RiskAnalysisResults;
+import eu.riscoss.client.ui.FramePanel;
 import eu.riscoss.shared.JMissingData;
 import eu.riscoss.shared.JRASInfo;
 
@@ -1012,17 +1014,23 @@ public class RASPanel implements IsWidget {
 	}
 	
 	private void generateReport() {
-		/*RiscossJsonClient.generateReport(selectedRAS, new JsonCallback() {
+		Window.open(GWT.getHostPageBaseURL() + "rasreport.jsp?id=" + selectedRAS, "_blank", "");
+		/*RiscossJsonClient.generateHTMLReport(selectedRAS, new JsonCallback() {
 			@Override
 			public void onFailure(Method method, Throwable exception) {
 			}
 			@Override
 			public void onSuccess(Method method, JSONValue response) {
-	            
+	           String html = response.isObject().get("hml").isString().stringValue();
+	    			           
+	           HTMLPanel htmlPanel = new HTMLPanel(html);
+
+	           PopupPanel popupPanel = new PopupPanel();
+	           popupPanel.setWidget(htmlPanel);
+	           popupPanel.show();
+	           
 			}
 		});*/
-		String url = GWT.getHostPageBaseURL() + "analysis/download?domain=" + RiscossJsonClient.getDomain() + "&name="+ rasName+"&rasId=" + selectedRAS +"&type=rasHTML&token="+RiscossCall.getToken();
-		Window.open(url, "", "");
 	}
 	
 	private String getDate() {
