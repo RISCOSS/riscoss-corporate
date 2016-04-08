@@ -16,9 +16,9 @@
 	<!-- Recursive templates for results -->
 	<xsl:template match="event">
 		<li>
-			<strong><xsl:value-of select="label"/>: </strong>
+			<strong style="color: #7EAC30;"><xsl:value-of select="label"/>: </strong>
 			<xsl:value-of select="description"/><br/><br/>
-			<strong><i>Exposure = </i></strong><xsl:value-of select="exposure"/>%<br/><br/>
+			<strong style="color: #7EAC30;"><i>Exposure = </i></strong><xsl:value-of select="exposure"/>%<br/><br/>
 			<xsl:if test="argument/summary">
 				<xsl:apply-templates select="argument"/>
 				<br/>
@@ -27,15 +27,18 @@
 	</xsl:template>
 
 	<xsl:template match="child">
-		<h2><xsl:value-of select="entity"/> entity</h2>
-		<hr/>
+		<h2 style="text-align: left;
+						color: #6E9C20;
+						margin-bottom: 0;"><xsl:value-of select="entity"/> entity</h2>
+		<hr sylte="color: #7EAC30;"/>
 		<xsl:if test="res/event">
 			<ul>
 				<xsl:apply-templates select="res"/>
 			</ul>
 		</xsl:if>
 		<xsl:if test="not(res/event)">
-			<p class="comment">There are no risk or goals related with entity <xsl:value-of select="entity"/> for this risk analysis session.</p>
+			<p class="comment" style="font-style: italic;
+						color: #787878;">There are no risk or goals related with entity <xsl:value-of select="entity"/> for this risk analysis session.</p>
 		</xsl:if>
 	</xsl:template>
 
@@ -53,11 +56,6 @@
 					h1, h2 {
 						text-align: left;
 						color: #6E9C20;
-						margin-bottom: 0;
-					}
-
-					h3, h4, h5, h6 {
-						color: #7EAC30;
 						margin-bottom: 0;
 					}
 
@@ -99,27 +97,53 @@
 
 				</style>
 			</head>
-			<body>
-				<img class="logo" src="http://www.riscoss.eu/bin/download/ColorThemes/DefaultColorTheme/logo_Riscoss_Tagline_Website.png"/>
+			<body style="font-family: sans-serif;
+						color: #686868;
+						padding: 24px;">
+				<img class="logo" style="float: right;" src="http://www.riscoss.eu/bin/download/ColorThemes/DefaultColorTheme/logo_Riscoss_Tagline_Website.png"/>
 				<xsl:for-each select="riscoss/risksession">
-					<h1><xsl:value-of select="@label" /></h1>
-					<hr/>
-					<table>
+					<h1 style="text-align: left;
+						color: #6E9C20;
+						margin-bottom: 0;"><xsl:value-of select="@label" /></h1>
+					<hr style="color: #7EAC30;"/>
+					<table style="margin-top: 24px;
+						margin-bottom: 24px;
+						border-collapse: collapse;">
 						<tr>
-							<th>Target</th>
-							<td><xsl:value-of select="target"/></td>
+							<th style="text-align: left;
+							color: #686868;
+							background-color: #e8e8e8;
+							border: 1px solid #c8c8c8;
+							padding: 6px;">Target</th>
+							<td style="border: 1px solid #c8c8c8;
+							padding: 6px;"><xsl:value-of select="target"/></td>
 						</tr>
 						<tr>
-							<th>RC</th>
-							<td><xsl:value-of select="rc"/></td>
+							<th style="text-align: left;
+							color: #686868;
+							background-color: #e8e8e8;
+							border: 1px solid #c8c8c8;
+							padding: 6px;">RC</th>
+							<td style="border: 1px solid #c8c8c8;
+							padding: 6px;"><xsl:value-of select="rc"/></td>
 						</tr>
 						<tr>
-							<th>Last execution time</th>
-							<td><xsl:value-of select="timestamp"/></td>
+							<th style="text-align: left;
+							color: #686868;
+							background-color: #e8e8e8;
+							border: 1px solid #c8c8c8;
+							padding: 6px;">Last execution time</th>
+							<td style="border: 1px solid #c8c8c8;
+							padding: 6px;"><xsl:value-of select="timestamp"/></td>
 						</tr>
 						<tr>
-							<th>Models</th>
-							<td>
+							<th style="text-align: left;
+							color: #686868;
+							background-color: #e8e8e8;
+							border: 1px solid #c8c8c8;
+							padding: 6px;">Models</th>
+							<td style="border: 1px solid #c8c8c8;
+							padding: 6px;">
 								<xsl:for-each select="models/model">
 									<xsl:value-of select="name"/><br/>
 								</xsl:for-each>
@@ -127,20 +151,24 @@
 						</tr>
 					</table>
 					<xsl:if test="results/@type='evidence'">
-						<h2><xsl:value-of select="results/entity"/> entity</h2>
-						<hr/>
+						<h2 style="text-align: left;
+						color: #6E9C20;
+						margin-bottom: 0;"><xsl:value-of select="results/entity"/> entity</h2>
+						<hr style="color: #7EAC30;"/>
 						<ul>
 							<xsl:apply-templates select="results/res"/>
 						</ul>
 						<xsl:apply-templates select="results/children"/>
 					</xsl:if>
 					<xsl:if test="results/@type='distribution'">
-						<h2><xsl:value-of select="results/entity"/> entity</h2>
-						<hr/>
+						<h2 style="text-align: left;
+						color: #6E9C20;
+						margin-bottom: 0;"><xsl:value-of select="results/entity"/> entity</h2>
+						<hr style="color: #7EAC30;"/>
 						<ul>
 							<xsl:for-each select="results/res/event">
 								<li>
-									<strong><xsl:value-of select="@id"/></strong><br/><br/>
+									<strong style="color: #7EAC30;"><xsl:value-of select="@id"/></strong><br/><br/>
 									Values:<br/>
 									<ul>
 										<xsl:for-each select="values/value">
