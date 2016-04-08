@@ -656,6 +656,32 @@ public class AnalysisManager {
 		}
 	}
 	
+	@GET @Path("/{domain}/session/{sid}/report-html")
+	@Info("Get a report xml format string of the selected session")
+	public String generateReportHTML(
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token,
+			@PathParam("sid") @Info("The session id")						String sid) throws Exception {
+		
+		RiscossDB db = null;
+		
+		try {
+			db = DBConnector.openDB( domain, token );
+			String html = db.getHTMLReport(sid);
+	        
+	        JsonObject json = new JsonObject();
+			json.addProperty( "hml", html );
+	        
+			return json.toString();
+		}
+		catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
+	}
+	
 	@GET @Path("/{domain}/session/{sid}/results")
 	@Produces("application/json")
 	@Info( "Returns the results of a previously executed risk analysis" )

@@ -159,6 +159,7 @@ public class RiscossWebApp implements EntryPoint {
 		
 		for( JSiteSection subsection : sitemap.getRoot().subsections() ) {
 			if( subsection.pages().size() < 1 ) continue;
+			if ( subsection.getLabel().equals("untracked") ) continue;
 			MenuBar submenu = new MenuBar(true);
 			submenu.setStyleName("subMenu");
 			submenu.setAnimationEnabled(true);

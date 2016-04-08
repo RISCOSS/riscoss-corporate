@@ -51,6 +51,7 @@
 					}
 
 					h1, h2 {
+						text-align: left;
 						color: #6E9C20;
 						margin-bottom: 0;
 					}
