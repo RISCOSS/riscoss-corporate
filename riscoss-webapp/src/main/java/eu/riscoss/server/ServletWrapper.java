@@ -129,9 +129,9 @@ public class ServletWrapper extends ServletContainer {
 				for( KnownRoles r : KnownRoles.values() ) {
 					sm.createRole( r.name() );
 				}
-				
 				sm.createPage( "/", "RISCOSS Web App", "index.jsp", new String[] { KnownRoles.Administrator.name() } );
 				sm.createPage( "/", "Dashboard", "dashboard.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() });
+				sm.createPage( "/", "RAS report", "rasreport.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() });
 				
 				sm.createSection( "/Configure" );
 				sm.createPage( "/Configure", "Layers", "layers.jsp", new String[] { KnownRoles.Administrator.name() } );
@@ -158,8 +158,7 @@ public class ServletWrapper extends ServletContainer {
 				sm.createPage( "/Admin", "Domains", "admin.jsp", new String[] { KnownRoles.Administrator.name() } );
 				sm.createPage( "/Admin", "Roles", "roles.jsp", new String[] {KnownRoles.Administrator.name() } );
 				
-				sm.createSection( "/untracked" );
-				sm.createPage( "/untracked", "RAS report", "rasreport.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() });
+				sm.deletePage( "/untracked", "RAS report");
 			}
 			
 			

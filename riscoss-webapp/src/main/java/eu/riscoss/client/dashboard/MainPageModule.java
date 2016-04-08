@@ -88,9 +88,9 @@ public class MainPageModule implements EntryPoint {
 		title.setStyleName("title");
 		page.add(title);
 		title.setWidth("100%");
-		
+
 		page.add(searchFields());
-		
+
 		page.add(tablePanel);
 		
 		getSessionsInfo();
@@ -125,43 +125,50 @@ public class MainPageModule implements EntryPoint {
 			public void onSuccess(Method method, JSONValue response) {
 				for (int i = 0; i < response.isArray().size(); ++i) {
 					JSONValue r = response.isArray().get(i).isObject().get( "res" );
-					JSONValue obj = JSONParser.parseLenient(r.isString().stringValue());
-					JSONValue results = obj.isObject().get("results");
-					String res = "";
-					List<String> risks = new ArrayList<>();
-					for (int s = 0; s < results.isArray().size(); ++s) {
-						JSONObject v = results.isArray().get( s ).isObject();
-						JsonRiskResult result = new JsonRiskResult( v );
-						switch( result.getDataType() ) {
-							case EVIDENCE: {
-								if (v.get("type") == null && v.get( "e" ).isObject().get( "e" ).isNumber().doubleValue() >= 0.1) {
+					Log.println(i+"");
+					try {
+						JSONValue obj = JSONParser.parseLenient(r.isString().stringValue());
+						JSONValue results = obj.isObject().get("results");
+						String res = "";
+						List<String> risks = new ArrayList<>();
+						for (int s = 0; s < results.isArray().size(); ++s) {
+							JSONObject v = results.isArray().get( s ).isObject();
+							JsonRiskResult result = new JsonRiskResult( v );
+							switch( result.getDataType() ) {
+								case EVIDENCE: {
+									if (v.get("type") == null && v.get( "e" ).isObject().get( "e" ).isNumber().doubleValue() >= 0.1) {
+										if (res.equals("")) res += v.get("id").isString().stringValue();
+										else res += ", " + v.get("id").isString().stringValue();
+										risks.add(v.get("id").isString().stringValue());
+									}
+									else if (v.get("type").isString().stringValue().equals("Risk") && v.get( "e" ).isObject().get( "e" ).isNumber().doubleValue() >= 0.1) {
+										if (res.equals("")) res += v.get("id").isString().stringValue();
+										else res += ", " + v.get("id").isString().stringValue();
+										risks.add(v.get("id").isString().stringValue());
+									}
+									break;
+								}
+								case DISTRIBUTION: {
 									if (res.equals("")) res += v.get("id").isString().stringValue();
 									else res += ", " + v.get("id").isString().stringValue();
 									risks.add(v.get("id").isString().stringValue());
+									break;
 								}
-								else if (v.get("type").isString().stringValue().equals("Risk") && v.get( "e" ).isObject().get( "e" ).isNumber().doubleValue() >= 0.1) {
-									if (res.equals("")) res += v.get("id").isString().stringValue();
-									else res += ", " + v.get("id").isString().stringValue();
-									risks.add(v.get("id").isString().stringValue());
-								}
-								break;
+								default: break;
 							}
-							case DISTRIBUTION: {
-								if (res.equals("")) res += v.get("id").isString().stringValue();
-								else res += ", " + v.get("id").isString().stringValue();
-								risks.add(v.get("id").isString().stringValue());
-								break;
-							}
-							default: break;
 						}
+						if (res.equals("")) res = "-";
+						sessions.add(new Pair<RiskAnalysisSessionInfo, Boolean>(new RiskAnalysisSessionInfo(
+								response.isArray().get(i).isObject().get( "target" ).isString().stringValue(),
+								response.isArray().get(i).isObject().get( "rc" ).isString().stringValue(),
+								response.isArray().get(i).isObject().get( "timestamp" ).isString().stringValue(),
+								response.isArray().get(i).isObject().get( "id" ).isString().stringValue(),
+								res), false));
+						
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
-					if (res.equals("")) res = "-";
-					sessions.add(new Pair<RiskAnalysisSessionInfo, Boolean>(new RiskAnalysisSessionInfo(
-							response.isArray().get(i).isObject().get( "target" ).isString().stringValue(),
-							response.isArray().get(i).isObject().get( "rc" ).isString().stringValue(),
-							response.isArray().get(i).isObject().get( "timestamp" ).isString().stringValue(),
-							response.isArray().get(i).isObject().get( "id" ).isString().stringValue(),
-							res), false));
+					
 				}
 				generateRiskSessionsChart();
 			}
