@@ -531,7 +531,7 @@ public class RiscossJsonClient {
 	}
 	
 	public static void generateHTMLReport( String ras, JsonCallback cb) {
-		RiscossCall.fromCookies().analysis().fx("session").fx(ras).fx("report-html").get(cb);
+		RiscossCall.fromCookies().analysis().fx("session").fx(ras).fx("report-html").get( cb);
 	}
 	
 	/**

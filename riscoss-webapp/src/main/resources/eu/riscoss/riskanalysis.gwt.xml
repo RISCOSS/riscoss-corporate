@@ -6,6 +6,9 @@
 	<inherits name='com.google.gwt.junit.JUnit' />
 
 	<inherits name='com.google.gwt.user.theme.standard.Standard' />
+	
+	<inherits name="com.google.gwt.resources.Resources" />
+	
 
 	<!-- Other module inherits -->
 	<inherits name="org.fusesource.restygwt.RestyGWT" />
