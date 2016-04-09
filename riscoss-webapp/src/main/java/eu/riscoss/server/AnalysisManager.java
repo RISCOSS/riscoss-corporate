@@ -22,7 +22,10 @@
 package eu.riscoss.server;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
@@ -51,6 +54,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -81,6 +85,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
+import eu.riscoss.client.Log;
 import eu.riscoss.dataproviders.RiskData;
 import eu.riscoss.dataproviders.RiskDataType;
 import eu.riscoss.db.RecordAbstraction;
@@ -676,7 +681,7 @@ public class AnalysisManager {
 			List<String> modelsList = db.getModelsFromRiskCfg( ras.getRCName(), ras.getTarget() );
 			
 			String xml = getXMLReport(ras, modelsList);
-	        
+			
 	        JsonObject json = new JsonObject();
 			json.addProperty( "xml", xml );
 	        
@@ -1035,32 +1040,33 @@ public class AnalysisManager {
 			
 			RiskAnalysisSession ras = db.openRAS(sid);
 			List<String> modelsList = db.getModelsFromRiskCfg( ras.getRCName(), ras.getTarget() );
-			String xml = getXMLReport( ras, modelsList );
 			
-			TransformerFactory tFactory=TransformerFactory.newInstance();
-
-	        Source xslDoc = new StreamSource("resources/ras-stylesheet.xslt");
-	        Source xmlDoc = new StreamSource(new StringReader(xml));
-
-	        ByteArrayOutputStream htmlFile = new ByteArrayOutputStream();
-	        Transformer trasform;
 			try {
-				trasform = tFactory.newTransformer(xslDoc);
-				trasform.transform(xmlDoc, new StreamResult(htmlFile));
-			} catch (TransformerConfigurationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (TransformerException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				
+				StringReader xml = new StringReader(getXMLReport(ras, modelsList));  
+				FileInputStream xsl = new FileInputStream("resources/ras-stylesheet.xslt");;
+				StringWriter writer = new StringWriter();
+
+				Source xmlDoc =  new StreamSource(xml);
+				Source xslDoc =  new StreamSource(xsl);
+				Result result =  new StreamResult(writer);
+
+				TransformerFactory factory = TransformerFactory.newInstance(); 
+				Transformer trans = factory.newTransformer(xslDoc);
+				trans.transform(xmlDoc, result); 
+				
+				String html = writer.toString();
+				
+		        JsonObject json = new JsonObject();
+				json.addProperty( "hml", html );
+		        
+				return json.toString();
+			} catch (Exception e) {
+				JsonObject json = new JsonObject();
+				json.addProperty( "hml", e.getLocalizedMessage());
+		        
+				return json.toString();
 			}
-						
-			String html = htmlFile.toString();
-	        
-	        JsonObject json = new JsonObject();
-			json.addProperty( "hml", html );
-	        
-			return json.toString();
 		}
 		catch( Exception ex ) {
 			throw ex;
