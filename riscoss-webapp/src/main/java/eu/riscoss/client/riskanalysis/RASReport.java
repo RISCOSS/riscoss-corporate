@@ -7,7 +7,10 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HTMLPanel;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -25,6 +28,7 @@ public class RASReport implements EntryPoint {
 		Log.println("Get parameter id");
 		vPanel = new VerticalPanel();
 		vPanel.setWidth("100%");
+		vPanel.getElement().getStyle().setPadding(24, Unit.PX);
 		
 		RiscossJsonClient.generateHTMLReport(selectedRAS, new JsonCallback() {
 			@Override
@@ -35,7 +39,8 @@ public class RASReport implements EntryPoint {
 			public void onSuccess(Method method, JSONValue response) {
 				String htmlString = response.isObject().get("hml").isString().stringValue();
 				Log.println("Generated html");
-		           
+				
+		        Log.println(htmlString);
 		        HTMLPanel htmlPanel = new HTMLPanel(htmlString);
 		        
 		        vPanel.add(htmlPanel);
