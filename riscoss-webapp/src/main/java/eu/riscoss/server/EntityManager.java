@@ -21,6 +21,8 @@
 
 package eu.riscoss.server;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -38,6 +40,18 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.fusesource.restygwt.client.Method;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -45,7 +59,14 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
+import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONString;
+import com.google.gwt.json.client.JSONValue;
+import com.google.gwt.user.client.Window;
 
+import eu.riscoss.client.JsonCallbackWrapper;
+import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.dataproviders.RiskData;
 import eu.riscoss.db.RecordAbstraction;
 import eu.riscoss.db.RiscossDB;
@@ -62,6 +83,7 @@ import eu.riscoss.shared.JEntityData;
 import eu.riscoss.shared.JEntityNode;
 import eu.riscoss.shared.JRASInfo;
 import eu.riscoss.shared.JRiskNativeData;
+import eu.riscoss.shared.Pair;
 import eu.riscoss.shared.RiscossUtil;
 
 @Path("entities")
@@ -937,6 +959,10 @@ public class EntityManager {
 					}
 				}
 			}
+			
+			//Read xlsx file
+			readSupersede(db);
+			
 			json.addProperty("msg", msg);
 			System.out.println("Returning newrun: " + json.toString());
 			return json.toString();
@@ -1084,6 +1110,157 @@ public class EntityManager {
 		finally {
 			DBConnector.closeDB(db);
 		}
+	}
+	
+	class ConfigItem {
+		public String sheet;
+		public int nameColumn;
+		public List< Pair<Integer, Integer> > definedIdItem;
+		public List< Pair<String, Integer> > definedValueItem;
+	}
+	
+	private void readSupersede(RiscossDB db) throws Exception {
+		
+		//Load Supersede config xml file
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder builder = factory.newDocumentBuilder();
+        FileInputStream f = new FileInputStream("resources/Supersede_Config.xml");
+        Document doc = builder.parse(f);
+        Element element = doc.getDocumentElement();
+        
+        //Get relationships config info
+        NodeList importNodes = element.getElementsByTagName("relationships");
+        Element e = (Element) importNodes.item(0);
+        String sheet = e.getElementsByTagName("sheet_name").item(0).getTextContent();
+        int parentColumn = Integer.parseInt(e.getElementsByTagName("parent_column").item(0).getTextContent()) - 1;
+        int childColumn = Integer.parseInt(e.getElementsByTagName("child_column").item(0).getTextContent()) - 1;
+                
+        List<ConfigItem> config = new ArrayList<>();
+        
+        //Get imported entitites config info
+        NodeList cf = element.getElementsByTagName("entities");
+        Element impEnt = (Element) cf.item(0);
+        NodeList configNodes = impEnt.getElementsByTagName("imported_entity");
+        
+        for (int i = 0; i < configNodes.getLength(); ++i) {
+        	ConfigItem conf = new ConfigItem();
+        	Element entity = (Element) configNodes.item(i);
+        	conf.sheet = entity.getElementsByTagName("sheet_name").item(0).getTextContent();
+        	conf.nameColumn = Integer.parseInt(entity.getElementsByTagName("name_column").item(0).getTextContent()) - 1;
+
+        	List< Pair<Integer, Integer> > definedIdItem = new ArrayList<>();
+        	List< Pair<String, Integer> > definedValueItem = new ArrayList<>();
+        	
+        	NodeList p = entity.getElementsByTagName("custom_information");
+            Element ee = (Element) p.item(0);
+            NodeList prop = ee.getElementsByTagName("custom_field");
+        	
+        	for (int j = 0; j < prop.getLength(); ++j) {
+        		Element b = (Element) prop.item(j);
+        		
+        		if (b.getElementsByTagName("id").item(0) != null) {
+        			String id = b.getElementsByTagName("id").item(0).getTextContent();
+        			int column = Integer.parseInt(b.getElementsByTagName("value_column").item(0).getTextContent()) - 1;
+        			definedValueItem.add(new Pair<>(id, column));
+        		} else {
+        			int column = Integer.parseInt(b.getElementsByTagName("id_column").item(0).getTextContent()) - 1;
+        			int val = Integer.parseInt(b.getElementsByTagName("value").item(0).getTextContent());
+        			definedIdItem.add(new Pair<>(column, val));
+        		}
+        	}
+        	conf.definedIdItem = definedIdItem;
+        	conf.definedValueItem = definedValueItem;
+        	
+        	config.add(conf);
+        }
+        
+		File xlsx = new File("resources/Supersede_IPR_Registry_v3.xlsx");
+		FileInputStream fis = new FileInputStream(xlsx);
+		XSSFWorkbook wb = new XSSFWorkbook(fis);
+		XSSFSheet ws = wb.getSheet("IPR Registry");
+
+		Map< String, Pair<String, String> > list = new HashMap<>();
+		Set<String> entities = new HashSet<>();
+
+		boolean read = true;
+		int i = 6;
+		while (read) {
+			XSSFRow row = ws.getRow(i);
+			if (row.getCell(0).toString().equals("")) read = false;
+			else {
+				//For every custom entity defined in i row
+				for (int j = 0; j < config.size(); ++j) {
+					String parent = row.getCell(config.get(j).nameColumn).toString();
+					entities.add(parent);
+					
+					String prefix = "";
+					if (config.get(j).nameColumn == parentColumn) prefix = "#parent:";
+					else if (config.get(j).nameColumn == childColumn) prefix = "#";
+					//For every custom info defined for j entity in i row
+					for (int k = 0; k < config.get(j).definedIdItem.size(); ++k) {
+						if (!row.getCell(config.get(j).definedIdItem.get(k).getLeft()).toString().equals("") )
+								checkNewInfo(parent, 
+								prefix + row.getCell(config.get(j).definedIdItem.get(k).getLeft()).toString(),
+								config.get(j).definedIdItem.get(k).getRight().toString(),
+								list,
+								db);
+					}
+					for (int k = 0; k < config.get(j).definedValueItem.size(); ++k) {
+						checkNewInfo(parent, 
+								config.get(j).definedValueItem.get(k).getLeft(),
+								row.getCell(config.get(j).definedValueItem.get(k).getRight()).toString(),
+								list,
+								db);
+					}
+				}
+				++i;
+			}
+		}
+		
+		//Delete old imported data for entities
+		for (String target : entities) {
+			System.out.println("ENTITY: " + target);
+			for (String id : db.listRiskData(target)) {
+				JsonObject o = (JsonObject) new JsonParser().parse(db.readRiskData(target, id));
+				if (o.get("import") != null) {
+					System.out.println(o.toString());
+					JsonObject delete = new JsonObject();
+					delete.addProperty( "id", id);
+					delete.addProperty( "target", target );
+					JsonArray array = new JsonArray();
+					array.set( 0, delete );
+					db.storeRiskData(delete.toString());
+				}
+			}	
+		}
+
+		for (String child : list.keySet()) {
+			storeRDR(child.split("@")[0], list.get(child).getLeft(), list.get(child).getRight(), db);
+		}
+			
+	}
+	
+	private void checkNewInfo(String parent, String license, String value,
+			Map<String,Pair<String, String>> list, RiscossDB db) {
+		if (!list.containsKey(parent + license) && !value.equals("")) {
+			System.out.println(parent + "@" + license);
+			list.put(parent + "@" + license, new Pair<>(license, value));
+		}
+		
+	}
+
+	private void storeRDR(String target, String license, String value, RiscossDB db) throws Exception {
+		
+		JsonObject o = new JsonObject();
+		o.addProperty( "id", license);
+		o.addProperty( "target", target );
+		o.addProperty( "value", value);
+		o.addProperty( "datatype", "CUSTOM");
+		o.addProperty( "type", "custom");
+		o.addProperty( "origin", "user");
+		o.addProperty( "import", "true");
+		
+		db.storeRiskData(o.toString());
 	}
 	
 	static class EntityFinder extends TraverseCallback<String> {

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<relationships>
+		<sheet_name>IPR Registry</sheet_name>
+		<parent_column>2</parent_column>
+		<child_column>6</child_column>
+	</relationships>
+	<entities>
+		<imported_entity>
+			<sheet_name>IPR Registry</sheet_name>
+			<name_column>2</name_column>
+			<custom_information>
+				<custom_field>
+					<id_column>4</id_column>
+					<value>1</value>
+				</custom_field>
+				<custom_field>
+					<id>Technology</id>
+					<value_column>3</value_column>
+				</custom_field>
+			</custom_information>
+		</imported_entity>
+		<imported_entity>
+			<sheet_name>IPR Registry</sheet_name>
+			<name_column>6</name_column>
+			<custom_information>
+				<custom_field>
+					<id_column>8</id_column>
+					<value>1</value>
+				</custom_field>
+			</custom_information>
+		</imported_entity>
+	</entities>
+</config>
