@@ -1219,16 +1219,14 @@ public class EntityManager {
 		
 		//Delete old imported data for entities
 		for (String target : entities) {
-			System.out.println("ENTITY: " + target);
 			for (String id : db.listRiskData(target)) {
 				JsonObject o = (JsonObject) new JsonParser().parse(db.readRiskData(target, id));
-				if (o.get("import") != null) {
-					System.out.println(o.toString());
+				if (o.get("type").toString().equals("\"imported\"")) {
 					JsonObject delete = new JsonObject();
 					delete.addProperty( "id", id);
 					delete.addProperty( "target", target );
 					JsonArray array = new JsonArray();
-					array.set( 0, delete );
+					array.add(delete);
 					db.storeRiskData(delete.toString());
 				}
 			}	
@@ -1243,7 +1241,6 @@ public class EntityManager {
 	private void checkNewInfo(String parent, String license, String value,
 			Map<String,Pair<String, String>> list, RiscossDB db) {
 		if (!list.containsKey(parent + license) && !value.equals("")) {
-			System.out.println(parent + "@" + license);
 			list.put(parent + "@" + license, new Pair<>(license, value));
 		}
 		
@@ -1256,9 +1253,8 @@ public class EntityManager {
 		o.addProperty( "target", target );
 		o.addProperty( "value", value);
 		o.addProperty( "datatype", "CUSTOM");
-		o.addProperty( "type", "custom");
+		o.addProperty( "type", "imported");
 		o.addProperty( "origin", "user");
-		o.addProperty( "import", "true");
 		
 		db.storeRiskData(o.toString());
 	}

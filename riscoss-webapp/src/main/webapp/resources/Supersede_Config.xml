@@ -28,6 +28,10 @@
 					<id_column>8</id_column>
 					<value>1</value>
 				</custom_field>
+				<custom_field>
+					<id>linking</id>
+					<value_column>9</value_column>
+				</custom_field>
 			</custom_information>
 		</imported_entity>
 	</entities>
