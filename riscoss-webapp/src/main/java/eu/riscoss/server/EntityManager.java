@@ -1180,7 +1180,8 @@ public class EntityManager {
 		XSSFSheet ws = wb.getSheet("IPR Registry");
 
 		Map< String, Pair<String, String> > list = new HashMap<>();
-		Set<String> entities = new HashSet<>();
+		
+		Map< String, HashSet<String> > entities = new HashMap<>();
 
 		boolean read = true;
 		int i = 6;
@@ -1191,11 +1192,24 @@ public class EntityManager {
 				//For every custom entity defined in i row
 				for (int j = 0; j < config.size(); ++j) {
 					String parent = row.getCell(config.get(j).nameColumn).toString();
-					entities.add(parent);
 					
 					String prefix = "";
-					if (config.get(j).nameColumn == parentColumn) prefix = "#parent:";
-					else if (config.get(j).nameColumn == childColumn) prefix = "#";
+					if (config.get(j).nameColumn == parentColumn) {
+						prefix = "#parent:";
+						if (!entities.containsKey(parent)) {
+							entities.put(parent, new HashSet<String>());
+							System.out.println("New parent entity: " + parent);
+						}
+					}
+					else if (config.get(j).nameColumn == childColumn) {
+						prefix = "#";
+						if (!entities.containsKey(row.getCell(parentColumn).toString())) {
+							entities.put(row.getCell(parentColumn).toString(), new HashSet<String>());
+							System.out.println("New parent entity: " + row.getCell(parentColumn).toString());
+						}
+						entities.get(row.getCell(parentColumn).toString()).add(parent);
+						System.out.println("New child entity: " + parent);
+					}
 					//For every custom info defined for j entity in i row
 					for (int k = 0; k < config.get(j).definedIdItem.size(); ++k) {
 						if (!row.getCell(config.get(j).definedIdItem.get(k).getLeft()).toString().equals("") )
@@ -1217,8 +1231,13 @@ public class EntityManager {
 			}
 		}
 		
+		importEntities(entities, db);
+		
 		//Delete old imported data for entities
-		for (String target : entities) {
+		Set<String> all = new HashSet<>();
+		all.addAll(entities.keySet());
+		for (String s : entities.keySet()) all.addAll(entities.get(s));
+		for (String target : all) {
 			for (String id : db.listRiskData(target)) {
 				JsonObject o = (JsonObject) new JsonParser().parse(db.readRiskData(target, id));
 				if (o.get("type").toString().equals("\"imported\"")) {
@@ -1238,6 +1257,33 @@ public class EntityManager {
 			
 	}
 	
+	private void importEntities(Map<String, HashSet<String> > entities, RiscossDB db) {
+		
+		List<String> layers = (List<String>) db.layerNames();
+		
+		//ONLY WORKS WITH A TWO HIERARCHY LEVEL OF LAYERS (or 2 top layers)
+		String parentLayer = layers.get(0);
+		String childLayer = layers.get(1);
+		
+		Collection<String> ents = db.entities();
+		List<String> ent = new ArrayList<>();
+		for (String s : ents) {
+			ent.add(s);
+		}
+		
+		for (String s : entities.keySet()) {
+			if (!ent.contains(s))
+				db.addEntity(s, parentLayer);
+			for (String p : entities.get(s)) {
+				if (!ent.contains(p)) {
+					db.addEntity(p, childLayer);
+					db.assignEntity(p, s);
+				}
+			}
+		}
+		
+	}
+
 	private void checkNewInfo(String parent, String license, String value,
 			Map<String,Pair<String, String>> list, RiscossDB db) {
 		if (!list.containsKey(parent + license) && !value.equals("")) {
