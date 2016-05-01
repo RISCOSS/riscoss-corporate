@@ -960,9 +960,6 @@ public class EntityManager {
 				}
 			}
 			
-			//Read xlsx file
-			readSupersede(db);
-			
 			json.addProperty("msg", msg);
 			System.out.println("Returning newrun: " + json.toString());
 			return json.toString();
@@ -975,6 +972,26 @@ public class EntityManager {
 		}
 	}
 
+	@GET @Path("/{domain}/import")
+	@Info("Import entities and info from file")
+	public void importEntities(
+			@PathParam("domain") @Info("The selected domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token") 			String token
+			) throws Exception {
+		RiscossDB db = null;
+		try {
+			
+			db = DBConnector.openDB( domain, token );
+			
+			readSupersede(db);
+			
+		} catch(Exception e) {
+			throw e;
+		} finally {
+			DBConnector.closeDB(db);
+		}
+	}
+	
 	
 	@GET @Path("/{domain}/{entity}/rd")
 	@Info("Returns the RiskData associated to the given entity")
@@ -1124,7 +1141,7 @@ public class EntityManager {
 		//Load Supersede config xml file
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder = factory.newDocumentBuilder();
-        FileInputStream f = new FileInputStream("resources/Supersede_Config.xml");
+        FileInputStream f = new FileInputStream("resources/Supersede_Config_Stored.xml");
         Document doc = builder.parse(f);
         Element element = doc.getDocumentElement();
         
@@ -1174,7 +1191,7 @@ public class EntityManager {
         	config.add(conf);
         }
         
-		File xlsx = new File("resources/Supersede_IPR_Registry_v3.xlsx");
+		File xlsx = new File("resources/Supersede_IPR_Registry.xlsx");
 		FileInputStream fis = new FileInputStream(xlsx);
 		XSSFWorkbook wb = new XSSFWorkbook(fis);
 		XSSFSheet ws = wb.getSheet("IPR Registry");

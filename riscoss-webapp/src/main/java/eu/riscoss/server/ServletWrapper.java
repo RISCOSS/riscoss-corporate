@@ -129,6 +129,7 @@ public class ServletWrapper extends ServletContainer {
 				for( KnownRoles r : KnownRoles.values() ) {
 					sm.createRole( r.name() );
 				}
+				
 				sm.createPage( "/", "RISCOSS Web App", "index.jsp", new String[] { KnownRoles.Administrator.name() } );
 				sm.createPage( "/", "Dashboard", "dashboard.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() });
 				sm.createPage( "/", "RAS report", "rasreport.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() });
@@ -139,6 +140,7 @@ public class ServletWrapper extends ServletContainer {
 				sm.createPage( "/Configure", "Models", "models.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Modeler.name() } );
 				//				sm.createPage( "/Configure", "Edit Models", "editor.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Modeler.name() } );
 				sm.createPage( "/Configure", "Risk Configurations", "riskconfs.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Modeler.name() } );
+				sm.createPage( "/Configure", "Import entities", "importing.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Producer.name(), KnownRoles.Modeler.name() } );
 				
 				sm.createSection( "/Run" );
 				//				sm.createPage( "/Run", "One-layer Analysis", "analysis.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
