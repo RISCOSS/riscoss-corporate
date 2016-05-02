@@ -1,11 +1,14 @@
 package eu.riscoss.server;
 
+import java.io.File;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.io.FileUtils;
 
 import eu.riscoss.db.RiscossDB;
 
@@ -37,6 +40,18 @@ public class DownloadServlet extends HttpServlet {
 				// gets the model
 				blobFileName = db.getModelFilename(name);
 				blob = db.getModelBlob(name).getBytes();
+				break;
+			case "xlsxEnt":
+				//gets the xlsx entities file
+				blobFileName = "Supersede_IPR_Registry.xlsx";
+				File ent = new File("resources/Supersede_IPR_Registry.xlsx");
+				blob = FileUtils.readFileToByteArray(ent);
+				break;
+			case "xmlConf":
+				//gets the xml conf import file
+				blobFileName = "Supersede_Config_Stored.xml";
+				File conf = new File("resources/Supersede_Config_Stored.xml");
+				blob = FileUtils.readFileToByteArray(conf);
 				break;
 			default:
 				return;

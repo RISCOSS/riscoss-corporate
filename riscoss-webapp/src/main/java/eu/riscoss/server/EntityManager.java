@@ -59,6 +59,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
+import com.google.gwt.dev.json.JsonBoolean;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
@@ -1082,6 +1083,33 @@ public class EntityManager {
 			DBConnector.closeDB(db);
 		}
 //		return "";
+	}
+	
+	@GET @Path("/{domain}/checkimportfiles")
+	@Info("Checks the existence of xlsx and xml files for entity import")
+	public String checkImportFiles(
+			@PathParam("domain") @Info("The selected domain") 				String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token
+			) {
+		
+		boolean entFileLoaded = false;
+		boolean confFileLoaded = false;
+		
+		File ent = new File("resources/Supersede_IPR_Registry.xlsx");
+		if(ent.exists()) { 
+		    entFileLoaded = true;
+		}
+		File conf = new File("resources/Supersede_Config_Stored.xml");
+		if (conf.exists()) {
+			confFileLoaded = true;
+		}	
+		
+		JsonObject json = new JsonObject();
+		json.addProperty("entFile", entFileLoaded);
+		json.addProperty("confFile", confFileLoaded);
+		
+		return json.toString();
+			
 	}
 	
 	@GET @Path("/{domain}/{entity}/candidateparents")
