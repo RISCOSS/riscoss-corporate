@@ -27,16 +27,32 @@ import gwtupload.server.UploadAction;
 import gwtupload.server.exceptions.UploadActionException;
 import gwtupload.shared.UConsts;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.StringReader;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.fileupload.FileItem;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 
 public class UploadServiceImpl extends UploadAction {
 	
@@ -251,11 +267,159 @@ public class UploadServiceImpl extends UploadAction {
 		
 	}
 	
+	class EntitiesImportUploader implements Action {
+		
+		@Override
+		public String executeAction(
+				HttpServletRequest request,
+				List<FileItem> sessionFiles
+				) throws Exception {
+			String response = "";
+			
+			String domain = request.getParameter("domain");
+			String token = request.getParameter("token");
+			
+			RiscossDB db = null;
+			
+			try {
+			db = DBConnector.openDB( domain, token );
+			
+			String name = null;
+			for (FileItem item : sessionFiles) { //reads the hidden field in which the file name is passed
+				if (item.isFormField()){
+					if (item.getFieldName().startsWith("name")){
+						name = item.getString();
+						break;
+					}
+				} 
+			}
+			
+			for (FileItem item : sessionFiles) {
+				if (!item.isFormField()){
+					try {
+						String filename = request.getParameter( "name" ); //the file name, used only to propose a filename when downloading
+						if( filename == null ) {
+							filename = item.getName();
+						}
+						//attention:filename sanitation is not directly notified to the user
+						filename = RiscossUtil.sanitize(filename);
+						//store description for the model. Overwrites an existing description
+						
+						InputStream initialStream = item.getInputStream();
+					    byte[] buffer = new byte[initialStream.available()];
+					    initialStream.read(buffer);
+					 
+					    File targetFile = new File("resources/Supersede_IPR_Registry.xlsx");
+					    OutputStream outStream = new FileOutputStream(targetFile);
+					    outStream.write(buffer);
+												
+						response = filename + " uploaded.";
+						
+					} catch (Exception e) {
+						throw new UploadActionException(e);
+					}
+				}
+			}
+			} catch (Exception e1) {
+				e1.printStackTrace();
+				throw e1;
+			}
+			finally {
+				/// Remove files from session because we have a copy of them
+				try {
+					removeSessionFileItems(request);
+				} catch( Exception ex ) {}
+				
+				DBConnector.closeDB( db );
+			}
+			
+			return response;
+		}
+		
+	}
+	
+	class ConfigImportUploader implements Action {
+		
+		@Override
+		public String executeAction(
+				HttpServletRequest request,
+				List<FileItem> sessionFiles
+				) throws Exception {
+			String response = "";
+			
+			String domain = request.getParameter("domain");
+			String token = request.getParameter("token");
+			
+			RiscossDB db = null;
+			
+			try {
+			db = DBConnector.openDB( domain, token );
+			
+			String name = null;
+			for (FileItem item : sessionFiles) { //reads the hidden field in which the file name is passed
+				if (item.isFormField()){
+					if (item.getFieldName().startsWith("name")){
+						name = item.getString();
+						break;
+					}
+				} 
+			}
+			
+			for (FileItem item : sessionFiles) {
+				if (!item.isFormField()){
+					try {
+						String filename = request.getParameter( "name" ); //the file name, used only to propose a filename when downloading
+						if( filename == null ) {
+							filename = item.getName();
+						}
+						//attention:filename sanitation is not directly notified to the user
+						filename = RiscossUtil.sanitize(filename);
+						//store description for the model. Overwrites an existing description
+						
+						DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+					    DocumentBuilder builder = factory.newDocumentBuilder();
+					    Document doc = builder.parse(new InputSource(new StringReader(item.getString())));
+
+					    TransformerFactory transformerFactory = TransformerFactory.newInstance();
+					    Transformer transformer = transformerFactory.newTransformer();
+					    DOMSource source = new DOMSource(doc);
+
+					    StreamResult result =  new StreamResult(new File("resources/Supersede_Config_Stored.xml"));
+
+						transformer.transform(source, result);
+						
+						response = filename + " uploaded.";
+						
+					} catch (Exception e) {
+						throw new UploadActionException(e);
+					}
+				}
+			}
+			} catch (Exception e1) {
+				e1.printStackTrace();
+				throw e1;
+			}
+			finally {
+				/// Remove files from session because we have a copy of them
+				try {
+					removeSessionFileItems(request);
+				} catch( Exception ex ) {}
+				
+				DBConnector.closeDB( db );
+			}
+			
+			return response;
+		}
+		
+	}
+	
 	
 	public UploadServiceImpl() {
 		actions.put( "modelblob", new ModelUploader() );
 		actions.put( "modeldescblob", new ModelDescUploader() );
 		actions.put( "modelupdateblob", new ModelUpdateUploader() );
+		actions.put( "importentities", new EntitiesImportUploader() );
+		actions.put( "configimport", new ConfigImportUploader() );
 	}
 	
 	/**

@@ -28,20 +28,26 @@ import org.fusesource.restygwt.client.Method;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.json.client.JSONValue;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItemSeparator;
 import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -172,6 +178,9 @@ public class RiscossWebApp implements EntryPoint {
 						loadPanel( getUrl() );
 					}
 				});
+				if (page.getLabel().equals("Risk Configurations")) {
+					submenu.addSeparator();
+				}
 			}
 		}
 		
@@ -207,7 +216,7 @@ public class RiscossWebApp implements EntryPoint {
 		logo.setStyleName("logo");
 		north.add( logo );
 		north.setHeight("5%"); // any value here seems to resolve the firefox problem of showing only a small frame on the right side
-		Label version = new Label("v1.4.0");
+		Label version = new Label("v1.5.0");
 		version.setStyleName("version");
 		north.add(version);
 		//north.setWidth("100%");

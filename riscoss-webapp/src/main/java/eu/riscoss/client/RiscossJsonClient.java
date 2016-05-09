@@ -344,6 +344,13 @@ public class RiscossJsonClient {
 //			.get().send( cb );
 	}
 	
+	public static void importEntities( JsonCallback cb ) {
+		RiscossCall.fromCookies().entities().fx("import").get( cb );
+	}
+	
+	public static void checkImportFiles( JsonCallback cb ) {
+		RiscossCall.fromCookies().entities().fx("checkimportfiles").get( cb );
+	}
 
 	//TODO:rcds
 	public static void listRDCs( JsonCallback cb ) {
