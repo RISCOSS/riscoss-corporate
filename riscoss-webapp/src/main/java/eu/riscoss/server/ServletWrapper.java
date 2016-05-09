@@ -156,9 +156,10 @@ public class ServletWrapper extends ServletContainer {
 				sm.createPage( "/Browse", "Risk Analysis Sessions", "ras.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
 				
 				sm.createSection( "/Admin" );
-				sm.deletePage( "/Admin", "Users and Roles" );
 				sm.createPage( "/Admin", "Domains", "admin.jsp", new String[] { KnownRoles.Administrator.name() } );
 				sm.createPage( "/Admin", "Roles", "roles.jsp", new String[] {KnownRoles.Administrator.name() } );
+				sm.deletePage( "/Admin", "Config import");
+				sm.createPage( "/Admin", "Import configuration", "importconfig.jsp", new String[] {KnownRoles.Administrator.name() } );
 				
 				sm.deletePage( "/untracked", "RAS report");
 			}

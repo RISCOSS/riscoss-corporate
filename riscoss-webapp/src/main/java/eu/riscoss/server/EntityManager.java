@@ -984,7 +984,7 @@ public class EntityManager {
 			
 			db = DBConnector.openDB( domain, token );
 			
-			readSupersede(db);
+			readImportFile(db);
 			
 		} catch(Exception e) {
 			throw e;
@@ -1160,13 +1160,13 @@ public class EntityManager {
 	class ConfigItem {
 		public String sheet;
 		public int nameColumn;
-		public List< Pair<Integer, Integer> > definedIdItem;
+		public List< Pair< String,  Pair<Integer, Integer> > > definedIdItem;
 		public List< Pair<String, Integer> > definedValueItem;
 	}
 	
-	private void readSupersede(RiscossDB db) throws Exception {
-		
-		//Load Supersede config xml file
+	private void readImportFile(RiscossDB db) throws Exception {
+
+		//Load importing config xml file
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder = factory.newDocumentBuilder();
         FileInputStream f = new FileInputStream("resources/Supersede_Config_Stored.xml");
@@ -1177,8 +1177,17 @@ public class EntityManager {
         NodeList importNodes = element.getElementsByTagName("relationships");
         Element e = (Element) importNodes.item(0);
         String sheet = e.getElementsByTagName("sheet_name").item(0).getTextContent();
-        int parentColumn = Integer.parseInt(e.getElementsByTagName("parent_column").item(0).getTextContent()) - 1;
-        int childColumn = Integer.parseInt(e.getElementsByTagName("child_column").item(0).getTextContent()) - 1;
+        
+        List<Integer> entitiesColumns = new ArrayList<>();
+        NodeList ent = e.getElementsByTagName("layer");
+        while (ent != null) {
+        	Element el = (Element) ent.item(0);
+        	if (el != null) {
+        		entitiesColumns.add(Integer.valueOf(el.getAttribute("entity_column")) - 1);
+        		ent = el.getElementsByTagName("layer");
+        	}
+        	else break;
+        }
                 
         List<ConfigItem> config = new ArrayList<>();
         
@@ -1193,7 +1202,7 @@ public class EntityManager {
         	conf.sheet = entity.getElementsByTagName("sheet_name").item(0).getTextContent();
         	conf.nameColumn = Integer.parseInt(entity.getElementsByTagName("name_column").item(0).getTextContent()) - 1;
 
-        	List< Pair<Integer, Integer> > definedIdItem = new ArrayList<>();
+        	List< Pair < String,  Pair<Integer, Integer>> > definedIdItem = new ArrayList<>();
         	List< Pair<String, Integer> > definedValueItem = new ArrayList<>();
         	
         	NodeList p = entity.getElementsByTagName("custom_information");
@@ -1210,7 +1219,8 @@ public class EntityManager {
         		} else {
         			int column = Integer.parseInt(b.getElementsByTagName("id_column").item(0).getTextContent()) - 1;
         			int val = Integer.parseInt(b.getElementsByTagName("value").item(0).getTextContent());
-        			definedIdItem.add(new Pair<>(column, val));
+        			String prefix = b.getElementsByTagName("prefix").item(0).getTextContent();
+        			definedIdItem.add(new Pair<> (prefix, new Pair<>(column, val)));
         		}
         	}
         	conf.definedIdItem = definedIdItem;
@@ -1222,15 +1232,18 @@ public class EntityManager {
 		File xlsx = new File("resources/Supersede_IPR_Registry.xlsx");
 		FileInputStream fis = new FileInputStream(xlsx);
 		XSSFWorkbook wb = new XSSFWorkbook(fis);
-		XSSFSheet ws = wb.getSheet("IPR Registry");
+		XSSFSheet ws = wb.getSheet(sheet);
 
 		Map< String, Pair<String, String> > list = new HashMap<>();
 		
-		Map< String, HashSet<String> > entities = new HashMap<>();
+		Map< Integer, List<String> > entities = new HashMap<>();
+		
+		List< Pair<String, String>> relationships = new ArrayList<>();
 
 		boolean read = true;
 		int i = 6;
 		while (read) {
+			//For every valid row in xlsx file
 			XSSFRow row = ws.getRow(i);
 			if (row.getCell(0).toString().equals("")) read = false;
 			else {
@@ -1238,29 +1251,31 @@ public class EntityManager {
 				for (int j = 0; j < config.size(); ++j) {
 					String parent = row.getCell(config.get(j).nameColumn).toString();
 					
+					int x = 0;
+					while (x < entitiesColumns.size()) {
+						if (entitiesColumns.get(x) == config.get(j).nameColumn) break;
+						else ++x;
+					}
+					
+					if (x > 0) relationships.add(new Pair<>(row.getCell(entitiesColumns.get(x-1)).toString(), parent));
+					
+					if (entities.containsKey(config.get(j).nameColumn))
+						entities.get(config.get(j).nameColumn).add(parent);
+					else {
+						List<String> n = new ArrayList<>();
+						n.add(parent);
+						entities.put(config.get(j).nameColumn, n);
+					}
+					
 					String prefix = "";
-					if (config.get(j).nameColumn == parentColumn) {
-						prefix = "#parent:";
-						if (!entities.containsKey(parent)) {
-							entities.put(parent, new HashSet<String>());
-							System.out.println("New parent entity: " + parent);
-						}
-					}
-					else if (config.get(j).nameColumn == childColumn) {
-						prefix = "#";
-						if (!entities.containsKey(row.getCell(parentColumn).toString())) {
-							entities.put(row.getCell(parentColumn).toString(), new HashSet<String>());
-							System.out.println("New parent entity: " + row.getCell(parentColumn).toString());
-						}
-						entities.get(row.getCell(parentColumn).toString()).add(parent);
-						System.out.println("New child entity: " + parent);
-					}
+					
 					//For every custom info defined for j entity in i row
 					for (int k = 0; k < config.get(j).definedIdItem.size(); ++k) {
-						if (!row.getCell(config.get(j).definedIdItem.get(k).getLeft()).toString().equals("") )
+						prefix = config.get(j).definedIdItem.get(k).getLeft();
+						if (!row.getCell(config.get(j).definedIdItem.get(k).getRight().getLeft()).toString().equals("") )
 								checkNewInfo(parent, 
-								prefix + row.getCell(config.get(j).definedIdItem.get(k).getLeft()).toString(),
-								config.get(j).definedIdItem.get(k).getRight().toString(),
+								prefix + row.getCell(config.get(j).definedIdItem.get(k).getRight().getLeft()).toString(),
+								config.get(j).definedIdItem.get(k).getRight().getRight().toString(),
 								list,
 								db);
 					}
@@ -1276,12 +1291,12 @@ public class EntityManager {
 			}
 		}
 		
-		importEntities(entities, db);
+		importEntities(entitiesColumns, entities, relationships, db);
 		
 		//Delete old imported data for entities
 		Set<String> all = new HashSet<>();
-		all.addAll(entities.keySet());
-		for (String s : entities.keySet()) all.addAll(entities.get(s));
+		for (List<String> s : entities.values())
+			all.addAll(s);
 		for (String target : all) {
 			for (String id : db.listRiskData(target)) {
 				JsonObject o = (JsonObject) new JsonParser().parse(db.readRiskData(target, id));
@@ -1302,29 +1317,34 @@ public class EntityManager {
 			
 	}
 	
-	private void importEntities(Map<String, HashSet<String> > entities, RiscossDB db) {
+	private void importEntities(List<Integer> entitiesColumns, Map<Integer, List<String> > entities, 
+			List<Pair<String, String>> relationships, RiscossDB db) {
 		
 		List<String> layers = (List<String>) db.layerNames();
 		
-		//ONLY WORKS WITH A TWO HIERARCHY LEVEL OF LAYERS (or 2 top layers)
-		String parentLayer = layers.get(0);
-		String childLayer = layers.get(1);
-		
+		//Load all entities stored in database
 		Collection<String> ents = db.entities();
 		List<String> ent = new ArrayList<>();
 		for (String s : ents) {
 			ent.add(s);
 		}
 		
-		for (String s : entities.keySet()) {
-			if (!ent.contains(s))
-				db.addEntity(s, parentLayer);
-			for (String p : entities.get(s)) {
-				if (!ent.contains(p)) {
-					db.addEntity(p, childLayer);
-					db.assignEntity(p, s);
-				}
+		for (Integer s : entitiesColumns) System.out.println(s+""); 
+		System.out.println("---");
+		for (Integer s : entities.keySet()) System.out.println(s+"");
+		
+		//Create those entities not currently created
+		for (int i = 0; i < layers.size(); ++i) {
+			List<String> entList = entities.get(entitiesColumns.get(i));
+			for (String en : entList) {
+				if (!ent.contains(en))
+					db.addEntity(en, layers.get(i));
 			}
+		}
+		
+		//Create relationships (right -> parent, left -> children)
+		for (Pair<String,String> rel : relationships) {
+			db.assignEntity(rel.getRight(), rel.getLeft());
 		}
 		
 	}
