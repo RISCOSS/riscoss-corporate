@@ -46,6 +46,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.eclipse.jetty.util.ajax.JSON;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -1240,47 +1241,52 @@ public class EntityManager {
 				for (int j = 0; j < config.size(); ++j) {
 					String parent = row.getCell(config.get(j).nameColumn).toString();
 					
-					int x = 0;
-					while (x < entitiesColumns.size()) {
-						if (entitiesColumns.get(x) == config.get(j).nameColumn) break;
-						else ++x;
-					}
+					if (!parent.equals("")) {
 					
-					if (x > 0) relationships.add(new Pair<>(row.getCell(entitiesColumns.get(x-1)).toString(), parent));
-					
-					if (entities.containsKey(config.get(j).nameColumn))
-						entities.get(config.get(j).nameColumn).add(parent);
-					else {
-						List<String> n = new ArrayList<>();
-						n.add(parent);
-						entities.put(config.get(j).nameColumn, n);
-					}
-					
-					String prefix = "";
-					
-					//For every custom info defined for j entity in i row
-					for (int k = 0; k < config.get(j).definedIdItem.size(); ++k) {
-						prefix = config.get(j).definedIdItem.get(k).getLeft();
-						if (!row.getCell(config.get(j).definedIdItem.get(k).getRight().getLeft()).toString().equals("") )
-								checkNewInfo(parent, 
-								prefix + row.getCell(config.get(j).definedIdItem.get(k).getRight().getLeft()).toString(),
-								config.get(j).definedIdItem.get(k).getRight().getRight().toString(),
-								list,
-								db);
-					}
-					for (int k = 0; k < config.get(j).definedValueItem.size(); ++k) {
-						checkNewInfo(parent, 
-								config.get(j).definedValueItem.get(k).getLeft(),
-								row.getCell(config.get(j).definedValueItem.get(k).getRight()).toString(),
-								list,
-								db);
+						int x = 0;
+						while (x < entitiesColumns.size()) {
+							if (entitiesColumns.get(x) == config.get(j).nameColumn) break;
+							else ++x;
+						}
+						
+						if (x > 0) relationships.add(new Pair<>(row.getCell(entitiesColumns.get(x-1)).toString(), parent));
+						
+						if (entities.containsKey(config.get(j).nameColumn))
+							entities.get(config.get(j).nameColumn).add(parent);
+						else {
+							List<String> n = new ArrayList<>();
+							n.add(parent);
+							entities.put(config.get(j).nameColumn, n);
+						}
+						
+						String prefix = "";
+						
+						//For every custom info defined for j entity in i row
+						for (int k = 0; k < config.get(j).definedIdItem.size(); ++k) {
+							prefix = config.get(j).definedIdItem.get(k).getLeft();
+							if (!row.getCell(config.get(j).definedIdItem.get(k).getRight().getLeft()).toString().equals("") )
+									checkNewInfo(parent, 
+									prefix + row.getCell(config.get(j).definedIdItem.get(k).getRight().getLeft()).toString(),
+									config.get(j).definedIdItem.get(k).getRight().getRight().toString(),
+									list,
+									db);
+						}
+						for (int k = 0; k < config.get(j).definedValueItem.size(); ++k) {
+							Double value = Double.parseDouble(row.getCell(config.get(j).definedValueItem.get(k).getRight()).toString());
+							String val = String.valueOf(value.intValue());
+							checkNewInfo(parent, 
+									config.get(j).definedValueItem.get(k).getLeft(),
+									val,
+									list,
+									db);
+						}
 					}
 				}
 				++i;
 			}
 		}
 		
-		importEntities(entitiesColumns, entities, relationships, db);
+		Map<String,String> en = importEntities(entitiesColumns, entities, relationships, db);
 		
 		//Delete old imported data for entities
 		Set<String> all = new HashSet<>();
@@ -1301,15 +1307,17 @@ public class EntityManager {
 		}
 
 		for (String child : list.keySet()) {
-			storeRDR(child.split("@")[0], list.get(child).getLeft(), list.get(child).getRight(), db);
+			if (!list.get(child).getLeft().equals("") && !list.get(child).getRight().equals(""))
+				storeRDR(child.split("@")[0], en.get(child.split("@")[0]), list.get(child).getLeft(), list.get(child).getRight(), db);
 		}
 			
 	}
 	
-	private void importEntities(List<Integer> entitiesColumns, Map<Integer, List<String> > entities, 
+	private Map<String,String> importEntities(List<Integer> entitiesColumns, Map<Integer, List<String> > entities, 
 			List<Pair<String, String>> relationships, RiscossDB db) {
 		
 		List<String> layers = (List<String>) db.layerNames();
+		Map<String,String> e = new HashMap<>();
 		
 		//Load all entities stored in database
 		Collection<String> ents = db.entities();
@@ -1318,16 +1326,14 @@ public class EntityManager {
 			ent.add(s);
 		}
 		
-		for (Integer s : entitiesColumns) System.out.println(s+""); 
-		System.out.println("---");
-		for (Integer s : entities.keySet()) System.out.println(s+"");
-		
 		//Create those entities not currently created
 		for (int i = 0; i < layers.size(); ++i) {
 			List<String> entList = entities.get(entitiesColumns.get(i));
 			for (String en : entList) {
-				if (!ent.contains(en))
+				if (!ent.contains(en)) {
 					db.addEntity(en, layers.get(i));
+				}
+				e.put(en, layers.get(i));
 			}
 		}
 		
@@ -1335,6 +1341,8 @@ public class EntityManager {
 		for (Pair<String,String> rel : relationships) {
 			db.assignEntity(rel.getRight(), rel.getLeft());
 		}
+		
+		return e;
 		
 	}
 
@@ -1346,8 +1354,43 @@ public class EntityManager {
 		
 	}
 
-	private void storeRDR(String target, String license, String value, RiscossDB db) throws Exception {
+	private void storeRDR(String target, String layer, String license, String value, RiscossDB db) throws Exception {
 		
+		String json = db.getLayerData( layer, "ci" );
+		if (json != null) {
+			JsonObject r = (JsonObject) new JsonParser().parse(json);
+			for (JsonElement s : r.get("contextInfoList").getAsJsonArray()) {
+				JsonObject p = s.getAsJsonObject();
+				if (p.get("id").toString().equals("\"" + license + "\"") || p.get("name").toString().equals("\"" + license + "\"")) {
+					JsonObject o = new JsonObject();
+					o.addProperty("id", p.get("id").toString().substring(1, p.get("id").toString().length()-1));
+					o.addProperty("target", target);
+					o.addProperty("value", value);
+					o.addProperty("datatype", p.get("type").toString().substring(1, p.get("type").toString().length()-1));
+					o.addProperty("type", "custom");
+					o.addProperty("origin", "user");
+					System.out.println(o.toString());
+					db.storeRiskData(o.toString());
+					return;
+				}
+			}
+		}
+		/*for (String id : db.listRiskData(target)) {
+			JsonObject o = (JsonObject) new JsonParser().parse(db.readRiskData(target, id));
+			if (id.equals(license) || o.get("name").equals(license)) {
+				JsonObject s = new JsonObject();
+				s.addProperty("id", id);
+				s.addProperty("target", target);
+				s.addProperty("value", value);
+				s.addProperty("datatype", o.get("datatype").toString());
+				s.addProperty("type", "custom");
+				s.addProperty("origin", "user");
+				db.storeRiskData(s.toString());
+				return;
+			}
+		}*/
+		
+		//If layer data did not exist
 		JsonObject o = new JsonObject();
 		o.addProperty( "id", license);
 		o.addProperty( "target", target );
