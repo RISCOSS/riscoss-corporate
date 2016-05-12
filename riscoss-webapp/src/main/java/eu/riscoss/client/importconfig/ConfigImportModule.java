@@ -26,7 +26,7 @@ import gwtupload.client.IUploader.UploadedInfo;
 
 public class ConfigImportModule implements EntryPoint {
 	
-	private final String 		CONF_XML_FILE_NAME = "Supersede_Config_Stored.xml";
+	private final String 		CONF_XML_FILE_NAME = "importation_config.xml";
 
 	HorizontalPanel 			mainView;
 	VerticalPanel				leftPanel;

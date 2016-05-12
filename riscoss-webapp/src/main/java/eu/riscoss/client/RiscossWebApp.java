@@ -32,21 +32,28 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.OpenEvent;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Cookies;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.FileUpload;
+import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.MenuItemSeparator;
 import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -60,6 +67,11 @@ import eu.riscoss.shared.CookieNames;
 import eu.riscoss.shared.JSiteMap;
 import eu.riscoss.shared.JSiteMap.JSitePage;
 import eu.riscoss.shared.JSiteMap.JSiteSection;
+import gwtupload.client.IUploader;
+import gwtupload.client.SingleUploader;
+import gwtupload.client.IFileInput.FileInputType;
+import gwtupload.client.IUploader.OnFinishUploaderHandler;
+import gwtupload.client.IUploader.UploadedInfo;
 
 public class RiscossWebApp implements EntryPoint {
 	
@@ -120,13 +132,27 @@ public class RiscossWebApp implements EntryPoint {
 		});
 	}
 	
+	boolean confFileLoaded = false;
+	JSiteMap sitemap;
+	
 	void loadSitemap() {
 		RiscossCall.fromCookies().admin().fx( "sitemap" ).get( new JsonCallback() {
 			@Override
 			public void onSuccess( Method method, JSONValue response ) {
 				CodecSiteMap codec = GWT.create( CodecSiteMap.class );
-				JSiteMap sitemap = codec.decode( response );
-				showUI( sitemap );
+				sitemap = codec.decode( response );
+				RiscossJsonClient.checkImportFiles( new JsonCallback() {
+					@Override
+					public void onFailure(Method method, Throwable exception) {
+						Window.alert(exception.getMessage());
+					}
+					@Override
+					public void onSuccess(Method method, JSONValue response) {
+						if (response.isObject().get("confFile").isBoolean().booleanValue())
+							confFileLoaded = true;
+						showUI( sitemap );
+					}
+				});
 			}
 			@Override
 			public void onFailure( Method method, Throwable exception ) {
@@ -138,6 +164,8 @@ public class RiscossWebApp implements EntryPoint {
 	void showUI( JSiteMap sitemap) {
 				
 		Log.println( "Loading UI for domain " + sitemap.domain );
+		
+		VerticalPanel vPanel = new VerticalPanel();
 		
 		MenuBar menu = new MenuBar();
 		menu.setWidth(" 100% ");
@@ -178,9 +206,49 @@ public class RiscossWebApp implements EntryPoint {
 						loadPanel( getUrl() );
 					}
 				});
-				if (page.getLabel().equals("Risk Configurations")) {
-					submenu.addSeparator();
-				}
+			}
+			
+			if (subsection.getLabel().equals("Configure")) {
+				final Button b = new Button("ye");
+				final SingleUploader upload = new SingleUploader(FileInputType.CUSTOM.with(b));
+				upload.setTitle("Upload new entities document");
+				upload.setAutoSubmit(true);
+				upload.setServletPath(upload.getServletPath() + "?t=importentities&domain=" + RiscossJsonClient.getDomain()+"&token="+RiscossCall.getToken());
+				upload.addOnFinishUploadHandler(new OnFinishUploaderHandler() {
+					@Override
+					public void onFinish(IUploader uploader) {
+						Log.println("OnFinish");
+						UploadedInfo info = uploader.getServerInfo();
+						String name = info.name;
+						String response = uploader.getServerMessage().getMessage();
+						if (confFileLoaded) {
+							RiscossJsonClient.importEntities(new JsonCallback() {
+								@Override
+								public void onFailure(Method method, Throwable exception) {
+									Window.alert(exception.getMessage());
+								}
+			
+								@Override
+								public void onSuccess(Method method, JSONValue response) {
+									Window.alert("Entity information imported correctly");
+									loadPanel("entities.jsp");
+								}
+							});
+						} else {
+							Window.alert("Missing config xml file. Please, contact an administrator");
+						}
+					}
+				});
+				submenu.addSeparator();
+				submenu.addItem("Import entities", new MenuCommand( "Import entities" ) {
+					@Override
+					public void execute() {
+						upload.fireEvent(new ClickEvent() {});
+						b.fireEvent(new ClickEvent() {});
+					}
+				});
+				vPanel.add(upload);
+				upload.setVisible(false);
 			}
 		}
 		
@@ -202,7 +270,6 @@ public class RiscossWebApp implements EntryPoint {
 		});
 
 		HorizontalPanel hPanel = new HorizontalPanel();
-		VerticalPanel vPanel = new VerticalPanel();
 		
 		VerticalPanel north = new VerticalPanel();
 //		Image logo = new Image( "http://riscossplatform.ow2.org/riscoss/wiki/wiki1/download/ColorThemes/RISCOSS_2/logo_riscoss_DSP.png" );

@@ -41,16 +41,10 @@ public class DownloadServlet extends HttpServlet {
 				blobFileName = db.getModelFilename(name);
 				blob = db.getModelBlob(name).getBytes();
 				break;
-			case "xlsxEnt":
-				//gets the xlsx entities file
-				blobFileName = "Supersede_IPR_Registry.xlsx";
-				File ent = new File("resources/Supersede_IPR_Registry.xlsx");
-				blob = FileUtils.readFileToByteArray(ent);
-				break;
 			case "xmlConf":
 				//gets the xml conf import file
-				blobFileName = "Supersede_Config_Stored.xml";
-				File conf = new File("resources/Supersede_Config_Stored.xml");
+				blobFileName = "importation_config.xml";
+				File conf = new File("resources/importation_config.xml");
 				blob = FileUtils.readFileToByteArray(conf);
 				break;
 			default:

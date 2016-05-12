@@ -140,11 +140,10 @@ public class ServletWrapper extends ServletContainer {
 				sm.createPage( "/Configure", "Models", "models.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Modeler.name() } );
 				//				sm.createPage( "/Configure", "Edit Models", "editor.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Modeler.name() } );
 				sm.createPage( "/Configure", "Risk Configurations", "riskconfs.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Modeler.name() } );
-				sm.createPage( "/Configure", "Import entities", "importing.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Producer.name(), KnownRoles.Modeler.name() } );
+				sm.deletePage( "/Configure",  "Import entities");
 				
 				sm.createSection( "/Run" );
 				//				sm.createPage( "/Run", "One-layer Analysis", "analysis.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Guest.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
-				sm.deletePage( "/Run", "One-layer Analysis");
 				sm.createPage( "/Run", "Multi-layer Analysis", "riskanalysis.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
 				sm.createPage( "/Run", "What-if Analysis", "whatifanalysis.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
 				sm.createPage( "/Run", "AHP Session Analysis", "rma.jsp", new String[] { KnownRoles.Administrator.name(), KnownRoles.Consumer.name(), KnownRoles.Modeler.name(), KnownRoles.Producer.name() } );
@@ -158,7 +157,6 @@ public class ServletWrapper extends ServletContainer {
 				sm.createSection( "/Admin" );
 				sm.createPage( "/Admin", "Domains", "admin.jsp", new String[] { KnownRoles.Administrator.name() } );
 				sm.createPage( "/Admin", "Roles", "roles.jsp", new String[] {KnownRoles.Administrator.name() } );
-				sm.deletePage( "/Admin", "Config import");
 				sm.createPage( "/Admin", "Import configuration", "importconfig.jsp", new String[] {KnownRoles.Administrator.name() } );
 				
 				sm.deletePage( "/untracked", "RAS report");
