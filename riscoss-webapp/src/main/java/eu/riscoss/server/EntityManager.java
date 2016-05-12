@@ -1360,22 +1360,26 @@ public class EntityManager {
 		
 		String json = db.getLayerData( layer, "ci" );
 		if (json != null) {
-			JsonObject r = (JsonObject) new JsonParser().parse(json);
-			for (JsonElement s : r.get("contextInfoList").getAsJsonArray()) {
-				JsonObject p = s.getAsJsonObject();
-				if (p.get("id").toString().equals("\"" + license + "\"") || p.get("name").toString().equals("\"" + license + "\"")) {
-					JsonObject o = new JsonObject();
-					o.addProperty("id", p.get("id").toString().substring(1, p.get("id").toString().length()-1));
-					o.addProperty("target", target);
-					o.addProperty("value", value);
-					o.addProperty("datatype", p.get("type").toString().substring(1, p.get("type").toString().length()-1));
-					o.addProperty("type", "custom");
-					o.addProperty("origin", "user");
-					System.out.println(o.toString());
-					db.storeRiskData(o.toString());
-					return;
+			JsonElement j = new JsonParser().parse(json);
+			if (!j.isJsonNull()) {
+				JsonObject r = (JsonObject) new JsonParser().parse(json);
+				for (JsonElement s : r.get("contextInfoList").getAsJsonArray()) {
+					JsonObject p = s.getAsJsonObject();
+					if (p.get("id").toString().equals("\"" + license + "\"") || p.get("name").toString().equals("\"" + license + "\"")) {
+						JsonObject o = new JsonObject();
+						o.addProperty("id", p.get("id").toString().substring(1, p.get("id").toString().length()-1));
+						o.addProperty("target", target);
+						o.addProperty("value", value);
+						o.addProperty("datatype", p.get("type").toString().substring(1, p.get("type").toString().length()-1));
+						o.addProperty("type", "custom");
+						o.addProperty("origin", "user");
+						System.out.println(o.toString());
+						db.storeRiskData(o.toString());
+						return;
+					}
 				}
 			}
+				
 		}
 		/*for (String id : db.listRiskData(target)) {
 			JsonObject o = (JsonObject) new JsonParser().parse(db.readRiskData(target, id));
