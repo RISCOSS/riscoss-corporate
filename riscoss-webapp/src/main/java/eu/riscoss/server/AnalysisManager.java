@@ -1044,7 +1044,7 @@ public class AnalysisManager {
 			try {
 				
 				StringReader xml = new StringReader(getXMLReport(ras, modelsList));  
-				FileInputStream xsl = new FileInputStream("/home/jmotger/Escritorio/RISCOSS/riscoss-corporate/riscoss-webapp/src/main/webapp/resources/ras-stylesheet.xslt");;
+				FileInputStream xsl = new FileInputStream("resources/ras-stylesheet.xslt");;
 				StringWriter writer = new StringWriter();
 
 				Source xmlDoc =  new StreamSource(xml);
