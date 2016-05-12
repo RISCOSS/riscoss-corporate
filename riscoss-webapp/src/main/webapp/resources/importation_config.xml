@@ -13,7 +13,7 @@
 				<custom_field>
 					<id_column>4</id_column>
 					<value>1</value>
-					<prefix>#parent:</prefix>
+					<prefix>#target:</prefix>
 				</custom_field>
 				<custom_field>
 					<id>Technology</id>

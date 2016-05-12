@@ -309,7 +309,7 @@ public class UploadServiceImpl extends UploadAction {
 					    byte[] buffer = new byte[initialStream.available()];
 					    initialStream.read(buffer);
 					 
-					    File targetFile = new File("resources/Supersede_IPR_Registry.xlsx");
+					    File targetFile = new File("resources/entities_info.xlsx");
 					    OutputStream outStream = new FileOutputStream(targetFile);
 					    outStream.write(buffer);
 												
@@ -384,7 +384,7 @@ public class UploadServiceImpl extends UploadAction {
 					    Transformer transformer = transformerFactory.newTransformer();
 					    DOMSource source = new DOMSource(doc);
 
-					    StreamResult result =  new StreamResult(new File("resources/Supersede_Config_Stored.xml"));
+					    StreamResult result =  new StreamResult(new File("resources/importation_config.xml"));
 
 						transformer.transform(source, result);
 						

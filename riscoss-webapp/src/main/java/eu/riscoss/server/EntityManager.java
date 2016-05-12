@@ -1085,11 +1085,11 @@ public class EntityManager {
 		boolean entFileLoaded = false;
 		boolean confFileLoaded = false;
 		
-		File ent = new File("resources/Supersede_IPR_Registry.xlsx");
+		File ent = new File("resources/entities_info.xlsx");
 		if(ent.exists()) { 
 		    entFileLoaded = true;
 		}
-		File conf = new File("resources/Supersede_Config_Stored.xml");
+		File conf = new File("resources/importation_config.xml");
 		if (conf.exists()) {
 			confFileLoaded = true;
 		}	
@@ -1159,7 +1159,7 @@ public class EntityManager {
 		//Load importing config xml file
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder = factory.newDocumentBuilder();
-        FileInputStream f = new FileInputStream("resources/Supersede_Config_Stored.xml");
+        FileInputStream f = new FileInputStream("resources/importation_config.xml");
         Document doc = builder.parse(f);
         Element element = doc.getDocumentElement();
         
@@ -1219,7 +1219,7 @@ public class EntityManager {
         	config.add(conf);
         }
         
-		File xlsx = new File("resources/Supersede_IPR_Registry.xlsx");
+		File xlsx = new File("resources/entities_info.xlsx");
 		FileInputStream fis = new FileInputStream(xlsx);
 		XSSFWorkbook wb = new XSSFWorkbook(fis);
 		XSSFSheet ws = wb.getSheet(sheet);
@@ -1264,21 +1264,24 @@ public class EntityManager {
 						//For every custom info defined for j entity in i row
 						for (int k = 0; k < config.get(j).definedIdItem.size(); ++k) {
 							prefix = config.get(j).definedIdItem.get(k).getLeft();
-							if (!row.getCell(config.get(j).definedIdItem.get(k).getRight().getLeft()).toString().equals("") )
+							if (!row.getCell(config.get(j).definedIdItem.get(k).getRight().getLeft()).toString().equals("") ) {
 									checkNewInfo(parent, 
 									prefix + row.getCell(config.get(j).definedIdItem.get(k).getRight().getLeft()).toString(),
 									config.get(j).definedIdItem.get(k).getRight().getRight().toString(),
 									list,
 									db);
+							}
 						}
 						for (int k = 0; k < config.get(j).definedValueItem.size(); ++k) {
-							Double value = Double.parseDouble(row.getCell(config.get(j).definedValueItem.get(k).getRight()).toString());
-							String val = String.valueOf(value.intValue());
-							checkNewInfo(parent, 
-									config.get(j).definedValueItem.get(k).getLeft(),
-									val,
-									list,
-									db);
+							if (!row.getCell(config.get(j).definedValueItem.get(k).getRight()).toString().equals("")) {
+								Double value = Double.parseDouble(row.getCell(config.get(j).definedValueItem.get(k).getRight()).toString());
+								String val = String.valueOf(value.intValue());
+								checkNewInfo(parent, 
+										config.get(j).definedValueItem.get(k).getLeft(),
+										val,
+										list,
+										db);
+							}
 						}
 					}
 				}
