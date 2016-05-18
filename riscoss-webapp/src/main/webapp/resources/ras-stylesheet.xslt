@@ -30,7 +30,7 @@
 		<h2 style="text-align: left;
 						color: #6E9C20;
 						margin-bottom: 0;"><xsl:value-of select="entity"/> entity</h2>
-		<hr sylte="color: #7EAC30;"/>
+		<hr style="color: #7EAC30;"/>
 		<xsl:if test="res/event">
 			<ul>
 				<xsl:apply-templates select="res"/>
@@ -46,56 +46,6 @@
 	<xsl:template match="/">
 		<html>
 			<head>
-				<style media="screen" type="text/css">
-					body {
-						font-family: sans-serif;
-						color: #686868;
-						padding: 24px;
-					}
-
-					h1, h2 {
-						text-align: left;
-						color: #6E9C20;
-						margin-bottom: 0;
-					}
-
-					hr {
-						color: #7EAC30;
-					}
-
-					table {
-						margin-top: 24px;
-						margin-bottom: 24px;
-						border-collapse: collapse;
-					}
-
-					th {
-						text-align: left;
-						color: #686868;
-						background-color: #e8e8e8;
-						border: 1px solid #c8c8c8;
-						padding: 6px;
-					}
-
-					td {
-						border: 1px solid #c8c8c8;
-						padding: 6px;
-					}
-
-					strong {
-						color: #7EAC30;
-					}
-
-					.comment {
-						font-style: italic;
-						color: #787878;
-					}
-
-					.logo {
-						float: right;
-					}
-
-				</style>
 			</head>
 			<body style="font-family: sans-serif;
 						color: #686868;

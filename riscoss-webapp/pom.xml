@@ -72,8 +72,7 @@
 		    <version>3.9</version>
 		    <type>jar</type>
 		</dependency>
-				
-
+		
 		<!-- Slider -->
 		<dependency>
 			<groupId>com.kiouri.sliderbar</groupId>
