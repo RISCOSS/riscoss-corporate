@@ -47,6 +47,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import eu.riscoss.client.Log;
+import eu.riscoss.client.RiscossCall;
 import eu.riscoss.client.RiscossJsonClient;
 import eu.riscoss.client.codec.CodecMissingData;
 import eu.riscoss.client.codec.CodecRASInfo;
@@ -1014,7 +1015,18 @@ public class RASPanel implements IsWidget {
 	}
 	
 	private void generateReport() {
-		Window.open(GWT.getHostPageBaseURL() + "rasreport.jsp?id=" + selectedRAS, "_blank", "");
+		RiscossJsonClient.generatePDFReport(selectedRAS, new JsonCallback() {
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				Window.alert(exception.getMessage());
+			}
+			@Override
+			public void onSuccess(Method method, JSONValue response) {
+				Window.open(GWT.getHostPageBaseURL() +  "models/download?domain=" + RiscossJsonClient.getDomain() + 
+						"&name=report.pdf&type=pdf&token="+RiscossCall.getToken(), "", "");	
+			}
+		});
+		//Window.open(GWT.getHostPageBaseURL() + "rasreport.jsp?id=" + selectedRAS, "_blank", "");
 		/*RiscossJsonClient.generateHTMLReport(selectedRAS, new JsonCallback() {
 			@Override
 			public void onFailure(Method method, Throwable exception) {

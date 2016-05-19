@@ -47,6 +47,11 @@ public class DownloadServlet extends HttpServlet {
 				File conf = new File("resources/importation_config.xml");
 				blob = FileUtils.readFileToByteArray(conf);
 				break;
+			case "pdf":
+				blobFileName = "report.pdf";
+				File report = new File("resources/report.pdf");
+				blob = FileUtils.readFileToByteArray(report);
+				break;
 			default:
 				return;
 			}

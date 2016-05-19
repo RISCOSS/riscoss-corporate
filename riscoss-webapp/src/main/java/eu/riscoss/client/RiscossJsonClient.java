@@ -541,6 +541,10 @@ public class RiscossJsonClient {
 		RiscossCall.fromCookies().analysis().fx("session").fx(ras).fx("report-html").get( cb);
 	}
 	
+	public static void generatePDFReport( String ras, JsonCallback cb) {
+		RiscossCall.fromCookies().analysis().fx("session").fx(ras).fx("report-pdf").get( cb);
+	}
+	
 	/**
 	 * analysis().fx("session").fx(riskAnalysisSession).delete()
 	 * @param riskAnalysisSession

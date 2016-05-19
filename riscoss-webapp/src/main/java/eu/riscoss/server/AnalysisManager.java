@@ -21,11 +21,14 @@
 
 package eu.riscoss.server;
 
-import java.io.ByteArrayOutputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
@@ -37,6 +40,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Scanner;
 import java.util.Set;
 
 import javax.ws.rs.Consumes;
@@ -61,6 +65,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPath;
@@ -68,6 +73,10 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.fop.apps.FOUserAgent;
+import org.apache.fop.apps.Fop;
+import org.apache.fop.apps.FopFactory;
+import org.apache.fop.apps.MimeConstants;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -85,7 +94,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
-import eu.riscoss.client.Log;
 import eu.riscoss.dataproviders.RiskData;
 import eu.riscoss.dataproviders.RiskDataType;
 import eu.riscoss.db.RecordAbstraction;
@@ -1024,6 +1032,63 @@ public class AnalysisManager {
 		}
 		results.appendChild(entity);
 		results.appendChild(res);
+	}
+
+	@GET @Path("/{domain}/session/{sid}/report-pdf")
+	@Info("Generates a PDF report of the selected session")
+	public void generatePDFReport(
+			@PathParam("domain") @Info("The work domain")					String domain,
+			@HeaderParam("token") @Info("The authentication token")			String token,
+			@PathParam("sid") @Info("The session id")						String sid) throws Exception {
+		
+		RiscossDB db = null;
+		
+		try {
+			db = DBConnector.openDB( domain, token );
+			RiskAnalysisSession ras = db.openRAS(sid);
+			List<String> modelsList = db.getModelsFromRiskCfg( ras.getRCName(), ras.getTarget() );
+			
+			StringReader xml = new StringReader(getXMLReport(ras, modelsList));  
+			FileInputStream xsl = new FileInputStream("resources/ras-stylesheet.xslt");;
+			StringWriter writer = new StringWriter();
+
+			Source xmlDoc =  new StreamSource(xml);
+			Source xslDoc =  new StreamSource(xsl);
+			Result result =  new StreamResult(writer);
+
+			TransformerFactory factory = TransformerFactory.newInstance(); 
+			Transformer trans = factory.newTransformer(xslDoc);
+			trans.transform(xmlDoc, result); 
+			
+			String html = writer.toString();
+			html = html.replace("<META http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">", "");
+			html = html.replace("<br>", "<br/>");
+			html = html.replace("<hr style=\"color: #7EAC30;\">", "<hr style=\"color: #7EAC30;\"/>");
+			html = html.replace("&ldquo;", "");
+			html = html.replace("&rdquo;", "");
+			html = html.replace("\"logo\">", "\"logo\"></img>");
+						
+            FopFactory fopFactory = FopFactory.newInstance(new File(".").toURI());
+            FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
+            OutputStream out = new FileOutputStream(new File("resources/report.pdf"));
+            out = new java.io.BufferedOutputStream(out);
+            
+            Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, foUserAgent, out);
+            Source xslt = new StreamSource(new File("resources/ras-stylesheet-fo.xslt"));
+            Transformer transformer = factory.newTransformer(xslt);
+            transformer.setParameter("versionParam", "2.0");
+            Source src = new StreamSource(new StringReader(html));
+            Result res = new SAXResult(fop.getDefaultHandler());
+            transformer.transform(src, res);
+            
+            out.close();
+			
+		} catch( Exception ex ) {
+			throw ex;
+		}
+		finally {
+			DBConnector.closeDB( db );
+		}
 	}
 	
 	@GET @Path("/{domain}/session/{sid}/report-html")

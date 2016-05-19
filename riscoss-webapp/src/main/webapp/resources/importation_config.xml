@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?><config>
 	<relationships>
-		<sheet_name>IPR Registry</sheet_name>
+		<sheet_name>Entities</sheet_name>
 		<layer entity_column="2">
 			<layer entity_column="6"/>
 		</layer>
 	</relationships>
 	<entities>
 		<imported_entity>
-			<sheet_name>IPR Registry</sheet_name>
+			<sheet_name>Entities</sheet_name>
 			<name_column>2</name_column>
 			<custom_information>
 				<custom_field>
@@ -23,7 +23,7 @@
 			</custom_information>
 		</imported_entity>
 		<imported_entity>
-			<sheet_name>IPR Registry</sheet_name>
+			<sheet_name>Entities</sheet_name>
 			<name_column>6</name_column>
 			<custom_information>
 				<custom_field>
