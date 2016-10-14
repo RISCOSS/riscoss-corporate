@@ -1315,7 +1315,7 @@ public class EntityManager {
 	}
 	
 	private Map<String,String> importEntities(List<Integer> entitiesColumns, Map<Integer, List<String> > entities, 
-			List<Pair<String, String>> relationships, RiscossDB db) {
+			List<Pair<String, String>> relationships, RiscossDB db) throws Exception {
 		
 		List<String> layers = (List<String>) db.layerNames();
 		Map<String,String> e = new HashMap<>();
@@ -1332,6 +1332,7 @@ public class EntityManager {
 			List<String> entList = entities.get(entitiesColumns.get(i));
 			for (String en : entList) {
 				if (!ent.contains(en)) {
+					if (ent.contains("/")) throw new Error("Not a valid entity name (containing special #@/&% characters");
 					db.addEntity(en, layers.get(i));
 				}
 				e.put(en, layers.get(i));
