@@ -1234,7 +1234,7 @@ public class EntityManager {
 		while (read) {
 			//For every valid row in xlsx file
 			XSSFRow row = ws.getRow(i);
-			if (row.getCell(0).toString().equals("")) read = false;
+			if (row == null || row.getCell(0).toString().equals("")) read = false;
 			else {
 				//For every custom entity defined in i row
 				for (int j = 0; j < config.size(); ++j) {
@@ -1273,11 +1273,10 @@ public class EntityManager {
 						}
 						for (int k = 0; k < config.get(j).definedValueItem.size(); ++k) {
 							if (!row.getCell(config.get(j).definedValueItem.get(k).getRight()).toString().equals("")) {
-								Double value = Double.parseDouble(row.getCell(config.get(j).definedValueItem.get(k).getRight()).toString());
-								String val = String.valueOf(value.intValue());
+								String value = row.getCell(config.get(j).definedValueItem.get(k).getRight()).toString();
 								checkNewInfo(parent, 
 										config.get(j).definedValueItem.get(k).getLeft(),
-										val,
+										value,
 										list,
 										db);
 							}
@@ -1448,3 +1447,4 @@ public class EntityManager {
 	}
 	
 }
+
